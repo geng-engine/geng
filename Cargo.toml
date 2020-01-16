@@ -1,0 +1,11 @@
+[package]
+name = "geng"
+version = "0.1.0"
+authors = ["kuviman <kuviman@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+geng-core = { path = "core" }
+geng-ui = { path = "ui" }
+geng-net = { path = "net" }
+geng-debug_overlay = { path = "debug_overlay" }

@@ -1,0 +1,10 @@
+[package]
+name = "geng-ui"
+version = "0.1.0"
+authors = ["kuviman <kuviman@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+geng-core = { path = "../core" }
+geng-ui-derive = { path = "derive" }
+serde = "1"

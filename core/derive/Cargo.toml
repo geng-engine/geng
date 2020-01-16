@@ -1,0 +1,15 @@
+[package]
+name = "geng-derive"
+version = "0.1.0"
+authors = ["kuviman <kuviman@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+syn = { version = "1", features = ["full"] }
+quote = "1"
+batbox = { git = "https://github.com/kuviman/batbox" }
+itertools = "0.8"
+proc-macro2 = "1"
+
+[lib]
+proc-macro = true

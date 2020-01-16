@@ -1,0 +1,25 @@
+[package]
+name = "geng-core"
+version = "0.1.0"
+authors = ["kuviman <kuviman@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+batbox = { git = "https://github.com/kuviman/batbox" }
+geng-derive = { path = "derive" }
+ugli = { git = "https://github.com/kuviman/ugli" }
+rusttype = { version = "0.8", features = [ "gpu_cache" ] }
+serde = "1"
+lazy_static = "1"
+failure = "0.1"
+
+[target.'cfg(any(target_arch = "asmjs", target_arch = "wasm32"))'.dependencies]
+stdweb = "0.4"
+
+[target.'cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))'.dependencies]
+image = "0.22"
+glutin = "0.21"
+threadpool = "1"
+num_cpus = "1"
+notify = "4"
+rodio = "0.9"

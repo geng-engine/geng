@@ -1,0 +1,153 @@
+use crate::*;
+
+#[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
+#[path = "web.rs"]
+mod impl_web;
+
+#[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+#[path = "native.rs"]
+mod _impl;
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum MouseButton {
+    Left,
+    Middle,
+    Right,
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct TouchPoint {
+    pub position: Vec2<f64>,
+}
+
+#[derive(Debug, Clone)]
+pub enum Event {
+    MouseDown {
+        position: Vec2<f64>,
+        button: MouseButton,
+    },
+    MouseUp {
+        position: Vec2<f64>,
+        button: MouseButton,
+    },
+    MouseMove {
+        position: Vec2<f64>,
+    },
+    Wheel {
+        delta: f64,
+    },
+    TouchStart {
+        touches: Vec<TouchPoint>,
+    },
+    TouchMove {
+        touches: Vec<TouchPoint>,
+    },
+    TouchEnd,
+    KeyDown {
+        key: Key,
+    },
+    KeyUp {
+        key: Key,
+    },
+}
+
+impl Event {
+    pub fn translate(&self, delta: Vec2<f64>) -> Self {
+        let mut result = self.clone();
+        use Event::*;
+        match result {
+            MouseDown {
+                ref mut position, ..
+            }
+            | MouseUp {
+                ref mut position, ..
+            }
+            | MouseMove { ref mut position } => *position += delta,
+            TouchStart { ref mut touches } | TouchMove { ref mut touches } => {
+                for touch in touches {
+                    touch.position += delta;
+                }
+            }
+            _ => {}
+        }
+        result
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum Key {
+    Num0,
+    Num1,
+    Num2,
+    Num3,
+    Num4,
+    Num5,
+    Num6,
+    Num7,
+    Num8,
+    Num9,
+
+    A,
+    B,
+    C,
+    D,
+    E,
+    F,
+    G,
+    H,
+    I,
+    J,
+    K,
+    L,
+    M,
+    N,
+    O,
+    P,
+    Q,
+    R,
+    S,
+    T,
+    U,
+    V,
+    W,
+    X,
+    Y,
+    Z,
+
+    Escape,
+    Space,
+    Enter,
+    Backspace,
+
+    LShift,
+    RShift,
+
+    LCtrl,
+    RCtrl,
+
+    LAlt,
+    RAlt,
+
+    Left,
+    Right,
+    Up,
+    Down,
+
+    PageUp,
+    PageDown,
+
+    F1,
+    F2,
+    F3,
+    F4,
+    F5,
+    F6,
+    F7,
+    F8,
+    F9,
+    F10,
+    F11,
+    F12,
+
+    Unknown,
+}

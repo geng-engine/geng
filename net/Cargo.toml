@@ -1,0 +1,16 @@
+[package]
+name = "geng-net"
+version = "0.1.0"
+authors = ["kuviman <kuviman@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+geng-core = { path = "../core" }
+
+[target.'cfg(any(target_arch = "asmjs", target_arch = "wasm32"))'.dependencies]
+stdweb = "0.4"
+
+[target.'cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))'.dependencies]
+ws = { version = "0.9" }
