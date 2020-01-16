@@ -1,0 +1,19 @@
+[package]
+name = "ugli"
+version = "0.1.0"
+authors = ["kuviman <kuviman@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+batbox = { git = "https://github.com/kuviman/batbox" }
+ugl = { path = "ugl" }
+ugli-derive = { path = "derive" }
+failure = "0.1"
+num_enum = "0.4"
+
+[target.'cfg(any(target_arch = "asmjs", target_arch = "wasm32"))'.dependencies]
+stdweb = "0.4"
+
+[target.'cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))'.dependencies]
+image = "0.22"
+glutin = "0.21"

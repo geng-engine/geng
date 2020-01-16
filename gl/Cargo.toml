@@ -1,0 +1,8 @@
+[package]
+name = "gl"
+version = "0.1.0"
+authors = ["kuviman <kuviman@gmail.com>"]
+edition = "2018"
+
+[build-dependencies]
+gl_generator = "0.13"

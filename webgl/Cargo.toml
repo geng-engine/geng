@@ -1,0 +1,14 @@
+[package]
+name = "webgl"
+version = "0.1.0"
+authors = ["kuviman <kuviman@gmail.com>"]
+edition = "2018"
+
+[build-dependencies]
+webgl_generator = "0.2"
+
+[dependencies]
+stdweb = "0.4"
+stdweb-derive = "0.5"
+serde = "1"
+serde_derive = "1"
