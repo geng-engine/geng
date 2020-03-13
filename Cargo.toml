@@ -22,7 +22,7 @@ objekt = "0.1"
 maplit = "1"
 stderrlog = "0.4"
 backtrace = "0.3"
-err-derive = "0.1"
+err-derive = "0.2"
 trans = { git = "https://github.com/kuviman/trans-gen" }
 trans-schema = { git = "https://github.com/kuviman/trans-gen" }
 
