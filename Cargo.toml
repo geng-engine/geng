@@ -2,10 +2,13 @@
 name = "batbox"
 version = "0.1.0"
 authors = ["kuviman <kuviman@gmail.com>"]
+description = "Batteries useful for projects"
+license = "MIT"
+homepage = "https://github.com/kuviman/batbox"
 edition = "2018"
 
 [dependencies]
-batbox-derive = { path = "derive" }
+batbox-derive = { path = "derive", version = "0.1.0" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 ron = "0.5"
@@ -23,12 +26,12 @@ maplit = "1"
 stderrlog = "0.4"
 backtrace = "0.3"
 err-derive = "0.2"
-trans = { git = "https://github.com/kuviman/trans-gen" }
-trans-schema = { git = "https://github.com/kuviman/trans-gen" }
+trans = "0.1"
+trans-schema = "0.1"
 
 [target.'cfg(any(target_arch = "asmjs", target_arch = "wasm32"))'.dependencies]
 stdweb = "0.4"
 
 [target.'cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))'.dependencies]
 libc = "0.2"
-tinyfiledialogs = { git = "https://github.com/jdm/tinyfiledialogs-rs" }
+tinyfiledialogs = "3"

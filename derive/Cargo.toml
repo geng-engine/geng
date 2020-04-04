@@ -2,6 +2,9 @@
 name = "batbox-derive"
 version = "0.1.0"
 authors = ["kuviman <kuviman@gmail.com>"]
+description = "Batteries useful for projects (derive macros)"
+license = "MIT"
+homepage = "https://github.com/kuviman/batbox"
 edition = "2018"
 
 [dependencies]
