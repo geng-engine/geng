@@ -2,9 +2,9 @@ use crate::*;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum DepthFunc {
-    Less = ugl::LESS as _,
-    LessOrEqual = ugl::LEQUAL as _,
-    Greater = ugl::GREATER as _,
+    Less = raw::LESS as _,
+    LessOrEqual = raw::LEQUAL as _,
+    Greater = raw::GREATER as _,
 }
 
 impl Default for DepthFunc {
@@ -26,8 +26,8 @@ impl Default for BlendMode {
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum CullFace {
-    Back = ugl::BACK as _,
-    Front = ugl::FRONT as _,
+    Back = raw::BACK as _,
+    Front = raw::FRONT as _,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -52,26 +52,26 @@ impl Default for DrawParameters {
 }
 
 impl DrawParameters {
-    pub(crate) fn apply(&self, gl: &ugl::Context, framebuffer_size: Vec2<usize>) {
+    pub(crate) fn apply(&self, gl: &raw::Context, framebuffer_size: Vec2<usize>) {
         match self.depth_func {
             Some(depth_test) => gl.depth_func(depth_test as _),
-            None => gl.depth_func(ugl::ALWAYS),
+            None => gl.depth_func(raw::ALWAYS),
         }
         match self.blend_mode {
             Some(blend_mode) => {
-                gl.enable(ugl::BLEND);
+                gl.enable(raw::BLEND);
                 match blend_mode {
-                    BlendMode::Alpha => gl.blend_func(ugl::SRC_ALPHA, ugl::ONE_MINUS_SRC_ALPHA),
+                    BlendMode::Alpha => gl.blend_func(raw::SRC_ALPHA, raw::ONE_MINUS_SRC_ALPHA),
                 }
             }
-            None => gl.disable(ugl::BLEND),
+            None => gl.disable(raw::BLEND),
         }
         match self.cull_face {
             Some(cull_face) => {
-                gl.enable(ugl::CULL_FACE);
-                gl.cull_face(cull_face as ugl::Enum);
+                gl.enable(raw::CULL_FACE);
+                gl.cull_face(cull_face as raw::Enum);
             }
-            None => gl.disable(ugl::CULL_FACE),
+            None => gl.disable(raw::CULL_FACE),
         }
         if let Some(rect) = self.viewport {
             gl.viewport(

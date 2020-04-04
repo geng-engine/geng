@@ -3,7 +3,7 @@ use crate::*;
 pub struct ColorData<'a> {
     width: usize,
     height: usize,
-    buffer: Vec<ugl::UByte>,
+    buffer: Vec<raw::UByte>,
     phantom_data: PhantomData<&'a i32>,
 }
 
@@ -32,14 +32,14 @@ impl<'a> FramebufferRead<'a> {
         self.fbo.bind();
         let result = unsafe {
             let mut buffer =
-                vec![mem::uninitialized::<ugl::UByte>(); self.size.x * self.size.y * 4];
+                vec![mem::uninitialized::<raw::UByte>(); self.size.x * self.size.y * 4];
             gl.read_pixels(
                 0,
                 0,
-                self.size.x as ugl::SizeI,
-                self.size.y as ugl::SizeI,
-                ugl::RGBA,
-                ugl::UNSIGNED_BYTE,
+                self.size.x as raw::SizeI,
+                self.size.y as raw::SizeI,
+                raw::RGBA,
+                raw::UNSIGNED_BYTE,
                 &mut buffer,
             );
             ColorData {
@@ -61,16 +61,16 @@ impl<'a> FramebufferRead<'a> {
     ) {
         let gl = &self.fbo.ugli.inner;
         self.fbo.bind();
-        gl.bind_texture(ugl::TEXTURE_2D, &texture.handle);
+        gl.bind_texture(raw::TEXTURE_2D, &texture.handle);
         gl.copy_tex_sub_image_2d(
-            ugl::TEXTURE_2D,
+            raw::TEXTURE_2D,
             0,
-            dest.x as ugl::Int,
-            dest.y as ugl::Int,
-            source_rect.bottom_left().x as ugl::Int,
-            source_rect.bottom_left().y as ugl::Int,
-            source_rect.width() as ugl::SizeI,
-            source_rect.height() as ugl::SizeI,
+            dest.x as raw::Int,
+            dest.y as raw::Int,
+            source_rect.bottom_left().x as raw::Int,
+            source_rect.bottom_left().y as raw::Int,
+            source_rect.width() as raw::SizeI,
+            source_rect.height() as raw::SizeI,
         );
         self.fbo.ugli.debug_check();
     }

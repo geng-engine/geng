@@ -37,9 +37,9 @@ impl<'a> FramebufferRead<'a> {
             ColorAttachmentRead::None => {}
             ColorAttachmentRead::Texture(ref texture) => {
                 gl.framebuffer_texture_2d(
-                    ugl::FRAMEBUFFER,
-                    ugl::COLOR_ATTACHMENT0,
-                    ugl::TEXTURE_2D,
+                    raw::FRAMEBUFFER,
+                    raw::COLOR_ATTACHMENT0,
+                    raw::TEXTURE_2D,
                     Some(&texture.handle),
                     0,
                 );
@@ -50,9 +50,9 @@ impl<'a> FramebufferRead<'a> {
             DepthAttachmentRead::None => {}
             DepthAttachmentRead::Renderbuffer(ref renderbuffer) => {
                 gl.framebuffer_renderbuffer(
-                    ugl::FRAMEBUFFER,
-                    ugl::DEPTH_ATTACHMENT,
-                    ugl::RENDERBUFFER,
+                    raw::FRAMEBUFFER,
+                    raw::DEPTH_ATTACHMENT,
+                    raw::RENDERBUFFER,
                     Some(&renderbuffer.handle),
                 );
                 // TODO: update/check size

@@ -2,7 +2,7 @@ use crate::*;
 
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum AttributeType {
-    Float = ugl::FLOAT as _,
+    Float = raw::FLOAT as _,
 }
 
 pub unsafe trait VertexAttribute {

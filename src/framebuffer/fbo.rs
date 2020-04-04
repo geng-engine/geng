@@ -2,7 +2,7 @@ use crate::*;
 
 pub struct FBO {
     pub(crate) ugli: Rc<Ugli>,
-    pub(crate) handle: Option<ugl::Framebuffer>,
+    pub(crate) handle: Option<raw::Framebuffer>,
     phantom_data: PhantomData<*mut ()>,
 }
 
@@ -24,15 +24,15 @@ impl FBO {
     }
     pub fn bind(&self) {
         let gl = &self.ugli.inner;
-        gl.bind_framebuffer(ugl::FRAMEBUFFER, self.handle.as_ref());
+        gl.bind_framebuffer(raw::FRAMEBUFFER, self.handle.as_ref());
         self.ugli.debug_check();
     }
     pub fn check(&self) {
         let gl = &self.ugli.inner;
         // TODO: text instead of raw codes
         assert_eq!(
-            gl.check_framebuffer_status(ugl::FRAMEBUFFER),
-            ugl::FRAMEBUFFER_COMPLETE,
+            gl.check_framebuffer_status(raw::FRAMEBUFFER),
+            raw::FRAMEBUFFER_COMPLETE,
             "Framebuffer check failed"
         );
     }

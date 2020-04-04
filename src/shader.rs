@@ -8,7 +8,7 @@ pub enum ShaderType {
 
 pub struct Shader {
     pub(crate) ugli: Rc<Ugli>,
-    pub(crate) handle: ugl::Shader,
+    pub(crate) handle: raw::Shader,
     phantom_data: PhantomData<*mut ()>,
 }
 
@@ -36,16 +36,16 @@ impl Shader {
             ugli: ugli.clone(),
             handle: gl
                 .create_shader(match shader_type {
-                    ShaderType::Vertex => ugl::VERTEX_SHADER,
-                    ShaderType::Fragment => ugl::FRAGMENT_SHADER,
+                    ShaderType::Vertex => raw::VERTEX_SHADER,
+                    ShaderType::Fragment => raw::FRAGMENT_SHADER,
                 })
                 .unwrap(),
             phantom_data: PhantomData,
         };
         gl.shader_source(&shader.handle, source);
         gl.compile_shader(&shader.handle);
-        let compile_status = gl.get_shader_parameter_bool(&shader.handle, ugl::COMPILE_STATUS);
-        if compile_status == ugl::FALSE {
+        let compile_status = gl.get_shader_parameter_bool(&shader.handle, raw::COMPILE_STATUS);
+        if compile_status == raw::FALSE {
             return Err(ShaderCompilationError {
                 log: gl.get_shader_info_log(&shader.handle),
             });

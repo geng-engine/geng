@@ -1,7 +1,7 @@
 use crate::*;
 
 pub struct Ugli {
-    pub(crate) inner: ugl::Context,
+    pub(crate) inner: raw::Context,
     size: Cell<Vec2<usize>>,
     phantom_data: PhantomData<*mut ()>,
 }
@@ -28,7 +28,7 @@ impl Ugli {
         })
         .unwrap();
         let ugli = Ugli {
-            inner: ugl::Context::new(webgl),
+            inner: raw::Context::new(webgl),
             size: Cell::new(vec2(1, 1)),
             phantom_data: PhantomData,
         };
@@ -41,7 +41,7 @@ impl Ugli {
 impl Ugli {
     pub fn create_from_glutin(glutin_context: &glutin::Context<glutin::PossiblyCurrent>) -> Self {
         let ugli = Ugli {
-            inner: ugl::Context::new(|symbol| {
+            inner: raw::Context::new(|symbol| {
                 glutin_context.get_proc_address(symbol) as *const c_void
             }),
             size: Cell::new(vec2(1, 1)),
@@ -56,12 +56,12 @@ impl Ugli {
     pub fn init(&self) {
         let gl = &self.inner;
         info!("GL version: {:?}", gl.get_version_string());
-        gl.enable(ugl::DEPTH_TEST);
+        gl.enable(raw::DEPTH_TEST);
         #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
-        gl.enable(ugl::PROGRAM_POINT_SIZE);
+        gl.enable(raw::PROGRAM_POINT_SIZE);
         #[cfg(target_os = "windows")]
-        gl.enable(ugl::POINT_SPRITE);
-        gl.pixel_store(ugl::UNPACK_ALIGNMENT, 1);
+        gl.enable(raw::POINT_SPRITE);
+        gl.pixel_store(raw::UNPACK_ALIGNMENT, 1);
         self.check();
     }
     #[doc(hidden)]

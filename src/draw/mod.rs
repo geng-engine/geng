@@ -19,14 +19,14 @@ pub fn clear(framebuffer: &mut Framebuffer, color: Option<Color<f32>>, depth: Op
     framebuffer.fbo.bind();
     let mut flags = 0;
     if let Some(color) = color {
-        flags |= ugl::COLOR_BUFFER_BIT;
+        flags |= raw::COLOR_BUFFER_BIT;
         gl.clear_color(color.r as _, color.g as _, color.b as _, color.a as _);
-        gl.color_mask(ugl::TRUE, ugl::TRUE, ugl::TRUE, ugl::TRUE);
+        gl.color_mask(raw::TRUE, raw::TRUE, raw::TRUE, raw::TRUE);
     }
     if let Some(depth) = depth {
-        flags |= ugl::DEPTH_BUFFER_BIT;
+        flags |= raw::DEPTH_BUFFER_BIT;
         gl.clear_depth(depth as _);
-        gl.depth_mask(ugl::TRUE);
+        gl.depth_mask(raw::TRUE);
     }
     gl.clear(flags);
     framebuffer.fbo.ugli.debug_check();
@@ -73,33 +73,33 @@ pub fn draw<V, U, DP>(
         return;
     }
     let gl_mode = match mode {
-        DrawMode::Points => ugl::POINTS,
+        DrawMode::Points => raw::POINTS,
         DrawMode::Lines { line_width } => {
             gl.line_width(line_width as _);
             assert!(vertex_count % 2 == 0);
-            ugl::LINES
+            raw::LINES
         }
         DrawMode::LineStrip { line_width } => {
             gl.line_width(line_width as _);
             assert!(vertex_count >= 2);
-            ugl::LINE_STRIP
+            raw::LINE_STRIP
         }
         DrawMode::LineLoop { line_width } => {
             gl.line_width(line_width as _);
             assert!(vertex_count >= 3);
-            ugl::LINE_LOOP
+            raw::LINE_LOOP
         }
         DrawMode::Triangles => {
             assert!(vertex_count % 3 == 0);
-            ugl::TRIANGLES
+            raw::TRIANGLES
         }
         DrawMode::TriangleStrip => {
             assert!(vertex_count >= 3);
-            ugl::TRIANGLE_STRIP
+            raw::TRIANGLE_STRIP
         }
         DrawMode::TriangleFan => {
             assert!(vertex_count >= 3);
-            ugl::TRIANGLE_FAN
+            raw::TRIANGLE_FAN
         }
     };
 
@@ -131,13 +131,13 @@ pub fn draw<V, U, DP>(
 
     #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
     struct VAO<'a> {
-        handle: ugl::VertexArrayObject,
-        gl: &'a ugl::Context,
+        handle: raw::VertexArrayObject,
+        gl: &'a raw::Context,
     }
 
     #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
     impl<'a> VAO<'a> {
-        fn new(gl: &'a ugl::Context) -> Self {
+        fn new(gl: &'a raw::Context) -> Self {
             Self {
                 handle: gl.create_vertex_array().unwrap(),
                 gl,
@@ -203,14 +203,14 @@ pub fn draw<V, U, DP>(
                         gl.enable_vertex_attrib_array(attribute_info.location);
                         gl.vertex_attrib_pointer(
                             attribute_info.location,
-                            A::SIZE as ugl::Int,
-                            A::TYPE as ugl::Enum,
-                            ugl::FALSE,
-                            mem::size_of::<D>() as ugl::SizeI,
-                            offset as ugl::IntPtr,
+                            A::SIZE as raw::Int,
+                            A::TYPE as raw::Enum,
+                            raw::FALSE,
+                            mem::size_of::<D>() as raw::SizeI,
+                            offset as raw::IntPtr,
                         );
                         if let Some(divisor) = self.divisor {
-                            gl.vertex_attrib_divisor(attribute_info.location, divisor as ugl::UInt);
+                            gl.vertex_attrib_divisor(attribute_info.location, divisor as raw::UInt);
                         } else {
                             gl.vertex_attrib_divisor(attribute_info.location, 0);
                         }

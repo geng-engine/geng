@@ -2,14 +2,14 @@ use crate::*;
 
 struct RawBuffer {
     ugli: Rc<Ugli>,
-    handle: ugl::Buffer,
-    usage: ugl::Enum,
+    handle: raw::Buffer,
+    usage: raw::Enum,
     size: Cell<usize>,
     phantom_data: PhantomData<*mut ()>,
 }
 
 impl RawBuffer {
-    fn new(ugli: &Rc<Ugli>, usage: ugl::Enum) -> Self {
+    fn new(ugli: &Rc<Ugli>, usage: raw::Enum) -> Self {
         let gl = &ugli.inner;
         Self {
             ugli: ugli.clone(),
@@ -21,7 +21,7 @@ impl RawBuffer {
     }
     fn bind(&self) {
         let gl = &self.ugli.inner;
-        gl.bind_buffer(ugl::ARRAY_BUFFER, &self.handle);
+        gl.bind_buffer(raw::ARRAY_BUFFER, &self.handle);
         self.ugli.debug_check();
     }
     fn set_data<T>(&self, data: &Vec<T>) {
@@ -31,12 +31,12 @@ impl RawBuffer {
         if self.size.get() < capacity {
             self.size.set(capacity);
             gl.buffer_data(
-                ugl::ARRAY_BUFFER,
+                raw::ARRAY_BUFFER,
                 unsafe { std::slice::from_raw_parts(data.as_ptr(), data.capacity()) },
                 self.usage,
             );
         } else {
-            gl.buffer_sub_data(ugl::ARRAY_BUFFER, 0, data);
+            gl.buffer_sub_data(raw::ARRAY_BUFFER, 0, data);
         }
         self.ugli.debug_check();
     }
@@ -70,7 +70,7 @@ impl<T: Vertex> DerefMut for VertexBuffer<T> {
 }
 
 impl<T: Vertex> VertexBuffer<T> {
-    fn new(ugli: &Rc<Ugli>, data: Vec<T>, usage: ugl::Enum) -> Self {
+    fn new(ugli: &Rc<Ugli>, data: Vec<T>, usage: raw::Enum) -> Self {
         let buffer = RawBuffer::new(ugli, usage);
         buffer.set_data(&data);
         Self {
@@ -81,11 +81,11 @@ impl<T: Vertex> VertexBuffer<T> {
     }
 
     pub fn new_static(ugli: &Rc<Ugli>, data: Vec<T>) -> Self {
-        Self::new(ugli, data, ugl::STATIC_DRAW)
+        Self::new(ugli, data, raw::STATIC_DRAW)
     }
 
     pub fn new_dynamic(ugli: &Rc<Ugli>, data: Vec<T>) -> Self {
-        Self::new(ugli, data, ugl::DYNAMIC_DRAW)
+        Self::new(ugli, data, raw::DYNAMIC_DRAW)
     }
 
     pub fn slice<R>(&self, range: R) -> VertexBufferSlice<T>

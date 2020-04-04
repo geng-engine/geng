@@ -1,20 +1,20 @@
 use crate::*;
 
 pub unsafe trait RenderbufferPixel {
-    const GL_FORMAT: ugl::Enum;
+    const GL_FORMAT: raw::Enum;
 }
 
 unsafe impl RenderbufferPixel for Color<f32> {
-    const GL_FORMAT: ugl::Enum = ugl::RGBA;
+    const GL_FORMAT: raw::Enum = raw::RGBA;
 }
 
 unsafe impl RenderbufferPixel for DepthComponent {
-    const GL_FORMAT: ugl::Enum = ugl::DEPTH_COMPONENT;
+    const GL_FORMAT: raw::Enum = raw::DEPTH_COMPONENT;
 }
 
 pub struct Renderbuffer<T: RenderbufferPixel = Color<f32>> {
     pub(crate) ugli: Rc<Ugli>,
-    pub(crate) handle: ugl::Renderbuffer,
+    pub(crate) handle: raw::Renderbuffer,
     phantom_data: PhantomData<*mut T>,
 }
 
@@ -29,12 +29,12 @@ impl<T: RenderbufferPixel> Renderbuffer<T> {
     pub fn new(ugli: &Rc<Ugli>, size: Vec2<usize>) -> Self {
         let gl = &ugli.inner;
         let handle = gl.create_renderbuffer().unwrap();
-        gl.bind_renderbuffer(ugl::RENDERBUFFER, &handle);
+        gl.bind_renderbuffer(raw::RENDERBUFFER, &handle);
         gl.renderbuffer_storage(
-            ugl::RENDERBUFFER,
+            raw::RENDERBUFFER,
             T::GL_FORMAT,
-            size.x as ugl::SizeI,
-            size.y as ugl::SizeI,
+            size.x as raw::SizeI,
+            size.y as raw::SizeI,
         );
         ugli.debug_check();
         Self {

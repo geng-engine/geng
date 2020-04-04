@@ -33,13 +33,13 @@ pub use uniform::*;
 pub use vertex::*;
 
 #[derive(Debug, Copy, Clone, PartialOrd, PartialEq)]
-pub struct DepthComponent(ugl::Float);
+pub struct DepthComponent(raw::Float);
 
-fn gl_bool(b: bool) -> ugl::Bool {
+fn gl_bool(b: bool) -> raw::Bool {
     if b {
-        ugl::TRUE
+        raw::TRUE
     } else {
-        ugl::FALSE
+        raw::FALSE
     }
 }
 

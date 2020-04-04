@@ -2,12 +2,15 @@
 name = "ugli"
 version = "0.1.0"
 authors = ["kuviman <kuviman@gmail.com>"]
+description = "Universal OpenGL Interface"
+license = "MIT"
+homepage = "https://github.com/kuviman/ugli"
 edition = "2018"
 
 [dependencies]
-batbox = { git = "https://github.com/kuviman/batbox" }
-ugl = { path = "ugl" }
-ugli-derive = { path = "derive" }
+batbox = "0.1"
+raw = { package = "ugli-raw", path = "raw", version = "0.1.0" }
+ugli-derive = { path = "derive", version = "0.1.0" }
 failure = "0.1"
 num_enum = "0.4"
 

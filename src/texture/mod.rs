@@ -1,41 +1,41 @@
 use crate::*;
 
 pub unsafe trait TexturePixel {
-    const INTERNAL_FORMAT: ugl::Enum;
-    const FORMAT: ugl::Enum;
-    const TYPE: ugl::Enum;
+    const INTERNAL_FORMAT: raw::Enum;
+    const FORMAT: raw::Enum;
+    const TYPE: raw::Enum;
 }
 
 unsafe impl TexturePixel for Color<f32> {
-    const INTERNAL_FORMAT: ugl::Enum = ugl::RGBA;
-    const FORMAT: ugl::Enum = ugl::RGBA;
-    const TYPE: ugl::Enum = ugl::UNSIGNED_BYTE;
+    const INTERNAL_FORMAT: raw::Enum = raw::RGBA;
+    const FORMAT: raw::Enum = raw::RGBA;
+    const TYPE: raw::Enum = raw::UNSIGNED_BYTE;
 }
 
 unsafe impl TexturePixel for u8 {
     #[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
-    const INTERNAL_FORMAT: ugl::Enum = ugl::ALPHA;
+    const INTERNAL_FORMAT: raw::Enum = raw::ALPHA;
     #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
-    const INTERNAL_FORMAT: ugl::Enum = ugl::RGBA;
-    const FORMAT: ugl::Enum = ugl::ALPHA;
-    const TYPE: ugl::Enum = ugl::UNSIGNED_BYTE;
+    const INTERNAL_FORMAT: raw::Enum = raw::RGBA;
+    const FORMAT: raw::Enum = raw::ALPHA;
+    const TYPE: raw::Enum = raw::UNSIGNED_BYTE;
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Hash)]
 pub enum WrapMode {
-    Repeat = ugl::REPEAT as _,
-    Clamp = ugl::CLAMP_TO_EDGE as _,
+    Repeat = raw::REPEAT as _,
+    Clamp = raw::CLAMP_TO_EDGE as _,
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Hash)]
 pub enum Filter {
-    Nearest = ugl::NEAREST as _,
-    Linear = ugl::LINEAR as _,
+    Nearest = raw::NEAREST as _,
+    Linear = raw::LINEAR as _,
 }
 
 pub struct Texture2d<P: TexturePixel> {
     pub(crate) ugli: Rc<Ugli>,
-    pub(crate) handle: ugl::Texture,
+    pub(crate) handle: raw::Texture,
     size: Cell<Vec2<usize>>,
     phantom_data: PhantomData<*mut P>,
 }
@@ -53,11 +53,11 @@ impl<P: TexturePixel> Texture2d<P> {
     fn new_raw(ugli: &Rc<Ugli>, size: Vec2<usize>) -> Self {
         let gl = &ugli.inner;
         let handle = gl.create_texture().unwrap();
-        gl.bind_texture(ugl::TEXTURE_2D, &handle);
+        gl.bind_texture(raw::TEXTURE_2D, &handle);
         gl.tex_parameteri(
-            ugl::TEXTURE_2D,
-            ugl::TEXTURE_MIN_FILTER,
-            ugl::LINEAR as ugl::Int,
+            raw::TEXTURE_2D,
+            raw::TEXTURE_MIN_FILTER,
+            raw::LINEAR as raw::Int,
         );
         let mut texture = Self {
             ugli: ugli.clone(),
@@ -80,11 +80,11 @@ impl<P: TexturePixel> Texture2d<P> {
         let texture = Self::new_raw(ugli, size);
         let gl = &ugli.inner;
         gl.tex_image_2d::<u8>(
-            ugl::TEXTURE_2D,
+            raw::TEXTURE_2D,
             0,
-            P::INTERNAL_FORMAT as ugl::Int,
-            size.x as ugl::SizeI,
-            size.y as ugl::SizeI,
+            P::INTERNAL_FORMAT as raw::Int,
+            size.x as raw::SizeI,
+            size.y as raw::SizeI,
             0,
             P::FORMAT,
             P::TYPE,
@@ -96,17 +96,17 @@ impl<P: TexturePixel> Texture2d<P> {
     pub fn set_wrap_mode(&mut self, wrap_mode: WrapMode) {
         assert!(self.is_pot() || wrap_mode == WrapMode::Clamp);
         let gl = &self.ugli.inner;
-        gl.bind_texture(ugl::TEXTURE_2D, &self.handle);
-        gl.tex_parameteri(ugl::TEXTURE_2D, ugl::TEXTURE_WRAP_S, wrap_mode as ugl::Int);
-        gl.tex_parameteri(ugl::TEXTURE_2D, ugl::TEXTURE_WRAP_T, wrap_mode as ugl::Int);
+        gl.bind_texture(raw::TEXTURE_2D, &self.handle);
+        gl.tex_parameteri(raw::TEXTURE_2D, raw::TEXTURE_WRAP_S, wrap_mode as raw::Int);
+        gl.tex_parameteri(raw::TEXTURE_2D, raw::TEXTURE_WRAP_T, wrap_mode as raw::Int);
         self.ugli.debug_check();
     }
 
     pub fn set_filter(&mut self, filter: Filter) {
         assert!(self.is_pot() || filter == Filter::Nearest || filter == Filter::Linear);
         let gl = &self.ugli.inner;
-        gl.bind_texture(ugl::TEXTURE_2D, &self.handle);
-        gl.tex_parameteri(ugl::TEXTURE_2D, ugl::TEXTURE_MAG_FILTER, filter as ugl::Int);
+        gl.bind_texture(raw::TEXTURE_2D, &self.handle);
+        gl.tex_parameteri(raw::TEXTURE_2D, raw::TEXTURE_MAG_FILTER, filter as raw::Int);
         self.ugli.debug_check();
     }
 
@@ -120,7 +120,7 @@ impl<P: TexturePixel> Texture2d<P> {
     }
 
     #[doc(hidden)]
-    pub fn _get_handle(&self) -> &ugl::Texture {
+    pub fn _get_handle(&self) -> &raw::Texture {
         &self.handle
     }
 
@@ -130,21 +130,21 @@ impl<P: TexturePixel> Texture2d<P> {
             size.x
                 * size.y
                 * match P::FORMAT {
-                    ugl::RGBA => 4,
-                    ugl::ALPHA => 1,
+                    raw::RGBA => 4,
+                    raw::ALPHA => 1,
                     _ => unreachable!(),
                 },
             data.len()
         );
         let gl = &self.ugli.inner;
-        gl.bind_texture(ugl::TEXTURE_2D, &self.handle);
+        gl.bind_texture(raw::TEXTURE_2D, &self.handle);
         gl.tex_sub_image_2d(
-            ugl::TEXTURE_2D,
+            raw::TEXTURE_2D,
             0,
-            pos.x as ugl::Int,
-            pos.y as ugl::Int,
-            size.x as ugl::SizeI,
-            size.y as ugl::SizeI,
+            pos.x as raw::Int,
+            pos.y as raw::Int,
+            size.x as raw::SizeI,
+            size.y as raw::SizeI,
             P::FORMAT,
             P::TYPE,
             data,
@@ -157,12 +157,12 @@ impl Texture {
     pub fn gen_mipmaps(&mut self) {
         assert!(self.is_pot());
         let gl = &self.ugli.inner;
-        gl.bind_texture(ugl::TEXTURE_2D, &self.handle);
-        gl.generate_mipmap(ugl::TEXTURE_2D);
+        gl.bind_texture(raw::TEXTURE_2D, &self.handle);
+        gl.generate_mipmap(raw::TEXTURE_2D);
         gl.tex_parameteri(
-            ugl::TEXTURE_2D,
-            ugl::TEXTURE_MIN_FILTER,
-            ugl::LINEAR_MIPMAP_LINEAR as ugl::Int,
+            raw::TEXTURE_2D,
+            raw::TEXTURE_MIN_FILTER,
+            raw::LINEAR_MIPMAP_LINEAR as raw::Int,
         );
         self.ugli.debug_check();
     }
@@ -185,14 +185,14 @@ impl Texture {
         }
         let gl = &ugli.inner;
         gl.tex_image_2d(
-            ugl::TEXTURE_2D,
+            raw::TEXTURE_2D,
             0,
-            ugl::RGBA as ugl::Int,
-            size.x as ugl::SizeI,
-            size.y as ugl::SizeI,
+            raw::RGBA as raw::Int,
+            size.x as raw::SizeI,
+            size.y as raw::SizeI,
             0,
-            ugl::RGBA as ugl::Enum,
-            ugl::UNSIGNED_BYTE,
+            raw::RGBA as raw::Enum,
+            raw::UNSIGNED_BYTE,
             Some(&data),
         );
         ugli.debug_check();
@@ -205,14 +205,14 @@ impl Texture {
         let mut texture = Texture2d::new_raw(ugli, size);
         let gl = &ugli.inner;
         gl.tex_image_2d(
-            ugl::TEXTURE_2D,
+            raw::TEXTURE_2D,
             0,
-            ugl::RGBA as ugl::Int,
-            size.x as ugl::SizeI,
-            size.y as ugl::SizeI,
+            raw::RGBA as raw::Int,
+            size.x as raw::SizeI,
+            size.y as raw::SizeI,
             0,
-            ugl::RGBA as ugl::Enum,
-            ugl::UNSIGNED_BYTE,
+            raw::RGBA as raw::Enum,
+            raw::UNSIGNED_BYTE,
             Some(&image.into_raw()),
         );
         if texture.is_pot() {
@@ -228,11 +228,11 @@ impl Texture {
             Texture2d::new_raw(ugli, vec2(image.width() as usize, image.height() as usize));
         let gl = &ugli.inner;
         gl.tex_image_2d_src(
-            ugl::TEXTURE_2D,
+            raw::TEXTURE_2D,
             0,
-            ugl::RGBA as ugl::Int,
-            ugl::RGBA,
-            ugl::UNSIGNED_BYTE,
+            raw::RGBA as raw::Int,
+            raw::RGBA,
+            raw::UNSIGNED_BYTE,
             image,
         );
         if texture.is_pot() {

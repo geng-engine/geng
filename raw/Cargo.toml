@@ -1,12 +1,15 @@
 [package]
-name = "ugl"
+name = "ugli-raw"
 version = "0.1.0"
 authors = ["kuviman <kuviman@gmail.com>"]
+description = "Universal OpenGL Interface (Raw)"
+license = "MIT"
+homepage = "https://github.com/kuviman/ugli"
 edition = "2018"
 
 [target.'cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))'.dependencies]
-gl = { path = "../gl" }
+gl = { package = "ugli-gl", path = "gl", version = "0.1.0" }
 
 [target.'cfg(any(target_arch = "asmjs", target_arch = "wasm32"))'.dependencies]
-webgl = { path = "../webgl" }
+webgl = { package = "ugli-webgl", path = "webgl", version = "0.1.0" }
 stdweb = "0.4"
