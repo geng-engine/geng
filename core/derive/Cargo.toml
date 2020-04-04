@@ -2,12 +2,15 @@
 name = "geng-derive"
 version = "0.1.0"
 authors = ["kuviman <kuviman@gmail.com>"]
+description = "Game Engine (derive macros)"
+license = "MIT"
+homepage = "https://github.com/kuviman/geng"
 edition = "2018"
 
 [dependencies]
 syn = { version = "1", features = ["full"] }
 quote = "1"
-batbox = { git = "https://github.com/kuviman/batbox" }
+batbox = "0.1"
 itertools = "0.8"
 proc-macro2 = "1"
 
