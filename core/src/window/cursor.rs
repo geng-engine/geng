@@ -22,12 +22,14 @@ impl Window {
         }
         #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
         {
-            use glutin::MouseCursor as GC;
-            self.glutin_window.window().set_cursor(match cursor_type {
-                CursorType::Default => GC::Default,
-                CursorType::Pointer => GC::Hand,
-                CursorType::Drag => GC::AllScroll,
-            });
+            use glutin::window::CursorIcon as GC;
+            self.glutin_window
+                .window()
+                .set_cursor_icon(match cursor_type {
+                    CursorType::Default => GC::Default,
+                    CursorType::Pointer => GC::Hand,
+                    CursorType::Drag => GC::AllScroll,
+                });
         };
     }
 
@@ -38,23 +40,11 @@ impl Window {
         #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
         self.glutin_window
             .window()
-            .set_cursor_position(
-                glutin::dpi::PhysicalPosition::new(position.x, position.y).to_logical(self.dpi),
-            )
+            .set_cursor_position(glutin::dpi::PhysicalPosition::new(position.x, position.y))
             .expect("Failed to set cursor position");
     }
 
     pub fn cursor_position(&self) -> Vec2<f64> {
         self.mouse_pos.get()
-    }
-
-    pub fn grab_cursor(&self) {
-        #[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
-        unimplemented!();
-        #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
-        self.glutin_window
-            .window()
-            .grab_cursor(true)
-            .expect("Failed to grab cursor");
     }
 }

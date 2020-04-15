@@ -4,62 +4,69 @@ impl Window {
     pub(crate) fn internal_get_events(&self) -> Vec<Event> {
         let mut events = Vec::new();
         {
-            let mut handle_event = |e| match e {
-                glutin::WindowEvent::CloseRequested => self.should_close.set(true),
-                glutin::WindowEvent::MouseWheel { delta, .. } => {
+            let mut handle_event = |e: glutin::event::WindowEvent| match e {
+                glutin::event::WindowEvent::CloseRequested => self.should_close.set(true),
+                glutin::event::WindowEvent::MouseWheel { delta, .. } => {
                     events.push(Event::Wheel {
                         delta: match delta {
-                            glutin::MouseScrollDelta::PixelDelta(pos) => pos.y,
-                            glutin::MouseScrollDelta::LineDelta(_, dy) => dy as f64 * 51.0,
+                            glutin::event::MouseScrollDelta::PixelDelta(pos) => pos.y,
+                            glutin::event::MouseScrollDelta::LineDelta(_, dy) => dy as f64 * 51.0,
                         },
                     });
                 }
-                glutin::WindowEvent::CursorMoved { position, .. } => {
-                    let position = position.to_physical(self.dpi);
+                glutin::event::WindowEvent::CursorMoved { position, .. } => {
                     let position = vec2(position.x, self.size().y as f64 - 1.0 - position.y);
                     events.push(Event::MouseMove { position })
                 }
-                glutin::WindowEvent::MouseInput { state, button, .. } => {
+                glutin::event::WindowEvent::MouseInput { state, button, .. } => {
                     let button = match button {
-                        glutin::MouseButton::Left => Some(MouseButton::Left),
-                        glutin::MouseButton::Middle => Some(MouseButton::Middle),
-                        glutin::MouseButton::Right => Some(MouseButton::Right),
+                        glutin::event::MouseButton::Left => Some(MouseButton::Left),
+                        glutin::event::MouseButton::Middle => Some(MouseButton::Middle),
+                        glutin::event::MouseButton::Right => Some(MouseButton::Right),
                         _ => None,
                     };
                     if let Some(button) = button {
                         let position = self.mouse_pos.get();
                         events.push(match state {
-                            glutin::ElementState::Pressed => Event::MouseDown { position, button },
-                            glutin::ElementState::Released => Event::MouseUp { position, button },
+                            glutin::event::ElementState::Pressed => {
+                                Event::MouseDown { position, button }
+                            }
+                            glutin::event::ElementState::Released => {
+                                Event::MouseUp { position, button }
+                            }
                         });
                     }
                 }
-                glutin::WindowEvent::KeyboardInput { input, .. } => {
+                glutin::event::WindowEvent::KeyboardInput { input, .. } => {
                     if let Some(key) = input.virtual_keycode {
                         let key = from_glutin_key(key);
                         events.push(match input.state {
-                            glutin::ElementState::Pressed => Event::KeyDown { key: key },
-                            glutin::ElementState::Released => Event::KeyUp { key: key },
+                            glutin::event::ElementState::Pressed => Event::KeyDown { key: key },
+                            glutin::event::ElementState::Released => Event::KeyUp { key: key },
                         });
                     }
                 }
-                glutin::WindowEvent::Resized(new_size) => {
-                    self.glutin_window.resize(new_size.to_physical(self.dpi));
+                glutin::event::WindowEvent::Resized(new_size) => {
+                    self.glutin_window.resize(new_size);
                 }
                 _ => {}
             };
-            self.glutin_events_loop.borrow_mut().poll_events(|e| {
-                if let glutin::Event::WindowEvent { event: e, .. } = e {
-                    handle_event(e)
-                }
-            });
+            use glutin::platform::desktop::EventLoopExtDesktop;
+            self.glutin_event_loop
+                .borrow_mut()
+                .run_return(|e, _, flow| {
+                    if let glutin::event::Event::WindowEvent { event: e, .. } = e {
+                        handle_event(e)
+                    }
+                    *flow = glutin::event_loop::ControlFlow::Exit;
+                });
         }
         events
     }
 }
 
-fn from_glutin_key(key: glutin::VirtualKeyCode) -> Key {
-    use glutin::VirtualKeyCode as GKey;
+fn from_glutin_key(key: glutin::event::VirtualKeyCode) -> Key {
+    use glutin::event::VirtualKeyCode as GKey;
     match key {
         GKey::Key0 => Key::Num0,
         GKey::Key1 => Key::Num1,

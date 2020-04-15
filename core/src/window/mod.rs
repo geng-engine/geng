@@ -12,9 +12,7 @@ pub struct Window {
     #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
     glutin_window: glutin::WindowedContext<glutin::PossiblyCurrent>,
     #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
-    dpi: f64,
-    #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
-    glutin_events_loop: RefCell<glutin::EventsLoop>,
+    glutin_event_loop: RefCell<glutin::event_loop::EventLoop<()>>,
     event_handler: Rc<RefCell<Option<Box<dyn FnMut(Event)>>>>,
     pressed_keys: Rc<RefCell<HashSet<Key>>>,
     pressed_buttons: Rc<RefCell<HashSet<MouseButton>>>,
@@ -101,22 +99,20 @@ impl Window {
         };
         #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
         let window = {
-            let glutin_events_loop = glutin::EventsLoop::new();
+            let glutin_event_loop = glutin::event_loop::EventLoop::<()>::new();
             // glutin::ContextBuilder::new(),
             let glutin_window = glutin::ContextBuilder::new()
                 .with_vsync(vsync)
                 .build_windowed(
-                    glutin::WindowBuilder::new().with_title(title), //.with_visibility(false)
-                    &glutin_events_loop,
+                    glutin::window::WindowBuilder::new().with_title(title), //.with_visibility(false)
+                    &glutin_event_loop,
                 )
                 .unwrap();
             let glutin_window = unsafe { glutin_window.make_current() }.unwrap();
             let ugli = Rc::new(Ugli::create_from_glutin(&glutin_window));
-            let dpi = glutin_window.window().get_hidpi_factor();
             Self {
                 glutin_window,
-                dpi,
-                glutin_events_loop: RefCell::new(glutin_events_loop),
+                glutin_event_loop: RefCell::new(glutin_event_loop),
                 event_handler: Rc::new(RefCell::new(None)),
                 ugli,
                 should_close: Cell::new(false),
@@ -133,10 +129,10 @@ impl Window {
         *self.event_handler.borrow_mut() = Some(handler);
     }
 
-    #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
-    pub fn show(&self) {
-        self.glutin_window.window().show();
-    }
+    // #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+    // pub fn show(&self) {
+    //     self.glutin_window.window().set_visible(true);
+    // }
 
     pub fn swap_buffers(&self) {
         // ugli::sync();
@@ -193,15 +189,8 @@ impl Window {
         };
         #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
         return {
-            let (width, height) = self
-                .glutin_window
-                .window()
-                .get_inner_size()
-                .map(|size| {
-                    let size = size.to_physical(self.dpi);
-                    (size.width, size.height)
-                })
-                .unwrap_or((1.0, 1.0));
+            let size = self.glutin_window.window().inner_size();
+            let (width, height) = (size.width, size.height);
             vec2(width as usize, height as usize)
         };
     }
@@ -272,7 +261,9 @@ impl Window {
         #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
         {
             self.glutin_window.window().set_fullscreen(if fullscreen {
-                Some(self.glutin_window.window().get_current_monitor())
+                Some(glutin::window::Fullscreen::Borderless(
+                    self.glutin_window.window().current_monitor(),
+                ))
             } else {
                 None
             });

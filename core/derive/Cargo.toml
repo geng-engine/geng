@@ -1,6 +1,6 @@
 [package]
 name = "geng-derive"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Game Engine (derive macros)"
 license = "MIT"
@@ -10,8 +10,8 @@ edition = "2018"
 [dependencies]
 syn = { version = "1", features = ["full"] }
 quote = "1"
-batbox = "0.1"
-itertools = "0.8"
+batbox = "0.2"
+itertools = "0.9"
 proc-macro2 = "1"
 
 [lib]
