@@ -5,6 +5,8 @@ extern crate stdweb;
 #[doc(no_inline)]
 pub use bincode;
 #[doc(no_inline)]
+pub use dyn_clone::{clone_box, DynClone};
+#[doc(no_inline)]
 pub use err_derive::*;
 #[doc(no_inline)]
 pub use futures::{self, prelude::*};
@@ -12,8 +14,6 @@ pub use futures::{self, prelude::*};
 pub use log::{self, debug, error, info, log_enabled, trace, warn};
 #[doc(no_inline)]
 pub use maplit::*;
-#[doc(no_inline)]
-pub use objekt::{clone_box, Clone as CloneBox};
 #[doc(no_inline)]
 pub use once_cell;
 #[doc(no_inline)]

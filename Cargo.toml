@@ -1,6 +1,6 @@
 [package]
 name = "batbox"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Batteries useful for projects"
 license = "MIT"
@@ -21,7 +21,7 @@ futures-preview = "0.3.0-alpha.17"
 pin-utils = "0.1.0-alpha.4"
 once_cell = "1"
 bincode = "1"
-objekt = "0.1"
+dyn-clone = "1"
 maplit = "1"
 stderrlog = "0.4"
 backtrace = "0.3"
