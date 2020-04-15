@@ -1,6 +1,6 @@
 [package]
 name = "ugli-gl"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Universal OpenGL Interface (OpenGL)"
 license = "MIT"
@@ -8,4 +8,4 @@ homepage = "https://github.com/kuviman/ugli"
 edition = "2018"
 
 [build-dependencies]
-gl_generator = "0.13"
+gl_generator = "0.14"

@@ -1,6 +1,6 @@
 [package]
 name = "ugli"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Universal OpenGL Interface"
 license = "MIT"
@@ -8,9 +8,9 @@ homepage = "https://github.com/kuviman/ugli"
 edition = "2018"
 
 [dependencies]
-batbox = "0.1"
-raw = { package = "ugli-raw", path = "raw", version = "0.1.0" }
-ugli-derive = { path = "derive", version = "0.1.0" }
+batbox = "0.2"
+raw = { package = "ugli-raw", path = "raw", version = "0.1" }
+ugli-derive = { path = "derive", version = "0.2" }
 failure = "0.1"
 num_enum = "0.4"
 
@@ -18,5 +18,5 @@ num_enum = "0.4"
 stdweb = "0.4"
 
 [target.'cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))'.dependencies]
-image = "0.22"
-glutin = "0.21"
+image = "0.23"
+glutin = "0.24"
