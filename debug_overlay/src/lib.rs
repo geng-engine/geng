@@ -8,8 +8,6 @@ mod fps_counter;
 use console::*;
 use fps_counter::*;
 
-pub use console::logger;
-
 struct Data {
     fps_counter: FpsCounter,
     console: Console,

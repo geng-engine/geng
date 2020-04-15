@@ -41,7 +41,7 @@ static CHANNEL: once_cell::sync::Lazy<
     Mutex::new((Some(sender), Some(receiver)))
 });
 
-pub fn logger() -> impl log::Log {
+fn logger() -> impl log::Log {
     Logger::new(CHANNEL.lock().unwrap().0.take().unwrap())
 }
 
@@ -54,6 +54,7 @@ pub struct Console {
 impl Console {
     const MAX_RECORDS: usize = 10;
     pub fn new(geng: &Rc<Geng>) -> Self {
+        logger::add_logger(Box::new(logger()));
         let receiver = CHANNEL.lock().unwrap().1.take().unwrap();
         info!("Debug overlay initialized");
         Self {
