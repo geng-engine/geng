@@ -3,7 +3,7 @@ use crate::*;
 pub struct Connection<S: Message, C: Message> {
     sender: ws::Sender,
     broadcaster: ws::Sender,
-    recv: std::sync::mpsc::Receiver<S>,
+    recv: futures::channel::mpsc::UnboundedReceiver<S>,
     thread_handle: Option<std::thread::JoinHandle<()>>,
     phantom_data: PhantomData<(S, C)>,
     traffic: Arc<Traffic>,
@@ -14,10 +14,10 @@ impl<S: Message, C: Message> Connection<S, C> {
         &self.traffic
     }
     pub fn try_recv(&mut self) -> Option<S> {
-        match self.recv.try_recv() {
-            Ok(message) => Some(message),
-            Err(std::sync::mpsc::TryRecvError::Empty) => None,
-            Err(std::sync::mpsc::TryRecvError::Disconnected) => panic!("Disconnected from server"),
+        match self.recv.try_next() {
+            Ok(Some(message)) => Some(message),
+            Err(_) => None,
+            Ok(None) => panic!("Disconnected from server"),
         }
     }
     pub fn send(&mut self, message: C) {
@@ -30,6 +30,16 @@ impl<S: Message, C: Message> Connection<S, C> {
     }
 }
 
+impl<S: Message, C: Message> Stream for Connection<S, C> {
+    type Item = S;
+    fn poll_next(
+        self: Pin<&mut Self>,
+        cx: &mut std::task::Context,
+    ) -> std::task::Poll<Option<Self::Item>> {
+        Stream::poll_next(unsafe { self.map_unchecked_mut(|pin| &mut pin.recv) }, cx)
+    }
+}
+
 impl<S: Message, C: Message> Drop for Connection<S, C> {
     fn drop(&mut self) {
         self.broadcaster.shutdown().unwrap();
@@ -39,7 +49,7 @@ impl<S: Message, C: Message> Drop for Connection<S, C> {
 
 struct Handler<T: Message> {
     connection_sender: Option<futures::channel::oneshot::Sender<ws::Sender>>,
-    recv_sender: std::sync::mpsc::Sender<T>,
+    recv_sender: futures::channel::mpsc::UnboundedSender<T>,
     sender: ws::Sender,
     traffic: Arc<Traffic>,
 }
@@ -59,14 +69,14 @@ impl<T: Message> ws::Handler for Handler<T> {
         self.traffic.add_inbound(data.len());
         let message = deserialize_message(&data);
         trace!("Got message from server: {:?}", message);
-        self.recv_sender.send(message).unwrap();
+        self.recv_sender.unbounded_send(message).unwrap();
         Ok(())
     }
 }
 
 struct Factory<T: Message> {
     connection_sender: Option<futures::channel::oneshot::Sender<ws::Sender>>,
-    recv_sender: Option<std::sync::mpsc::Sender<T>>,
+    recv_sender: Option<futures::channel::mpsc::UnboundedSender<T>>,
     traffic: Arc<Traffic>,
 }
 
@@ -84,7 +94,7 @@ impl<T: Message> ws::Factory for Factory<T> {
 
 pub fn connect<S: Message, C: Message>(addr: &str) -> impl Future<Output = Connection<S, C>> {
     let (connection_sender, connection_receiver) = futures::channel::oneshot::channel();
-    let (recv_sender, recv) = std::sync::mpsc::channel();
+    let (recv_sender, recv) = futures::channel::mpsc::unbounded();
     let traffic = Arc::new(Traffic::new());
     let factory = Factory {
         connection_sender: Some(connection_sender),

@@ -2,7 +2,7 @@ use crate::*;
 
 pub struct Connection<S: Message, C: Message> {
     ws: stdweb::web::WebSocket,
-    recv: std::sync::mpsc::Receiver<S>,
+    recv: futures::channel::mpsc::UnboundedReceiver<S>,
     phantom_data: PhantomData<(S, C)>,
     traffic: Arc<Traffic>,
 }
@@ -12,16 +12,26 @@ impl<S: Message, C: Message> Connection<S, C> {
         &self.traffic
     }
     pub fn try_recv(&mut self) -> Option<S> {
-        match self.recv.try_recv() {
-            Ok(message) => Some(message),
-            Err(std::sync::mpsc::TryRecvError::Empty) => None,
-            Err(std::sync::mpsc::TryRecvError::Disconnected) => panic!("Disconnected from server"),
+        match self.recv.try_next() {
+            Ok(Some(message)) => Some(message),
+            Err(_) => None,
+            Ok(None) => panic!("Disconnected from server"),
         }
     }
     pub fn send(&mut self, message: C) {
         let data = serialize_message(message);
         self.traffic.add_outbound(data.len());
         self.ws.send_bytes(&data).expect("Failed to send message");
+    }
+}
+
+impl<S: Message, C: Message> Stream for Connection<S, C> {
+    type Item = S;
+    fn poll_next(
+        self: Pin<&mut Self>,
+        cx: &mut std::task::Context,
+    ) -> std::task::Poll<Option<Self::Item>> {
+        Stream::poll_next(unsafe { self.map_unchecked_mut(|pin| &mut pin.recv) }, cx)
     }
 }
 
@@ -34,7 +44,7 @@ impl<S: Message, C: Message> Drop for Connection<S, C> {
 pub fn connect<S: Message, C: Message>(addr: &str) -> impl Future<Output = Connection<S, C>> {
     let ws = stdweb::web::WebSocket::new(addr).unwrap();
     let (connection_sender, connection_receiver) = futures::channel::oneshot::channel();
-    let (recv_sender, recv) = std::sync::mpsc::channel();
+    let (recv_sender, recv) = futures::channel::mpsc::unbounded();
     let traffic = Arc::new(Traffic::new());
     let connection = Connection {
         ws: ws.clone(),
@@ -58,7 +68,7 @@ pub fn connect<S: Message, C: Message>(addr: &str) -> impl Future<Output = Conne
         let data: Vec<u8> = event.data().into_array_buffer().unwrap().into();
         traffic.add_inbound(data.len());
         let message = deserialize_message(&data);
-        recv_sender.send(message).unwrap();
+        recv_sender.unbounded_send(message).unwrap();
     });
     connection_receiver.map(|result| result.unwrap())
 }

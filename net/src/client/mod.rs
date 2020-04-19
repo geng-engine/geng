@@ -27,6 +27,16 @@ impl<S: Message, C: Message> Connection<S, C> {
     }
 }
 
+impl<S: Message, C: Message> Stream for Connection<S, C> {
+    type Item = S;
+    fn poll_next(
+        self: Pin<&mut Self>,
+        cx: &mut std::task::Context,
+    ) -> std::task::Poll<Option<Self::Item>> {
+        Stream::poll_next(unsafe { self.map_unchecked_mut(|pin| &mut pin.inner) }, cx)
+    }
+}
+
 pub struct NewMessages<'a, S: Message, C: Message> {
     connection: &'a mut Connection<S, C>,
 }
