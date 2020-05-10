@@ -1,0 +1,11 @@
+[package]
+name = "cargo-geng"
+version = "0.1.0"
+authors = ["kuviman <kuviman@gmail.com>"]
+description = "Game Engine (cargo helper)"
+license = "MIT"
+homepage = "https://github.com/kuviman/geng"
+edition = "2018"
+
+[dependencies]
+structopt = "0.3"
