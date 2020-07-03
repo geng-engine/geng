@@ -1,6 +1,6 @@
 [package]
 name = "batbox"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Batteries useful for projects"
 license = "MIT"
@@ -28,6 +28,7 @@ backtrace = "0.3"
 err-derive = "0.2"
 trans = "0.1"
 trans-schema = "0.1"
+anyhow = "1"
 
 [target.'cfg(any(target_arch = "asmjs", target_arch = "wasm32"))'.dependencies]
 stdweb = "0.4"

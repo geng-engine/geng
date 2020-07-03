@@ -2,6 +2,7 @@
 #[macro_use]
 extern crate stdweb;
 
+pub use anyhow;
 #[doc(no_inline)]
 pub use bincode;
 #[doc(no_inline)]
