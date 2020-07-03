@@ -16,7 +16,7 @@ impl<T> Mat4<T> {
             let [a, b, c, d] = arr;
             [f(a), f(b), f(c), f(d)]
         }
-        Self(map_arr(self.0, |row| map_arr(row, &f)))
+        Mat4(map_arr(self.0, |row| map_arr(row, &f)))
     }
 }
 
