@@ -150,6 +150,19 @@ impl Convert<we::MouseMoveEvent> for Event {
     }
 }
 
+impl Convert<we::MouseWheelEvent> for Event {
+    fn convert(event: we::MouseWheelEvent) -> Option<Event> {
+        Some(Event::Wheel {
+            delta: -event.delta_y()
+                * match event.delta_mode() {
+                    we::MouseWheelDeltaMode::Pixel => 1.0,
+                    we::MouseWheelDeltaMode::Line => 51.0,
+                    we::MouseWheelDeltaMode::Page => 800.0,
+                },
+        })
+    }
+}
+
 fn convert_touch(touch: stdweb::web::Touch) -> TouchPoint {
     use stdweb::web::IHtmlElement;
     let canvas: stdweb::web::html_element::CanvasElement =
@@ -215,6 +228,7 @@ impl Window {
         setup_event!(self.canvas, handler, we::MouseDownEvent);
         setup_event!(self.canvas, handler, we::MouseUpEvent);
         setup_event!(self.canvas, handler, we::MouseMoveEvent);
+        setup_event!(self.canvas, handler, we::MouseWheelEvent);
         setup_event!(self.canvas, handler, we::TouchStart);
         setup_event!(self.canvas, handler, we::TouchMove);
         setup_event!(self.canvas, handler, we::TouchEnd);
