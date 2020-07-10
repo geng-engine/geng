@@ -26,7 +26,8 @@ impl Font {
         shader_lib: &ShaderLib,
         data: Vec<u8>,
     ) -> Result<Font, Error> {
-        let font = rusttype::FontCollection::from_bytes(data)?.into_font()?;
+        let font =
+            rusttype::Font::try_from_vec(data).ok_or(failure::err_msg("Failed to read font"))?;
         let descent = font.v_metrics(rusttype::Scale { x: 1.0, y: 1.0 }).descent;
         Ok(Font {
             font,
@@ -107,10 +108,24 @@ impl Font {
         let mut cache = self.cache.borrow_mut();
         let mut cache_texture = self.cache_texture.borrow_mut();
 
-        let glyphs: Vec<_> = self.font.layout(text, scale, pos).collect();
-
+        // Workaround for https://gitlab.redox-os.org/redox-os/rusttype/-/merge_requests/158
+        let glyphs: Vec<_> = text
+            .chars()
+            .map(|c| self.font.glyph(c))
+            .scan((None, 0.0), |(last, x), g| {
+                let g = g.scaled(scale);
+                if let Some(last) = last {
+                    *x += self.font.pair_kerning(scale, *last, g.id());
+                }
+                let w = g.h_metrics().advance_width;
+                let next = g.positioned(pos + rusttype::vector(*x, 0.0));
+                *last = Some(next.id());
+                *x += w;
+                Some(next)
+            })
+            .collect();
         for glyph in &glyphs {
-            cache.queue_glyph(0, glyph.standalone()); // TODO: avoid cloning glyph?
+            cache.queue_glyph(0, glyph.clone());
         }
 
         cache
