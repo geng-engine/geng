@@ -1,6 +1,6 @@
 [package]
 name = "batbox"
-version = "0.2.2"
+version = "0.3.0"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Batteries useful for projects"
 license = "MIT"
@@ -26,7 +26,7 @@ maplit = "1"
 stderrlog = "0.4"
 backtrace = "0.3"
 err-derive = "0.2"
-trans = "0.1"
+trans = "0.2"
 trans-schema = "0.1"
 anyhow = "1"
 

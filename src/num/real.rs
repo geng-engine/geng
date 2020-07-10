@@ -58,7 +58,7 @@ impl<T: Real> Float for T {
 pub struct RealImpl<T: Float>(T);
 
 impl<T: Float + Trans> Trans for RealImpl<T> {
-    fn read_from(reader: impl std::io::Read) -> Result<Self, std::io::Error> {
+    fn read_from(reader: &mut dyn std::io::Read) -> Result<Self, std::io::Error> {
         let value = T::read_from(reader)?;
         if value.is_finite() {
             Ok(Self::new_unchecked(value))
@@ -69,7 +69,7 @@ impl<T: Float + Trans> Trans for RealImpl<T> {
             ))
         }
     }
-    fn write_to(&self, writer: impl std::io::Write) -> Result<(), std::io::Error> {
+    fn write_to(&self, writer: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
         self.0.write_to(writer)
     }
 }
