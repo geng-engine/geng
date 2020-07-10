@@ -1,6 +1,6 @@
 [package]
 name = "geng-core"
-version = "0.2.1"
+version = "0.3.0"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Game Engine (Core)"
 license = "MIT"
@@ -8,9 +8,9 @@ homepage = "https://github.com/kuviman/geng"
 edition = "2018"
 
 [dependencies]
-batbox = "0.2"
-geng-derive = { path = "derive", version = "0.2" }
-ugli = "0.2"
+batbox = "0.3"
+geng-derive = { path = "derive", version = "0.3" }
+ugli = "0.3"
 rusttype = { version = "0.8", features = [ "gpu_cache" ] }
 serde = "1"
 lazy_static = "1"

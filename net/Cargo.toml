@@ -1,6 +1,6 @@
 [package]
 name = "geng-net"
-version = "0.2.1"
+version = "0.3.0"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Game Engine (networking)"
 license = "MIT"
@@ -8,7 +8,7 @@ homepage = "https://github.com/kuviman/geng"
 edition = "2018"
 
 [dependencies]
-geng-core = { path = "../core", version = "0.2" }
+geng-core = { path = "../core", version = "0.3" }
 
 [target.'cfg(any(target_arch = "asmjs", target_arch = "wasm32"))'.dependencies]
 stdweb = "0.4"
