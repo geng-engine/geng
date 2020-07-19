@@ -3,9 +3,9 @@ use crate::*;
 #[doc(no_inline)]
 pub use rand::distributions::Distribution;
 #[doc(no_inline)]
-pub use rand::seq::SliceRandom as _;
+pub use rand::seq::{IteratorRandom as _, SliceRandom as _};
 #[doc(no_inline)]
-pub use rand::{self, rngs::StdRng, Rng, SeedableRng};
+pub use rand::{self, rngs::StdRng, Rng, RngCore, SeedableRng};
 
 pub mod distributions {
     use super::*;
@@ -48,7 +48,7 @@ pub fn global_rng() -> impl Rng {
 
         struct GlobalRng;
 
-        impl rand::RngCore for GlobalRng {
+        impl RngCore for GlobalRng {
             fn next_u32(&mut self) -> u32 {
                 GLOBAL_RNG.lock().unwrap().next_u32()
             }
