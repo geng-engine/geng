@@ -13,9 +13,9 @@ unsafe impl TexturePixel for Color<f32> {
 }
 
 unsafe impl TexturePixel for u8 {
-    #[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
+    #[cfg(target_arch = "wasm32")]
     const INTERNAL_FORMAT: raw::Enum = raw::ALPHA;
-    #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+    #[cfg(not(target_arch = "wasm32"))]
     const INTERNAL_FORMAT: raw::Enum = raw::RGBA;
     const FORMAT: raw::Enum = raw::ALPHA;
     const TYPE: raw::Enum = raw::UNSIGNED_BYTE;
@@ -199,7 +199,7 @@ impl Texture {
         texture
     }
 
-    #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn from_image(ugli: &Rc<Ugli>, image: image::RgbaImage) -> Self {
         let size = vec2(image.width() as usize, image.height() as usize);
         let mut texture = Texture2d::new_raw(ugli, size);
@@ -222,7 +222,7 @@ impl Texture {
         texture
     }
 
-    #[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
+    #[cfg(target_arch = "wasm32")]
     pub fn from_image(ugli: &Rc<Ugli>, image: stdweb::web::html_element::ImageElement) -> Self {
         let mut texture =
             Texture2d::new_raw(ugli, vec2(image.width() as usize, image.height() as usize));

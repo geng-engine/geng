@@ -7,9 +7,9 @@ license = "MIT"
 homepage = "https://github.com/kuviman/ugli"
 edition = "2018"
 
-[target.'cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))'.dependencies]
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 gl = { package = "ugli-gl", path = "gl", version = "0.1.0" }
 
-[target.'cfg(any(target_arch = "asmjs", target_arch = "wasm32"))'.dependencies]
+[target.'cfg(target_arch = "wasm32")'.dependencies]
 webgl = { package = "ugli-webgl", path = "webgl", version = "0.1.0" }
 stdweb = "0.4"

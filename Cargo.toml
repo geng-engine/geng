@@ -14,9 +14,9 @@ ugli-derive = { path = "derive", version = "0.3" }
 failure = "0.1"
 num_enum = "0.5"
 
-[target.'cfg(any(target_arch = "asmjs", target_arch = "wasm32"))'.dependencies]
+[target.'cfg(target_arch = "wasm32")'.dependencies]
 stdweb = "0.4"
 
-[target.'cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))'.dependencies]
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 image = "0.23"
 glutin = "0.24"

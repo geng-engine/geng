@@ -8,7 +8,7 @@ pub enum Error {
     InvalidOperation = raw::INVALID_OPERATION,
     OutOfMemory = raw::OUT_OF_MEMORY,
     InvalidFramebufferOperation = raw::INVALID_FRAMEBUFFER_OPERATION,
-    #[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
+    #[cfg(target_arch = "wasm32")]
     ContextLost = raw::CONTEXT_LOST,
     Unknown,
 }

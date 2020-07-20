@@ -6,7 +6,7 @@ pub struct Ugli {
     phantom_data: PhantomData<*mut ()>,
 }
 
-#[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
+#[cfg(target_arch = "wasm32")]
 impl Ugli {
     pub fn create_webgl(canvas: stdweb::web::html_element::CanvasElement) -> Self {
         let webgl = stdweb::unstable::TryInto::try_into(js! {
@@ -37,7 +37,7 @@ impl Ugli {
     }
 }
 
-#[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+#[cfg(not(target_arch = "wasm32"))]
 impl Ugli {
     pub fn create_from_glutin(glutin_context: &glutin::Context<glutin::PossiblyCurrent>) -> Self {
         let ugli = Ugli {
@@ -57,7 +57,7 @@ impl Ugli {
         let gl = &self.inner;
         info!("GL version: {:?}", gl.get_version_string());
         gl.enable(raw::DEPTH_TEST);
-        #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+        #[cfg(not(target_arch = "wasm32"))]
         gl.enable(raw::PROGRAM_POINT_SIZE);
         #[cfg(target_os = "windows")]
         gl.enable(raw::POINT_SPRITE);

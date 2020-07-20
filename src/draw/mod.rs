@@ -56,9 +56,9 @@ pub fn draw<V, U, DP>(
     }
     uniforms.walk_uniforms(&mut UC { program });
 
-    #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+    #[cfg(not(target_arch = "wasm32"))]
     let vao = VAO::new(gl);
-    #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+    #[cfg(not(target_arch = "wasm32"))]
     vao.bind();
 
     let mut vertex_count = None;
@@ -129,13 +129,13 @@ pub fn draw<V, U, DP>(
         }
     }
 
-    #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+    #[cfg(not(target_arch = "wasm32"))]
     struct VAO<'a> {
         handle: raw::VertexArrayObject,
         gl: &'a raw::Context,
     }
 
-    #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+    #[cfg(not(target_arch = "wasm32"))]
     impl<'a> VAO<'a> {
         fn new(gl: &'a raw::Context) -> Self {
             Self {
@@ -148,7 +148,7 @@ pub fn draw<V, U, DP>(
         }
     }
 
-    #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+    #[cfg(not(target_arch = "wasm32"))]
     impl<'a> Drop for VAO<'a> {
         fn drop(&mut self) {
             self.gl.delete_vertex_array(&self.handle);
