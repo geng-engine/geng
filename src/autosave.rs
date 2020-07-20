@@ -53,11 +53,11 @@ impl<T: Serialize> Drop for AutoSave<T> {
 fn save<T: Serialize>(path: &str, value: &T) {
     #[cfg(target_arch = "wasm32")]
     {
-        if let Err(e) = stdweb::web::window().local_storage().insert(
-            path,
-            &serde_json::to_string(value).expect("Failed to serialize"),
-        ) {
-            error!("Failed to save {:?}: {}", path, e);
+        if let Ok(Some(storage)) = web_sys::window().unwrap().local_storage() {
+            storage.set_item(
+                path,
+                &serde_json::to_string(value).expect("Failed to serialize"),
+            );
         }
     }
     #[cfg(not(target_arch = "wasm32"))]
@@ -82,17 +82,22 @@ fn save<T: Serialize>(path: &str, value: &T) {
 fn load<T: for<'de> Deserialize<'de>>(path: &str) -> Option<T> {
     #[cfg(target_arch = "wasm32")]
     {
-        match stdweb::web::window()
-            .local_storage()
-            .get(path)
-            .map(|s| serde_json::from_str(&s))
-        {
-            Some(Ok(value)) => Some(value),
-            Some(Err(e)) => {
-                error!("Failed to deserialize {:?}: {}", path, e);
-                None
+        if let Ok(Some(storage)) = web_sys::window().unwrap().local_storage() {
+            match storage
+                .get_item(path)
+                .ok()
+                .flatten()
+                .map(|s| serde_json::from_str(&s))
+            {
+                Some(Ok(value)) => Some(value),
+                Some(Err(e)) => {
+                    error!("Failed to deserialize {:?}: {}", path, e);
+                    None
+                }
+                None => None,
             }
-            None => None,
+        } else {
+            None
         }
     }
     #[cfg(not(target_arch = "wasm32"))]

@@ -26,10 +26,12 @@ impl log::Log for Logger {
             }
             #[cfg(target_arch = "wasm32")]
             {
-                let msg = format!("{} - {}", record.level(), record.args());
-                js! {
-                    console.log(@{msg});
+                #[wasm_bindgen]
+                extern "C" {
+                    #[wasm_bindgen(js_namespace = console, js_name = log)]
+                    fn console_log(s: &str);
                 }
+                console_log(&format!("{} - {}", record.level(), record.args()));
             }
         }
     }

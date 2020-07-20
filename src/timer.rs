@@ -16,10 +16,7 @@ fn to_secs(duration: std::time::Duration) -> f64 {
 
 #[cfg(target_arch = "wasm32")]
 fn now() -> f64 {
-    return stdweb::unstable::TryInto::try_into(js! {
-        return Date.now() / 1000.0;
-    })
-    .unwrap();
+    js_sys::Date::now() / 1000.0
 }
 
 impl Timer {

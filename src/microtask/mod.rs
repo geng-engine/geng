@@ -5,13 +5,7 @@ pub fn spawn<F: FnOnce() + Send + 'static>(task: F) {
     {
         static QUEUE: once_cell::sync::Lazy<
             Mutex<std::collections::VecDeque<Box<dyn FnOnce() + Send>>>,
-        > = once_cell::sync::Lazy::new(|| {
-            js! {
-                var callback = @{callback};
-                setInterval(function() { callback() }, 0);
-            }
-            Mutex::new(default())
-        });
+        > = once_cell::sync::Lazy::new(|| todo!());
         fn callback() {
             let timer = Timer::new();
             while let Some(task) = QUEUE.lock().unwrap().pop_front() {

@@ -1,7 +1,3 @@
-#[cfg(target_arch = "wasm32")]
-#[macro_use]
-extern crate stdweb;
-
 pub use anyhow;
 #[doc(no_inline)]
 pub use bincode;
@@ -53,6 +49,13 @@ pub use trans::*;
 pub use trans_schema;
 #[doc(no_inline)]
 pub use trans_schema::*;
+
+#[cfg(target_arch = "wasm32")]
+pub use js_sys;
+#[cfg(target_arch = "wasm32")]
+pub use wasm_bindgen::{self, prelude::*};
+#[cfg(target_arch = "wasm32")]
+pub use web_sys;
 
 pub use batbox_derive::*;
 

@@ -10,14 +10,7 @@ static REPORTED_UNTRANSLATED: Lazy<Mutex<HashMap<String, HashSet<String>>>> =
 
 fn detect_locale() -> String {
     #[cfg(target_arch = "wasm32")]
-    let locale = {
-        let locale: Option<String> = stdweb::unstable::TryInto::try_into(js! {
-            var userLang = navigator.language || navigator.userLanguage;
-            return userLang;
-        })
-        .ok();
-        locale
-    };
+    let locale = web_sys::window().unwrap().navigator().language();
     #[cfg(not(target_arch = "wasm32"))]
     let locale = unsafe {
         let locale = libc::setlocale(
