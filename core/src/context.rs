@@ -18,7 +18,7 @@ pub struct ContextOptions {
 impl Default for ContextOptions {
     fn default() -> Self {
         Self {
-            title: "CodeVisual Application".to_string(),
+            title: "Geng Application".to_string(),
             vsync: true,
             max_delta_time: 0.1,
         }

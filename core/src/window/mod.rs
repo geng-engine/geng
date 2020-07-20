@@ -41,11 +41,11 @@ impl Window {
             js! {
                 @(no_return)
                 var canvas = @{&canvas};
-                window.CODEVISUAL_CANVAS_SCALE = 1.0;
+                window.GENG_CANVAS_SCALE = 1.0;
                 canvas.tabIndex = -1;
                 function update() {
-                    canvas.width = Math.floor(canvas.clientWidth * window.CODEVISUAL_CANVAS_SCALE);
-                    canvas.height = Math.floor(canvas.clientHeight * window.CODEVISUAL_CANVAS_SCALE);
+                    canvas.width = Math.floor(canvas.clientWidth * window.GENG_CANVAS_SCALE);
+                    canvas.height = Math.floor(canvas.clientHeight * window.GENG_CANVAS_SCALE);
 
                     var document = window.document;
                     if (document.fullscreenElement ||
