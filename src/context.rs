@@ -8,25 +8,45 @@ pub struct Ugli {
 
 #[cfg(target_arch = "wasm32")]
 impl Ugli {
-    pub fn create_webgl(canvas: stdweb::web::html_element::CanvasElement) -> Self {
-        let webgl = stdweb::unstable::TryInto::try_into(js! {
-            var canvas = @{canvas};
-            var options = {
-                "alpha": false,
-                "preserveDrawingBuffer": true,
-                "stencil": false,
-                "premultipliedAlpha": false,
-                "powerPreference": "high-performance",
-                "depth": true,
-                "antialias": false
-            };
-            var gl = canvas.getContext("webgl", options);
-            if (!gl) {
-                gl = canvas.getContext("experimental-webgl", options);
+    pub fn create_webgl(canvas: &web_sys::HtmlCanvasElement) -> Self {
+        let context_options = JsValue::from_serde({
+            #[derive(Serialize, Deserialize)]
+            #[serde(rename_all = "camelCase")]
+            struct ContextOptions {
+                alpha: bool,
+                preserve_drawing_buffer: bool,
+                stencil: bool,
+                premultiplied_alpha: bool,
+                power_preference: &'static str,
+                depth: bool,
+                antialias: bool,
             }
-            return gl;
+            &ContextOptions {
+                alpha: false,
+                preserve_drawing_buffer: true,
+                stencil: false,
+                premultiplied_alpha: false,
+                power_preference: "high-performance",
+                depth: true,
+                antialias: false,
+            }
         })
         .unwrap();
+        let webgl;
+        if let Some(context) = canvas
+            .get_context_with_context_options("webgl", &context_options)
+            .unwrap()
+        {
+            webgl = context;
+        } else if let Some(context) = canvas
+            .get_context_with_context_options("experimental-webgl", &context_options)
+            .unwrap()
+        {
+            webgl = context;
+        } else {
+            panic!("Could not get webgl context");
+        }
+        let webgl: web_sys::WebGlRenderingContext = webgl.dyn_into().unwrap();
         let ugli = Ugli {
             inner: raw::Context::new(webgl),
             size: Cell::new(vec2(1, 1)),

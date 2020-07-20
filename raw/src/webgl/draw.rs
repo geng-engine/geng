@@ -10,16 +10,7 @@ impl Context {
     }
 
     pub fn draw_arrays_instanced(&self, mode: Enum, first: Int, count: SizeI, primcount: SizeI) {
-        // TODO
-        // self.angle_instanced_arrays()
-        //     .draw_arrays_instanced_angle(mode, first, count, primcount);
-        js! {
-            @(no_return)
-            @{self.angle_instanced_arrays()}.drawArraysInstancedANGLE(
-                @{mode},
-                @{first},
-                @{count},
-                @{primcount});
-        }
+        self.angle_instanced_arrays
+            .draw_arrays_instanced_angle(mode, first, count, primcount);
     }
 }

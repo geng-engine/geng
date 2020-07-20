@@ -1,6 +1,6 @@
 [package]
 name = "ugli-raw"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Universal OpenGL Interface (Raw)"
 license = "MIT"
@@ -11,5 +11,17 @@ edition = "2018"
 gl = { package = "ugli-gl", path = "gl", version = "0.1.0" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-webgl = { package = "ugli-webgl", path = "webgl", version = "0.1.0" }
-stdweb = "0.4"
+wasm-bindgen = "0.2"
+web-sys = { version = "0.3", features = [
+    "AngleInstancedArrays",
+    "WebGlRenderingContext",
+    "WebGlBuffer",
+    "WebGlActiveInfo",
+    "WebGlUniformLocation",
+    "WebGlTexture",
+    "WebGlRenderbuffer",
+    "WebGlProgram",
+    "WebGlFramebuffer",
+    "WebGlShader",
+    "HtmlImageElement",
+] }

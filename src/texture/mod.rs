@@ -223,11 +223,11 @@ impl Texture {
     }
 
     #[cfg(target_arch = "wasm32")]
-    pub fn from_image(ugli: &Rc<Ugli>, image: stdweb::web::html_element::ImageElement) -> Self {
+    pub fn from_image(ugli: &Rc<Ugli>, image: &web_sys::HtmlImageElement) -> Self {
         let mut texture =
             Texture2d::new_raw(ugli, vec2(image.width() as usize, image.height() as usize));
         let gl = &ugli.inner;
-        gl.tex_image_2d_src(
+        gl.tex_image_2d_image(
             raw::TEXTURE_2D,
             0,
             raw::RGBA as raw::Int,

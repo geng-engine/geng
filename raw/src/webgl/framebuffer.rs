@@ -1,6 +1,6 @@
 use super::*;
 
-pub type Framebuffer = webgl::WebGLFramebuffer;
+pub type Framebuffer = web_sys::WebGlFramebuffer;
 
 impl Context {
     pub fn bind_framebuffer(&self, target: Enum, framebuffer: Option<&Framebuffer>) {
@@ -39,7 +39,7 @@ impl Context {
         level: Int,
     ) {
         self.inner
-            .framebuffer_texture2_d(target, attachment, texture_target, texture, level);
+            .framebuffer_texture_2d(target, attachment, texture_target, texture, level);
     }
 
     pub fn read_pixels<T>(
@@ -51,10 +51,17 @@ impl Context {
         format: Enum,
         typ: Enum,
         pixels: &mut [T],
-    ) where
-        for<'a> &'a [T]: webgl::AsArrayBufferView<'a>,
-    {
+    ) {
         self.inner
-            .read_pixels(x, y, width, height, format, typ, Some(&*pixels));
+            .read_pixels_with_opt_u8_array(
+                x,
+                y,
+                width,
+                height,
+                format,
+                typ,
+                Some(unsafe { std::mem::transmute(pixels) }),
+            )
+            .unwrap();
     }
 }

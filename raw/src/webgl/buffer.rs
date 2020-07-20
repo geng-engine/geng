@@ -1,6 +1,6 @@
 use super::*;
 
-pub type Buffer = webgl::WebGLBuffer;
+pub type Buffer = web_sys::WebGlBuffer;
 
 impl Context {
     pub fn bind_buffer(&self, target: Enum, buffer: &Buffer) {
@@ -8,17 +8,15 @@ impl Context {
     }
 
     pub fn buffer_data<T>(&self, target: Enum, data: &[T], usage: Enum) {
-        js! {
-            @(no_return)
-            @{&self.inner}.bufferData(@{target}, @{as_typed_array(data)}, @{usage});
-        }
+        self.inner
+            .buffer_data_with_u8_array(target, unsafe { std::mem::transmute(data) }, usage);
     }
 
     pub fn buffer_sub_data<T>(&self, target: Enum, offset: IntPtr, data: &[T]) {
-        js! {
-            @(no_return)
-            @{&self.inner}.bufferSubData(@{target}, @{offset as i32}, @{as_typed_array(data)});
-        }
+        self.inner
+            .buffer_sub_data_with_i32_and_u8_array(target, offset, unsafe {
+                std::mem::transmute(data)
+            });
     }
 
     pub fn create_buffer(&self) -> Option<Buffer> {

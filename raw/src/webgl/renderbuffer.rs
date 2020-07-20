@@ -1,6 +1,6 @@
 use super::*;
 
-pub type Renderbuffer = webgl::WebGLRenderbuffer;
+pub type Renderbuffer = web_sys::WebGlRenderbuffer;
 
 impl Context {
     pub fn bind_renderbuffer(&self, target: Enum, renderbuffer: &Renderbuffer) {

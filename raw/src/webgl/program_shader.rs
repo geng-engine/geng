@@ -1,7 +1,7 @@
 use super::*;
 
-pub type Program = webgl::WebGLProgram;
-pub type Shader = webgl::WebGLShader;
+pub type Program = web_sys::WebGlProgram;
+pub type Shader = web_sys::WebGlShader;
 
 impl Context {
     pub fn attach_shader(&self, program: &Program, shader: &Shader) {
@@ -37,19 +37,17 @@ impl Context {
     }
 
     pub fn get_program_parameter_bool(&self, program: &Program, pname: Enum) -> Bool {
-        use stdweb::unstable::TryInto;
         self.inner
             .get_program_parameter(program, pname)
-            .try_into()
+            .as_bool()
             .unwrap()
     }
 
     pub fn get_program_parameter_int(&self, program: &Program, pname: Enum) -> Int {
-        use stdweb::unstable::TryInto;
         self.inner
             .get_program_parameter(program, pname)
-            .try_into()
-            .unwrap()
+            .as_f64()
+            .unwrap() as Int
     }
 
     pub fn get_shader_info_log(&self, shader: &Shader) -> String {
@@ -57,19 +55,17 @@ impl Context {
     }
 
     pub fn get_shader_parameter_bool(&self, shader: &Shader, pname: Enum) -> Bool {
-        use stdweb::unstable::TryInto;
         self.inner
             .get_shader_parameter(shader, pname)
-            .try_into()
+            .as_bool()
             .unwrap()
     }
 
     pub fn get_shader_parameter_int(&self, shader: &Shader, pname: Enum) -> Int {
-        use stdweb::unstable::TryInto;
         self.inner
             .get_shader_parameter(shader, pname)
-            .try_into()
-            .unwrap()
+            .as_f64()
+            .unwrap() as Int
     }
 
     pub fn link_program(&self, program: &Program) {

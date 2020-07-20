@@ -1,6 +1,6 @@
 use super::*;
 
-pub type UniformLocation = webgl::WebGLUniformLocation;
+pub type UniformLocation = web_sys::WebGlUniformLocation;
 
 #[derive(Debug)]
 pub struct ActiveInfo {
@@ -10,7 +10,7 @@ pub struct ActiveInfo {
 }
 
 impl ActiveInfo {
-    fn from(info: webgl::WebGLActiveInfo) -> Self {
+    fn from(info: web_sys::WebGlActiveInfo) -> Self {
         Self {
             name: info.name(),
             size: info.size(),
@@ -91,16 +91,13 @@ impl Context {
         v: &[Float],
     ) {
         debug_assert_eq!(v.len(), count as usize * 4 * 4);
-        self.inner.uniform_matrix4fv(Some(location), transpose, v);
+        self.inner
+            .uniform_matrix4fv_with_f32_array(Some(location), transpose, v);
     }
 
     pub fn vertex_attrib_divisor(&self, index: UInt, divisor: UInt) {
-        // TODO
-        // self.angle_instanced_arrays()
-        //     .vertex_attrib_divisor_angle(index, divisor);
-        js! {
-            @{self.angle_instanced_arrays()}.vertexAttribDivisorANGLE(@{index}, @{divisor});
-        }
+        self.angle_instanced_arrays
+            .vertex_attrib_divisor_angle(index, divisor);
     }
 
     pub fn vertex_attrib_pointer(
@@ -113,6 +110,6 @@ impl Context {
         offset: IntPtr,
     ) {
         self.inner
-            .vertex_attrib_pointer(index, size, typ, normalized, stride, offset);
+            .vertex_attrib_pointer_with_i32(index, size, typ, normalized, stride, offset);
     }
 }

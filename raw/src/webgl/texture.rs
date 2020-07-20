@@ -1,6 +1,6 @@
 use super::*;
 
-pub type Texture = webgl::WebGLTexture;
+pub type Texture = web_sys::WebGlTexture;
 
 impl Context {
     pub fn active_texture(&self, texture: Enum) {
@@ -35,51 +35,40 @@ impl Context {
         typ: Enum,
         pixels: Option<&[T]>,
     ) {
-        match pixels {
-            Some(pixels) => {
-                js! {
-                    @(no_return)
-                    @{&self.inner}.texImage2D(
-                        @{target},
-                        @{level},
-                        @{internal_format},
-                        @{width},
-                        @{height},
-                        @{border},
-                        @{format},
-                        @{typ},
-                        @{as_typed_array(pixels)});
-                }
-            }
-            None => {
-                js! {
-                    @(no_return)
-                    @{&self.inner}.texImage2D(
-                        @{target},
-                        @{level},
-                        @{internal_format},
-                        @{width},
-                        @{height},
-                        @{border},
-                        @{format},
-                        @{typ},
-                        null);
-                }
-            }
-        }
+        self.inner
+            .tex_image_2d_with_i32_and_i32_and_i32_and_format_and_type_and_opt_u8_array(
+                target,
+                level,
+                internal_format,
+                width,
+                height,
+                border,
+                format,
+                typ,
+                pixels.map(|data| unsafe { std::mem::transmute(data) }),
+            )
+            .unwrap();
     }
 
-    pub fn tex_image_2d_src<S: stdweb::JsSerialize>(
+    pub fn tex_image_2d_image(
         &self,
         target: Enum,
         level: Int,
         internal_format: Int,
         format: Enum,
         typ: Enum,
-        source: S,
+        source: &web_sys::HtmlImageElement,
     ) {
         self.inner
-            .tex_image2_d_1(target, level, internal_format, format, typ, source);
+            .tex_image_2d_with_u32_and_u32_and_image(
+                target,
+                level,
+                internal_format,
+                format,
+                typ,
+                source,
+            )
+            .unwrap();
     }
 
     pub fn tex_parameteri(&self, target: Enum, pname: Enum, param: Int) {
@@ -98,19 +87,19 @@ impl Context {
         typ: Enum,
         pixels: &[T],
     ) {
-        js! {
-            @(no_return)
-            @{&self.inner}.texSubImage2D(
-                @{target},
-                @{level},
-                @{x_offset},
-                @{y_offset},
-                @{width},
-                @{height},
-                @{format},
-                @{typ},
-                @{as_typed_array(pixels)});
-        }
+        self.inner
+            .tex_sub_image_2d_with_i32_and_i32_and_u32_and_type_and_opt_u8_array(
+                target,
+                level,
+                x_offset,
+                y_offset,
+                width,
+                height,
+                format,
+                typ,
+                Some(unsafe { std::mem::transmute(pixels) }),
+            )
+            .unwrap();
     }
 
     pub fn copy_tex_sub_image_2d(
@@ -125,6 +114,6 @@ impl Context {
         height: SizeI,
     ) {
         self.inner
-            .copy_tex_sub_image2_d(target, level, x_offset, y_offset, x, y, width, height);
+            .copy_tex_sub_image_2d(target, level, x_offset, y_offset, x, y, width, height);
     }
 }

@@ -52,13 +52,11 @@ impl Context {
     }
 
     pub fn get_version_string(&self) -> String {
-        use stdweb::unstable::TryInto;
-        return js! {
-            var gl = @{&self.inner};
-            return gl.getParameter(gl.VERSION);
-        }
-        .try_into()
-        .unwrap();
+        self.inner
+            .get_parameter(VERSION)
+            .unwrap()
+            .as_string()
+            .unwrap()
     }
 
     pub fn pixel_store(&self, pname: Enum, param: Int) {
