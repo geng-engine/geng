@@ -53,7 +53,7 @@ pub use trans_schema::*;
 #[cfg(target_arch = "wasm32")]
 pub use js_sys;
 #[cfg(target_arch = "wasm32")]
-pub use wasm_bindgen::{self, prelude::*};
+pub use wasm_bindgen::{self, prelude::*, JsCast as _};
 #[cfg(target_arch = "wasm32")]
 pub use web_sys;
 
