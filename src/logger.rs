@@ -24,7 +24,7 @@ impl log::Log for Logger {
                     logger.log(record);
                 }
             }
-            #[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
+            #[cfg(target_arch = "wasm32")]
             {
                 let msg = format!("{} - {}", record.level(), record.args());
                 js! {
@@ -46,7 +46,7 @@ pub fn init_with_level(level: log::LevelFilter) -> Result<(), log::SetLoggerErro
         error!("{:?}", backtrace::Backtrace::new());
     }));
     log::set_max_level(level);
-    #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+    #[cfg(not(target_arch = "wasm32"))]
     add_logger(Box::new({
         let mut logger = stderrlog::new();
         logger.verbosity(4);

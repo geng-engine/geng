@@ -51,7 +51,7 @@ impl<T: Serialize> Drop for AutoSave<T> {
 }
 
 fn save<T: Serialize>(path: &str, value: &T) {
-    #[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
+    #[cfg(target_arch = "wasm32")]
     {
         if let Err(e) = stdweb::web::window().local_storage().insert(
             path,
@@ -60,7 +60,7 @@ fn save<T: Serialize>(path: &str, value: &T) {
             error!("Failed to save {:?}: {}", path, e);
         }
     }
-    #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+    #[cfg(not(target_arch = "wasm32"))]
     {
         let mut file = match std::fs::File::create(path) {
             Ok(file) => file,
@@ -80,7 +80,7 @@ fn save<T: Serialize>(path: &str, value: &T) {
 }
 
 fn load<T: for<'de> Deserialize<'de>>(path: &str) -> Option<T> {
-    #[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
+    #[cfg(target_arch = "wasm32")]
     {
         match stdweb::web::window()
             .local_storage()
@@ -95,7 +95,7 @@ fn load<T: for<'de> Deserialize<'de>>(path: &str) -> Option<T> {
             None => None,
         }
     }
-    #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+    #[cfg(not(target_arch = "wasm32"))]
     {
         let file = match std::fs::File::open(path) {
             Ok(file) => file,

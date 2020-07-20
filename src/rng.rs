@@ -25,7 +25,7 @@ pub mod distributions {
 }
 
 pub fn global_rng() -> impl Rng {
-    #[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
+    #[cfg(target_arch = "wasm32")]
     {
         static GLOBAL_RNG: once_cell::sync::Lazy<Mutex<StdRng>> =
             once_cell::sync::Lazy::new(|| {
@@ -65,7 +65,7 @@ pub fn global_rng() -> impl Rng {
 
         GlobalRng
     }
-    #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+    #[cfg(not(target_arch = "wasm32"))]
     rand::thread_rng()
 }
 

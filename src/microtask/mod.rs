@@ -1,7 +1,7 @@
 use crate::*;
 
 pub fn spawn<F: FnOnce() + Send + 'static>(task: F) {
-    #[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
+    #[cfg(target_arch = "wasm32")]
     {
         static QUEUE: once_cell::sync::Lazy<
             Mutex<std::collections::VecDeque<Box<dyn FnOnce() + Send>>>,
@@ -23,6 +23,6 @@ pub fn spawn<F: FnOnce() + Send + 'static>(task: F) {
         }
         QUEUE.lock().unwrap().push_back(Box::new(task));
     }
-    #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+    #[cfg(not(target_arch = "wasm32"))]
     global_threadpool().execute(task);
 }

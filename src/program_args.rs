@@ -1,7 +1,7 @@
 use crate::*;
 
 pub fn parse<T: StructOpt>() -> T {
-    #[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
+    #[cfg(target_arch = "wasm32")]
     return StructOpt::from_iter({
         let mut args = Vec::<String>::new();
         args.push("lifeshot-io".to_owned()); // `Program` itself is the first arg
@@ -19,6 +19,6 @@ pub fn parse<T: StructOpt>() -> T {
         trace!("href => args: {:?}", args);
         args
     });
-    #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+    #[cfg(not(target_arch = "wasm32"))]
     return StructOpt::from_args();
 }

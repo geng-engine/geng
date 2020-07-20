@@ -9,7 +9,7 @@ static REPORTED_UNTRANSLATED: Lazy<Mutex<HashMap<String, HashSet<String>>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
 
 fn detect_locale() -> String {
-    #[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
+    #[cfg(target_arch = "wasm32")]
     let locale = {
         let locale: Option<String> = stdweb::unstable::TryInto::try_into(js! {
             var userLang = navigator.language || navigator.userLanguage;
@@ -18,7 +18,7 @@ fn detect_locale() -> String {
         .ok();
         locale
     };
-    #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+    #[cfg(not(target_arch = "wasm32"))]
     let locale = unsafe {
         let locale = libc::setlocale(
             libc::LC_COLLATE,
