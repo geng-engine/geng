@@ -90,7 +90,7 @@ pub fn run(geng: Rc<Geng>, state: impl State) {
         }
     };
 
-    #[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
+    #[cfg(target_arch = "wasm32")]
     js! {
         var main_loop = @{main_loop};
         function main_loop_wrapper() {
@@ -100,7 +100,7 @@ pub fn run(geng: Rc<Geng>, state: impl State) {
         main_loop_wrapper();
     }
 
-    #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+    #[cfg(not(target_arch = "wasm32"))]
     {
         let mut main_loop = main_loop;
         while !geng.window.should_close() {

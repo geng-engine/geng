@@ -1,9 +1,9 @@
 use crate::*;
 
-#[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+#[cfg(not(target_arch = "wasm32"))]
 #[path = "native.rs"]
 mod _impl;
-#[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
+#[cfg(target_arch = "wasm32")]
 #[path = "web.rs"]
 mod _impl;
 

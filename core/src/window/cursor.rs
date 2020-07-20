@@ -8,7 +8,7 @@ pub enum CursorType {
 
 impl Window {
     pub fn set_cursor_type(&self, cursor_type: CursorType) {
-        #[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
+        #[cfg(target_arch = "wasm32")]
         {
             let cursor_type = match cursor_type {
                 CursorType::Default => "initial",
@@ -20,7 +20,7 @@ impl Window {
                 document.body.style.cursor = @{cursor_type};
             };
         }
-        #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+        #[cfg(not(target_arch = "wasm32"))]
         {
             use glutin::window::CursorIcon as GC;
             self.glutin_window
@@ -35,9 +35,9 @@ impl Window {
 
     pub fn set_cursor_position(&self, position: Vec2<f64>) {
         #![allow(unused_variables)]
-        #[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
+        #[cfg(target_arch = "wasm32")]
         unimplemented!();
-        #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+        #[cfg(not(target_arch = "wasm32"))]
         self.glutin_window
             .window()
             .set_cursor_position(glutin::dpi::PhysicalPosition::new(position.x, position.y))

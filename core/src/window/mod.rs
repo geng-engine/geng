@@ -7,11 +7,11 @@ pub use cursor::*;
 pub use events::*;
 
 pub struct Window {
-    #[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
+    #[cfg(target_arch = "wasm32")]
     canvas: stdweb::web::html_element::CanvasElement,
-    #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+    #[cfg(not(target_arch = "wasm32"))]
     glutin_window: glutin::WindowedContext<glutin::PossiblyCurrent>,
-    #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+    #[cfg(not(target_arch = "wasm32"))]
     glutin_event_loop: RefCell<glutin::event_loop::EventLoop<()>>,
     event_handler: Rc<RefCell<Option<Box<dyn FnMut(Event)>>>>,
     pressed_keys: Rc<RefCell<HashSet<Key>>>,
@@ -19,13 +19,13 @@ pub struct Window {
     should_close: Cell<bool>,
     mouse_pos: Rc<Cell<Vec2<f64>>>,
     ugli: Rc<Ugli>,
-    #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+    #[cfg(not(target_arch = "wasm32"))]
     is_fullscreen: Cell<bool>,
 }
 
 impl Window {
     pub fn new(title: &str, vsync: bool) -> Self {
-        #[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
+        #[cfg(target_arch = "wasm32")]
         let window = {
             let _ = title;
             let _ = vsync;
@@ -97,7 +97,7 @@ impl Window {
             });
             window
         };
-        #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+        #[cfg(not(target_arch = "wasm32"))]
         let window = {
             let glutin_event_loop = glutin::event_loop::EventLoop::<()>::new();
             // glutin::ContextBuilder::new(),
@@ -129,18 +129,18 @@ impl Window {
         *self.event_handler.borrow_mut() = Some(handler);
     }
 
-    // #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+    // #[cfg(not(target_arch = "wasm32"))]
     // pub fn show(&self) {
     //     self.glutin_window.window().set_visible(true);
     // }
 
     pub fn swap_buffers(&self) {
         // ugli::sync();
-        #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+        #[cfg(not(target_arch = "wasm32"))]
         {
             self.glutin_window.swap_buffers().unwrap();
         }
-        #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+        #[cfg(not(target_arch = "wasm32"))]
         for event in self.internal_get_events() {
             Self::default_handler(
                 &event,
@@ -181,13 +181,13 @@ impl Window {
     }
 
     pub fn real_size(&self) -> Vec2<usize> {
-        #[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
+        #[cfg(target_arch = "wasm32")]
         return {
             let width = self.canvas.width() as usize;
             let height = self.canvas.height() as usize;
             vec2(width, height)
         };
-        #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+        #[cfg(not(target_arch = "wasm32"))]
         return {
             let size = self.glutin_window.window().inner_size();
             let (width, height) = (size.width, size.height);
@@ -228,7 +228,7 @@ impl Window {
     }
 
     pub fn set_fullscreen(&self, fullscreen: bool) {
-        #[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
+        #[cfg(target_arch = "wasm32")]
         {
             if fullscreen {
                 js! {
@@ -258,7 +258,7 @@ impl Window {
                 }
             }
         }
-        #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+        #[cfg(not(target_arch = "wasm32"))]
         {
             self.glutin_window.window().set_fullscreen(if fullscreen {
                 Some(glutin::window::Fullscreen::Borderless(
@@ -272,7 +272,7 @@ impl Window {
     }
 
     pub fn is_fullscreen(&self) -> bool {
-        #[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
+        #[cfg(target_arch = "wasm32")]
         {
             return stdweb::unstable::TryInto::try_into(js! {
                 var document = window.document;
@@ -287,7 +287,7 @@ impl Window {
             })
             .unwrap();
         }
-        #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+        #[cfg(not(target_arch = "wasm32"))]
         self.is_fullscreen.get()
     }
 

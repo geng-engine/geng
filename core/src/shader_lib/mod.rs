@@ -48,7 +48,7 @@ impl ShaderLib {
     }
     pub fn process(&self, shader_type: ugli::ShaderType, source: &str) -> Result<String, Error> {
         let mut result = String::new();
-        #[cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))]
+        #[cfg(not(target_arch = "wasm32"))]
         result.push_str("#version 100\n");
         result.push_str("precision highp int;\nprecision highp float;\n");
         result.push_str(match shader_type {

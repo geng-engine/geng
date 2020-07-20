@@ -10,8 +10,8 @@ edition = "2018"
 [dependencies]
 geng-core = { path = "../core", version = "0.3" }
 
-[target.'cfg(any(target_arch = "asmjs", target_arch = "wasm32"))'.dependencies]
+[target.'cfg(target_arch = "wasm32")'.dependencies]
 stdweb = "0.4"
 
-[target.'cfg(not(any(target_arch = "asmjs", target_arch = "wasm32")))'.dependencies]
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 ws = { version = "0.9" }

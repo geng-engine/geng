@@ -2,7 +2,7 @@
 
 #[macro_use]
 extern crate failure;
-#[cfg(any(target_arch = "asmjs", target_arch = "wasm32"))]
+#[cfg(target_arch = "wasm32")]
 #[macro_use]
 extern crate stdweb;
 
