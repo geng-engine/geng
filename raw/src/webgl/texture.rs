@@ -45,7 +45,12 @@ impl Context {
                 border,
                 format,
                 typ,
-                pixels.map(|data| unsafe { std::mem::transmute(data) }),
+                pixels.map(|data| unsafe {
+                    std::slice::from_raw_parts(
+                        data.as_ptr() as *const u8,
+                        std::mem::size_of_val(data),
+                    )
+                }),
             )
             .unwrap();
     }
@@ -97,7 +102,12 @@ impl Context {
                 height,
                 format,
                 typ,
-                Some(unsafe { std::mem::transmute(pixels) }),
+                Some(unsafe {
+                    std::slice::from_raw_parts(
+                        pixels.as_ptr() as *const u8,
+                        std::mem::size_of_val(pixels),
+                    )
+                }),
             )
             .unwrap();
     }

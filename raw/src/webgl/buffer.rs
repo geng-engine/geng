@@ -8,14 +8,19 @@ impl Context {
     }
 
     pub fn buffer_data<T>(&self, target: Enum, data: &[T], usage: Enum) {
-        self.inner
-            .buffer_data_with_u8_array(target, unsafe { std::mem::transmute(data) }, usage);
+        self.inner.buffer_data_with_u8_array(
+            target,
+            unsafe {
+                std::slice::from_raw_parts(data.as_ptr() as *const u8, std::mem::size_of_val(data))
+            },
+            usage,
+        );
     }
 
     pub fn buffer_sub_data<T>(&self, target: Enum, offset: IntPtr, data: &[T]) {
         self.inner
             .buffer_sub_data_with_i32_and_u8_array(target, offset, unsafe {
-                std::mem::transmute(data)
+                std::slice::from_raw_parts(data.as_ptr() as *const u8, std::mem::size_of_val(data))
             });
     }
 

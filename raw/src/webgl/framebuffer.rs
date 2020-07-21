@@ -60,7 +60,12 @@ impl Context {
                 height,
                 format,
                 typ,
-                Some(unsafe { std::mem::transmute(pixels) }),
+                Some(unsafe {
+                    std::slice::from_raw_parts_mut(
+                        pixels.as_mut_ptr() as *mut u8,
+                        std::mem::size_of_val(pixels),
+                    )
+                }),
             )
             .unwrap();
     }
