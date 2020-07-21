@@ -21,9 +21,10 @@ impl Context {
         let angle_instanced_arrays = webgl_rendering_context
             .get_extension("ANGLE_instanced_arrays")
             .unwrap()
-            .unwrap()
-            .dyn_into()
-            .unwrap();
+            .expect("ANGLE_instanced_arrays not supported?");
+        // Unchecked cast here because the type is different in different browsers
+        let angle_instanced_arrays =
+            angle_instanced_arrays.unchecked_into::<web_sys::AngleInstancedArrays>();
         Self {
             inner: webgl_rendering_context,
             angle_instanced_arrays,
