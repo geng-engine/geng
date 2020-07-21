@@ -1,6 +1,6 @@
 [package]
 name = "geng-net"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Game Engine (networking)"
 license = "MIT"
@@ -8,10 +8,14 @@ homepage = "https://github.com/kuviman/geng"
 edition = "2018"
 
 [dependencies]
-geng-core = { path = "../core", version = "0.3" }
+geng-core = { path = "../core", version = "0.4" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-stdweb = "0.4"
+web-sys = { version = "0.3", features = [
+    "WebSocket",
+    "BinaryType",
+    "MessageEvent",
+] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 ws = { version = "0.9" }

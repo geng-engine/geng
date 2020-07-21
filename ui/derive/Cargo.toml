@@ -1,6 +1,6 @@
 [package]
 name = "geng-ui-derive"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Game Engine (ui derive macros)"
 license = "MIT"
@@ -10,7 +10,7 @@ edition = "2018"
 [dependencies]
 syn = { version = "1", features = ["full"] }
 quote = "1"
-batbox = "0.3"
+batbox = "0.4"
 itertools = "0.9"
 proc-macro2 = "1"
 

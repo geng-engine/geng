@@ -16,9 +16,14 @@ impl Window {
                 CursorType::Drag => "all-scroll",
             };
             // TODO: only canvas
-            js! {
-                document.body.style.cursor = @{cursor_type};
-            };
+            web_sys::window()
+                .unwrap()
+                .document()
+                .unwrap()
+                .body()
+                .unwrap()
+                .style()
+                .set_property("cursor", cursor_type);
         }
         #[cfg(not(target_arch = "wasm32"))]
         {

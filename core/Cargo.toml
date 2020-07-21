@@ -1,6 +1,6 @@
 [package]
 name = "geng-core"
-version = "0.3.1"
+version = "0.4.0"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Game Engine (Core)"
 license = "MIT"
@@ -8,16 +8,21 @@ homepage = "https://github.com/kuviman/geng"
 edition = "2018"
 
 [dependencies]
-batbox = "0.3"
-geng-derive = { path = "derive", version = "0.3" }
-ugli = "0.3"
+batbox = "0.4"
+geng-derive = { path = "derive", version = "0.4" }
+ugli = "0.4"
 rusttype = { version = "0.9", features = [ "gpu_cache" ] }
 serde = "1"
 lazy_static = "1"
 failure = "0.1"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-stdweb = "0.4"
+web-sys = { vertion = "0.3", features = [
+    "Document",
+    "CssStyleDeclaration",
+    "HtmlAudioElement",
+    "XmlHttpRequest",
+] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 image = "0.23"

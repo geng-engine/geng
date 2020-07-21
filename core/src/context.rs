@@ -91,13 +91,23 @@ pub fn run(geng: Rc<Geng>, state: impl State) {
     };
 
     #[cfg(target_arch = "wasm32")]
-    js! {
-        var main_loop = @{main_loop};
-        function main_loop_wrapper() {
-            main_loop();
-            window.requestAnimationFrame(main_loop_wrapper);
+    {
+        #[wasm_bindgen(inline_js = r#"
+        export function run(main_loop) {
+            function main_loop_wrapper() {
+                main_loop();
+                window.requestAnimationFrame(main_loop_wrapper);
+            }
+            run();
         }
-        main_loop_wrapper();
+        "#)]
+        extern "C" {
+            fn run(main_loop: &wasm_bindgen::JsValue);
+        }
+        let main_loop =
+            wasm_bindgen::closure::Closure::wrap(Box::new(main_loop) as Box<dyn FnMut()>);
+        run(main_loop.as_ref());
+        main_loop.forget();
     }
 
     #[cfg(not(target_arch = "wasm32"))]

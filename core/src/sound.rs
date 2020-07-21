@@ -2,7 +2,7 @@ use crate::*;
 
 pub struct Sound {
     #[cfg(target_arch = "wasm32")]
-    pub(crate) inner: stdweb::Reference,
+    pub(crate) inner: web_sys::HtmlAudioElement,
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) data: Arc<[u8]>,
     pub looped: bool,
@@ -12,12 +12,16 @@ impl Sound {
     pub fn effect(&self) -> SoundEffect {
         SoundEffect {
             #[cfg(target_arch = "wasm32")]
-            inner: stdweb::unstable::TryInto::try_into(js! {
-                var effect = @{&self.inner}.cloneNode();
-                effect.loop = @{self.looped};
-                return effect;
-            })
-            .unwrap(),
+            inner: {
+                let effect = self
+                    .inner
+                    .clone_node()
+                    .unwrap()
+                    .dyn_into::<web_sys::HtmlAudioElement>()
+                    .unwrap();
+                effect.set_loop(true);
+                effect
+            },
             #[cfg(not(target_arch = "wasm32"))]
             sink: Some({
                 let sink = rodio::Sink::new(&rodio::default_output_device().unwrap());
@@ -44,7 +48,7 @@ impl Sound {
 
 pub struct SoundEffect {
     #[cfg(target_arch = "wasm32")]
-    inner: stdweb::Reference,
+    inner: web_sys::HtmlAudioElement,
     #[cfg(not(target_arch = "wasm32"))]
     sink: Option<rodio::Sink>,
 }
@@ -52,28 +56,19 @@ pub struct SoundEffect {
 impl SoundEffect {
     pub fn set_volume(&mut self, volume: f64) {
         #[cfg(target_arch = "wasm32")]
-        js! {
-            @(no_return)
-            @{&self.inner}.volume = @{volume};
-        }
+        self.inner.set_volume(volume);
         #[cfg(not(target_arch = "wasm32"))]
         self.sink().set_volume(volume as f32);
     }
     pub fn play(&mut self) {
         #[cfg(target_arch = "wasm32")]
-        js! {
-            @(no_return)
-            @{&self.inner}.play();
-        }
+        self.inner.play();
         #[cfg(not(target_arch = "wasm32"))]
         self.sink().play();
     }
     pub fn pause(&mut self) {
         #[cfg(target_arch = "wasm32")]
-        js! {
-            @(no_return)
-            @{&self.inner}.pause();
-        }
+        self.inner.pause();
         #[cfg(not(target_arch = "wasm32"))]
         self.sink().pause();
     }

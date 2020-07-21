@@ -11,7 +11,7 @@ impl AssetManager {
 impl LoadAsset for ugli::Texture {
     fn load(geng: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
         let (sender, receiver) = futures::channel::oneshot::channel();
-        let image = stdweb::web::html_element::ImageElement::new();
+        let image = web_sys::HtmlImageElement::new().unwrap();
         let handler = {
             let image = image.clone();
             let ugli = geng.ugli().clone();
@@ -19,7 +19,7 @@ impl LoadAsset for ugli::Texture {
             move |success: bool| {
                 sender
                     .send(if success {
-                        Ok(ugli::Texture::from_image(&ugli, image))
+                        Ok(ugli::Texture::from_image(&ugli, &image))
                     } else {
                         Err(format_err!("Failed to load image from {:?}", path))
                     })
@@ -27,14 +27,19 @@ impl LoadAsset for ugli::Texture {
                     .unwrap();
             }
         };
-        // TODO: https://github.com/koute/stdweb/issues/171
-        js! {
-            @(no_return)
-            var handler = @{stdweb::Once(handler)};
-            var image = @{image.clone()};
+        #[wasm_bindgen(inline_js = r#"
+        export function setup(image, handler) {
             image.onload = function() { handler(true); };
             image.onerror = function() { handler(false); };
         }
+        "#)]
+        extern "C" {
+            fn setup(image: &web_sys::HtmlImageElement, handler: wasm_bindgen::JsValue);
+        }
+        setup(
+            &image,
+            wasm_bindgen::closure::Closure::once_into_js(handler),
+        );
         image.set_src(path);
         receiver.map(|result| result.unwrap()).boxed_local()
     }
@@ -43,10 +48,7 @@ impl LoadAsset for ugli::Texture {
 impl LoadAsset for Sound {
     fn load(_: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
         let (sender, receiver) = futures::channel::oneshot::channel();
-        let audio: stdweb::Reference = stdweb::unstable::TryInto::try_into(js! {
-            return new Audio(@{path});
-        })
-        .unwrap();
+        let audio = web_sys::HtmlAudioElement::new_with_src(path).unwrap();
         let handler = {
             let audio = audio.clone();
             let path = path.to_owned();
@@ -64,14 +66,19 @@ impl LoadAsset for Sound {
                     .unwrap();
             }
         };
-        // TODO: https://github.com/koute/stdweb/issues/171
-        js! {
-            @(no_return)
-            var handler = @{stdweb::Once(handler)};
-            var audio = @{&audio};
+        #[wasm_bindgen(inline_js = r#"
+        export function setup(audio, handler) {
             audio.oncanplaythrough = function() { handler(true); };
             audio.onerror = function() { handler(false); };
         }
+        "#)]
+        extern "C" {
+            fn setup(audio: &web_sys::HtmlAudioElement, handler: wasm_bindgen::JsValue);
+        }
+        setup(
+            &audio,
+            wasm_bindgen::closure::Closure::once_into_js(handler),
+        );
         receiver.map(|result| result.unwrap()).boxed_local()
     }
 }
@@ -79,7 +86,7 @@ impl LoadAsset for Sound {
 impl LoadAsset for String {
     fn load(_: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
         let (sender, receiver) = futures::channel::oneshot::channel();
-        let request = stdweb::web::XmlHttpRequest::new();
+        let request = web_sys::XmlHttpRequest::new().unwrap();
         request.open("GET", path).unwrap();
         let handler = {
             let request = request.clone();
@@ -95,16 +102,22 @@ impl LoadAsset for String {
                     .unwrap();
             }
         };
-        js! {
-            @(no_return)
-            var handler = @{stdweb::Once(handler)};
-            var request = @{request.clone()};
+        #[wasm_bindgen(inline_js = r#"
+        export function setup(request, handler) {
             request.onreadystatechange = function () {
                 if (request.readyState == 4) {
                     handler(request.status == 200);
                 }
             };
         }
+        "#)]
+        extern "C" {
+            fn setup(request: &web_sys::XmlHttpRequest, handler: wasm_bindgen::JsValue);
+        }
+        setup(
+            &request,
+            wasm_bindgen::closure::Closure::once_into_js(handler),
+        );
         request.send().unwrap();
         receiver.map(|result| result.unwrap()).boxed_local()
     }

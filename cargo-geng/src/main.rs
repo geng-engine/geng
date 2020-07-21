@@ -14,12 +14,12 @@ impl Default for Target {
 }
 
 impl FromStr for Target {
-    type Err = std::io::Error;
+    type Err = anyhow::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(match s {
             "default" => Self::Default,
             "web" => Self::Web,
-            _ => return Err(std::io::Error::new(std::io::ErrorKind::Other, "Unexpected")),
+            _ => anyhow::bail!("Unexpected"),
         })
     }
 }
@@ -42,15 +42,15 @@ enum Opt {
     Check,
 }
 
-fn exec(cmd: &mut Command) -> Result<(), std::io::Error> {
-    if cmd.status()?.success() {
+fn exec<C: AsMut<Command>>(cmd: C) -> Result<(), anyhow::Error> {
+    if cmd.as_mut().status()?.success() {
         Ok(())
     } else {
-        Err(std::io::Error::new(std::io::ErrorKind::Other, "Failure"))
+        anyhow::bail!("Failure")
     }
 }
 
-fn main() -> Result<(), std::io::Error> {
+fn main() -> Result<(), anyhow::Error> {
     let mut args: Vec<_> = std::env::args().collect();
     if args.len() >= 2 && args[1] == "geng" {
         args.remove(1);
@@ -62,18 +62,52 @@ fn main() -> Result<(), std::io::Error> {
                 exec(Command::new("cargo").arg("run"))?;
             }
             Target::Web => {
-                exec(
-                    Command::new("cargo")
-                        .arg("web")
-                        .arg("start")
-                        .arg("--release")
-                        .arg("--open"),
-                )?;
+                let command = || {
+                    let mut command = Command::new("cargo");
+                    command
+                        .arg("build")
+                        .arg("--target=wasm32-unknown-unknown")
+                        .arg("--release");
+                    command
+                };
+                exec(command())?;
+
+                use cargo_metadata::Message;
+
+                let mut command = command()
+                    .arg("--message-format=json")
+                    .stdout(std::process::Stdio::piped())
+                    .spawn()?;
+
+                let reader = std::io::BufReader::new(command.stdout.take().unwrap());
+                for message in cargo_metadata::Message::parse_stream(reader) {
+                    match message.unwrap() {
+                        Message::CompilerMessage(msg) => {
+                            println!("{:?}", msg);
+                        }
+                        Message::CompilerArtifact(artifact) => {
+                            println!("{:?}", artifact);
+                        }
+                        Message::BuildScriptExecuted(script) => {
+                            println!("{:?}", script);
+                        }
+                        Message::BuildFinished(finished) => {
+                            println!("{:?}", finished);
+                        }
+                        _ => (), // Unknown message
+                    }
+                }
+
+                let output = command.wait().expect("Couldn't get cargo's exit status");
             }
         },
         Opt::Check => {
             exec(Command::new("cargo").arg("check"))?;
-            exec(Command::new("cargo").arg("web").arg("check"))?;
+            exec(
+                Command::new("cargo")
+                    .arg("check")
+                    .arg("--target=wasm32-unknown-unknown"),
+            )?;
         }
     }
     Ok(())

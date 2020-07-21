@@ -6,9 +6,21 @@ mod events;
 pub use cursor::*;
 pub use events::*;
 
+#[cfg(target_arch = "wasm32")]
+mod js {
+    use super::*;
+
+    #[wasm_bindgen(module = "/src/window/web.js")]
+    extern "C" {
+        pub fn initialize_window(canvas: &web_sys::HtmlCanvasElement);
+        pub fn is_fullscreen() -> bool;
+        pub fn set_fullscreen(canvas: &web_sys::HtmlCanvasElement, fullscreen: bool);
+    }
+}
+
 pub struct Window {
     #[cfg(target_arch = "wasm32")]
-    canvas: stdweb::web::html_element::CanvasElement,
+    canvas: web_sys::HtmlCanvasElement,
     #[cfg(not(target_arch = "wasm32"))]
     glutin_window: glutin::WindowedContext<glutin::PossiblyCurrent>,
     #[cfg(not(target_arch = "wasm32"))]
@@ -29,53 +41,16 @@ impl Window {
         let window = {
             let _ = title;
             let _ = vsync;
-            use stdweb::web::IParentNode;
-            let canvas: stdweb::web::html_element::CanvasElement =
-                stdweb::unstable::TryInto::try_into(
-                    stdweb::web::document()
-                        .query_selector("#geng-canvas")
-                        .unwrap()
-                        .expect("#geng-canvas not found"),
-                )
-                .unwrap();
-            js! {
-                @(no_return)
-                var canvas = @{&canvas};
-                window.GENG_CANVAS_SCALE = 1.0;
-                canvas.tabIndex = -1;
-                function update() {
-                    canvas.width = Math.floor(canvas.clientWidth * window.GENG_CANVAS_SCALE);
-                    canvas.height = Math.floor(canvas.clientHeight * window.GENG_CANVAS_SCALE);
-
-                    var document = window.document;
-                    if (document.fullscreenElement ||
-                            document.mozFullScreenElement ||
-                            document.webkitFullscreenElement ||
-                            document.msFullscreenElement) {
-                        screen.lockOrientationUniversal = screen.lockOrientation || screen.mozLockOrientation || screen.msLockOrientation;
-                        if (screen.lockOrientationUniversal) {
-                            screen.lockOrientationUniversal("landscape");
-                        } else {
-                            try {
-                                screen.orientation.lock("landscape").catch(function () {
-                                });
-                            } catch (e) {}
-                        }
-                    } else {
-                        screen.unlockOrientationUniversal = screen.unlockOrientation || screen.mozUnlockOrientation || screen.msUnlockOrientation;
-                        if (screen.unlockOrientationUniversal) {
-                            screen.unlockOrientationUniversal();
-                        } else {
-                            try {
-                                screen.orientation.unlock();
-                            } catch (e) {}
-                        }
-                    }
-                };
-                window.setInterval(update, 100);
-                update();
-            }
-            let ugli = Rc::new(Ugli::create_webgl(canvas.clone()));
+            let canvas = web_sys::window()
+                .unwrap()
+                .document()
+                .unwrap()
+                .get_element_by_id("geng-canvas")
+                .expect("#geng-canvas not found")
+                .dyn_into::<web_sys::HtmlCanvasElement>()
+                .expect("#geng-canvas is not a canvas");
+            js::initialize_window(&canvas);
+            let ugli = Rc::new(Ugli::create_webgl(&canvas));
             let window = Self {
                 canvas,
                 event_handler: Rc::new(RefCell::new(None)),
@@ -229,35 +204,7 @@ impl Window {
 
     pub fn set_fullscreen(&self, fullscreen: bool) {
         #[cfg(target_arch = "wasm32")]
-        {
-            if fullscreen {
-                js! {
-                    var elem = @{&self.canvas};
-                    if (elem.requestFullscreen) {
-                        elem.requestFullscreen();
-                    } else if (elem.msRequestFullscreen) {
-                        elem.msRequestFullscreen();
-                    } else if (elem.mozRequestFullScreen) {
-                        elem.mozRequestFullScreen();
-                    } else if (elem.webkitRequestFullscreen) {
-                        elem.webkitRequestFullscreen();
-                    }
-                }
-            } else {
-                js! {
-                    var document = window.document;
-                    if (document.cancelFullScreen) {
-                        document.cancelFullScreen();
-                    } else if (document.msExitFullscreen) {
-                        document.msExitFullscreen();
-                    } else if (document.mozCancelFullScreen) {
-                        document.mozCancelFullScreen();
-                    } else if (document.webkitCancelFullScreen) {
-                        document.webkitCancelFullScreen();
-                    }
-                }
-            }
-        }
+        js::set_fullscreen(&self.canvas, fullscreen);
         #[cfg(not(target_arch = "wasm32"))]
         {
             self.glutin_window.window().set_fullscreen(if fullscreen {
@@ -273,20 +220,7 @@ impl Window {
 
     pub fn is_fullscreen(&self) -> bool {
         #[cfg(target_arch = "wasm32")]
-        {
-            return stdweb::unstable::TryInto::try_into(js! {
-                var document = window.document;
-                if (document.fullscreenElement ||
-                    document.mozFullScreenElement ||
-                    document.webkitFullscreenElement ||
-                    document.msFullscreenElement) {
-                        return true;
-                } else {
-                    return false;
-                }
-            })
-            .unwrap();
-        }
+        return js::is_fullscreen();
         #[cfg(not(target_arch = "wasm32"))]
         self.is_fullscreen.get()
     }

@@ -21,6 +21,12 @@ fn deserialize_message<T: Message>(data: &[u8]) -> T {
     serde_json::from_slice(data).expect("Failed to deserialize message")
 }
 
+#[cfg(target_arch = "wasm32")]
+pub trait Sender<T> {
+    fn send(&mut self, message: T);
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 pub trait Sender<T>: Send {
     fn send(&mut self, message: T);
 }
