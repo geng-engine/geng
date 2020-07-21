@@ -8,6 +8,11 @@ homepage = "https://github.com/kuviman/geng"
 edition = "2018"
 
 [dependencies]
+tokio = "0.2"
+futures = "0.3"
+hyper = "0.13"
+hyper-staticfile = "0.5"
+fs_extra = "1"
 cargo_metadata = "0.10"
 structopt = "0.3"
 anyhow = "1"
