@@ -98,7 +98,7 @@ pub fn run(geng: Rc<Geng>, state: impl State) {
                 main_loop();
                 window.requestAnimationFrame(main_loop_wrapper);
             }
-            run();
+            main_loop_wrapper();
         }
         "#)]
         extern "C" {
