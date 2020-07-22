@@ -180,7 +180,7 @@ pub fn draw<V, U, DP>(
             } else {
                 *self.vertex_count = Some(data.len());
             }
-            let sample: D = unsafe { mem::uninitialized() };
+            let sample = unsafe { mem::MaybeUninit::<D>::uninit().assume_init() };
             data.buffer.bind();
             sample.walk_attributes(VAC {
                 sample: &sample,

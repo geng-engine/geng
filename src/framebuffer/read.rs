@@ -3,7 +3,7 @@ use crate::*;
 pub struct ColorData<'a> {
     width: usize,
     height: usize,
-    buffer: Vec<raw::UByte>,
+    buffer: Vec<raw::UByte>, // TODO: Box<[T]>
     phantom_data: PhantomData<&'a i32>,
 }
 
@@ -31,8 +31,9 @@ impl<'a> FramebufferRead<'a> {
         // }
         self.fbo.bind();
         let result = unsafe {
-            let mut buffer =
-                vec![mem::uninitialized::<raw::UByte>(); self.size.x * self.size.y * 4];
+            let buffer_len = self.size.x * self.size.y * 4;
+            let mut buffer = Vec::with_capacity(buffer_len);
+            buffer.set_len(buffer_len);
             gl.read_pixels(
                 0,
                 0,
