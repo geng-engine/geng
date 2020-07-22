@@ -32,7 +32,7 @@ fn detect_locale() -> String {
         None => String::from("en"),
     };
     if locale.len() > 2 {
-        locale.split_off(2);
+        locale.truncate(2);
     }
     let locale = locale.to_lowercase();
     trace!("Using locale: {:?}", locale);
