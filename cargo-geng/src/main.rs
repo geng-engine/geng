@@ -1,48 +1,6 @@
-use std::fmt::Display;
 use std::process::Command;
-use std::str::FromStr;
 
 const SERVE_PORT: u16 = 8000;
-
-enum Target {
-    Default,
-    Web,
-}
-
-impl Default for Target {
-    fn default() -> Self {
-        Self::Default
-    }
-}
-
-impl FromStr for Target {
-    type Err = anyhow::Error;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(match s {
-            "default" => Self::Default,
-            "web" => Self::Web,
-            _ => anyhow::bail!("Unexpected"),
-        })
-    }
-}
-
-impl Display for Target {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Default => write!(f, "default"),
-            Self::Web => write!(f, "web"),
-        }
-    }
-}
-
-#[derive(structopt::StructOpt)]
-enum Opt {
-    Run {
-        #[structopt(long, default_value)]
-        target: Target,
-    },
-    Check,
-}
 
 fn exec<C: std::borrow::BorrowMut<Command>>(mut cmd: C) -> Result<(), anyhow::Error> {
     if cmd.borrow_mut().status()?.success() {
@@ -86,97 +44,175 @@ where
     });
 }
 
+#[derive(structopt::StructOpt, PartialEq, Eq)]
+enum Sub {
+    Build,
+    Run,
+    Check,
+}
+
+impl std::str::FromStr for Sub {
+    type Err = anyhow::Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s {
+            "build" => Self::Build,
+            "run" => Self::Run,
+            "check" => Self::Check,
+            _ => anyhow::bail!("Failed to parse subcommand"),
+        })
+    }
+}
+
+impl ToString for Sub {
+    fn to_string(&self) -> String {
+        match self {
+            Self::Build => "build",
+            Self::Run => "run",
+            Self::Check => "check",
+        }
+        .to_owned()
+    }
+}
+
+#[derive(structopt::StructOpt)]
+struct Opt {
+    sub: Sub,
+    #[structopt(long = "package", short = "p")]
+    package: Option<String>,
+    #[structopt(long = "target")]
+    target: Option<String>,
+    #[structopt(long = "release")]
+    release: bool,
+}
+
+fn to_arg<'a>(arg: &'a Option<String>, name: &'a str) -> impl Iterator<Item = &'a str> + 'a {
+    if let Some(arg) = arg {
+        vec![name, arg]
+    } else {
+        vec![]
+    }
+    .into_iter()
+}
+
+impl Opt {
+    fn args_for_metadata(&self) -> impl Iterator<Item = &str> {
+        std::iter::empty()
+    }
+    fn all_args(&self) -> impl Iterator<Item = &str> {
+        self.args_for_metadata()
+            .chain(to_arg(&self.target, "--target"))
+            .chain(to_arg(&self.package, "--package"))
+            .chain(if self.release {
+                Some("--release")
+            } else {
+                None
+            })
+    }
+}
+
 fn main() -> Result<(), anyhow::Error> {
     let mut args: Vec<_> = std::env::args().collect();
     if args.len() >= 2 && args[1] == "geng" {
         args.remove(1);
     }
+    if args.is_empty() {
+        todo!("Help");
+    }
     let opt: Opt = structopt::StructOpt::from_iter(args);
-    match opt {
-        Opt::Run { target } => {
-            let metadata = cargo_metadata::MetadataCommand::new().exec()?;
-            let out_dir = metadata.target_directory.join("geng");
-            if out_dir.exists() {
-                std::fs::remove_dir_all(&out_dir)?;
-            }
-            let static_dir = std::path::Path::new(
-                &metadata
-                    .packages
-                    .iter()
-                    .find(|package| {
-                        package.id == *metadata.resolve.as_ref().unwrap().root.as_ref().unwrap()
-                    })
-                    .unwrap()
-                    .manifest_path,
+    if let Sub::Build | Sub::Run = opt.sub {
+        exec(Command::new("cargo").arg("build").args(opt.all_args()))?;
+        let metadata = cargo_metadata::MetadataCommand::new()
+            .other_options(
+                opt.args_for_metadata()
+                    .map(|arg| arg.to_owned())
+                    .collect::<Vec<_>>(),
             )
-            .parent()
-            .unwrap()
-            .join("static");
-            fs_extra::dir::copy(dbg!(static_dir), &out_dir, &{
+            .exec()?;
+        let out_dir = metadata.target_directory.join("geng");
+        if out_dir.exists() {
+            std::fs::remove_dir_all(&out_dir)?;
+        }
+        let static_dir = std::path::Path::new(
+            &metadata
+                .packages
+                .iter()
+                .find(|package| {
+                    if let Some(name) = &opt.package {
+                        package.name == *name
+                    } else {
+                        package.id
+                            == *metadata
+                                .resolve
+                                .as_ref()
+                                .unwrap()
+                                .root
+                                .as_ref()
+                                .expect("No root package")
+                    }
+                })
+                .unwrap()
+                .manifest_path,
+        )
+        .parent()
+        .unwrap()
+        .join("static");
+        if static_dir.is_dir() {
+            fs_extra::dir::copy(static_dir, &out_dir, &{
                 let mut options = fs_extra::dir::CopyOptions::new();
                 options.copy_inside = true;
                 options
             })?;
-            match target {
-                Target::Default => {
-                    exec(Command::new("cargo").arg("run"))?;
+        }
+        std::fs::create_dir_all(&out_dir)?;
+
+        let mut command = Command::new("cargo")
+            .arg("build")
+            .args(opt.all_args())
+            .arg("--message-format=json")
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::null())
+            .spawn()?;
+        let reader = std::io::BufReader::new(command.stdout.take().unwrap());
+        let mut executable = None;
+        for message in cargo_metadata::Message::parse_stream(reader) {
+            if let cargo_metadata::Message::CompilerArtifact(cargo_metadata::Artifact {
+                executable: Some(path),
+                ..
+            }) = message.unwrap()
+            {
+                if executable.is_some() {
+                    anyhow::bail!("Found several executable files");
                 }
-                Target::Web => {
-                    let command = || {
-                        let mut command = Command::new("cargo");
-                        command
-                            .arg("build")
-                            .arg("--target=wasm32-unknown-unknown")
-                            .arg("--release");
-                        command
-                    };
-                    exec(command())?;
-
-                    let mut command = command()
-                        .arg("--message-format=json")
-                        .stdout(std::process::Stdio::piped())
-                        .stderr(std::process::Stdio::null())
-                        .spawn()?;
-                    let reader = std::io::BufReader::new(command.stdout.take().unwrap());
-                    let mut wasm_file = None;
-                    for message in cargo_metadata::Message::parse_stream(reader) {
-                        if let cargo_metadata::Message::CompilerArtifact(
-                            cargo_metadata::Artifact {
-                                executable: Some(path),
-                                ..
-                            },
-                        ) = message.unwrap()
-                        {
-                            if wasm_file.is_some() {
-                                anyhow::bail!("Found several wasm files");
-                            }
-                            wasm_file = Some(path);
-                        }
-                    }
-                    command.wait()?;
-                    let wasm_file = wasm_file.ok_or(anyhow::anyhow!("wasm not found"))?;
-
-                    exec(
-                        Command::new("wasm-bindgen")
-                            .arg("--target=web")
-                            .arg("--no-typescript")
-                            .arg("--out-dir")
-                            .arg(&out_dir)
-                            .arg(wasm_file),
-                    )?;
-
-                    serve(&out_dir);
-                }
+                executable = Some(path);
             }
         }
-        Opt::Check => {
-            exec(Command::new("cargo").arg("check"))?;
+        command.wait()?;
+        let executable = executable.ok_or(anyhow::anyhow!("executable not found"))?;
+
+        if executable.extension() == Some("wasm".as_ref()) {
             exec(
-                Command::new("cargo")
-                    .arg("check")
-                    .arg("--target=wasm32-unknown-unknown"),
+                Command::new("wasm-bindgen")
+                    .arg("--target=web")
+                    .arg("--no-typescript")
+                    .arg("--out-dir")
+                    .arg(&out_dir)
+                    .arg(executable),
             )?;
+            if opt.sub == Sub::Run {
+                serve(&out_dir);
+            }
+        } else {
+            std::fs::copy(&executable, out_dir.join(executable.file_name().unwrap()))?;
+            if opt.sub == Sub::Run {
+                exec(Command::new("cargo").arg("run").args(opt.all_args()))?;
+            }
         }
+    } else {
+        exec(
+            Command::new("cargo")
+                .arg(opt.sub.to_string())
+                .args(opt.all_args()),
+        )?;
     }
     Ok(())
 }
