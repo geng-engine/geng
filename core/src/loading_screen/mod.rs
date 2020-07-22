@@ -17,7 +17,6 @@ where
     L: ProgressScreen,
     G: State,
 {
-    geng: Rc<Geng>,
     future: Pin<Box<dyn Future<Output = T>>>,
     f: Option<Box<dyn FnOnce(T) -> G>>,
     state: L,
@@ -29,13 +28,12 @@ where
     G: State,
 {
     pub fn new<F: FnOnce(T) -> G + 'static>(
-        geng: &Rc<Geng>,
+        #[allow(unused_variables)] geng: &Rc<Geng>,
         state: L,
         future: impl Future<Output = T> + 'static,
         f: F,
     ) -> Self {
         LoadingScreen {
-            geng: geng.clone(),
             future: future.boxed_local(),
             f: Some(Box::new(f)),
             state,

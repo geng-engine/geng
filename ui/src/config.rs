@@ -35,7 +35,11 @@ impl<T: ToString + Clone> Config<T> for ShowValue<T> {
 
 impl<T: ToString + Clone> Configurable for T {
     type Config = ShowValue<T>;
-    fn config(geng: &Rc<Geng>, theme: &Rc<Theme>, value: T) -> ShowValue<T> {
+    fn config(
+        #[allow(unused_variables)] geng: &Rc<Geng>,
+        theme: &Rc<Theme>,
+        value: T,
+    ) -> ShowValue<T> {
         ShowValue {
             theme: theme.clone(),
             value,

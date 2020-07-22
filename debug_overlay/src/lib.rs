@@ -34,7 +34,6 @@ impl Data {
 }
 
 pub struct DebugOverlay {
-    geng: Rc<Geng>,
     ui_controller: ui::Controller,
     data: Data,
     state: Box<dyn State>,
@@ -44,7 +43,6 @@ pub struct DebugOverlay {
 impl DebugOverlay {
     pub fn new(geng: &Rc<Geng>, state: impl State) -> Self {
         Self {
-            geng: geng.clone(),
             ui_controller: ui::Controller::new(),
             data: Data::new(geng),
             state: Box::new(state),

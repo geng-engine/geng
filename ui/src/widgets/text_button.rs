@@ -1,7 +1,6 @@
 use crate::*;
 
 pub struct TextButton {
-    geng: Rc<Geng>,
     core: WidgetCore,
     theme: Rc<Theme>,
     pub text: String,
@@ -9,9 +8,13 @@ pub struct TextButton {
 }
 
 impl TextButton {
-    pub fn new(geng: &Rc<Geng>, theme: &Rc<Theme>, text: String, size: f32) -> Self {
+    pub fn new(
+        #[allow(unused_variables)] geng: &Rc<Geng>,
+        theme: &Rc<Theme>,
+        text: String,
+        size: f32,
+    ) -> Self {
         Self {
-            geng: geng.clone(),
             theme: theme.clone(),
             core: WidgetCore::new(),
             text,
@@ -20,7 +23,6 @@ impl TextButton {
     }
     pub fn ui<'a>(&'a mut self, action: Box<dyn FnOnce() + 'a>) -> impl Widget + 'a {
         TextButtonUI {
-            geng: self.geng.clone(),
             theme: &self.theme,
             core: &mut self.core,
             text: &self.text,
@@ -31,7 +33,6 @@ impl TextButton {
 }
 
 pub struct TextButtonUI<'a> {
-    geng: Rc<Geng>,
     theme: &'a Theme,
     core: &'a mut WidgetCore,
     action: Option<Box<dyn FnOnce() + 'a>>,

@@ -10,5 +10,7 @@ pub struct EmptyLoadingScreen;
 impl ProgressScreen for EmptyLoadingScreen {}
 
 impl State for EmptyLoadingScreen {
-    fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {}
+    fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
+        #![allow(unused_variables)]
+    }
 }

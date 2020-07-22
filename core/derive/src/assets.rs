@@ -23,7 +23,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                     for attr in &field.attrs {
                         if let Ok(syn::Meta::List(syn::MetaList {
                             path: ref meta_path,
-                            nested: ref nested,
+                            ref nested,
                             ..
                         })) = attr.parse_meta()
                         {
@@ -32,7 +32,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                                     if let syn::NestedMeta::Meta(syn::Meta::NameValue(
                                         syn::MetaNameValue {
                                             path: ref meta_path,
-                                            lit: ref lit,
+                                            ref lit,
                                             ..
                                         },
                                     )) = *inner
