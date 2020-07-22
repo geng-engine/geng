@@ -8,7 +8,7 @@ homepage = "https://github.com/kuviman/ugli"
 edition = "2018"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-gl = { package = "ugli-gl", path = "gl", version = "0.1.0" }
+gl = "0.14"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "0.2"
