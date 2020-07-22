@@ -8,6 +8,7 @@ homepage = "https://github.com/kuviman/geng"
 edition = "2018"
 
 [dependencies]
+open = "1"
 tokio = "0.2"
 futures = "0.3"
 hyper = "0.13"

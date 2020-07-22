@@ -39,7 +39,9 @@ where
 
         let addr = ([127, 0, 0, 1], SERVE_PORT).into();
         let server = hyper::Server::bind(&addr).serve(make_service);
-        eprintln!("Server running on http://{}/", addr);
+        let addr = format!("http://{}/", addr);
+        eprintln!("Server running on {}", addr);
+        open::that(&addr).expect("Failed to open browser");
         server.await.expect("Server failed");
     });
 }
