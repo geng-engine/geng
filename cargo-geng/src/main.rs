@@ -133,34 +133,32 @@ fn main() -> Result<(), anyhow::Error> {
                     .collect::<Vec<_>>(),
             )
             .exec()?;
+        let package = metadata
+            .packages
+            .iter()
+            .find(|package| {
+                if let Some(name) = &opt.package {
+                    package.name == *name
+                } else {
+                    package.id
+                        == *metadata
+                            .resolve
+                            .as_ref()
+                            .unwrap()
+                            .root
+                            .as_ref()
+                            .expect("No root package or --package")
+                }
+            })
+            .unwrap();
         let out_dir = metadata.target_directory.join("geng");
         if out_dir.exists() {
             std::fs::remove_dir_all(&out_dir)?;
         }
-        let static_dir = std::path::Path::new(
-            &metadata
-                .packages
-                .iter()
-                .find(|package| {
-                    if let Some(name) = &opt.package {
-                        package.name == *name
-                    } else {
-                        package.id
-                            == *metadata
-                                .resolve
-                                .as_ref()
-                                .unwrap()
-                                .root
-                                .as_ref()
-                                .expect("No root package")
-                    }
-                })
-                .unwrap()
-                .manifest_path,
-        )
-        .parent()
-        .unwrap()
-        .join("static");
+        let static_dir = std::path::Path::new(&package.manifest_path)
+            .parent()
+            .unwrap()
+            .join("static");
         if static_dir.is_dir() {
             fs_extra::dir::copy(static_dir, &out_dir, &{
                 let mut options = fs_extra::dir::CopyOptions::new();
@@ -221,7 +219,10 @@ fn main() -> Result<(), anyhow::Error> {
         } else {
             std::fs::copy(&executable, out_dir.join(executable.file_name().unwrap()))?;
             if opt.sub == Sub::Run {
-                exec(Command::new("cargo").arg("run").args(opt.all_args()))?;
+                exec(Command::new(&executable).env(
+                    "CARGO_MANIFEST_DIR",
+                    package.manifest_path.parent().unwrap(),
+                ))?;
             }
         }
     } else {
