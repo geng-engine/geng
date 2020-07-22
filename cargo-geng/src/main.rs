@@ -85,6 +85,8 @@ struct Opt {
     release: bool,
     #[structopt(long = "example")]
     example: Option<String>,
+    #[structopt(long = "index-file")]
+    index_file: Option<String>,
 }
 
 fn to_arg<'a>(arg: &'a Option<String>, name: &'a str) -> impl Iterator<Item = &'a str> + 'a {
@@ -199,7 +201,19 @@ fn main() -> Result<(), anyhow::Error> {
                     .arg("--no-typescript")
                     .arg("--out-dir")
                     .arg(&out_dir)
-                    .arg(executable),
+                    .arg(&executable),
+            )?;
+            std::fs::write(
+                out_dir.join(
+                    opt.index_file
+                        .as_ref()
+                        .map(|s| s.as_str())
+                        .unwrap_or("index.html"),
+                ),
+                include_str!("index.html").replace(
+                    "<app-name>",
+                    executable.file_stem().unwrap().to_str().unwrap(),
+                ),
             )?;
             if opt.sub == Sub::Run {
                 serve(&out_dir);
