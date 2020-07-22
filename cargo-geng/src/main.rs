@@ -83,6 +83,8 @@ struct Opt {
     target: Option<String>,
     #[structopt(long = "release")]
     release: bool,
+    #[structopt(long = "example")]
+    example: Option<String>,
 }
 
 fn to_arg<'a>(arg: &'a Option<String>, name: &'a str) -> impl Iterator<Item = &'a str> + 'a {
@@ -107,6 +109,7 @@ impl Opt {
             } else {
                 None
             })
+            .chain(to_arg(&self.example, "--example"))
     }
 }
 
