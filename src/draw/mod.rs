@@ -104,12 +104,13 @@ pub fn draw<V, U, DP>(
     };
 
     if let Some(instance_count) = instance_count {
-        if instance_count == 0 {
-            return;
+        if vertex_count != 0 && instance_count != 0 {
+            gl.draw_arrays_instanced(gl_mode, 0, vertex_count as _, instance_count as _);
         }
-        gl.draw_arrays_instanced(gl_mode, 0, vertex_count as _, instance_count as _);
     } else {
-        gl.draw_arrays(gl_mode, 0, vertex_count as _);
+        if vertex_count != 0 {
+            gl.draw_arrays(gl_mode, 0, vertex_count as _);
+        }
     }
 
     for attribute_info in program.attributes.values() {

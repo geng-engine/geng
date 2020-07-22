@@ -1,6 +1,6 @@
 [package]
 name = "ugli"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Universal OpenGL Interface"
 license = "MIT"
