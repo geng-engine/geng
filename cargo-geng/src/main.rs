@@ -104,9 +104,8 @@ impl Opt {
     fn args_for_metadata(&self) -> impl Iterator<Item = &str> {
         std::iter::empty()
     }
-    fn all_args(&self) -> impl Iterator<Item = &str> {
+    fn args_without_target(&self) -> impl Iterator<Item = &str> {
         self.args_for_metadata()
-            .chain(to_arg(&self.target, "--target"))
             .chain(to_arg(&self.package, "--package"))
             .chain(if self.release {
                 Some("--release")
@@ -114,6 +113,10 @@ impl Opt {
                 None
             })
             .chain(to_arg(&self.example, "--example"))
+    }
+    fn all_args(&self) -> impl Iterator<Item = &str> {
+        self.args_without_target()
+            .chain(to_arg(&self.target, "--target"))
     }
 }
 
@@ -126,113 +129,122 @@ fn main() -> Result<(), anyhow::Error> {
         todo!("Help");
     }
     let opt: Opt = structopt::StructOpt::from_iter(args);
-    if let Sub::Build | Sub::Run = opt.sub {
-        exec(Command::new("cargo").arg("build").args(opt.all_args()))?;
-        let metadata = cargo_metadata::MetadataCommand::new()
-            .other_options(
-                opt.args_for_metadata()
-                    .map(|arg| arg.to_owned())
-                    .collect::<Vec<_>>(),
-            )
-            .exec()?;
-        let package = metadata
-            .packages
-            .iter()
-            .find(|package| {
-                if let Some(name) = &opt.package {
-                    package.name == *name
-                } else {
-                    package.id
-                        == *metadata
-                            .resolve
-                            .as_ref()
-                            .unwrap()
-                            .root
-                            .as_ref()
-                            .expect("No root package or --package")
-                }
-            })
-            .unwrap();
-        let out_dir = metadata.target_directory.join("geng");
-        if out_dir.exists() {
-            std::fs::remove_dir_all(&out_dir)?;
-        }
-        let static_dir = std::path::Path::new(&package.manifest_path)
-            .parent()
-            .unwrap()
-            .join("static");
-        if static_dir.is_dir() {
-            fs_extra::dir::copy(static_dir, &out_dir, &{
-                let mut options = fs_extra::dir::CopyOptions::new();
-                options.copy_inside = true;
-                options
-            })?;
-        }
-        std::fs::create_dir_all(&out_dir)?;
+    match opt.sub {
+        Sub::Build | Sub::Run => {
+            exec(Command::new("cargo").arg("build").args(opt.all_args()))?;
+            let metadata = cargo_metadata::MetadataCommand::new()
+                .other_options(
+                    opt.args_for_metadata()
+                        .map(|arg| arg.to_owned())
+                        .collect::<Vec<_>>(),
+                )
+                .exec()?;
+            let package = metadata
+                .packages
+                .iter()
+                .find(|package| {
+                    if let Some(name) = &opt.package {
+                        package.name == *name
+                    } else {
+                        package.id
+                            == *metadata
+                                .resolve
+                                .as_ref()
+                                .unwrap()
+                                .root
+                                .as_ref()
+                                .expect("No root package or --package")
+                    }
+                })
+                .unwrap();
+            let out_dir = metadata.target_directory.join("geng");
+            if out_dir.exists() {
+                std::fs::remove_dir_all(&out_dir)?;
+            }
+            let static_dir = std::path::Path::new(&package.manifest_path)
+                .parent()
+                .unwrap()
+                .join("static");
+            if static_dir.is_dir() {
+                fs_extra::dir::copy(static_dir, &out_dir, &{
+                    let mut options = fs_extra::dir::CopyOptions::new();
+                    options.copy_inside = true;
+                    options
+                })?;
+            }
+            std::fs::create_dir_all(&out_dir)?;
 
-        let mut command = Command::new("cargo")
-            .arg("build")
-            .args(opt.all_args())
-            .arg("--message-format=json")
-            .stdout(std::process::Stdio::piped())
-            .stderr(std::process::Stdio::null())
-            .spawn()?;
-        let reader = std::io::BufReader::new(command.stdout.take().unwrap());
-        let mut executable = None;
-        for message in cargo_metadata::Message::parse_stream(reader) {
-            if let cargo_metadata::Message::CompilerArtifact(cargo_metadata::Artifact {
-                executable: Some(path),
-                ..
-            }) = message.unwrap()
-            {
-                if executable.is_some() {
-                    anyhow::bail!("Found several executable files");
+            let mut command = Command::new("cargo")
+                .arg("build")
+                .args(opt.all_args())
+                .arg("--message-format=json")
+                .stdout(std::process::Stdio::piped())
+                .stderr(std::process::Stdio::null())
+                .spawn()?;
+            let reader = std::io::BufReader::new(command.stdout.take().unwrap());
+            let mut executable = None;
+            for message in cargo_metadata::Message::parse_stream(reader) {
+                if let cargo_metadata::Message::CompilerArtifact(cargo_metadata::Artifact {
+                    executable: Some(path),
+                    ..
+                }) = message.unwrap()
+                {
+                    if executable.is_some() {
+                        anyhow::bail!("Found several executable files");
+                    }
+                    executable = Some(path);
                 }
-                executable = Some(path);
+            }
+            command.wait()?;
+            let executable = executable.ok_or(anyhow::anyhow!("executable not found"))?;
+
+            if executable.extension() == Some("wasm".as_ref()) {
+                exec(
+                    Command::new("wasm-bindgen")
+                        .arg("--target=web")
+                        .arg("--no-typescript")
+                        .arg("--out-dir")
+                        .arg(&out_dir)
+                        .arg(&executable),
+                )?;
+                std::fs::write(
+                    out_dir.join(
+                        opt.index_file
+                            .as_ref()
+                            .map(|s| s.as_str())
+                            .unwrap_or("index.html"),
+                    ),
+                    include_str!("index.html").replace(
+                        "<app-name>",
+                        executable.file_stem().unwrap().to_str().unwrap(),
+                    ),
+                )?;
+                if opt.sub == Sub::Run {
+                    serve(&out_dir);
+                }
+            } else {
+                std::fs::copy(&executable, out_dir.join(executable.file_name().unwrap()))?;
+                if opt.sub == Sub::Run {
+                    exec(Command::new(&executable).env(
+                        "CARGO_MANIFEST_DIR",
+                        package.manifest_path.parent().unwrap(),
+                    ))?;
+                }
             }
         }
-        command.wait()?;
-        let executable = executable.ok_or(anyhow::anyhow!("executable not found"))?;
-
-        if executable.extension() == Some("wasm".as_ref()) {
+        Sub::Check => {
             exec(
-                Command::new("wasm-bindgen")
-                    .arg("--target=web")
-                    .arg("--no-typescript")
-                    .arg("--out-dir")
-                    .arg(&out_dir)
-                    .arg(&executable),
+                Command::new("cargo")
+                    .arg("check")
+                    .args(opt.args_without_target()),
             )?;
-            std::fs::write(
-                out_dir.join(
-                    opt.index_file
-                        .as_ref()
-                        .map(|s| s.as_str())
-                        .unwrap_or("index.html"),
-                ),
-                include_str!("index.html").replace(
-                    "<app-name>",
-                    executable.file_stem().unwrap().to_str().unwrap(),
-                ),
+            exec(
+                Command::new("cargo")
+                    .arg("check")
+                    .args(opt.args_without_target())
+                    .arg("--target=wasm32-unknown-unknown"),
             )?;
-            if opt.sub == Sub::Run {
-                serve(&out_dir);
-            }
-        } else {
-            std::fs::copy(&executable, out_dir.join(executable.file_name().unwrap()))?;
-            if opt.sub == Sub::Run {
-                exec(Command::new(&executable).env(
-                    "CARGO_MANIFEST_DIR",
-                    package.manifest_path.parent().unwrap(),
-                ))?;
-            }
         }
-    } else {
-        exec(
-            Command::new("cargo")
-                .arg(opt.sub.to_string())
-                .args(opt.all_args()),
-        )?;
     }
     Ok(())
 }
