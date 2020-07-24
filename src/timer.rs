@@ -1,5 +1,5 @@
 #[allow(unused_imports)]
-use crate::*;
+use super::*;
 
 /// Timer can be used to track time since some instant.
 pub struct Timer {

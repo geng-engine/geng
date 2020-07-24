@@ -1,5 +1,5 @@
 #[allow(unused_imports)]
-use crate::*;
+use super::*;
 
 pub trait ColorComponent: Copy {
     const ZERO: Self;
@@ -51,7 +51,7 @@ impl ColorComponent for u8 {
 
 #[test]
 fn test_convert() {
-    use crate::*;
+    use super::*;
     fn assert_eq<T: ColorComponent>(val: T, val_f32: f32, val_f64: f64, val_u8: u8) {
         assert!(val.convert::<f32>().approx_eq_eps(&val_f32, 1.0 / 255.0));
         assert!(val.convert::<f64>().approx_eq_eps(&val_f64, 1.0 / 255.0));

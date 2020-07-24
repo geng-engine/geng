@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 mod vec2;
 mod vec3;

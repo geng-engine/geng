@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub struct AutoSave<T: Serialize> {
     value: T,

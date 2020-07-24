@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub trait Float: Num {
     const PI: Self;

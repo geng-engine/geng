@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub trait Real: Num + Copy {
     const PI: Self;

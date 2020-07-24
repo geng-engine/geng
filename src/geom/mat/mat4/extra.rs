@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 impl<T: Copy> Mat4<T> {
     /// Get transposed matrix.

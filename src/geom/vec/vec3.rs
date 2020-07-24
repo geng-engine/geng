@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 /// 3-d vector.
 #[repr(C)]

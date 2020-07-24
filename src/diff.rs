@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub trait Diff:
     Serialize + for<'de> Deserialize<'de> + Trans + Sync + Send + Clone + 'static

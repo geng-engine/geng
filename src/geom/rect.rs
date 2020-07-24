@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 /// A rect with sides parralel to x and y axis.
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]

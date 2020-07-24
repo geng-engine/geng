@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 /// Axis aligned bounding box.
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]

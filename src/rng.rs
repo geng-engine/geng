@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 #[doc(no_inline)]
 pub use rand::distributions::Distribution;

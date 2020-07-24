@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub trait ThreadPoolExt {
     fn spawn<T: Send + 'static, F: FnOnce() -> T + Send + 'static>(

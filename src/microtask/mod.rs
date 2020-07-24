@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub fn spawn<F: FnOnce() + Send + 'static>(task: F) {
     #[cfg(target_arch = "wasm32")]

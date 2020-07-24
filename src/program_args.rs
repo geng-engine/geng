@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub fn parse<T: StructOpt>() -> T {
     #[cfg(target_arch = "wasm32")]

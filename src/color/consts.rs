@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 impl<T: ColorComponent> Color<T> {
     pub const WHITE: Self = Self {

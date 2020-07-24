@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 impl<T: Num + Copy> Mat4<T> {
     /// Construct a uniform scale matrix.
