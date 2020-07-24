@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub struct ColorData<'a> {
     width: usize,

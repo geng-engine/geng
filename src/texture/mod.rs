@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub unsafe trait TexturePixel {
     const INTERNAL_FORMAT: raw::Enum;

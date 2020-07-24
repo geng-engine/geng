@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub trait Uniforms {
     fn walk_uniforms<C>(&self, visitor: &mut C)

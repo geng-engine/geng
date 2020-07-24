@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub unsafe trait RenderbufferPixel {
     const GL_FORMAT: raw::Enum;

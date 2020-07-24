@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub struct FBO {
     pub(crate) ugli: Rc<Ugli>,

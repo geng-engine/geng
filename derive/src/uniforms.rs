@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub fn derive(input: TokenStream) -> TokenStream {
     simple_derive(input, syn::parse_str("ugli::Uniforms").unwrap(), expand)

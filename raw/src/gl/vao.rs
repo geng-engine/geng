@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub type VertexArrayObject = gl::types::GLuint;
 

@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum AttributeType {
