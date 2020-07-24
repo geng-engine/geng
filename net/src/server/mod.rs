@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub trait App: Send + 'static {
     type Client: Receiver<Self::ClientMessage>;

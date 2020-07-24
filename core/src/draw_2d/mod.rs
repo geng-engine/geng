@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 #[derive(ugli::Vertex, Copy, Clone, Debug)]
 pub struct Vertex {

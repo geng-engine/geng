@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 #[cfg(not(target_arch = "wasm32"))]
 #[path = "native.rs"]

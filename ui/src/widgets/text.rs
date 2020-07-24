@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub struct Text<'a, T: AsRef<str>> {
     core: WidgetCore,

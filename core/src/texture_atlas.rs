@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub struct TextureAtlas {
     texture: ugli::Texture,

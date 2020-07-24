@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub struct Connection<S: Message, C: Message> {
     sender: ws::Sender,

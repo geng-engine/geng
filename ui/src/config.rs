@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub trait Config<T> {
     fn get(&self) -> T;

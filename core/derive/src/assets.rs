@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub fn derive(input: TokenStream) -> TokenStream {
     let s = input.to_string();

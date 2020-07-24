@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 trait Convert<T>: Sized {
     fn convert(value: T) -> Option<Self>;
