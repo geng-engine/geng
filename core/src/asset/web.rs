@@ -43,6 +43,9 @@ impl LoadAsset for ugli::Texture {
         image.set_src(path);
         receiver.map(|result| result.unwrap()).boxed_local()
     }
+    fn default_ext() -> Option<&'static str> {
+        Some("png")
+    }
 }
 
 impl LoadAsset for Sound {
@@ -80,6 +83,9 @@ impl LoadAsset for Sound {
             wasm_bindgen::closure::Closure::once_into_js(handler),
         );
         receiver.map(|result| result.unwrap()).boxed_local()
+    }
+    fn default_ext() -> Option<&'static str> {
+        Some("wav")
     }
 }
 
@@ -120,5 +126,8 @@ impl LoadAsset for String {
         );
         request.send().unwrap();
         receiver.map(|result| result.unwrap()).boxed_local()
+    }
+    fn default_ext() -> Option<&'static str> {
+        Some("txt")
     }
 }

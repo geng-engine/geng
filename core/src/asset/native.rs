@@ -71,6 +71,9 @@ impl LoadAsset for ugli::Texture {
             )
             .boxed_local()
     }
+    fn default_ext() -> Option<&'static str> {
+        Some("png")
+    }
 }
 
 impl LoadAsset for Sound {
@@ -90,6 +93,9 @@ impl LoadAsset for Sound {
             .map(|result| result.unwrap())
             .boxed_local()
     }
+    fn default_ext() -> Option<&'static str> {
+        Some("wav")
+    }
 }
 
 impl LoadAsset for String {
@@ -105,5 +111,8 @@ impl LoadAsset for String {
             })
             .map(|result| result.unwrap())
             .boxed_local()
+    }
+    fn default_ext() -> Option<&'static str> {
+        Some("txt")
     }
 }

@@ -52,7 +52,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                             }
                         }
                     }
-                    (path.expect("No path for asset"), range)
+                    (path, range)
                 })
                 .collect();
             let field_placeholders: Vec<_> = fields
@@ -76,14 +76,16 @@ pub fn derive(input: TokenStream) -> TokenStream {
                 .collect();
 
             let field_loaders = izip!(
+                field_names.iter(),
                 field_tys.iter(),
                 field_attrs.iter(),
                 field_placeholders.iter()
             )
-            .map(|(ty, (path, range), placeholder)| match placeholder {
+            .map(|(name, ty, (path, range), placeholder)| match placeholder {
                 Some(_placeholder) => panic!("Lazy assets removed"),
                 None => {
                     if let Some(syn::Lit::Str(ref range)) = range {
+                        let path = path.as_ref().expect("Path needs to be specified for ranged assets");
                         let range = range.parse::<syn::ExprRange>().expect("Failed to parse range");
                         quote! {
                             futures::future::join_all((#range).map(|i| {
@@ -91,8 +93,19 @@ pub fn derive(input: TokenStream) -> TokenStream {
                             })).map(|results| results.into_iter().collect::<Result<#ty, geng::prelude::Error>>()).boxed_local()
                         }
                     } else {
+                        let path = match path {
+                            Some(path) => quote! { #path }, 
+                            None => quote! {{
+                                let mut path = stringify!(#name).to_owned();
+                                if let Some(ext) = <#ty>::default_ext() {
+                                    path.push('.');
+                                    path.push_str(ext);
+                                }
+                                path
+                            }},
+                        };
                         quote! {
-                            <#ty>::load(geng, &format!(concat!("{}/", #path), path))
+                            <#ty>::load(geng, &format!("{}/{}", base_path, #path))
                         }
                     }
                 }
@@ -130,10 +143,13 @@ pub fn derive(input: TokenStream) -> TokenStream {
 
                 impl geng::LoadAsset for #input_type
                     /*where #(#field_constraints),**/ {
-                    fn load(geng: &Rc<Geng>, path: &str) -> geng::AssetFuture<Self> {
+                    fn load(geng: &Rc<Geng>, base_path: &str) -> geng::AssetFuture<Self> {
                         geng::prelude::future::FutureExt::boxed_local(#future_name {
                             #(#field_names: std::pin::Pin::new(Box::new(geng::prelude::future::maybe_done(#field_loaders))),)*
                         })
+                    }
+                    fn default_ext() -> Option<&'static str> {
+                        None
                     }
                 }
             };
