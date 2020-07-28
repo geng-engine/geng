@@ -94,7 +94,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                         }
                     } else {
                         let path = match path {
-                            Some(path) => quote! { #path }, 
+                            Some(path) => quote! { #path },
                             None => quote! {{
                                 let mut path = stringify!(#name).to_owned();
                                 if let Some(ext) = <#ty>::default_ext() {
