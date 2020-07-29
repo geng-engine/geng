@@ -103,6 +103,14 @@ impl<T: UNum> AABB<T> {
             y_max: self.y_max + v.y,
         }
     }
+
+    pub fn points(&self) -> impl Iterator<Item = Vec2<T>> + '_
+    where
+        Range<T>: Iterator<Item = T>,
+    {
+        (self.x_min..self.x_max)
+            .flat_map(move |x| (self.y_min..self.y_max).map(move |y| vec2(x, y)))
+    }
 }
 
 impl<T: Float> AABB<T> {
