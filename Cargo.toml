@@ -1,6 +1,6 @@
 [package]
 name = "batbox"
-version = "0.4.2"
+version = "0.5.0-alpha.0"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Batteries useful for projects"
 license = "MIT"
@@ -8,7 +8,10 @@ homepage = "https://github.com/kuviman/batbox"
 edition = "2018"
 
 [dependencies]
-batbox-derive = { path = "derive", version = "0.1.0" }
+batbox-derive = { path = "derive", version = "0.5.0-alpha" }
+trans = "0.3.0-alpha"
+trans-schema = "0.3.0-alpha"
+
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 ron = "0.6"
@@ -26,8 +29,6 @@ maplit = "1"
 stderrlog = "0.4"
 backtrace = "0.3"
 err-derive = "0.2"
-trans = "0.2"
-trans-schema = "0.1"
 anyhow = "1"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
