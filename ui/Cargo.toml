@@ -1,6 +1,6 @@
 [package]
 name = "geng-ui"
-version = "0.5.0"
+version = "0.6.0-alpha.0"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Game Engine (ui)"
 license = "MIT"
@@ -8,6 +8,6 @@ homepage = "https://github.com/kuviman/geng"
 edition = "2018"
 
 [dependencies]
-geng-core = { path = "../core", version = "0.5" }
-geng-ui-derive = { path = "derive", version = "0.5" }
+geng-core = { path = "../core", version = "0.6.0-alpha" }
+geng-ui-derive = { path = "derive", version = "0.6.0-alpha" }
 serde = "1"
