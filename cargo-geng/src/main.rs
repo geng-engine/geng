@@ -79,16 +79,19 @@ impl ToString for Sub {
 #[derive(structopt::StructOpt)]
 struct Opt {
     sub: Sub,
-    #[structopt(long = "package", short = "p")]
+    #[structopt(long, short = "p")]
     package: Option<String>,
-    #[structopt(long = "target")]
+    #[structopt(long)]
     target: Option<String>,
-    #[structopt(long = "release")]
+    #[structopt(long)]
     release: bool,
-    #[structopt(long = "example")]
+    #[structopt(long)]
+    all_features: bool,
+    #[structopt(long)]
     example: Option<String>,
-    #[structopt(long = "index-file")]
+    #[structopt(long)]
     index_file: Option<String>,
+    passthrough_args: Vec<String>,
 }
 
 fn to_arg<'a>(arg: &'a Option<String>, name: &'a str) -> impl Iterator<Item = &'a str> + 'a {
@@ -113,6 +116,11 @@ impl Opt {
                 None
             })
             .chain(to_arg(&self.example, "--example"))
+            .chain(if self.all_features {
+                Some("--all-features")
+            } else {
+                None
+            })
     }
     fn all_args(&self) -> impl Iterator<Item = &str> {
         self.args_without_target()
@@ -225,7 +233,7 @@ fn main() -> Result<(), anyhow::Error> {
             } else {
                 std::fs::copy(&executable, out_dir.join(executable.file_name().unwrap()))?;
                 if opt.sub == Sub::Run {
-                    exec(Command::new(&executable).env(
+                    exec(Command::new(&executable).args(opt.passthrough_args).env(
                         "CARGO_MANIFEST_DIR",
                         package.manifest_path.parent().unwrap(),
                     ))?;
