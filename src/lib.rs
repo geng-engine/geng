@@ -45,10 +45,7 @@ pub use structopt::{self, StructOpt};
 pub use threadpool::ThreadPool;
 pub use trans;
 #[doc(no_inline)]
-pub use trans::*;
-pub use trans_schema;
-#[doc(no_inline)]
-pub use trans_schema::*;
+pub use trans::prelude::*;
 
 #[cfg(target_arch = "wasm32")]
 pub use js_sys;

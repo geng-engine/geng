@@ -2,7 +2,7 @@ use super::*;
 
 /// 3-d vector.
 #[repr(C)]
-#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize, Trans, Schematic)]
+#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize, Trans)]
 pub struct Vec3<T> {
     pub x: T,
     pub y: T,

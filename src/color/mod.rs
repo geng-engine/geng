@@ -7,7 +7,7 @@ pub use component::*;
 pub use consts::*;
 
 #[repr(C)]
-#[derive(Debug, Copy, Clone, Serialize, Deserialize, Trans, Schematic)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, Trans)]
 pub struct Color<T> {
     pub r: T,
     pub g: T,

@@ -2,7 +2,7 @@ use super::*;
 
 /// 4-d vector.
 #[repr(C)]
-#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize, Trans, Schematic)]
+#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize, Trans)]
 pub struct Vec4<T> {
     pub x: T,
     pub y: T,

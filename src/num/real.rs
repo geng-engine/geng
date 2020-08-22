@@ -53,11 +53,14 @@ impl<T: Real> Float for T {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, PartialOrd, Schematic, Serialize)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Serialize)]
 #[repr(transparent)]
 pub struct RealImpl<T: Float>(T);
 
 impl<T: Float + Trans> Trans for RealImpl<T> {
+    fn create_schema() -> trans::Schema {
+        T::create_schema()
+    }
     fn read_from(reader: &mut dyn std::io::Read) -> Result<Self, std::io::Error> {
         let value = T::read_from(reader)?;
         if value.is_finite() {
