@@ -9,7 +9,7 @@ mod _impl;
 
 pub(crate) use _impl::*;
 
-pub type AssetFuture<T> = Pin<Box<dyn Future<Output = Result<T, Error>>>>;
+pub type AssetFuture<T> = Pin<Box<dyn Future<Output = Result<T, anyhow::Error>>>>;
 
 pub trait LoadAsset: Sized {
     fn load(geng: &Rc<Geng>, path: &str) -> AssetFuture<Self>;

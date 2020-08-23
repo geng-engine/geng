@@ -1,16 +1,10 @@
 #![recursion_limit = "256"]
 
-#[macro_use]
-extern crate failure;
-
 pub use geng_derive::*;
-
-use failure::Error;
 
 pub mod prelude {
     pub use crate::{draw_2d, Geng};
     pub use ::batbox::*;
-    pub use failure::Error;
     pub use ugli::{self, Ugli};
 }
 

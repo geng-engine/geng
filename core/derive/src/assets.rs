@@ -90,7 +90,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                         quote! {
                             futures::future::join_all((#range).map(|i| {
                                 geng::LoadAsset::load(geng, &format!("{}/{}", path, #path.replace("*", &i.to_string())))
-                            })).map(|results| results.into_iter().collect::<Result<#ty, geng::prelude::Error>>()).boxed_local()
+                            })).map(|results| results.into_iter().collect::<Result<#ty, anyhow::Error>>()).boxed_local()
                         }
                     } else {
                         let path = match path {
@@ -121,7 +121,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                 }
 
                 impl std::future::Future for #future_name {
-                    type Output = Result<#input_type, geng::prelude::Error>;
+                    type Output = Result<#input_type, anyhow::Error>;
                     fn poll(mut self: std::pin::Pin<&mut Self>, cx: &mut std::task::Context) -> std::task::Poll<Self::Output> {
                         let mut all_done = true;
                         #(all_done &= geng::prelude::Future::poll(self.#field_names.as_mut(), cx).is_ready();)*

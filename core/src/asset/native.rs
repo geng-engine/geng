@@ -53,8 +53,7 @@ impl LoadAsset for ugli::Texture {
             .threadpool
             .spawn(move || {
                 info!("Loading {:?}", path);
-                fn load(path: &str) -> Result<image::RgbaImage, Error> {
-                    use failure::ResultExt;
+                fn load(path: &str) -> Result<image::RgbaImage, anyhow::Error> {
                     let image = image::open(path).context(path.to_owned())?;
                     Ok(match image {
                         image::DynamicImage::ImageRgba8(image) => image,
@@ -65,7 +64,7 @@ impl LoadAsset for ugli::Texture {
             })
             .map(|result| result.unwrap())
             .map(
-                move |image: Result<image::RgbaImage, Error>| -> Result<ugli::Texture, Error> {
+                move |image: Result<image::RgbaImage, anyhow::Error>| -> Result<ugli::Texture, anyhow::Error> {
                     Ok(ugli::Texture::from_image(&ugli, image?))
                 },
             )

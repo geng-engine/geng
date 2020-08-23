@@ -21,7 +21,7 @@ impl LoadAsset for ugli::Texture {
                     .send(if success {
                         Ok(ugli::Texture::from_image(&ugli, &image))
                     } else {
-                        Err(format_err!("Failed to load image from {:?}", path))
+                        Err(anyhow!("Failed to load image from {:?}", path))
                     })
                     .map_err(|_| ())
                     .unwrap();
@@ -63,7 +63,7 @@ impl LoadAsset for Sound {
                             looped: false,
                         })
                     } else {
-                        Err(format_err!("Failed to load sound from {:?}", path))
+                        Err(anyhow!("Failed to load sound from {:?}", path))
                     })
                     .map_err(|_| ())
                     .unwrap();
@@ -102,7 +102,7 @@ impl LoadAsset for String {
                     .send(if success {
                         Ok(request.response_text().unwrap().unwrap())
                     } else {
-                        Err(format_err!("Failed to load {:?}", path))
+                        Err(anyhow!("Failed to load {:?}", path))
                     })
                     .map_err(|_| ())
                     .unwrap();

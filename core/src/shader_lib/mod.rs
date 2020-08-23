@@ -21,7 +21,7 @@ impl ShaderLib {
             .insert(file_name.to_owned(), source.to_owned());
     }
 
-    fn preprocess(&self, source: &str) -> Result<String, Error> {
+    fn preprocess(&self, source: &str) -> Result<String, anyhow::Error> {
         let mut result = String::new();
         for line in source.lines() {
             if line.starts_with("#include") {
@@ -37,7 +37,7 @@ impl ShaderLib {
                 if let Some(file) = self.files.borrow().get(file) {
                     result.push_str(&self.preprocess(file)?);
                 } else {
-                    bail!("{:?} not found in shader library", file);
+                    anyhow::bail!("{:?} not found in shader library", file);
                 }
             } else {
                 result.push_str(line);
@@ -46,7 +46,11 @@ impl ShaderLib {
         }
         Ok(result)
     }
-    pub fn process(&self, shader_type: ugli::ShaderType, source: &str) -> Result<String, Error> {
+    pub fn process(
+        &self,
+        shader_type: ugli::ShaderType,
+        source: &str,
+    ) -> Result<String, anyhow::Error> {
         let mut result = String::new();
         #[cfg(not(target_arch = "wasm32"))]
         result.push_str("#version 100\n");
@@ -59,7 +63,7 @@ impl ShaderLib {
         result.push_str(&self.preprocess(source)?);
         Ok(result)
     }
-    pub fn compile(&self, source: &str) -> Result<ugli::Program, Error> {
+    pub fn compile(&self, source: &str) -> Result<ugli::Program, anyhow::Error> {
         Ok(ugli::Program::new(
             &self.ugli,
             &[

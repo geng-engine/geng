@@ -18,16 +18,15 @@ pub struct Font {
 const CACHE_SIZE: usize = 1024;
 
 impl Font {
-    pub fn new(geng: &Rc<Geng>, data: Vec<u8>) -> Result<Font, Error> {
+    pub fn new(geng: &Rc<Geng>, data: Vec<u8>) -> Result<Font, anyhow::Error> {
         Self::new_with(geng.ugli(), geng.shader_lib(), data)
     }
     pub(crate) fn new_with(
         geng: &Rc<Ugli>,
         shader_lib: &ShaderLib,
         data: Vec<u8>,
-    ) -> Result<Font, Error> {
-        let font =
-            rusttype::Font::try_from_vec(data).ok_or(failure::err_msg("Failed to read font"))?;
+    ) -> Result<Font, anyhow::Error> {
+        let font = rusttype::Font::try_from_vec(data).ok_or(anyhow!("Failed to read font"))?;
         let descent = font.v_metrics(rusttype::Scale { x: 1.0, y: 1.0 }).descent;
         Ok(Font {
             font,
