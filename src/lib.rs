@@ -1,10 +1,10 @@
-pub use anyhow;
+pub use ::anyhow;
+#[doc(no_inline)]
+pub use ::anyhow::{anyhow, Context as _};
 #[doc(no_inline)]
 pub use bincode;
 #[doc(no_inline)]
 pub use dyn_clone::{clone_box, DynClone};
-#[doc(no_inline)]
-pub use err_derive::*;
 #[doc(no_inline)]
 pub use futures::{self, prelude::*};
 #[doc(no_inline)]
@@ -41,6 +41,9 @@ pub use std::{
 };
 #[doc(no_inline)]
 pub use structopt::{self, StructOpt};
+pub use thiserror;
+#[doc(no_inline)]
+pub use thiserror::*;
 #[doc(no_inline)]
 pub use threadpool::ThreadPool;
 pub use trans;
