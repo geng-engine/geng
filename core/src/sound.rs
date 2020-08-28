@@ -24,7 +24,12 @@ impl Sound {
             },
             #[cfg(not(target_arch = "wasm32"))]
             sink: Some({
-                let sink = rodio::Sink::new(&rodio::default_output_device().unwrap());
+                // TODO: https://github.com/RustAudio/rodio/issues/214
+                let sink = std::thread::spawn(|| {
+                    rodio::Sink::new(&rodio::default_output_device().unwrap())
+                })
+                .join()
+                .unwrap();
                 sink.pause();
                 if self.looped {
                     sink.append(rodio::Source::repeat_infinite(
