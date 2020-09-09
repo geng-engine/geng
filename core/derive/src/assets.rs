@@ -105,7 +105,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                             }},
                         };
                         quote! {
-                            <#ty>::load(geng, &format!("{}/{}", base_path, #path))
+                            <#ty as geng::LoadAsset>::load(geng, &format!("{}/{}", base_path, #path))
                         }
                     }
                 }
