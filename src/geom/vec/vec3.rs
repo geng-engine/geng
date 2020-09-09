@@ -47,6 +47,9 @@ impl<T> DerefMut for Vec3<T> {
 }
 
 impl<T> Vec3<T> {
+    pub fn xy(self) -> Vec2<T> {
+        vec2(self.x, self.y)
+    }
     pub fn extend(self, w: T) -> Vec4<T> {
         vec4(self.x, self.y, self.z, w)
     }
