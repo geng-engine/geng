@@ -21,6 +21,9 @@ mod ext {
                 child: self,
             }
         }
+        fn center(self) -> Align<Self> {
+            self.center()
+        }
         fn flex_align(self, flex: Vec2<Option<f64>>, align: Vec2<f64>) -> Align<Self> {
             Align {
                 core: WidgetCore::void(),
