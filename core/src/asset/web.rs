@@ -8,14 +8,16 @@ impl AssetManager {
     }
 }
 
+#[async_trait(?Send)]
 impl LoadAsset for ugli::Texture {
-    fn load(geng: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
+    async fn load(geng: Rc<Geng>, path: String) -> Result<Self, anyhow::Error> {
         let (sender, receiver) = futures::channel::oneshot::channel();
         let image = web_sys::HtmlImageElement::new().unwrap();
+        let path = Rc::new(path);
         let handler = {
             let image = image.clone();
             let ugli = geng.ugli().clone();
-            let path = path.to_owned();
+            let path = path.clone();
             move |success: bool| {
                 sender
                     .send(if success {
@@ -40,21 +42,23 @@ impl LoadAsset for ugli::Texture {
             &image,
             wasm_bindgen::closure::Closure::once_into_js(handler),
         );
-        image.set_src(path);
-        receiver.map(|result| result.unwrap()).boxed_local()
+        image.set_src(&path);
+        receiver.await?
     }
     fn default_ext() -> Option<&'static str> {
         Some("png")
     }
 }
 
+#[async_trait(?Send)]
 impl LoadAsset for Sound {
-    fn load(_: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
+    async fn load(_: Rc<Geng>, path: String) -> Result<Self, anyhow::Error> {
         let (sender, receiver) = futures::channel::oneshot::channel();
-        let audio = web_sys::HtmlAudioElement::new_with_src(path).unwrap();
+        let audio = web_sys::HtmlAudioElement::new_with_src(&path).unwrap();
+        let path = Rc::new(path);
         let handler = {
             let audio = audio.clone();
-            let path = path.to_owned();
+            let path = path.clone();
             move |success: bool| {
                 sender
                     .send(if success {
@@ -82,21 +86,23 @@ impl LoadAsset for Sound {
             &audio,
             wasm_bindgen::closure::Closure::once_into_js(handler),
         );
-        receiver.map(|result| result.unwrap()).boxed_local()
+        receiver.await?
     }
     fn default_ext() -> Option<&'static str> {
         Some("wav")
     }
 }
 
+#[async_trait(?Send)]
 impl LoadAsset for String {
-    fn load(_: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
+    async fn load(_: Rc<Geng>, path: String) -> Result<Self, anyhow::Error> {
         let (sender, receiver) = futures::channel::oneshot::channel();
         let request = web_sys::XmlHttpRequest::new().unwrap();
-        request.open("GET", path).unwrap();
+        request.open("GET", &path).unwrap();
+        let path = Rc::new(path);
         let handler = {
             let request = request.clone();
-            let path = path.to_owned();
+            let path = path.clone();
             move |success: bool| {
                 sender
                     .send(if success {
@@ -125,7 +131,7 @@ impl LoadAsset for String {
             wasm_bindgen::closure::Closure::once_into_js(handler),
         );
         request.send().unwrap();
-        receiver.map(|result| result.unwrap()).boxed_local()
+        receiver.await?
     }
     fn default_ext() -> Option<&'static str> {
         Some("txt")

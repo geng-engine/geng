@@ -9,28 +9,20 @@ mod _impl;
 
 pub(crate) use _impl::*;
 
-pub type AssetFuture<T> = Pin<Box<dyn Future<Output = Result<T, anyhow::Error>>>>;
-
+#[async_trait(?Send)]
 pub trait LoadAsset: Sized {
-    fn load(geng: &Rc<Geng>, path: &str) -> AssetFuture<Self>;
+    // TODO: non 'static args?
+    async fn load(geng: Rc<Geng>, path: String) -> Result<Self, anyhow::Error>;
     fn default_ext() -> Option<&'static str>;
 }
 
-impl LoadAsset for () {
-    fn load(_: &Rc<Geng>, _: &str) -> AssetFuture<()> {
-        unimplemented!()
-    }
-    fn default_ext() -> Option<&'static str> {
-        None
-    }
-}
-
+#[async_trait(?Send)]
 impl<T: 'static> LoadAsset for Rc<T>
 where
     T: LoadAsset,
 {
-    fn load(geng: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
-        T::load(geng, path).map(|t| Ok(Rc::new(t?))).boxed_local()
+    async fn load(geng: Rc<Geng>, path: String) -> Result<Self, anyhow::Error> {
+        Ok(Rc::new(T::load(geng, path).await?))
     }
     fn default_ext() -> Option<&'static str> {
         T::default_ext()

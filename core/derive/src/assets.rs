@@ -46,10 +46,16 @@ pub fn derive(input: TokenStream) -> TokenStream {
                                                 "Multiple ranges for an asset"
                                             );
                                             range = Some(lit.clone());
+                                        } else {
+                                            panic!("Failed to parse asset attr");
                                         }
+                                    } else {
+                                        panic!("Failed to parse asset attr");
                                     }
                                 }
                             }
+                        } else {
+                            panic!("Failed to parse meta")
                         }
                     }
                     (path, range)
@@ -88,9 +94,9 @@ pub fn derive(input: TokenStream) -> TokenStream {
                         let path = path.as_ref().expect("Path needs to be specified for ranged assets");
                         let range = range.parse::<syn::ExprRange>().expect("Failed to parse range");
                         quote! {
-                            futures::future::join_all((#range).map(|i| {
-                                geng::LoadAsset::load(geng, &format!("{}/{}", path, #path.replace("*", &i.to_string())))
-                            })).map(|results| results.into_iter().collect::<Result<#ty, anyhow::Error>>()).boxed_local()
+                            futures::future::try_join_all((#range).map(|i| {
+                                geng::LoadAsset::load(geng.clone(), format!("{}/{}", base_path, #path.replace("*", &i.to_string())))
+                            }))
                         }
                     } else {
                         let path = match path {
@@ -105,47 +111,20 @@ pub fn derive(input: TokenStream) -> TokenStream {
                             }},
                         };
                         quote! {
-                            <#ty as geng::LoadAsset>::load(geng, &format!("{}/{}", base_path, #path))
+                            <#ty as geng::LoadAsset>::load(geng.clone(), format!("{}/{}", base_path, #path))
                         }
                     }
                 }
             });
-            let future_name = syn::Ident::new(
-                &format!("{}Future", input_type),
-                proc_macro2::Span::call_site(),
-            );
 
             let expanded = quote! {
-                pub struct #future_name {
-                    #(#field_names: std::pin::Pin<Box<geng::prelude::future::MaybeDone<geng::AssetFuture<#field_tys>>>>,)*
-                }
-
-                impl std::future::Future for #future_name {
-                    type Output = Result<#input_type, anyhow::Error>;
-                    fn poll(mut self: std::pin::Pin<&mut Self>, cx: &mut std::task::Context) -> std::task::Poll<Self::Output> {
-                        let mut all_done = true;
-                        #(all_done &= geng::prelude::Future::poll(self.#field_names.as_mut(), cx).is_ready();)*
-                        if all_done {
-                            #(
-                                let #field_names = match self.#field_names_copy.as_mut().take_output().unwrap() {
-                                    Ok(value) => value,
-                                    Err(e) => return std::task::Poll::Ready(Err(e)),
-                                };
-                            )*
-                            std::task::Poll::Ready(Ok(#input_type {
-                                #(#field_names,)*
-                            }))
-                        } else {
-                            std::task::Poll::Pending
-                        }
-                    }
-                }
-
+                #[async_trait(?Send)]
                 impl geng::LoadAsset for #input_type
-                    /*where #(#field_constraints),**/ {
-                    fn load(geng: &Rc<Geng>, base_path: &str) -> geng::AssetFuture<Self> {
-                        geng::prelude::future::FutureExt::boxed_local(#future_name {
-                            #(#field_names: std::pin::Pin::new(Box::new(geng::prelude::future::maybe_done(#field_loaders))),)*
+                    /* where #(#field_constraints),* */ {
+                    async fn load(geng: Rc<Geng>, base_path: String) -> Result<Self, anyhow::Error> {
+                        let (#(#field_names,)*) = futures::try_join!(#(#field_loaders,)*)?;
+                        Ok(Self {
+                            #(#field_names,)*
                         })
                     }
                     fn default_ext() -> Option<&'static str> {

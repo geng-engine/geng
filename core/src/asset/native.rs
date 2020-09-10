@@ -45,11 +45,12 @@ impl AssetManager {
     }
 }
 
+#[async_trait(?Send)]
 impl LoadAsset for ugli::Texture {
-    fn load(geng: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
-        let path = path.to_owned();
+    async fn load(geng: Rc<Geng>, path: String) -> Result<Self, anyhow::Error> {
         let ugli = geng.ugli().clone();
-        geng.asset_manager
+        let image = geng
+            .asset_manager
             .threadpool
             .spawn(move || {
                 info!("Loading {:?}", path);
@@ -62,22 +63,17 @@ impl LoadAsset for ugli::Texture {
                 }
                 load(&path)
             })
-            .map(|result| result.unwrap())
-            .map(
-                move |image: Result<image::RgbaImage, anyhow::Error>| -> Result<ugli::Texture, anyhow::Error> {
-                    Ok(ugli::Texture::from_image(&ugli, image?))
-                },
-            )
-            .boxed_local()
+            .await??;
+        Ok(ugli::Texture::from_image(&ugli, image))
     }
     fn default_ext() -> Option<&'static str> {
         Some("png")
     }
 }
 
+#[async_trait(?Send)]
 impl LoadAsset for Sound {
-    fn load(geng: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
-        let path = path.to_owned();
+    async fn load(geng: Rc<Geng>, path: String) -> Result<Self, anyhow::Error> {
         geng.asset_manager
             .threadpool
             .spawn(move || {
@@ -89,17 +85,16 @@ impl LoadAsset for Sound {
                     looped: false,
                 })
             })
-            .map(|result| result.unwrap())
-            .boxed_local()
+            .await?
     }
     fn default_ext() -> Option<&'static str> {
         Some("wav")
     }
 }
 
+#[async_trait(?Send)]
 impl LoadAsset for String {
-    fn load(geng: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
-        let path = path.to_owned();
+    async fn load(geng: Rc<Geng>, path: String) -> Result<Self, anyhow::Error> {
         geng.asset_manager
             .threadpool
             .spawn(move || {
@@ -108,8 +103,7 @@ impl LoadAsset for String {
                 std::fs::File::open(path)?.read_to_string(&mut result)?;
                 Ok(result)
             })
-            .map(|result| result.unwrap())
-            .boxed_local()
+            .await?
     }
     fn default_ext() -> Option<&'static str> {
         Some("txt")
