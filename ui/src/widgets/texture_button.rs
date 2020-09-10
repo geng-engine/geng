@@ -114,7 +114,7 @@ impl<'a> Widget for TextureButtonUI<'a> {
             if self.core().hovered() {
                 self.theme.hover_color
             } else {
-                self.theme.color
+                self.theme.usable_color
             },
             ugli::DrawMode::TriangleFan,
         )

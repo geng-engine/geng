@@ -69,7 +69,16 @@ pub trait Widget {
     }
 }
 
-impl Widget for Box<dyn Widget + '_> {
+impl Widget for WidgetCore {
+    fn core(&self) -> &WidgetCore {
+        self
+    }
+    fn core_mut(&mut self) -> &mut WidgetCore {
+        self
+    }
+}
+
+impl<T: Widget + ?Sized> Widget for &'_ mut T {
     fn core(&self) -> &WidgetCore {
         (**self).core()
     }
@@ -96,32 +105,29 @@ impl Widget for Box<dyn Widget + '_> {
     }
 }
 
-pub struct ControlPanel<'a> {
-    core: &'a mut WidgetCore,
-}
-
-pub fn control_panel(core: &mut WidgetCore) -> ControlPanel<'_> {
-    ControlPanel { core }
-}
-
-impl Deref for ControlPanel<'_> {
-    type Target = WidgetCore;
-    fn deref(&self) -> &WidgetCore {
-        &self.core
-    }
-}
-
-impl DerefMut for ControlPanel<'_> {
-    fn deref_mut(&mut self) -> &mut WidgetCore {
-        &mut self.core
-    }
-}
-
-impl Widget for ControlPanel<'_> {
+impl<T: Widget + ?Sized> Widget for Box<T> {
     fn core(&self) -> &WidgetCore {
-        &self.core
+        (**self).core()
     }
     fn core_mut(&mut self) -> &mut WidgetCore {
-        &mut self.core
+        (**self).core_mut()
+    }
+    fn calc_constraints(&mut self) {
+        (**self).calc_constraints();
+    }
+    fn layout_children(&mut self) {
+        (**self).layout_children();
+    }
+    fn update(&mut self, delta_time: f64) {
+        (**self).update(delta_time);
+    }
+    fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
+        (**self).draw(framebuffer);
+    }
+    fn handle_event(&mut self, event: &Event) {
+        (**self).handle_event(event);
+    }
+    fn walk_children_mut<'a>(&mut self, f: Box<dyn FnMut(&mut dyn Widget) + 'a>) {
+        (**self).walk_children_mut(f);
     }
 }

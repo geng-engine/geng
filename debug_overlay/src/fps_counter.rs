@@ -36,6 +36,6 @@ impl FpsCounter {
     }
 
     pub fn ui(&mut self) -> impl ui::Widget + '_ {
-        ui::text(&mut self.text, self.geng.default_font(), 16.0, Color::WHITE)
+        ui::Text::new(&mut self.text, self.geng.default_font(), 16.0, Color::WHITE)
     }
 }

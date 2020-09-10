@@ -40,19 +40,6 @@ pub struct TextButtonUI<'a> {
     size: f32,
 }
 
-impl<'a> Deref for TextButtonUI<'a> {
-    type Target = WidgetCore;
-    fn deref(&self) -> &WidgetCore {
-        self.core
-    }
-}
-
-impl<'a> DerefMut for TextButtonUI<'a> {
-    fn deref_mut(&mut self) -> &mut WidgetCore {
-        self.core
-    }
-}
-
 impl<'a> Widget for TextButtonUI<'a> {
     fn core(&self) -> &WidgetCore {
         &self.core
@@ -61,7 +48,7 @@ impl<'a> Widget for TextButtonUI<'a> {
         &mut self.core
     }
     fn calc_constraints(&mut self) {
-        self.constraints = widget::Constraints {
+        self.core.constraints = widget::Constraints {
             min_size: vec2(
                 self.theme.font.measure(self.text, self.size).width() as f64,
                 self.size as f64,
@@ -74,26 +61,27 @@ impl<'a> Widget for TextButtonUI<'a> {
             return;
         }
         let mut size = partial_min(
-            self.position.height() as f32,
-            self.size * self.position.width() as f32
+            self.core().position.height() as f32,
+            self.size * self.core().position.width() as f32
                 / self.theme.font.measure(self.text, self.size).width(),
         );
-        let color = if self.hovered() {
+        let color = if self.core().hovered() {
             self.theme.hover_color
         } else {
-            self.theme.color
+            self.theme.usable_color
         };
         let offset;
-        if self.captured() {
+        if self.core().captured() {
             size *= self.theme.press_ratio;
-            offset = self.position.size().map(|x| x as f32) * (1.0 - self.theme.press_ratio) / 2.0;
+            offset = self.core().position.size().map(|x| x as f32) * (1.0 - self.theme.press_ratio)
+                / 2.0;
         } else {
             offset = vec2(0.0, 0.0);
         }
         self.theme.font.draw(
             framebuffer,
             self.text,
-            self.position.bottom_left().map(|x| x as f32) + offset,
+            self.core().position.bottom_left().map(|x| x as f32) + offset,
             size,
             color,
         );

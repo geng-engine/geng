@@ -66,19 +66,6 @@ impl SliderUI<'_> {
     const ANIMATION_SPEED: f32 = 5.0;
 }
 
-impl<'a> Deref for SliderUI<'a> {
-    type Target = WidgetCore;
-    fn deref(&self) -> &WidgetCore {
-        self.core
-    }
-}
-
-impl<'a> DerefMut for SliderUI<'a> {
-    fn deref_mut(&mut self) -> &mut WidgetCore {
-        self.core
-    }
-}
-
 impl<'a> Widget for SliderUI<'a> {
     fn core(&self) -> &WidgetCore {
         &self.core
@@ -87,8 +74,8 @@ impl<'a> Widget for SliderUI<'a> {
         &mut self.core
     }
     fn update(&mut self, delta_time: f64) {
-        let height = self.position().height() as f32;
-        let target_tick_radius = if self.hovered() || self.captured() {
+        let height = self.core.position().height() as f32;
+        let target_tick_radius = if self.core.hovered() || self.core.captured() {
             height / 2.0
         } else {
             height / 6.0
@@ -99,7 +86,7 @@ impl<'a> Widget for SliderUI<'a> {
         );
     }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
-        let position = self.position().map(|x| x as f32);
+        let position = self.core.position().map(|x| x as f32);
         let line_width = position.height() / 3.0;
         let value_position = *self.tick_radius
             + ((self.value - *self.range.start()) / (*self.range.end() - *self.range.start()))
@@ -123,7 +110,7 @@ impl<'a> Widget for SliderUI<'a> {
                 position.top_right()
                     - vec2(line_width / 2.0, (position.height() - line_width) / 2.0),
             ),
-            self.theme.color,
+            self.theme.usable_color,
         );
         self.geng.draw_2d().circle(
             framebuffer,
@@ -135,7 +122,7 @@ impl<'a> Widget for SliderUI<'a> {
             framebuffer,
             position.top_right() - vec2(line_width / 2.0, position.height() / 2.0),
             line_width / 2.0,
-            self.theme.color,
+            self.theme.usable_color,
         );
         self.geng.draw_2d().circle(
             framebuffer,
@@ -145,13 +132,13 @@ impl<'a> Widget for SliderUI<'a> {
         );
     }
     fn handle_event(&mut self, event: &Event) {
-        if self.captured() {
+        if self.core.captured() {
             if let Event::MouseDown { position, .. } | Event::MouseMove { position } = &event {
-                let position = position.x - self.position().x_min;
+                let position = position.x - self.core.position().x_min;
                 let new_value = *self.range.start()
                     + clamp(
-                        (position - self.position().height() / 2.0)
-                            / (self.position().width() - self.position().height()),
+                        (position - self.core.position().height() / 2.0)
+                            / (self.core.position().width() - self.core.position().height()),
                         0.0..=1.0,
                     ) * (*self.range.end() - *self.range.start());
                 (self.f)(new_value);

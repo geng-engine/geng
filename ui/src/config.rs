@@ -24,7 +24,7 @@ impl<T: ToString + Clone> Config<T> for ShowValue<T> {
         if self.text.is_none() {
             self.text = Some(self.value.to_string());
         }
-        Box::new(text(
+        Box::new(Text::new(
             self.text.as_ref().unwrap(),
             &self.theme.font,
             16.0,

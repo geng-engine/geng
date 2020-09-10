@@ -78,8 +78,9 @@ impl Console {
             self.records
                 .iter()
                 .map(move |record| {
-                    Box::new(text(&record.message, font, 16.0, Color::WHITE).align(vec2(0.0, 0.5)))
-                        as Box<_>
+                    Box::new(
+                        Text::new(&record.message, font, 16.0, Color::WHITE).align(vec2(0.0, 0.5)),
+                    ) as Box<_>
                 })
                 .collect(),
         )
