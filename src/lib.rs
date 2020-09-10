@@ -2,6 +2,10 @@ pub use ::anyhow;
 #[doc(no_inline)]
 pub use ::anyhow::{anyhow, Context as _};
 #[doc(no_inline)]
+pub use ::async_trait;
+#[doc(no_inline)]
+pub use async_trait::*;
+#[doc(no_inline)]
 pub use bincode;
 #[doc(no_inline)]
 pub use dyn_clone::{clone_box, DynClone};
