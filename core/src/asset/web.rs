@@ -45,9 +45,7 @@ impl LoadAsset for ugli::Texture {
         image.set_src(&path);
         receiver.await?
     }
-    fn default_ext() -> Option<&'static str> {
-        Some("png")
-    }
+    const DEFAULT_EXT: Option<&'static str> = Some("png");
 }
 
 #[async_trait(?Send)]
@@ -88,9 +86,7 @@ impl LoadAsset for Sound {
         );
         receiver.await?
     }
-    fn default_ext() -> Option<&'static str> {
-        Some("wav")
-    }
+    const DEFAULT_EXT: Option<&'static str> = Some("wav");
 }
 
 #[async_trait(?Send)]
@@ -133,7 +129,5 @@ impl LoadAsset for String {
         request.send().unwrap();
         receiver.await?
     }
-    fn default_ext() -> Option<&'static str> {
-        Some("txt")
-    }
+    const DEFAULT_EXT: Option<&'static str> = Some("txt");
 }

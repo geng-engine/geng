@@ -103,7 +103,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                             Some(path) => quote! { #path },
                             None => quote! {{
                                 let mut path = stringify!(#name).to_owned();
-                                if let Some(ext) = <#ty>::default_ext() {
+                                if let Some(ext) = <#ty as geng::LoadAsset>::DEFAULT_EXT {
                                     path.push('.');
                                     path.push_str(ext);
                                 }
@@ -127,9 +127,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                             #(#field_names,)*
                         })
                     }
-                    fn default_ext() -> Option<&'static str> {
-                        None
-                    }
+                    const DEFAULT_EXT: Option<&'static str> = None;
                 }
             };
             expanded.into()

@@ -13,7 +13,7 @@ pub(crate) use _impl::*;
 pub trait LoadAsset: Sized {
     // TODO: non 'static args?
     async fn load(geng: Rc<Geng>, path: String) -> Result<Self, anyhow::Error>;
-    fn default_ext() -> Option<&'static str>;
+    const DEFAULT_EXT: Option<&'static str>;
 }
 
 #[async_trait(?Send)]
@@ -24,7 +24,5 @@ where
     async fn load(geng: Rc<Geng>, path: String) -> Result<Self, anyhow::Error> {
         Ok(Rc::new(T::load(geng, path).await?))
     }
-    fn default_ext() -> Option<&'static str> {
-        T::default_ext()
-    }
+    const DEFAULT_EXT: Option<&'static str> = T::DEFAULT_EXT;
 }
