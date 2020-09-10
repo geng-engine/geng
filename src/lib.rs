@@ -159,7 +159,7 @@ pub fn global_threadpool() -> &'static ThreadPool {
     }
 }
 
-pub fn save_file<F: FnOnce(Box<dyn Write>) -> std::io::Result<()>>(
+pub fn save_file<F: FnOnce(&mut dyn Write) -> std::io::Result<()>>(
     title: &str,
     default_path: &str,
     f: F,
@@ -167,9 +167,7 @@ pub fn save_file<F: FnOnce(Box<dyn Write>) -> std::io::Result<()>>(
     #[cfg(not(target_arch = "wasm32"))]
     {
         if let Some(path) = tinyfiledialogs::save_file_dialog(title, default_path) {
-            f(Box::new(std::io::BufWriter::new(std::fs::File::create(
-                path,
-            )?)))?;
+            f(&mut std::io::BufWriter::new(std::fs::File::create(path)?))?;
         }
     }
     Ok(())
