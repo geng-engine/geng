@@ -22,7 +22,7 @@ mod ext {
             }
         }
         fn center(self) -> Align<Self> {
-            self.center()
+            self.align(vec2(0.5, 0.5))
         }
         fn flex_align(self, flex: Vec2<Option<f64>>, align: Vec2<f64>) -> Align<Self> {
             Align {
