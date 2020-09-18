@@ -1,6 +1,7 @@
 use super::*;
 
 pub struct Theme {
+    geng: Rc<Geng>,
     pub usable_color: Color<f32>,
     pub hover_color: Color<f32>,
     pub text_color: Color<f32>,
@@ -12,12 +13,16 @@ pub struct Theme {
 impl Theme {
     pub fn default(geng: &Rc<Geng>) -> Self {
         Self {
+            geng: geng.clone(),
             usable_color: Color::WHITE,
             hover_color: Color::rgb(0.3, 0.3, 1.0),
             text_color: Color::GRAY,
             text_size: 32.0,
-            press_ratio: 0.75,
+            press_ratio: 0.25,
             font: geng.default_font().clone(),
         }
+    }
+    pub fn geng(&self) -> &Rc<Geng> {
+        &self.geng
     }
 }

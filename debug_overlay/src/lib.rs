@@ -54,7 +54,7 @@ impl DebugOverlay {
 impl State for DebugOverlay {
     fn update(&mut self, delta_time: f64) {
         if self.enabled {
-            self.ui_controller.update(self.data.ui(), delta_time);
+            self.ui_controller.update(&mut self.data.ui(), delta_time);
         }
         self.state.update(delta_time);
     }
@@ -62,7 +62,7 @@ impl State for DebugOverlay {
         self.state.draw(framebuffer);
         if self.enabled {
             self.data.before_draw();
-            self.ui_controller.draw(self.data.ui(), framebuffer);
+            self.ui_controller.draw(&mut self.data.ui(), framebuffer);
         }
     }
     fn handle_event(&mut self, event: Event) {
@@ -72,7 +72,7 @@ impl State for DebugOverlay {
         if !self.enabled
             || !self
                 .ui_controller
-                .handle_event(self.data.ui(), event.clone())
+                .handle_event(&mut self.data.ui(), event.clone())
         {
             self.state.handle_event(event);
         }

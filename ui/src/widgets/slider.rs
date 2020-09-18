@@ -1,7 +1,6 @@
 use super::*;
 
 pub struct Slider {
-    geng: Rc<Geng>,
     theme: Rc<Theme>,
     core: WidgetCore,
     tick_radius: f32,
@@ -10,7 +9,6 @@ pub struct Slider {
 impl Clone for Slider {
     fn clone(&self) -> Self {
         Self {
-            geng: self.geng.clone(),
             theme: self.theme.clone(),
             core: WidgetCore::new(),
             tick_radius: 0.0,
@@ -26,9 +24,8 @@ impl Deref for Slider {
 }
 
 impl Slider {
-    pub fn new(geng: &Rc<Geng>, theme: &Rc<Theme>) -> Self {
+    pub fn new(theme: &Rc<Theme>) -> Self {
         Self {
-            geng: geng.clone(),
             theme: theme.clone(),
             core: WidgetCore::new(),
             tick_radius: 0.0,
@@ -41,7 +38,6 @@ impl Slider {
         f: Box<dyn FnMut(f64) + 'a>,
     ) -> impl Widget + 'a {
         SliderUI {
-            geng: self.geng.clone(),
             theme: &self.theme,
             tick_radius: &mut self.tick_radius,
             core: &mut self.core,
@@ -53,7 +49,6 @@ impl Slider {
 }
 
 pub struct SliderUI<'a> {
-    geng: Rc<Geng>,
     theme: &'a Theme,
     core: &'a mut WidgetCore,
     tick_radius: &'a mut f32,
@@ -86,13 +81,14 @@ impl<'a> Widget for SliderUI<'a> {
         );
     }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
+        let draw_2d = self.theme.geng().draw_2d();
         let position = self.core.position().map(|x| x as f32);
         let line_width = position.height() / 3.0;
         let value_position = *self.tick_radius
             + ((self.value - *self.range.start()) / (*self.range.end() - *self.range.start()))
                 as f32
                 * (position.width() - *self.tick_radius * 2.0);
-        self.geng.draw_2d().quad(
+        draw_2d.quad(
             framebuffer,
             AABB::from_corners(
                 position.bottom_left()
@@ -102,7 +98,7 @@ impl<'a> Widget for SliderUI<'a> {
             ),
             self.theme.hover_color,
         );
-        self.geng.draw_2d().quad(
+        draw_2d.quad(
             framebuffer,
             AABB::from_corners(
                 position.bottom_left()
@@ -112,19 +108,19 @@ impl<'a> Widget for SliderUI<'a> {
             ),
             self.theme.usable_color,
         );
-        self.geng.draw_2d().circle(
+        draw_2d.circle(
             framebuffer,
             position.bottom_left() + vec2(line_width / 2.0, position.height() / 2.0),
             line_width / 2.0,
             self.theme.hover_color,
         );
-        self.geng.draw_2d().circle(
+        draw_2d.circle(
             framebuffer,
             position.top_right() - vec2(line_width / 2.0, position.height() / 2.0),
             line_width / 2.0,
             self.theme.usable_color,
         );
-        self.geng.draw_2d().circle(
+        draw_2d.circle(
             framebuffer,
             position.bottom_left() + vec2(value_position, position.height() / 2.0),
             *self.tick_radius,

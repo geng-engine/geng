@@ -5,6 +5,18 @@ pub struct ConstraintOverride<T> {
     child: T,
 }
 
+impl<T, R: AsRef<T>> AsRef<T> for ConstraintOverride<R> {
+    fn as_ref(&self) -> &T {
+        self.child.as_ref()
+    }
+}
+
+impl<T, R: AsMut<T>> AsMut<T> for ConstraintOverride<R> {
+    fn as_mut(&mut self) -> &mut T {
+        self.child.as_mut()
+    }
+}
+
 impl<T: Widget> Widget for ConstraintOverride<T> {
     fn core(&self) -> &WidgetCore {
         &self.core

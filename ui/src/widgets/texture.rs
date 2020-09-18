@@ -4,14 +4,16 @@ pub struct Texture<'a> {
     geng: Rc<Geng>,
     core: WidgetCore,
     texture: &'a ugli::Texture,
+    color: Color<f32>,
 }
 
 impl<'a> Texture<'a> {
-    pub fn new(geng: &Rc<Geng>, texture: &'a ugli::Texture) -> Self {
+    pub fn colored(geng: &Rc<Geng>, texture: &'a ugli::Texture, color: Color<f32>) -> Self {
         Self {
             geng: geng.clone(),
             core: WidgetCore::void(),
             texture,
+            color,
         }
     }
 }
@@ -28,7 +30,7 @@ impl<'a> Widget for Texture<'a> {
             framebuffer,
             self.core().position.map(|x| x as f32),
             self.texture,
-            Color::WHITE,
+            self.color,
         );
     }
 }

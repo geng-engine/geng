@@ -8,6 +8,18 @@ pub struct Align<T> {
     child: T,
 }
 
+impl<T, R: AsRef<T>> AsRef<T> for Align<R> {
+    fn as_ref(&self) -> &T {
+        self.child.as_ref()
+    }
+}
+
+impl<T, R: AsMut<T>> AsMut<T> for Align<R> {
+    fn as_mut(&mut self) -> &mut T {
+        self.child.as_mut()
+    }
+}
+
 mod ext {
     use super::*;
 

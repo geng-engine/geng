@@ -45,10 +45,10 @@ pub fn derive(input: TokenStream) -> TokenStream {
 
                 impl geng::ui::Configurable for #input_type {
                     type Config = #config_ident;
-                    fn config(geng: &Rc<geng::Geng>, theme: &Rc<geng::ui::Theme>, value: Self) -> Self::Config {
+                    fn config(theme: &Rc<geng::ui::Theme>, value: Self) -> Self::Config {
                         Self::Config {
                             theme: theme.clone(),
-                            #(#field_names: <#field_tys as geng::ui::Configurable>::config(geng, theme, value.#field_names_copy),)*
+                            #(#field_names: <#field_tys as geng::ui::Configurable>::config(theme, value.#field_names_copy),)*
                         }
                     }
                 }
