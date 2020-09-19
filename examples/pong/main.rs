@@ -1,5 +1,4 @@
 use geng::prelude::*;
-use geng_core::Event;
 
 struct State {
     geng: Rc<Geng>,
@@ -35,12 +34,17 @@ impl geng::State for State {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         ugli::clear(framebuffer, Some(Color::BLACK), None);
 
-        self.geng.draw_2d().circle(framebuffer, self.ball.position + framebuffer.size().map(|x| (x as f32) / 2.0), self.ball.radius, Color::RED);
+        self.geng.draw_2d().circle(
+            framebuffer,
+            self.ball.position + framebuffer.size().map(|x| (x as f32) / 2.0),
+            self.ball.radius,
+            Color::RED,
+        );
     }
 
-    fn handle_event(&mut self, event: Event) {
+    fn handle_event(&mut self, event: geng::Event) {
         match event {
-            Event::KeyDown {key: geng::Key::R} => self.reset(),
+            geng::Event::KeyDown { key: geng::Key::R } => self.reset(),
             _ => (),
         }
     }
