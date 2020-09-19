@@ -1,52 +1,36 @@
 use geng::prelude::*;
 
+mod model;
+mod renderer;
+
+use model::*;
+use renderer::*;
+
 struct State {
-    geng: Rc<Geng>,
-    ball: Ball,
+    model: Model,
+    renderer: Renderer,
 }
 
 impl State {
     fn new(geng: &Rc<Geng>) -> Self {
         Self {
-            geng: geng.clone(),
-            ball: Ball {
-                radius: 10.0,
-                position: vec2(0.0, 0.0),
-                velocity: vec2(10.0, -5.0),
-            },
+            model: Model::new(),
+            renderer: Renderer::new(geng),
         }
-    }
-
-    fn reset(&mut self) {
-        self.ball = Ball {
-            radius: 10.0,
-            position: vec2(0.0, 0.0),
-            velocity: vec2(10.0, -5.0),
-        };
     }
 }
 
 impl geng::State for State {
     fn update(&mut self, delta_time: f64) {
-        self.ball.position += self.ball.velocity * delta_time as f32;
+        self.model.update(delta_time as f32);
     }
 
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
-        ugli::clear(framebuffer, Some(Color::BLACK), None);
-
-        self.geng.draw_2d().circle(
-            framebuffer,
-            self.ball.position + framebuffer.size().map(|x| (x as f32) / 2.0),
-            self.ball.radius,
-            Color::RED,
-        );
+        self.renderer.draw(framebuffer, &self.model);
     }
 
     fn handle_event(&mut self, event: geng::Event) {
-        match event {
-            geng::Event::KeyDown { key: geng::Key::R } => self.reset(),
-            _ => (),
-        }
+        self.model.handle_event(event);
     }
 }
 
@@ -54,10 +38,4 @@ fn main() {
     let geng = Rc::new(Geng::new(default()));
     let state = State::new(&geng);
     geng::run(geng, state);
-}
-
-struct Ball {
-    radius: f32,
-    position: Vec2<f32>,
-    velocity: Vec2<f32>,
 }
