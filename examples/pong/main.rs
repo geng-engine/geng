@@ -14,7 +14,7 @@ struct State {
 impl State {
     fn new(geng: &Rc<Geng>) -> Self {
         Self {
-            model: Model::new(),
+            model: Model::new(geng),
             renderer: Renderer::new(geng),
         }
     }
