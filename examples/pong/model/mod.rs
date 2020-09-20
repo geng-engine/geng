@@ -2,6 +2,7 @@ use super::*;
 
 pub struct Model {
     geng: Rc<Geng>,
+    bounds: Vec2<f32>,
     pub ball: Ball,
     pub player_left: Player,
     pub player_right: Player,
@@ -11,10 +12,11 @@ impl Model {
     pub fn new(geng: &Rc<Geng>) -> Self {
         Self {
             geng: geng.clone(),
+            bounds: vec2(550.0, 375.0),
             ball: Ball {
                 radius: 15.0,
                 position: vec2(0.0, 0.0),
-                velocity: vec2(150.0, -30.0),
+                velocity: vec2(150.0, -200.0),
             },
             player_left: Player {
                 size: vec2(20.0, 80.0),
@@ -38,12 +40,29 @@ impl Model {
         };
     }
     pub fn update(&mut self, delta_time: f32) {
-        self.player_left.update_velocity(self.geng.window(), geng::Key::W, geng::Key::S);
-        self.player_right.update_velocity(self.geng.window(), geng::Key::Up, geng::Key::Down);
+        // Update velocities
+        self.player_left
+            .update_velocity(self.geng.window(), geng::Key::W, geng::Key::S);
+        self.player_right
+            .update_velocity(self.geng.window(), geng::Key::Up, geng::Key::Down);
+        if self.ball.position.y.abs() > self.bounds.y - self.ball.radius {
+            self.ball.velocity.y *= -1.0;
+        }
 
+        // Update positions
         self.ball.position += self.ball.velocity * delta_time;
         self.player_left.position += self.player_left.velocity * delta_time;
         self.player_right.position += self.player_right.velocity * delta_time;
+
+        // Check for collisions
+        if self.player_left.position.y.abs() > self.bounds.y - self.player_left.size.y / 2.0 {
+            self.player_left.position.y = self.player_left.position.y.signum()
+                * (self.bounds.y - self.player_left.size.y / 2.0);
+        }
+        if self.player_right.position.y.abs() > self.bounds.y - self.player_right.size.y / 2.0 {
+            self.player_right.position.y = self.player_right.position.y.signum()
+                * (self.bounds.y - self.player_right.size.y / 2.0);
+        }
     }
     pub fn handle_event(&mut self, event: geng::Event) {
         match event {
