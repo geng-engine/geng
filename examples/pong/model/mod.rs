@@ -34,9 +34,9 @@ impl Model {
     }
     pub fn reset(&mut self) {
         self.ball = Ball {
-            radius: 10.0,
+            radius: 15.0,
             position: vec2(0.0, 0.0),
-            velocity: vec2(10.0, -5.0),
+            velocity: vec2(-150.0, -200.0),
         };
     }
     pub fn update(&mut self, delta_time: f32) {
@@ -53,6 +53,11 @@ impl Model {
         self.ball.position += self.ball.velocity * delta_time;
         self.player_left.position += self.player_left.velocity * delta_time;
         self.player_right.position += self.player_right.velocity * delta_time;
+
+        if self.ball.position.x.abs() > self.bounds.x {
+            self.reset();
+            return;
+        }
 
         // Check for collisions
         if self.player_left.position.y.abs() > self.bounds.y - self.player_left.size.y {
