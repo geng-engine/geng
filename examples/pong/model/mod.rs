@@ -64,41 +64,29 @@ impl Model {
                 self.player_right.position.y.signum() * (self.bounds.y - self.player_right.size.y);
         }
 
-        let ball_aabb = AABB::pos_size(self.ball.position, vec2(0.0, 0.0));
-        let left_player = self.player_left.get_aabb();
-        if left_player.distance_to(&ball_aabb) <= self.ball.radius {
-            println!("Colliding with left player");
-
-            let direction: Vec2<f32> = self.ball.position - self.player_left.position;
-            let mut normal = vec2(0.0, 0.0);
-            let dx = partial_min(
-                left_player.x_max - self.ball.position.x,
-                self.ball.position.x - left_player.x_min,
-            );
-            let dy = partial_min(
-                left_player.y_max - self.ball.position.y,
-                self.ball.position.y - left_player.y_min,
-            );
-            if dx <= dy {
-                normal.x = direction.x.signum();
-            }
-            if dy <= dx {
-                normal.y = direction.y.signum();
-            }
-            let normal = Vec2::normalize(normal);
-            self.ball.velocity -= 2.0 * Vec2::dot(self.ball.velocity, normal) * normal;
+        Self::collide(&mut self.ball, &self.player_right);
+        Self::collide(&mut self.ball, &self.player_left);
+    }
+    pub fn handle_event(&mut self, event: geng::Event) {
+        match event {
+            geng::Event::KeyDown { key: geng::Key::R } => self.reset(),
+            _ => (),
         }
-        let right_player = self.player_right.get_aabb();
-        if right_player.distance_to(&ball_aabb) <= self.ball.radius {
-            let direction: Vec2<f32> = self.ball.position - self.player_right.position;
+    }
+
+    fn collide(ball: &mut Ball, player: &Player) {
+        let ball_aabb = AABB::pos_size(ball.position, vec2(0.0, 0.0));
+        let player_aabb = player.get_aabb();
+        if player_aabb.distance_to(&ball_aabb) <= ball.radius {
+            let direction: Vec2<f32> = ball.position - player.position;
             let mut normal = vec2(0.0, 0.0);
             let dx = partial_min(
-                right_player.x_max - self.ball.position.x,
-                self.ball.position.x - right_player.x_min,
+                player_aabb.x_max - ball.position.x,
+                ball.position.x - player_aabb.x_min,
             );
             let dy = partial_min(
-                right_player.y_max - self.ball.position.y,
-                self.ball.position.y - right_player.y_min,
+                player_aabb.y_max - ball.position.y,
+                ball.position.y - player_aabb.y_min,
             );
             if dx <= dy {
                 normal.x = direction.x.signum();
@@ -107,13 +95,7 @@ impl Model {
                 normal.y = direction.y.signum();
             }
             let normal = normal.normalize();
-            self.ball.velocity -= 2.0 * Vec2::dot(self.ball.velocity, normal) * normal;
-        }
-    }
-    pub fn handle_event(&mut self, event: geng::Event) {
-        match event {
-            geng::Event::KeyDown { key: geng::Key::R } => self.reset(),
-            _ => (),
+            ball.velocity -= 2.0 * Vec2::dot(ball.velocity, normal) * normal;
         }
     }
 }
