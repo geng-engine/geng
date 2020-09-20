@@ -23,16 +23,16 @@ impl Renderer {
         self.geng.draw_2d().quad(
             framebuffer,
             AABB::pos_size(
-                model.player_left.position - model.player_left.size / 2.0 + center_coords,
-                model.player_left.size,
+                model.player_left.position - model.player_left.size + center_coords,
+                model.player_left.size * 2.0,
             ),
             Color::BLUE,
         );
         self.geng.draw_2d().quad(
             framebuffer,
             AABB::pos_size(
-                model.player_right.position - model.player_right.size / 2.0 + center_coords,
-                model.player_right.size,
+                model.player_right.position - model.player_right.size + center_coords,
+                model.player_right.size * 2.0,
             ),
             Color::YELLOW,
         );
