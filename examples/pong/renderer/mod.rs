@@ -11,11 +11,30 @@ impl Renderer {
     pub fn update(&mut self, delta_time: f32) {}
     pub fn draw(&mut self, framebuffer: &mut ugli::Framebuffer, model: &Model) {
         ugli::clear(framebuffer, Some(Color::BLACK), None);
+
+        let center_coords = framebuffer.size().map(|x| (x as f32) / 2.0);
+
         self.geng.draw_2d().circle(
             framebuffer,
-            model.ball.position + framebuffer.size().map(|x| (x as f32) / 2.0),
+            model.ball.position + center_coords,
             model.ball.radius,
             Color::RED,
+        );
+        self.geng.draw_2d().quad(
+            framebuffer,
+            AABB::pos_size(
+                model.player_left.position - model.player_left.size / 2.0 + center_coords,
+                model.player_left.size,
+            ),
+            Color::BLUE,
+        );
+        self.geng.draw_2d().quad(
+            framebuffer,
+            AABB::pos_size(
+                model.player_right.position - model.player_right.size / 2.0 + center_coords,
+                model.player_right.size,
+            ),
+            Color::YELLOW,
         );
     }
 }
