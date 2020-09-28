@@ -104,6 +104,15 @@ impl<T: UNum> AABB<T> {
         }
     }
 
+    pub fn add_padding(self, padding: T) -> Self {
+        Self {
+            x_min: self.x_min - padding,
+            y_min: self.y_min - padding,
+            x_max: self.x_max + padding,
+            y_max: self.y_max + padding,
+        }
+    }
+
     pub fn points(&self) -> impl Iterator<Item = Vec2<T>> + '_
     where
         Range<T>: Iterator<Item = T>,
