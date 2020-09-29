@@ -45,61 +45,55 @@ impl AssetManager {
     }
 }
 
-#[async_trait(?Send)]
 impl LoadAsset for ugli::Texture {
-    async fn load(geng: Rc<Geng>, path: String) -> Result<Self, anyhow::Error> {
+    fn load(geng: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
         let ugli = geng.ugli().clone();
-        let image = geng
-            .asset_manager
-            .threadpool
-            .spawn(move || {
-                info!("Loading {:?}", path);
-                fn load(path: &str) -> Result<image::RgbaImage, anyhow::Error> {
-                    let image = image::open(path).context(path.to_owned())?;
-                    Ok(match image {
-                        image::DynamicImage::ImageRgba8(image) => image,
-                        _ => image.to_rgba(),
-                    })
-                }
-                load(&path)
-            })
-            .await??;
-        Ok(ugli::Texture::from_image(&ugli, image))
+        let path = path.to_owned();
+        let image_future = geng.asset_manager.threadpool.spawn(move || {
+            info!("Loading {:?}", path);
+            fn load(path: &str) -> Result<image::RgbaImage, anyhow::Error> {
+                let image = image::open(path).context(path.to_owned())?;
+                Ok(match image {
+                    image::DynamicImage::ImageRgba8(image) => image,
+                    _ => image.to_rgba(),
+                })
+            }
+            load(&path)
+        });
+        Box::pin(async move { Ok(ugli::Texture::from_image(&ugli, image_future.await??)) })
     }
     const DEFAULT_EXT: Option<&'static str> = Some("png");
 }
 
-#[async_trait(?Send)]
 impl LoadAsset for Sound {
-    async fn load(geng: Rc<Geng>, path: String) -> Result<Self, anyhow::Error> {
-        geng.asset_manager
-            .threadpool
-            .spawn(move || {
-                info!("Loading {:?}", path);
-                let mut data = Vec::new();
-                std::fs::File::open(path)?.read_to_end(&mut data)?;
-                Ok(Sound {
-                    data: data.into(),
-                    looped: false,
-                })
+    fn load(geng: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
+        let geng = geng.clone();
+        let path = path.to_owned();
+        let future = geng.asset_manager.threadpool.spawn(move || {
+            info!("Loading {:?}", path);
+            let mut data = Vec::new();
+            std::fs::File::open(path)?.read_to_end(&mut data)?;
+            Ok(Sound {
+                data: data.into(),
+                looped: false,
             })
-            .await?
+        });
+        Box::pin(async move { future.await? })
     }
     const DEFAULT_EXT: Option<&'static str> = Some("wav");
 }
 
-#[async_trait(?Send)]
 impl LoadAsset for String {
-    async fn load(geng: Rc<Geng>, path: String) -> Result<Self, anyhow::Error> {
-        geng.asset_manager
-            .threadpool
-            .spawn(move || {
-                info!("Loading {:?}", path);
-                let mut result = String::new();
-                std::fs::File::open(path)?.read_to_string(&mut result)?;
-                Ok(result)
-            })
-            .await?
+    fn load(geng: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
+        let geng = geng.clone();
+        let path = path.to_owned();
+        let future = geng.asset_manager.threadpool.spawn(move || {
+            info!("Loading {:?}", path);
+            let mut result = String::new();
+            std::fs::File::open(path)?.read_to_string(&mut result)?;
+            Ok(result)
+        });
+        Box::pin(async move { future.await? })
     }
     const DEFAULT_EXT: Option<&'static str> = Some("txt");
 }

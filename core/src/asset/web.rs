@@ -8,12 +8,11 @@ impl AssetManager {
     }
 }
 
-#[async_trait(?Send)]
 impl LoadAsset for ugli::Texture {
-    async fn load(geng: Rc<Geng>, path: String) -> Result<Self, anyhow::Error> {
+    fn load(geng: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
         let (sender, receiver) = futures::channel::oneshot::channel();
         let image = web_sys::HtmlImageElement::new().unwrap();
-        let path = Rc::new(path);
+        let path = Rc::new(path.to_owned());
         let handler = {
             let image = image.clone();
             let ugli = geng.ugli().clone();
@@ -43,17 +42,16 @@ impl LoadAsset for ugli::Texture {
             wasm_bindgen::closure::Closure::once_into_js(handler),
         );
         image.set_src(&path);
-        receiver.await?
+        Box::pin(async move { receiver.await? })
     }
     const DEFAULT_EXT: Option<&'static str> = Some("png");
 }
 
-#[async_trait(?Send)]
 impl LoadAsset for Sound {
-    async fn load(_: Rc<Geng>, path: String) -> Result<Self, anyhow::Error> {
+    fn load(_: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
         let (sender, receiver) = futures::channel::oneshot::channel();
         let audio = web_sys::HtmlAudioElement::new_with_src(&path).unwrap();
-        let path = Rc::new(path);
+        let path = Rc::new(path.to_owned());
         let handler = {
             let audio = audio.clone();
             let path = path.clone();
@@ -84,18 +82,17 @@ impl LoadAsset for Sound {
             &audio,
             wasm_bindgen::closure::Closure::once_into_js(handler),
         );
-        receiver.await?
+        Box::pin(async move { receiver.await? })
     }
     const DEFAULT_EXT: Option<&'static str> = Some("wav");
 }
 
-#[async_trait(?Send)]
 impl LoadAsset for String {
-    async fn load(_: Rc<Geng>, path: String) -> Result<Self, anyhow::Error> {
+    fn load(_: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
         let (sender, receiver) = futures::channel::oneshot::channel();
         let request = web_sys::XmlHttpRequest::new().unwrap();
         request.open("GET", &path).unwrap();
-        let path = Rc::new(path);
+        let path = Rc::new(path.to_owned());
         let handler = {
             let request = request.clone();
             let path = path.clone();
@@ -127,7 +124,7 @@ impl LoadAsset for String {
             wasm_bindgen::closure::Closure::once_into_js(handler),
         );
         request.send().unwrap();
-        receiver.await?
+        Box::pin(async move { receiver.await? })
     }
     const DEFAULT_EXT: Option<&'static str> = Some("txt");
 }

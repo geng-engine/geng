@@ -1,6 +1,6 @@
 [package]
 name = "geng-derive"
-version = "0.6.0-alpha.3"
+version = "0.6.0-alpha.4"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Game Engine (derive macros)"
 license = "MIT"

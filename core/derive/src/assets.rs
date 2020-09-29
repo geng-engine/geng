@@ -95,7 +95,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                         let range = range.parse::<syn::ExprRange>().expect("Failed to parse range");
                         quote! {
                             futures::future::try_join_all((#range).map(|i| {
-                                geng::LoadAsset::load(geng.clone(), format!("{}/{}", base_path, #path.replace("*", &i.to_string())))
+                                geng::LoadAsset::load(geng, &format!("{}/{}", base_path, #path.replace("*", &i.to_string())))
                             }))
                         }
                     } else {
@@ -111,20 +111,22 @@ pub fn derive(input: TokenStream) -> TokenStream {
                             }},
                         };
                         quote! {
-                            <#ty as geng::LoadAsset>::load(geng.clone(), format!("{}/{}", base_path, #path))
+                            <#ty as geng::LoadAsset>::load(geng, &format!("{}/{}", base_path, #path))
                         }
                     }
                 }
             });
 
             let expanded = quote! {
-                #[async_trait(?Send)]
                 impl geng::LoadAsset for #input_type
                     /* where #(#field_constraints),* */ {
-                    async fn load(geng: Rc<Geng>, base_path: String) -> Result<Self, anyhow::Error> {
-                        let (#(#field_names,)*) = futures::try_join!(#(#field_loaders,)*)?;
-                        Ok(Self {
-                            #(#field_names,)*
+                    fn load(geng: &Rc<Geng>, base_path: &str) -> geng::AssetFuture<Self> {
+                        let (#(#field_names,)*) = (#(#field_loaders,)*);
+                        Box::pin(async move {
+                            let (#(#field_names,)*) = futures::try_join!(#(#field_names,)*)?;
+                            Ok(Self {
+                                #(#field_names,)*
+                            })
                         })
                     }
                     const DEFAULT_EXT: Option<&'static str> = None;
