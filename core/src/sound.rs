@@ -19,7 +19,7 @@ impl Sound {
                     .unwrap()
                     .dyn_into::<web_sys::HtmlAudioElement>()
                     .unwrap();
-                effect.set_loop(true);
+                effect.set_loop(self.looped);
                 effect
             },
             #[cfg(not(target_arch = "wasm32"))]
