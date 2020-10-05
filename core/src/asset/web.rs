@@ -29,15 +29,15 @@ impl LoadAsset for ugli::Texture {
             }
         };
         #[wasm_bindgen(inline_js = r#"
-        export function setup(image, handler) {
+        export function setup_image(image, handler) {
             image.onload = function() { handler(true); };
             image.onerror = function() { handler(false); };
         }
         "#)]
         extern "C" {
-            fn setup(image: &web_sys::HtmlImageElement, handler: wasm_bindgen::JsValue);
+            fn setup_image(image: &web_sys::HtmlImageElement, handler: wasm_bindgen::JsValue);
         }
-        setup(
+        setup_image(
             &image,
             wasm_bindgen::closure::Closure::once_into_js(handler),
         );
@@ -70,15 +70,15 @@ impl LoadAsset for Sound {
             }
         };
         #[wasm_bindgen(inline_js = r#"
-        export function setup(audio, handler) {
+        export function setup_audio(audio, handler) {
             audio.oncanplaythrough = function() { handler(true); };
             audio.onerror = function() { handler(false); };
         }
         "#)]
         extern "C" {
-            fn setup(audio: &web_sys::HtmlAudioElement, handler: wasm_bindgen::JsValue);
+            fn setup_audio(audio: &web_sys::HtmlAudioElement, handler: wasm_bindgen::JsValue);
         }
-        setup(
+        setup_audio(
             &audio,
             wasm_bindgen::closure::Closure::once_into_js(handler),
         );
@@ -108,7 +108,7 @@ impl LoadAsset for String {
             }
         };
         #[wasm_bindgen(inline_js = r#"
-        export function setup(request, handler) {
+        export function setup_string(request, handler) {
             request.onreadystatechange = function () {
                 if (request.readyState == 4) {
                     handler(request.status == 200);
@@ -117,9 +117,9 @@ impl LoadAsset for String {
         }
         "#)]
         extern "C" {
-            fn setup(request: &web_sys::XmlHttpRequest, handler: wasm_bindgen::JsValue);
+            fn setup_string(request: &web_sys::XmlHttpRequest, handler: wasm_bindgen::JsValue);
         }
-        setup(
+        setup_string(
             &request,
             wasm_bindgen::closure::Closure::once_into_js(handler),
         );
