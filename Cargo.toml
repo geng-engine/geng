@@ -16,25 +16,6 @@ rusttype = { version = "0.9", features = [ "gpu_cache" ] }
 serde = "1"
 lazy_static = "1"
 
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-web-sys = { version = "0.3", features = [
-    "Document",
-    "CssStyleDeclaration",
-    "HtmlAudioElement",
-    "XmlHttpRequest",
-    "KeyboardEvent",
-    "MouseEvent",
-    "WheelEvent",
-    "TouchEvent",
-    "Touch",
-    "TouchList",
-    "DomRect",
-    "DomRectReadOnly",
-    "WebSocket",
-    "BinaryType",
-    "MessageEvent",
-] }
-
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 image = "0.23"
 glutin = "0.25"
