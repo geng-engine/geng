@@ -1,6 +1,6 @@
 [package]
 name = "geng"
-version = "0.6.0-alpha.1"
+version = "0.6.0"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Game Engine"
 license = "MIT"
@@ -8,10 +8,10 @@ homepage = "https://github.com/kuviman/geng"
 edition = "2018"
 
 [dependencies]
-batbox = "0.5.0-alpha"
-geng-derive = { path = "derive", version = "0.6.0-alpha" }
-geng-ui-macros = { path = "ui-macros", version = "0.6.0-alpha" }
-ugli = "0.5.0-alpha"
+batbox = "0.5.0"
+geng-derive = { path = "derive", version = "0.6.0" }
+geng-ui-macros = { path = "ui-macros", version = "0.6.0" }
+ugli = "0.5.0"
 rusttype = { version = "0.9", features = [ "gpu_cache" ] }
 serde = "1"
 lazy_static = "1"
