@@ -7,21 +7,11 @@ license = "MIT"
 homepage = "https://github.com/kuviman/ugli"
 edition = "2018"
 
+[dependencies]
+batbox = "0.6.0-alpha"
+
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 gl = "0.14"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "0.2"
-web-sys = { version = "0.3", features = [
-    "AngleInstancedArrays",
-    "WebGlRenderingContext",
-    "WebGlBuffer",
-    "WebGlActiveInfo",
-    "WebGlUniformLocation",
-    "WebGlTexture",
-    "WebGlRenderbuffer",
-    "WebGlProgram",
-    "WebGlFramebuffer",
-    "WebGlShader",
-    "HtmlImageElement",
-] }

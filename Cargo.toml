@@ -14,11 +14,6 @@ ugli-derive = { path = "derive", version = "0.6.0-alpha" }
 num_enum = "0.5"
 serde = "1"
 
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-web-sys = { version = "0.3", features = [
-    "HtmlCanvasElement"
-] }
-
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 image = "0.23"
 glutin = "0.25"
