@@ -35,7 +35,39 @@ async-trait = "0.1"
 wasm-bindgen = { version = "0.2", features = [ "serde-serialize" ] }
 js-sys = "0.3"
 web-sys = { version = "0.3", features = [
-    "Window", "Storage", "Navigator", "Location"
+    "Window",
+    "Storage",
+    "Navigator",
+    "Location",
+    "XmlHttpRequestResponseType",
+    "ProgressEvent",
+    "Document",
+    "CssStyleDeclaration",
+    "HtmlAudioElement",
+    "XmlHttpRequest",
+    "KeyboardEvent",
+    "MouseEvent",
+    "WheelEvent",
+    "TouchEvent",
+    "Touch",
+    "TouchList",
+    "DomRect",
+    "DomRectReadOnly",
+    "WebSocket",
+    "BinaryType",
+    "MessageEvent",
+    "HtmlCanvasElement",
+    "AngleInstancedArrays",
+    "WebGlRenderingContext",
+    "WebGlBuffer",
+    "WebGlActiveInfo",
+    "WebGlUniformLocation",
+    "WebGlTexture",
+    "WebGlRenderbuffer",
+    "WebGlProgram",
+    "WebGlFramebuffer",
+    "WebGlShader",
+    "HtmlImageElement",
 ] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
