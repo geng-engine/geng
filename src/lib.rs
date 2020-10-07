@@ -1,13 +1,41 @@
-pub use geng_core::*;
-pub use geng_debug_overlay::*;
-pub use geng_net as net;
-pub use geng_ui as ui;
+#![recursion_limit = "256"]
 
-use prelude::*;
+pub use geng_derive::*;
 
-pub fn run(geng: Rc<Geng>, state: impl State) {
-    let mut state_manager = StateManager::new();
-    state_manager.push(Box::new(state));
-    let state = DebugOverlay::new(&geng, state_manager);
-    geng_core::run(geng, state);
+pub mod prelude {
+    pub use crate::{draw_2d, Geng};
+    pub use ::batbox::*;
+    pub use ugli::{self, Ugli};
 }
+
+use crate as geng;
+use crate::prelude::*;
+#[allow(unused_imports)]
+use log::{trace, warn};
+
+mod asset;
+mod context;
+mod debug_overlay;
+pub mod draw_2d;
+mod font;
+mod loading_screen;
+pub mod net;
+pub mod obj;
+mod shader_lib;
+mod sound;
+mod state;
+mod texture_atlas;
+pub mod ui;
+mod window;
+
+pub use asset::*;
+pub use context::*;
+pub use debug_overlay::*;
+pub use draw_2d::Draw2D;
+pub use font::*;
+pub use loading_screen::*;
+pub use shader_lib::*;
+pub use sound::*;
+pub use state::*;
+pub use texture_atlas::*;
+pub use window::*;

@@ -63,7 +63,7 @@ impl Button {
         text: T,
         theme: &Rc<Theme>,
     ) -> impl Widget + 'a {
-        let text = crate::Text::new(
+        let text = Text::new(
             text,
             theme.font.clone(),
             theme.text_size,
@@ -78,7 +78,7 @@ impl Button {
         } else {
             0.0
         });
-        crate::stack![button, text]
+        ui::stack![button, text]
     }
     pub fn texture<'a, B: Widget + AsRef<Button> + 'a>(
         button: B,
@@ -99,6 +99,6 @@ impl Button {
         } else {
             0.0
         });
-        crate::stack![button, texture]
+        ui::stack![button, texture]
     }
 }

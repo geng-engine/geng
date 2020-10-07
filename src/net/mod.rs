@@ -1,5 +1,4 @@
-use geng_core::*;
-use prelude::*;
+use super::*;
 
 pub mod client;
 

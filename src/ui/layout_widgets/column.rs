@@ -1,41 +1,31 @@
 use super::*;
 
-pub struct Row<'a> {
+pub struct Column<'a> {
     core: WidgetCore,
     children: Vec<Box<dyn Widget + 'a>>,
 }
 
-impl<'a> Deref for Row<'a> {
+impl<'a> Deref for Column<'a> {
     type Target = Vec<Box<dyn Widget + 'a>>;
     fn deref(&self) -> &Self::Target {
         &self.children
     }
 }
 
-impl DerefMut for Row<'_> {
+impl DerefMut for Column<'_> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.children
     }
 }
 
-pub fn row<'a>(widgets: Vec<Box<dyn Widget + 'a>>) -> Row<'a> {
-    Row {
+pub fn column<'a>(widgets: Vec<Box<dyn Widget + 'a>>) -> Column<'a> {
+    Column {
         core: WidgetCore::void(),
         children: widgets,
     }
 }
 
-#[macro_export]
-macro_rules! row {
-    ($($x:expr,)*) => {
-        $crate::row(vec![$(Box::new($x)),*])
-    };
-    ($($x:expr),*) => {
-        $crate::row!($($x,)*)
-    };
-}
-
-impl<'a> Widget for Row<'a> {
+impl<'a> Widget for Column<'a> {
     fn core(&self) -> &WidgetCore {
         &self.core
     }
@@ -47,51 +37,51 @@ impl<'a> Widget for Row<'a> {
             .children
             .iter()
             .map(|child| child.core().constraints.min_size.x)
-            .sum();
+            .max_by(|a, b| a.partial_cmp(b).unwrap())
+            .unwrap_or(0.0);
         self.core_mut().constraints.min_size.y = self
             .children
             .iter()
             .map(|child| child.core().constraints.min_size.y)
-            .max_by(|a, b| a.partial_cmp(b).unwrap())
-            .unwrap_or(0.0);
+            .sum();
         self.core_mut().constraints.flex.x = self
             .children
             .iter()
             .map(|child| child.core().constraints.flex.x)
-            .sum();
+            .max_by(|a, b| a.partial_cmp(b).unwrap())
+            .unwrap_or(0.0);
         self.core_mut().constraints.flex.y = self
             .children
             .iter()
             .map(|child| child.core().constraints.flex.y)
-            .max_by(|a, b| a.partial_cmp(b).unwrap())
-            .unwrap_or(0.0);
+            .sum();
     }
     fn layout_children(&mut self) {
         let total_flex = self
             .children
             .iter()
-            .map(|child| child.core().constraints.flex.x)
+            .map(|child| child.core().constraints.flex.y)
             .sum::<f64>();
         let size_per_flex = if total_flex == 0.0 {
             0.0
         } else {
-            (self.core().position.width()
+            (self.core().position.height()
                 - self
                     .children
                     .iter()
-                    .map(|child| child.core().constraints.min_size.x)
+                    .map(|child| child.core().constraints.min_size.y)
                     .sum::<f64>())
                 / total_flex
         };
-        let mut pos = self.core().position.x_min;
+        let mut pos = self.core().position.y_max;
         for child in &mut self.children {
-            let width = child.core().constraints.min_size.x
-                + child.core().constraints.flex.x * size_per_flex;
+            let height = child.core().constraints.min_size.y
+                + child.core().constraints.flex.y * size_per_flex;
+            pos -= height;
             child.core_mut().position = AABB::pos_size(
-                vec2(pos, self.core.position.y_min),
-                vec2(width, self.core.position.height()),
+                vec2(self.core.position.x_min, pos),
+                vec2(self.core.position.width(), height),
             );
-            pos += width;
         }
     }
     fn walk_children_mut<'b>(&mut self, mut f: Box<dyn FnMut(&mut dyn Widget) + 'b>) {

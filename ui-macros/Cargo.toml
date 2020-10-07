@@ -1,0 +1,10 @@
+[package]
+name = "geng-ui-macros"
+version = "0.6.0-alpha.0"
+authors = ["kuviman <kuviman@gmail.com>"]
+description = "Game Engine"
+license = "MIT"
+homepage = "https://github.com/kuviman/geng"
+edition = "2018"
+
+[dependencies]

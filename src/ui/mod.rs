@@ -1,7 +1,6 @@
-use geng::{prelude::*, Event as RawEvent, Font, Key, MouseButton};
-use geng_core as geng;
+use super::*;
 
-pub use geng_ui_derive::*;
+pub use geng_ui_macros::{column, row, stack};
 
 mod config;
 mod layout_widgets;
@@ -14,6 +13,8 @@ pub use layout_widgets::*;
 pub use theme::*;
 pub use widget::*;
 pub use widgets::*;
+
+use crate::Event as RawEvent;
 
 #[derive(Debug)]
 pub enum Event {

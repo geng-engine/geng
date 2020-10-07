@@ -66,7 +66,7 @@ impl Geng {
     }
 }
 
-pub fn run(geng: Rc<Geng>, state: impl State) {
+fn run_impl(geng: Rc<Geng>, state: impl State) {
     let state = Rc::new(RefCell::new(state));
     geng.window.set_event_handler(Box::new({
         let state = state.clone();
@@ -117,4 +117,11 @@ pub fn run(geng: Rc<Geng>, state: impl State) {
             main_loop();
         }
     }
+}
+
+pub fn run(geng: Rc<Geng>, state: impl State) {
+    let mut state_manager = StateManager::new();
+    state_manager.push(Box::new(state));
+    let state = DebugOverlay::new(&geng, state_manager);
+    run_impl(geng, state);
 }

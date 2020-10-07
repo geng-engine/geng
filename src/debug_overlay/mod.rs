@@ -1,6 +1,4 @@
-use geng_core::*;
-use geng_ui as ui;
-use prelude::*;
+use super::*;
 
 mod console;
 mod fps_counter;
