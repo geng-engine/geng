@@ -26,7 +26,8 @@ impl Sound {
             sink: Some({
                 // TODO: https://github.com/RustAudio/rodio/issues/214
                 let sink = std::thread::spawn(|| {
-                    rodio::Sink::new(&rodio::default_output_device().unwrap())
+                    let (stream, stream_handle) = rodio::OutputStream::try_default().unwrap();
+                    rodio::Sink::try_new(&stream_handle).unwrap()
                 })
                 .join()
                 .unwrap();
