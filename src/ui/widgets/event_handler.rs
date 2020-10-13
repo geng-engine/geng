@@ -5,15 +5,10 @@ pub struct EventHandler<T, F> {
     handler: F,
 }
 
-impl<T, R: AsRef<T>, F> AsRef<T> for EventHandler<R, F> {
-    fn as_ref(&self) -> &T {
-        self.child.as_ref()
-    }
-}
-
-impl<T, R: AsMut<T>, F> AsMut<T> for EventHandler<R, F> {
-    fn as_mut(&mut self) -> &mut T {
-        self.child.as_mut()
+impl<T: Container, F> Container for EventHandler<T, F> {
+    type Leaf = T::Leaf;
+    fn leaf(&self) -> &Self::Leaf {
+        self.child.leaf()
     }
 }
 

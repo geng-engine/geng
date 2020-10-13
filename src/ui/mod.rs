@@ -3,12 +3,14 @@ use super::*;
 pub use geng_ui_macros::{column, row, stack};
 
 mod config;
+mod container;
 mod layout_widgets;
 mod theme;
 pub mod widget;
 mod widgets;
 
 pub use config::*;
+pub use container::*;
 pub use layout_widgets::*;
 pub use theme::*;
 pub use widget::*;

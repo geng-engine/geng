@@ -8,8 +8,9 @@ pub struct Button {
     click_time: f64,
 }
 
-impl AsRef<Button> for Button {
-    fn as_ref(&self) -> &Self {
+impl Container for Button {
+    type Leaf = Self;
+    fn leaf(&self) -> &Self {
         self
     }
 }
@@ -58,7 +59,7 @@ impl Widget for Button {
 }
 
 impl Button {
-    pub fn text<'a, B: Widget + AsRef<Button> + 'a, T: AsRef<str> + 'a>(
+    pub fn text<'a, B: Widget + Container<Leaf = Button> + 'a, T: AsRef<str> + 'a>(
         button: B,
         text: T,
         theme: &Rc<Theme>,
@@ -67,20 +68,20 @@ impl Button {
             text,
             theme.font.clone(),
             theme.text_size,
-            if button.as_ref().core.hovered {
+            if button.leaf().core.hovered {
                 theme.hover_color
             } else {
                 theme.usable_color
             },
         )
-        .shrink(if button.as_ref().core().captured() {
+        .shrink(if button.leaf().core().captured() {
             theme.press_ratio as f64
         } else {
             0.0
         });
         ui::stack![button, text]
     }
-    pub fn texture<'a, B: Widget + AsRef<Button> + 'a>(
+    pub fn texture<'a, B: Widget + Container<Leaf = Button> + 'a>(
         button: B,
         texture: &'a ugli::Texture,
         theme: &Rc<Theme>,
@@ -88,13 +89,13 @@ impl Button {
         let texture = Texture::colored(
             theme.geng(),
             texture,
-            if button.as_ref().core.hovered() {
+            if button.leaf().core.hovered() {
                 theme.hover_color
             } else {
                 theme.usable_color
             },
         )
-        .shrink(if button.as_ref().core().captured() {
+        .shrink(if button.leaf().core().captured() {
             theme.press_ratio as f64
         } else {
             0.0
