@@ -87,6 +87,8 @@ fn run_impl(geng: Rc<Geng>, state: impl State) {
             state.borrow_mut().draw(&mut framebuffer);
 
             geng.window.swap_buffers();
+
+            !matches!(state.borrow_mut().transition(), Some(Transition::Pop))
         }
     };
 
@@ -114,7 +116,9 @@ fn run_impl(geng: Rc<Geng>, state: impl State) {
     {
         let mut main_loop = main_loop;
         while !geng.window.should_close() {
-            main_loop();
+            if !main_loop() {
+                break;
+            }
         }
     }
 }

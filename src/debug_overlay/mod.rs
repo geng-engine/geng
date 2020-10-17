@@ -75,4 +75,11 @@ impl State for DebugOverlay {
             self.state.handle_event(event);
         }
     }
+    fn transition(&mut self) -> Option<Transition> {
+        match self.state.transition() {
+            Some(Transition::Pop) => Some(Transition::Pop),
+            None => None,
+            _ => unreachable!(),
+        }
+    }
 }
