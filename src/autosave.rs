@@ -69,11 +69,7 @@ fn save<T: Serialize>(path: &str, value: &T) {
                 return;
             }
         };
-        if let Err(e) = file.write_all(
-            ron::ser::to_string_pretty(value, default())
-                .unwrap()
-                .as_bytes(),
-        ) {
+        if let Err(e) = file.write_all(serde_json::to_string_pretty(value).unwrap().as_bytes()) {
             error!("Failed to save {:?}: {}", path, e);
         }
     }
@@ -109,7 +105,7 @@ fn load<T: for<'de> Deserialize<'de>>(path: &str) -> Option<T> {
                 return None;
             }
         };
-        match ron::de::from_reader(file) {
+        match serde_json::from_reader(file) {
             Ok(value) => {
                 info!("Successfully loaded {:?}", path);
                 Some(value)
