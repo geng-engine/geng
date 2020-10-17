@@ -76,7 +76,7 @@ fn run_impl(geng: Rc<Geng>, state: impl State) {
     }));
 
     let mut timer = Timer::new();
-    let main_loop = {
+    let mut main_loop = {
         let geng = geng.clone();
         move || {
             let delta_time = timer.tick();
@@ -106,15 +106,15 @@ fn run_impl(geng: Rc<Geng>, state: impl State) {
         extern "C" {
             fn run(main_loop: &wasm_bindgen::JsValue);
         }
-        let main_loop =
-            wasm_bindgen::closure::Closure::wrap(Box::new(main_loop) as Box<dyn FnMut()>);
+        let main_loop = wasm_bindgen::closure::Closure::wrap(Box::new(move || {
+            main_loop();
+        }) as Box<dyn FnMut()>);
         run(main_loop.as_ref());
         main_loop.forget();
     }
 
     #[cfg(not(target_arch = "wasm32"))]
     {
-        let mut main_loop = main_loop;
         while !geng.window.should_close() {
             if !main_loop() {
                 break;
