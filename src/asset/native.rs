@@ -69,16 +69,22 @@ impl LoadAsset for Sound {
     fn load(geng: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
         let geng = geng.clone();
         let path = path.to_owned();
-        let future = geng.asset_manager.threadpool.spawn(move || {
-            info!("Loading {:?}", path);
-            let mut data = Vec::new();
-            std::fs::File::open(path)?.read_to_end(&mut data)?;
+        let data = geng
+            .asset_manager
+            .threadpool
+            .spawn(move || -> Result<_, anyhow::Error> {
+                info!("Loading {:?}", path);
+                let mut data = Vec::new();
+                std::fs::File::open(path)?.read_to_end(&mut data)?;
+                Ok(data)
+            });
+        Box::pin(async move {
             Ok(Sound {
-                data: data.into(),
+                output_stream_handle: geng.audio.output_stream_handle.clone(),
+                data: data.await??.into(),
                 looped: false,
             })
-        });
-        Box::pin(async move { future.await? })
+        })
     }
     const DEFAULT_EXT: Option<&'static str> = Some("wav");
 }

@@ -1,6 +1,33 @@
 use super::*;
 
+pub(crate) struct AudioContext {
+    #[cfg(not(target_arch = "wasm32"))]
+    pub(crate) output_stream: rodio::OutputStream,
+    #[cfg(not(target_arch = "wasm32"))]
+    pub(crate) output_stream_handle: Arc<rodio::OutputStreamHandle>,
+}
+
+impl AudioContext {
+    #[cfg(target_arch = "wasm32")]
+    pub(crate) fn new() -> Self {
+        Self {}
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    pub(crate) fn new() -> Self {
+        {
+            let (stream, handle) = rodio::OutputStream::try_default().unwrap();
+            Self {
+                output_stream: stream,
+                output_stream_handle: Arc::new(handle),
+            }
+        }
+    }
+}
+
 pub struct Sound {
+    #[cfg(not(target_arch = "wasm32"))]
+    pub(crate) output_stream_handle: Arc<rodio::OutputStreamHandle>,
     #[cfg(target_arch = "wasm32")]
     pub(crate) inner: web_sys::HtmlAudioElement,
     #[cfg(not(target_arch = "wasm32"))]
@@ -24,13 +51,7 @@ impl Sound {
             },
             #[cfg(not(target_arch = "wasm32"))]
             sink: Some({
-                // TODO: https://github.com/RustAudio/rodio/issues/214
-                let sink = std::thread::spawn(|| {
-                    let (stream, stream_handle) = rodio::OutputStream::try_default().unwrap();
-                    rodio::Sink::try_new(&stream_handle).unwrap()
-                })
-                .join()
-                .unwrap();
+                let sink = rodio::Sink::try_new(&self.output_stream_handle).unwrap();
                 sink.pause();
                 if self.looped {
                     sink.append(rodio::Source::repeat_infinite(
