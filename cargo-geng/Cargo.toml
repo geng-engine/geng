@@ -9,7 +9,8 @@ edition = "2018"
 
 [dependencies]
 open = "1"
-tokio = { version = "0.3", features = ["rt-multi-thread"] }
+tokio = { version = "0.3", features = ["rt-multi-thread", "full"] }
+tokio-compat-02 = "0.1"
 futures = "0.3"
 hyper = "0.13"
 hyper-staticfile = "0.5"

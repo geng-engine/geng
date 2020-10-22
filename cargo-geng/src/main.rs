@@ -27,23 +27,27 @@ where
         static_.clone().serve(req).await
     }
 
-    tokio::runtime::Runtime::new().unwrap().block_on(async {
-        let static_ = Static::new(dir);
+    use tokio_compat_02::FutureExt;
+    tokio::runtime::Runtime::new().unwrap().block_on(
+        async {
+            let static_ = Static::new(dir);
 
-        let make_service = make_service_fn(|_| {
-            let static_ = static_.clone();
-            future::ok::<_, hyper::Error>(service_fn(move |req| {
-                handle_request(req, static_.clone())
-            }))
-        });
+            let make_service = make_service_fn(|_| {
+                let static_ = static_.clone();
+                future::ok::<_, hyper::Error>(service_fn(move |req| {
+                    handle_request(req, static_.clone())
+                }))
+            });
 
-        let addr = ([127, 0, 0, 1], SERVE_PORT).into();
-        let server = hyper::Server::bind(&addr).serve(make_service);
-        let addr = format!("http://{}/", addr);
-        eprintln!("Server running on {}", addr);
-        open::that(&addr).expect("Failed to open browser");
-        server.await.expect("Server failed");
-    });
+            let addr = ([127, 0, 0, 1], SERVE_PORT).into();
+            let server = hyper::Server::bind(&addr).serve(make_service);
+            let addr = format!("http://{}/", addr);
+            eprintln!("Server running on {}", addr);
+            open::that(&addr).expect("Failed to open browser");
+            server.await.expect("Server failed");
+        }
+        .compat(),
+    );
 }
 
 #[derive(structopt::StructOpt, PartialEq, Eq)]
