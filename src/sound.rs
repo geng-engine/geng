@@ -16,6 +16,7 @@ impl AudioContext {
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) fn new() -> Self {
         {
+            // https://github.com/RustAudio/rodio/issues/214
             let stream_handle = std::thread::spawn(|| {
                 let (stream, handle) = rodio::OutputStream::try_default().unwrap();
                 mem::forget(stream);
