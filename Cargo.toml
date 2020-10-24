@@ -1,6 +1,6 @@
 [package]
 name = "geng"
-version = "0.7.0-alpha.4"
+version = "0.7.0-alpha.5"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Game Engine"
 license = "MIT"

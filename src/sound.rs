@@ -1,8 +1,8 @@
 use super::*;
 
 pub(crate) struct AudioContext {
-    #[cfg(not(target_arch = "wasm32"))]
-    pub(crate) output_stream: rodio::OutputStream,
+    // #[cfg(not(target_arch = "wasm32"))]
+    // pub(crate) output_stream: rodio::OutputStream,
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) output_stream_handle: Arc<rodio::OutputStreamHandle>,
 }
@@ -16,10 +16,15 @@ impl AudioContext {
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) fn new() -> Self {
         {
-            let (stream, handle) = rodio::OutputStream::try_default().unwrap();
+            let stream_handle = std::thread::spawn(|| {
+                let (stream, handle) = rodio::OutputStream::try_default().unwrap();
+                mem::forget(stream);
+                handle
+            })
+            .join()
+            .unwrap();
             Self {
-                output_stream: stream,
-                output_stream_handle: Arc::new(handle),
+                output_stream_handle: Arc::new(stream_handle),
             }
         }
     }
