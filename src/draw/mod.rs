@@ -4,6 +4,7 @@ mod parameters;
 
 pub use parameters::*;
 
+#[derive(Debug, Copy, Clone)]
 pub enum DrawMode {
     Points,
     Lines { line_width: f32 },
