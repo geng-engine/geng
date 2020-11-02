@@ -1,11 +1,14 @@
 use super::*;
 
-/// 3-d vector.
+/// 3 dimensional vector.
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize, Trans)]
 pub struct Vec3<T> {
+    /// `x` coordinate of the vector
     pub x: T,
+    /// `y` coordinate of the vector
     pub y: T,
+    /// `z` coordinate of the vector
     pub z: T,
 }
 

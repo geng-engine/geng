@@ -1,12 +1,16 @@
 use super::*;
 
-/// 4-d vector.
+/// 4 dimensional vector.
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize, Trans)]
 pub struct Vec4<T> {
+    /// `x` coordinate of the vector
     pub x: T,
+    /// `y` coordinate of the vector
     pub y: T,
+    /// `z` coordinate of the vector
     pub z: T,
+    /// `w` coordinate of the vector
     pub w: T,
 }
 

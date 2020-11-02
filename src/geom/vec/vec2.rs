@@ -1,10 +1,12 @@
 use super::*;
 
-/// 2-d vector.
+/// 2 dimensional vector.
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize, Trans)]
 pub struct Vec2<T> {
+    /// `x` coordinate of the vector
     pub x: T,
+    /// `y` coordinate of the vector
     pub y: T,
 }
 

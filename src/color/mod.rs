@@ -6,12 +6,18 @@ mod consts;
 pub use component::*;
 pub use consts::*;
 
+/// RGBA Color
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, Trans)]
+#[trans(no_generics_in_name)]
 pub struct Color<T> {
+    /// Red component
     pub r: T,
+    /// Green component
     pub g: T,
+    /// Blue component
     pub b: T,
+    /// Alpha (opacity) component
     pub a: T,
 }
 
