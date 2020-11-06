@@ -13,11 +13,11 @@ pub trait Message: Debug + Serialize + for<'de> Deserialize<'de> + Send + 'stati
 impl<T: Debug + Serialize + for<'de> Deserialize<'de> + Send + 'static> Message for T {}
 
 fn serialize_message<T: Message>(message: T) -> Vec<u8> {
-    serde_json::to_vec(&message).unwrap()
+    bincode::serialize(&message).unwrap()
 }
 
 fn deserialize_message<T: Message>(data: &[u8]) -> T {
-    serde_json::from_slice(data).expect("Failed to deserialize message")
+    bincode::deserialize(data).expect("Failed to deserialize message")
 }
 
 #[cfg(target_arch = "wasm32")]
