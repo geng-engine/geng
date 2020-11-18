@@ -1,11 +1,15 @@
 [package]
 name = "geng"
-version = "0.7.0-alpha.7"
+version = "0.7.0-alpha.8"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Game Engine"
 license = "MIT"
 homepage = "https://github.com/kuviman/geng"
 edition = "2018"
+
+[features]
+default = ["audio"]
+audio = ["rodio"]
 
 [dependencies]
 batbox = "0.6.0-alpha"
@@ -22,5 +26,5 @@ glutin = "0.25"
 threadpool = "1"
 num_cpus = "1"
 notify = "4"
-rodio = "0.13"
+rodio = { version = "0.13", optional = true }
 ws = { version = "0.9" }

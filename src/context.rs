@@ -2,6 +2,7 @@ use super::*;
 
 pub struct Geng {
     window: Window,
+    #[cfg(feature = "audio")]
     pub(crate) audio: AudioContext,
     shader_lib: ShaderLib,
     draw_2d: Rc<Draw2D>,
@@ -38,6 +39,7 @@ impl Geng {
         });
         Geng {
             window,
+            #[cfg(feature = "audio")]
             audio: AudioContext::new(),
             shader_lib,
             draw_2d,

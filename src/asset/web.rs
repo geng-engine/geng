@@ -47,6 +47,7 @@ impl LoadAsset for ugli::Texture {
     const DEFAULT_EXT: Option<&'static str> = Some("png");
 }
 
+#[cfg(feature = "audio")]
 impl LoadAsset for Sound {
     fn load(_: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
         let (sender, receiver) = futures::channel::oneshot::channel();

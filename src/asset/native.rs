@@ -65,6 +65,7 @@ impl LoadAsset for ugli::Texture {
     const DEFAULT_EXT: Option<&'static str> = Some("png");
 }
 
+#[cfg(feature = "audio")]
 impl LoadAsset for Sound {
     fn load(geng: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
         let geng = geng.clone();
