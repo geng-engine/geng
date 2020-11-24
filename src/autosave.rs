@@ -54,10 +54,12 @@ fn save<T: Serialize>(path: &str, value: &T) {
     #[cfg(target_arch = "wasm32")]
     {
         if let Ok(Some(storage)) = web_sys::window().unwrap().local_storage() {
-            storage.set_item(
+            if let Err(e) = storage.set_item(
                 path,
                 &serde_json::to_string(value).expect("Failed to serialize"),
-            );
+            ) {
+                let _ = e; // TODO: error?
+            }
         }
     }
     #[cfg(not(target_arch = "wasm32"))]

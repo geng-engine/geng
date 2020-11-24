@@ -71,7 +71,6 @@ mod future_ext;
 mod geom;
 mod localization;
 pub mod logger;
-pub mod microtask;
 mod num;
 pub mod program_args;
 mod rng;
@@ -163,27 +162,19 @@ pub fn global_threadpool() -> &'static ThreadPool {
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 pub fn save_file<F: FnOnce(&mut dyn Write) -> std::io::Result<()>>(
     title: &str,
     default_path: &str,
     f: F,
 ) -> std::io::Result<()> {
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        if let Some(path) = tinyfiledialogs::save_file_dialog(title, default_path) {
-            f(&mut std::io::BufWriter::new(std::fs::File::create(path)?))?;
-        }
+    if let Some(path) = tinyfiledialogs::save_file_dialog(title, default_path) {
+        f(&mut std::io::BufWriter::new(std::fs::File::create(path)?))?;
     }
     Ok(())
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 pub fn select_file(title: &str) -> Option<std::path::PathBuf> {
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        tinyfiledialogs::open_file_dialog(title, "", None).map(|path| path.into())
-    }
-    #[cfg(target_arch = "wasm32")]
-    {
-        panic!("Not supported on wasm");
-    }
+    tinyfiledialogs::open_file_dialog(title, "", None).map(|path| path.into())
 }
