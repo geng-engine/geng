@@ -7,17 +7,22 @@ pub use component::*;
 pub use consts::*;
 
 /// RGBA Color
+#[trans_doc = "ru:Цвет в формате RGBA"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, Trans)]
 #[trans(no_generics_in_name)]
 pub struct Color<T> {
     /// Red component
+    #[trans_doc = "ru:Компонента красного цвета"]
     pub r: T,
     /// Green component
+    #[trans_doc = "ru:Компонента зеленого цвета"]
     pub g: T,
     /// Blue component
+    #[trans_doc = "ru:Компонента синего цвета"]
     pub b: T,
     /// Alpha (opacity) component
+    #[trans_doc = "ru:Комнонента видимости (непрозрачности)"]
     pub a: T,
 }
 
