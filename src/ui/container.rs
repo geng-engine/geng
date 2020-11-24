@@ -1,5 +1,3 @@
-use super::*;
-
 pub trait Container {
     type Leaf;
     fn leaf(&self) -> &Self::Leaf;

@@ -6,6 +6,7 @@ pub struct Geng {
     pub(crate) audio: AudioContext,
     shader_lib: ShaderLib,
     draw_2d: Rc<Draw2D>,
+    #[cfg(not(target_arch = "wasm32"))]
     pub(crate) asset_manager: AssetManager,
     default_font: Rc<Font>,
     max_delta_time: Cell<f64>,
@@ -43,6 +44,7 @@ impl Geng {
             audio: AudioContext::new(),
             shader_lib,
             draw_2d,
+            #[cfg(not(target_arch = "wasm32"))]
             asset_manager: AssetManager::new(),
             default_font,
             max_delta_time: Cell::new(options.max_delta_time),

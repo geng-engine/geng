@@ -1,13 +1,5 @@
 use super::*;
 
-pub struct AssetManager {}
-
-impl AssetManager {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-
 impl LoadAsset for ugli::Texture {
     fn load(geng: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
         let (sender, receiver) = futures::channel::oneshot::channel();

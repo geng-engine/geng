@@ -193,7 +193,7 @@ impl Window {
         let handler = handler.clone();
         let canvas = self.canvas.clone();
         let handler = move |event: T| {
-            canvas.focus();
+            canvas.focus().unwrap();
             if event.as_ref().type_() == "contextmenu" {
                 event.as_ref().prevent_default();
             }
@@ -204,7 +204,8 @@ impl Window {
         };
         let handler = wasm_bindgen::closure::Closure::wrap(Box::new(handler) as Box<dyn Fn(T)>);
         self.canvas
-            .add_event_listener_with_callback(event_name, handler.as_ref().unchecked_ref());
+            .add_event_listener_with_callback(event_name, handler.as_ref().unchecked_ref())
+            .unwrap();
         handler.forget(); // TODO: not forget
     }
     pub(crate) fn subscribe_events<F: Fn(Event) + 'static>(&self, handler: F) {

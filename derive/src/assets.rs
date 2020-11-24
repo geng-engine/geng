@@ -13,7 +13,6 @@ pub fn derive(input: TokenStream) -> TokenStream {
                 .iter()
                 .map(|field| field.ident.as_ref().unwrap())
                 .collect();
-            let field_names_copy = field_names.clone();
             let field_names = &field_names;
             let field_attrs: Vec<_> = fields
                 .iter()

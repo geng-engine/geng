@@ -7,6 +7,7 @@ mod _impl;
 #[path = "web.rs"]
 mod _impl;
 
+#[allow(unused_imports)]
 pub(crate) use _impl::*;
 
 pub type AssetFuture<T> = Pin<Box<dyn Future<Output = Result<T, anyhow::Error>>>>;

@@ -7,6 +7,7 @@ pub struct Constraints {
 }
 
 pub struct WidgetCore {
+    #[allow(dead_code)]
     pub(crate) id: ID,
     pub(crate) hovered: bool,
     pub(crate) captured: bool,

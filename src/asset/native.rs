@@ -1,36 +1,8 @@
 use super::*;
 
-use std::collections::BinaryHeap;
-
 #[derive(Clone)]
 pub(crate) struct AssetManager {
     threadpool: ThreadPool,
-    queue: Rc<RefCell<BinaryHeap<Job>>>,
-}
-
-struct Job {
-    priority: i32,
-    f: Box<dyn FnOnce() + Send>,
-}
-
-impl PartialEq for Job {
-    fn eq(&self, other: &Self) -> bool {
-        self.priority == other.priority
-    }
-}
-
-impl Eq for Job {}
-
-impl PartialOrd for Job {
-    fn partial_cmp(&self, other: &Job) -> Option<std::cmp::Ordering> {
-        Some(self.priority.cmp(&other.priority))
-    }
-}
-
-impl Ord for Job {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.partial_cmp(other).unwrap()
-    }
 }
 
 impl AssetManager {
@@ -40,7 +12,6 @@ impl AssetManager {
             threadpool: ThreadPool::new(1),
             #[cfg(not(debug_assertions))]
             threadpool: default(),
-            queue: Rc::new(RefCell::new(BinaryHeap::new())),
         }
     }
 }
@@ -55,7 +26,7 @@ impl LoadAsset for ugli::Texture {
                 let image = image::open(path).context(path.to_owned())?;
                 Ok(match image {
                     image::DynamicImage::ImageRgba8(image) => image,
-                    _ => image.to_rgba(),
+                    _ => image.to_rgba8(),
                 })
             }
             load(&path)

@@ -23,7 +23,8 @@ impl Window {
                 .body()
                 .unwrap()
                 .style()
-                .set_property("cursor", cursor_type);
+                .set_property("cursor", cursor_type)
+                .unwrap();
         }
         #[cfg(not(target_arch = "wasm32"))]
         {

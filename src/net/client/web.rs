@@ -39,7 +39,7 @@ impl<S: Message, C: Message> Stream for Connection<S, C> {
 
 impl<S: Message, C: Message> Drop for Connection<S, C> {
     fn drop(&mut self) {
-        self.ws.close();
+        self.ws.close().unwrap();
     }
 }
 
@@ -66,7 +66,8 @@ pub fn connect<S: Message, C: Message>(addr: &str) -> impl Future<Output = Conne
                 .is_ok());
         }) as Box<dyn FnOnce()>)
         .unchecked_ref(),
-    );
+    )
+    .unwrap();
     ws.set_binary_type(web_sys::BinaryType::Arraybuffer);
 
     let message_handler =
@@ -83,7 +84,8 @@ pub fn connect<S: Message, C: Message>(addr: &str) -> impl Future<Output = Conne
             let message = deserialize_message(&data);
             recv_sender.unbounded_send(message).unwrap();
         }) as Box<dyn FnMut(web_sys::MessageEvent)>);
-    ws.add_event_listener_with_callback("message", message_handler.as_ref().unchecked_ref());
+    ws.add_event_listener_with_callback("message", message_handler.as_ref().unchecked_ref())
+        .unwrap();
     message_handler.forget(); // TODO not forget
 
     connection_receiver.map(|result| result.unwrap())
