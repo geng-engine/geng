@@ -41,3 +41,38 @@ pub use sound::*;
 pub use state::*;
 pub use texture_atlas::*;
 pub use window::*;
+
+#[cfg(not(target_arch = "wasm32"))]
+pub fn setup_panic_handler() {
+    // TODO: do something useful here too?
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn setup_panic_handler() {
+    #[wasm_bindgen(inline_js = r#"
+    export function show_error(text) {
+        document.getElementById("geng-canvas").style.display = "none";
+        document.getElementById("error-message").textContent = text;
+        document.getElementById("geng-error-screen").style.display = "block";
+    }
+    "#)]
+    extern "C" {
+        fn show_error(s: &str);
+    }
+    fn panic_hook(info: &std::panic::PanicInfo) {
+        static ALREADY_PANICKED: std::sync::atomic::AtomicBool =
+            std::sync::atomic::AtomicBool::new(false);
+        if ALREADY_PANICKED.swap(true, std::sync::atomic::Ordering::Relaxed) {
+            return;
+        }
+        let error: String = if let Some(error) = info.payload().downcast_ref::<String>() {
+            error.clone()
+        } else if let Some(error) = info.payload().downcast_ref::<&str>() {
+            error.to_string()
+        } else {
+            String::from("Something went wrong")
+        };
+        show_error(&error);
+    }
+    std::panic::set_hook(Box::new(panic_hook));
+}
