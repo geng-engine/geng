@@ -1,6 +1,6 @@
 [package]
 name = "geng"
-version = "0.7.0-alpha.10"
+version = "0.7.0-alpha.11"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Game Engine"
 license = "MIT"
@@ -22,7 +22,7 @@ lazy_static = "1"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 image = "0.23"
-glutin = "0.25"
+glutin = "0.26"
 threadpool = "1"
 num_cpus = "1"
 notify = "4"

@@ -51,7 +51,7 @@ impl Window {
                 }
                 _ => {}
             };
-            use glutin::platform::desktop::EventLoopExtDesktop;
+            use glutin::platform::run_return::EventLoopExtRunReturn;
             self.glutin_event_loop
                 .borrow_mut()
                 .run_return(|e, _, flow| {
