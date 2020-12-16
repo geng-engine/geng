@@ -1,6 +1,6 @@
 [package]
 name = "ugli"
-version = "0.6.0-alpha.1"
+version = "0.6.0-alpha.2"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Universal OpenGL Interface"
 license = "MIT"
@@ -16,4 +16,4 @@ serde = "1"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 image = "0.23"
-glutin = "0.25"
+glutin = "0.26"
