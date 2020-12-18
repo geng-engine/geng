@@ -1,7 +1,7 @@
 use super::*;
 
 /// Axis aligned bounding box.
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Trans)]
 pub struct AABB<T> {
     pub x_min: T,
     pub x_max: T,
