@@ -1,6 +1,6 @@
 [package]
 name = "geng"
-version = "0.7.0"
+version = "0.8.0-alpha.0"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Game Engine"
 license = "MIT"
@@ -12,10 +12,10 @@ default = ["audio"]
 audio = ["rodio"]
 
 [dependencies]
-batbox = "0.6.0"
-geng-derive = { path = "derive", version = "0.7.0" }
-geng-ui-macros = { path = "ui-macros", version = "0.7.0" }
-ugli = "0.6.0"
+batbox = "0.7.0-alpha"
+geng-derive = { path = "derive", version = "0.8.0-alpha" }
+geng-ui-macros = { path = "ui-macros", version = "0.8.0-alpha" }
+ugli = "0.7.0-alpha"
 rusttype = { version = "0.9", features = [ "gpu_cache" ] }
 serde = "1"
 lazy_static = "1"
