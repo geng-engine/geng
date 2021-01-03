@@ -89,13 +89,14 @@ impl Context {
     }
 
     pub fn get_attrib_location(&self, program: &Program, name: &str) -> Int {
-        unsafe { gl::GetAttribLocation(*program, std::ffi::CString::new(name).unwrap().as_ptr()) }
+        let name = std::ffi::CString::new(name).unwrap();
+        unsafe { gl::GetAttribLocation(*program, name.as_ptr()) }
     }
 
     pub fn get_uniform_location(&self, program: &Program, name: &str) -> Option<UniformLocation> {
+        let name = std::ffi::CString::new(name).unwrap();
         unsafe {
-            let location =
-                gl::GetUniformLocation(*program, std::ffi::CString::new(name).unwrap().as_ptr());
+            let location = gl::GetUniformLocation(*program, name.as_ptr());
             if location < 0 {
                 None
             } else {
