@@ -11,7 +11,7 @@ edition = "2018"
 batbox = "0.7.0-alpha"
 syn = { version = "1", features = ["full"] }
 quote = "1"
-itertools = "0.9"
+itertools = "0.10"
 proc-macro2 = "1"
 
 [lib]

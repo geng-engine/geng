@@ -9,11 +9,10 @@ edition = "2018"
 
 [dependencies]
 open = "1"
-tokio = { version = "0.3", features = ["rt-multi-thread", "full"] }
-tokio-compat-02 = "0.1"
+tokio = { version = "1", features = ["rt-multi-thread", "full"] }
 futures = "0.3"
-hyper = "0.13"
-hyper-staticfile = "0.5"
+hyper = { version = "0.14", features = ["server", "http2", "tcp"] }
+hyper-staticfile = "0.6"
 fs_extra = "1"
 cargo_metadata = "0.12"
 structopt = "0.3"
