@@ -1,6 +1,6 @@
 [package]
 name = "batbox-derive"
-version = "0.6.0-alpha.1"
+version = "0.6.0"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Batteries useful for projects (derive macros)"
 license = "MIT"
