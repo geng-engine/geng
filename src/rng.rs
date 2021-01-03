@@ -17,8 +17,8 @@ pub mod distributions {
 
     impl Distribution<Vec2<f32>> for UnitCircleInside {
         fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Vec2<f32> {
-            let r = rng.gen_range(0.0, 1.0).sqrt();
-            let a = rng.gen_range(0.0, 2.0 * std::f32::consts::PI);
+            let r = rng.gen_range(0.0..=1.0).sqrt();
+            let a = rng.gen_range(0.0..=2.0 * std::f32::consts::PI);
             vec2(r * a.sin(), r * a.cos())
         }
     }
