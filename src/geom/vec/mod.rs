@@ -60,6 +60,36 @@ macro_rules! vec_impl_ops {
             }
         }
 
+        impl<T: Mul<Output=T>> Mul for $name<T> {
+            type Output = Self;
+            fn mul(self, rhs: Self) -> Self {
+                Self {
+                    $($f: self.$f * rhs.$f,)*
+                }
+            }
+        }
+
+        impl<T: MulAssign> MulAssign for $name<T> {
+            fn mul_assign(&mut self, rhs: Self) {
+                $(self.$f *= rhs.$f;)*
+            }
+        }
+
+        impl<T: Div<Output=T>> Div for $name<T> {
+            type Output = Self;
+            fn div(self, rhs: Self) -> Self {
+                Self {
+                    $($f: self.$f / rhs.$f,)*
+                }
+            }
+        }
+
+        impl<T: DivAssign> DivAssign for $name<T> {
+            fn div_assign(&mut self, rhs: Self) {
+                $(self.$f /= rhs.$f;)*
+            }
+        }
+
         impl<T: Copy + Mul<Output=T>> Mul<T> for $name<T> {
             type Output = Self;
             fn mul(self, rhs: T) -> Self {
