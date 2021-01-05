@@ -7,6 +7,9 @@ pub use ::async_trait;
 pub use async_trait::*;
 #[doc(no_inline)]
 pub use bincode;
+pub use derive_more;
+#[doc(no_inline)]
+pub use derive_more::{Deref, DerefMut};
 #[doc(no_inline)]
 pub use dyn_clone::{clone_box, DynClone};
 #[doc(no_inline)]
@@ -46,8 +49,6 @@ pub use std::{
 #[doc(no_inline)]
 pub use structopt::{self, StructOpt};
 pub use thiserror;
-#[doc(no_inline)]
-pub use thiserror::*;
 #[doc(no_inline)]
 pub use threadpool::ThreadPool;
 pub use trans;
