@@ -95,7 +95,9 @@ pub enum DepthAttachment<'a> {
     Renderbuffer(&'a mut Renderbuffer<DepthComponent>),
 }
 
+#[derive(Deref)]
 pub struct Framebuffer<'a> {
+    #[deref]
     read: FramebufferRead<'a>,
 }
 
@@ -122,13 +124,6 @@ impl<'a> Framebuffer<'a> {
     }
     pub fn destruct(self) -> (ColorAttachmentRead<'a>, DepthAttachmentRead<'a>) {
         self.read.destruct()
-    }
-}
-
-impl<'a> Deref for Framebuffer<'a> {
-    type Target = FramebufferRead<'a>;
-    fn deref(&self) -> &Self::Target {
-        &self.read
     }
 }
 
