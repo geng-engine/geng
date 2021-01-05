@@ -1,21 +1,11 @@
 use super::*;
 
+#[derive(Deref, DerefMut)]
 pub struct Stack<'a> {
     core: WidgetCore,
+    #[deref]
+    #[deref_mut]
     children: Vec<Box<dyn Widget + 'a>>,
-}
-
-impl<'a> Deref for Stack<'a> {
-    type Target = Vec<Box<dyn Widget + 'a>>;
-    fn deref(&self) -> &Self::Target {
-        &self.children
-    }
-}
-
-impl DerefMut for Stack<'_> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.children
-    }
 }
 
 pub fn stack<'a>(widgets: Vec<Box<dyn Widget + 'a>>) -> Stack<'a> {
