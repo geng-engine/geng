@@ -19,7 +19,7 @@ impl Drop for Shader {
     }
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, thiserror::Error)]
 #[error("Shader compilation failed:\n{log}")]
 pub struct ShaderCompilationError {
     pub log: String,

@@ -26,7 +26,7 @@ impl Drop for Program {
     }
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, thiserror::Error)]
 #[error("Program link failed:\n{log}")]
 pub struct ProgramLinkError {
     pub log: String,
