@@ -30,15 +30,6 @@ pub trait Sender<T>: Send {
     fn send(&mut self, message: T);
 }
 
-#[cfg(not(target_arch = "wasm32"))]
-impl<T: Message> Sender<T> for ws::Sender {
-    fn send(&mut self, message: T) {
-        self.deref()
-            .send(ws::Message::Binary(serialize_message(message)))
-            .expect("Failed to send message");
-    }
-}
-
 pub trait Receiver<T> {
     fn handle(&mut self, message: T);
 }

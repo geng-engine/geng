@@ -13,13 +13,37 @@ struct Handler<T: App> {
     client: Option<T::Client>,
 }
 
+struct BackgroundSender<T> {
+    sender: std::sync::mpsc::Sender<T>,
+}
+
+impl<T: Message> BackgroundSender<T> {
+    fn new(ws_sender: ws::Sender) -> Self {
+        let (sender, receiver) = std::sync::mpsc::channel();
+        std::thread::spawn(move || {
+            while let Ok(message) = receiver.recv() {
+                ws_sender
+                    .send(ws::Message::Binary(serialize_message(message)))
+                    .expect("Failed to send message");
+            }
+        });
+        Self { sender }
+    }
+}
+
+impl<T: Message> Sender<T> for BackgroundSender<T> {
+    fn send(&mut self, message: T) {
+        self.sender.send(message).expect("Failed to send message");
+    }
+}
+
 impl<T: App> ws::Handler for Handler<T> {
     fn on_open(&mut self, _: ws::Handshake) -> ws::Result<()> {
         self.client = Some(
             self.app
                 .lock()
                 .unwrap()
-                .connect(Box::new(self.sender.clone())),
+                .connect(Box::new(BackgroundSender::new(self.sender.clone()))),
         );
         Ok(())
     }
