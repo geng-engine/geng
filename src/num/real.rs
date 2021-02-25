@@ -58,11 +58,14 @@ impl<T: Real> Float for T {
 pub struct RealImpl<T: Float>(T);
 
 impl<T: Float + Trans> Trans for RealImpl<T> {
-    fn create_schema() -> trans::Schema {
-        T::create_schema()
+    fn create_schema(version: &trans::Version) -> trans::Schema {
+        T::create_schema(version)
     }
-    fn read_from(reader: &mut dyn std::io::Read) -> Result<Self, std::io::Error> {
-        let value = T::read_from(reader)?;
+    fn read_from(
+        reader: &mut dyn std::io::Read,
+        version: &trans::Version,
+    ) -> Result<Self, std::io::Error> {
+        let value = T::read_from(reader, version)?;
         if value.is_finite() {
             Ok(Self::new_unchecked(value))
         } else {
@@ -72,8 +75,12 @@ impl<T: Float + Trans> Trans for RealImpl<T> {
             ))
         }
     }
-    fn write_to(&self, writer: &mut dyn std::io::Write) -> Result<(), std::io::Error> {
-        self.0.write_to(writer)
+    fn write_to(
+        &self,
+        writer: &mut dyn std::io::Write,
+        version: &trans::Version,
+    ) -> Result<(), std::io::Error> {
+        self.0.write_to(writer, version)
     }
 }
 
