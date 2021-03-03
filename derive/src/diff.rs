@@ -119,7 +119,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                     }
                 }
             };
-            expanded.into()
+            expanded
         }
         _ => panic!("Diff can only be derived by structs"),
     }
