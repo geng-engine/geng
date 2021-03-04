@@ -169,10 +169,14 @@ fn main() -> Result<(), anyhow::Error> {
             if out_dir.exists() {
                 std::fs::remove_dir_all(&out_dir)?;
             }
-            let static_dir = std::path::Path::new(&package.manifest_path)
+            let mut bin_root_dir = std::path::Path::new(&package.manifest_path)
                 .parent()
                 .unwrap()
-                .join("static");
+                .to_owned();
+            if let Some(example) = &opt.example {
+                bin_root_dir = bin_root_dir.join("examples").join(example);
+            }
+            let static_dir = bin_root_dir.join("static");
             if static_dir.is_dir() {
                 fs_extra::dir::copy(static_dir, &out_dir, &{
                     let mut options = fs_extra::dir::CopyOptions::new();
