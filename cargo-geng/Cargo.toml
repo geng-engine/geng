@@ -14,6 +14,6 @@ futures = "0.3"
 hyper = { version = "0.14", features = ["server", "http1", "tcp"] }
 hyper-staticfile = "0.6"
 fs_extra = "1"
-cargo_metadata = "0.12"
+cargo_metadata = "0.13"
 structopt = "0.3"
 anyhow = "1"

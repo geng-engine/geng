@@ -226,10 +226,8 @@ fn main() -> Result<(), anyhow::Error> {
                             .map(|s| s.as_str())
                             .unwrap_or("index.html"),
                     ),
-                    include_str!("index.html").replace(
-                        "<app-name>",
-                        executable.file_stem().unwrap().to_str().unwrap(),
-                    ),
+                    include_str!("index.html")
+                        .replace("<app-name>", executable.file_stem().unwrap()),
                 )?;
                 if opt.sub == Sub::Run {
                     serve(&out_dir);
