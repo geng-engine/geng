@@ -1,18 +1,14 @@
 use super::*;
 
 /// 3 dimensional vector.
-#[trans_doc = "ru:Трехмерный вектор"]
 #[repr(C)]
-#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize, Trans)]
+#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Vec3<T> {
     /// `x` coordinate of the vector
-    #[trans_doc = "ru:Координата `x` вектора"]
     pub x: T,
     /// `y` coordinate of the vector
-    #[trans_doc = "ru:Координата `y` вектора"]
     pub y: T,
     /// `z` coordinate of the vector
-    #[trans_doc = "ru:Координата `z` вектора"]
     pub z: T,
 }
 

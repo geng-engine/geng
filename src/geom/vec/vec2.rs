@@ -1,15 +1,12 @@
 use super::*;
 
 /// 2 dimensional vector.
-#[trans_doc = "ru:Двумерный вектор"]
 #[repr(C)]
-#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize, Trans)]
+#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Vec2<T> {
     /// `x` coordinate of the vector
-    #[trans_doc = "ru:Координата `x` вектора"]
     pub x: T,
     /// `y` coordinate of the vector
-    #[trans_doc = "ru:Координата `y` вектора"]
     pub y: T,
 }
 

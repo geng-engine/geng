@@ -1,6 +1,6 @@
 [package]
 name = "batbox"
-version = "0.7.0-alpha.2"
+version = "0.7.0-alpha.3"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Batteries useful for projects"
 license = "MIT"
@@ -9,7 +9,6 @@ edition = "2018"
 
 [dependencies]
 batbox-derive = { path = "derive", version = "0.7.0-alpha" }
-trans = "0.5.0-alpha"
 
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
