@@ -1,6 +1,6 @@
 [package]
 name = "ugli"
-version = "0.7.0-alpha.1"
+version = "0.7.0-alpha.2"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Universal OpenGL Interface"
 license = "MIT"
@@ -13,7 +13,7 @@ raw = { package = "ugli-raw", path = "raw", version = "0.7.0-alpha" }
 ugli-derive = { path = "derive", version = "0.7.0-alpha" }
 num_enum = "0.5"
 serde = "1"
+image = "0.23"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-image = "0.23"
 glutin = "0.26"

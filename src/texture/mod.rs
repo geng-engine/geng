@@ -199,8 +199,7 @@ impl Texture {
         texture
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
-    pub fn from_image(ugli: &Rc<Ugli>, image: image::RgbaImage) -> Self {
+    pub fn from_image_image(ugli: &Rc<Ugli>, image: image::RgbaImage) -> Self {
         let size = vec2(image.width() as usize, image.height() as usize);
         let mut texture = Texture2d::new_raw(ugli, size);
         let gl = &ugli.inner;
@@ -220,6 +219,11 @@ impl Texture {
         }
         ugli.debug_check();
         texture
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn from_image(ugli: &Rc<Ugli>, image: image::RgbaImage) -> Self {
+        Self::from_image_image(ugli, image)
     }
 
     #[cfg(target_arch = "wasm32")]
