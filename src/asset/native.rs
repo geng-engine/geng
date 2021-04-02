@@ -75,3 +75,18 @@ impl LoadAsset for String {
     }
     const DEFAULT_EXT: Option<&'static str> = Some("txt");
 }
+
+impl LoadAsset for Vec<u8> {
+    fn load(geng: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
+        let geng = geng.clone();
+        let path = path.to_owned();
+        let future = geng.asset_manager.threadpool.spawn(move || {
+            info!("Loading {:?}", path);
+            let mut result = Vec::new();
+            std::fs::File::open(path)?.read_to_end(&mut result)?;
+            Ok(result)
+        });
+        Box::pin(async move { future.await? })
+    }
+    const DEFAULT_EXT: Option<&'static str> = None;
+}

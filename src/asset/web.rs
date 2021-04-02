@@ -121,3 +121,46 @@ impl LoadAsset for String {
     }
     const DEFAULT_EXT: Option<&'static str> = Some("txt");
 }
+
+impl LoadAsset for Vec<u8> {
+    fn load(_: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
+        let (sender, receiver) = futures::channel::oneshot::channel();
+        let request = web_sys::XmlHttpRequest::new().unwrap();
+        request.set_response_type(web_sys::XmlHttpRequestResponseType::Arraybuffer);
+        request.open("GET", &path).unwrap();
+        let path = Rc::new(path.to_owned());
+        let handler = {
+            let request = request.clone();
+            let path = path.clone();
+            move |success: bool| {
+                sender
+                    .send(if success {
+                        Ok(js_sys::Uint8Array::new(&request.response().unwrap()).to_vec())
+                    } else {
+                        Err(anyhow!("Failed to load {:?}", path))
+                    })
+                    .map_err(|_| ())
+                    .unwrap();
+            }
+        };
+        #[wasm_bindgen(inline_js = r#"
+        export function setup_string(request, handler) {
+            request.onreadystatechange = function () {
+                if (request.readyState == 4) {
+                    handler(request.status == 200);
+                }
+            };
+        }
+        "#)]
+        extern "C" {
+            fn setup_string(request: &web_sys::XmlHttpRequest, handler: wasm_bindgen::JsValue);
+        }
+        setup_string(
+            &request,
+            wasm_bindgen::closure::Closure::once_into_js(handler),
+        );
+        request.send().unwrap();
+        Box::pin(async move { receiver.await? })
+    }
+    const DEFAULT_EXT: Option<&'static str> = Some("txt");
+}
