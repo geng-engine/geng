@@ -98,6 +98,42 @@ impl Draw2D {
         )
     }
 
+    pub fn draw_textured<V>(
+        &self,
+        framebuffer: &mut ugli::Framebuffer,
+        vertices: &[V],
+        texture: &ugli::Texture,
+        color: Color<f32>,
+        mode: ugli::DrawMode,
+    ) where
+        V: Copy + Into<TexturedVertex>,
+    {
+        let framebuffer_size = framebuffer.size();
+        let mut geometry = self.textured_geometry.borrow_mut();
+        {
+            let geometry: &mut Vec<TexturedVertex> = &mut geometry;
+            geometry.clear();
+            for &vertex in vertices {
+                geometry.push(vertex.into());
+            }
+        }
+        ugli::draw(
+            framebuffer,
+            &self.textured_program,
+            mode,
+            &*geometry,
+            ugli::uniforms! {
+                u_color: color,
+                u_texture: texture,
+                u_framebuffer_size: framebuffer_size,
+            },
+            ugli::DrawParameters {
+                blend_mode: Some(default()),
+                ..default()
+            },
+        )
+    }
+
     pub fn quad(
         &self,
         framebuffer: &mut ugli::Framebuffer,
