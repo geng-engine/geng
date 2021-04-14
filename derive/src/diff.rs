@@ -102,7 +102,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
             );
 
             let expanded = quote! {
-                #[derive(Debug, Serialize, Deserialize, Clone, trans::Trans)]
+                #[derive(Debug, Serialize, Deserialize, Clone)]
                 pub struct #delta_type#generics {
                     #(#field_names: #field_diff_types,)*
                 }
