@@ -85,13 +85,17 @@ fn run_impl(geng: Rc<Geng>, state: impl State) {
     let mut main_loop = {
         let geng = geng.clone();
         move || {
+            // TODO: remove the busy loop to not use any resources?
             let delta_time = timer.tick();
             let delta_time = delta_time.min(geng.max_delta_time.get());
             state.borrow_mut().update(delta_time);
 
-            let mut framebuffer = ugli::Framebuffer::default(geng.ugli());
-            state.borrow_mut().draw(&mut framebuffer);
-
+            let window_size = geng.window.real_size();
+            // Whis means window is minimized?
+            if window_size.x != 0 && window_size.y != 0 {
+                let mut framebuffer = ugli::Framebuffer::default(geng.ugli());
+                state.borrow_mut().draw(&mut framebuffer);
+            }
             geng.window.swap_buffers();
 
             !matches!(state.borrow_mut().transition(), Some(Transition::Pop))
