@@ -120,6 +120,29 @@ impl<T: UNum> AABB<T> {
         (self.x_min..self.x_max)
             .flat_map(move |x| (self.y_min..self.y_max).map(move |y| vec2(x, y)))
     }
+
+    pub fn points_bounding_box(points: impl IntoIterator<Item = Vec2<T>>) -> Self {
+        let mut points = points.into_iter();
+        let Vec2 {
+            x: mut x_min,
+            y: mut y_min,
+        } = points.next().expect("At least one point expected");
+        let mut x_max = x_min;
+        let mut y_max = y_min;
+        for Vec2 { x, y } in points {
+            // TODO: disallow partials?
+            x_min = partial_min(x_min, x);
+            y_min = partial_min(y_min, y);
+            x_max = partial_max(x_max, x);
+            y_max = partial_max(y_max, y);
+        }
+        AABB {
+            x_min,
+            x_max,
+            y_min,
+            y_max,
+        }
+    }
 }
 
 impl<T: Float> AABB<T> {
