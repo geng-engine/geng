@@ -117,6 +117,7 @@ impl Controller {
     }
     pub fn handle_event(&mut self, root: &mut dyn Widget, event: RawEvent) -> bool {
         self.layout(root);
+        let mut captured = false;
         traverse_mut(
             root,
             &mut |widget| match event {
@@ -183,8 +184,12 @@ impl Controller {
                 }
                 _ => {}
             },
-            &mut |_| {},
+            &mut |widget| {
+                if widget.core().id != ID::void() && widget.core().captured {
+                    captured = true;
+                }
+            },
         );
-        false
+        captured
     }
 }
