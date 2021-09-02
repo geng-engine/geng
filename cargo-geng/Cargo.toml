@@ -1,6 +1,6 @@
 [package]
 name = "cargo-geng"
-version = "0.8.0-alpha.0"
+version = "0.8.0-alpha.1"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Game Engine (cargo helper)"
 license = "MIT"
@@ -15,5 +15,5 @@ hyper = { version = "0.14", features = ["server", "http1", "tcp"] }
 hyper-staticfile = "0.6"
 fs_extra = "1"
 cargo_metadata = "0.13"
-structopt = "0.3"
+clap = "3.0.0-beta"
 anyhow = "1"

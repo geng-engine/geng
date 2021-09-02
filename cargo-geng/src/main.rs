@@ -1,3 +1,4 @@
+use clap::Clap;
 use std::process::Command;
 
 const SERVE_PORT: u16 = 8000;
@@ -46,7 +47,7 @@ where
     });
 }
 
-#[derive(structopt::StructOpt, PartialEq, Eq)]
+#[derive(Clap, PartialEq, Eq)]
 enum Sub {
     Build,
     Run,
@@ -76,20 +77,20 @@ impl ToString for Sub {
     }
 }
 
-#[derive(structopt::StructOpt)]
+#[derive(Clap)]
 struct Opt {
     sub: Sub,
-    #[structopt(long, short = "p")]
+    #[clap(long, short = 'p')]
     package: Option<String>,
-    #[structopt(long)]
+    #[clap(long)]
     target: Option<String>,
-    #[structopt(long)]
+    #[clap(long)]
     release: bool,
-    #[structopt(long)]
+    #[clap(long)]
     all_features: bool,
-    #[structopt(long)]
+    #[clap(long)]
     example: Option<String>,
-    #[structopt(long)]
+    #[clap(long)]
     index_file: Option<String>,
     passthrough_args: Vec<String>,
 }
@@ -136,7 +137,7 @@ fn main() -> Result<(), anyhow::Error> {
     if args.is_empty() {
         todo!("Help");
     }
-    let opt: Opt = structopt::StructOpt::from_iter(args);
+    let opt: Opt = Clap::parse_from(args);
     match opt.sub {
         Sub::Build | Sub::Run => {
             exec(Command::new("cargo").arg("build").args(opt.all_args()))?;
