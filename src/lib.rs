@@ -7,6 +7,8 @@ pub use ::async_trait;
 pub use async_trait::*;
 #[doc(no_inline)]
 pub use bincode;
+#[doc(no_inline)]
+pub use clap::{self, Clap};
 pub use derive_more;
 #[doc(no_inline)]
 pub use derive_more::{Deref, DerefMut};
@@ -46,8 +48,6 @@ pub use std::{
     rc::Rc,
     sync::{Arc, Mutex},
 };
-#[doc(no_inline)]
-pub use structopt::{self, StructOpt};
 pub use thiserror;
 #[doc(no_inline)]
 pub use threadpool::ThreadPool;

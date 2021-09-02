@@ -1,6 +1,6 @@
 [package]
 name = "batbox"
-version = "0.7.0-alpha.4"
+version = "0.7.0-alpha.5"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Batteries useful for projects"
 license = "MIT"
@@ -17,7 +17,7 @@ rand = "0.8"
 getrandom = { version = "0.2", features = ["js"] }
 log = "0.4"
 threadpool = "1"
-structopt = "0.3"
+clap = "3.0.0-beta"
 url = "2"
 futures = "0.3"
 pin-utils = "0.1.0"
