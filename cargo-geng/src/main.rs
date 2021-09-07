@@ -90,14 +90,16 @@ struct Opt {
     all_features: bool,
     #[clap(long)]
     example: Option<String>,
+    #[clap(long, short = 'j')]
+    jobs: Option<usize>,
     #[clap(long)]
     index_file: Option<String>,
     passthrough_args: Vec<String>,
 }
 
-fn to_arg<'a>(arg: &'a Option<String>, name: &'a str) -> impl Iterator<Item = &'a str> + 'a {
+fn to_arg(arg: &Option<String>, name: &str) -> impl Iterator<Item = String> {
     if let Some(arg) = arg {
-        vec![name, arg]
+        vec![name.to_owned(), arg.to_owned()]
     } else {
         vec![]
     }
@@ -105,25 +107,30 @@ fn to_arg<'a>(arg: &'a Option<String>, name: &'a str) -> impl Iterator<Item = &'
 }
 
 impl Opt {
-    fn args_for_metadata(&self) -> impl Iterator<Item = &str> {
+    fn args_for_metadata(&self) -> impl Iterator<Item = String> {
         std::iter::empty()
     }
-    fn args_without_target(&self) -> impl Iterator<Item = &str> {
+    fn args_without_target(&self) -> impl Iterator<Item = String> {
         self.args_for_metadata()
             .chain(to_arg(&self.package, "--package"))
             .chain(if self.release {
-                Some("--release")
+                Some("--release".to_owned())
             } else {
                 None
             })
             .chain(to_arg(&self.example, "--example"))
             .chain(if self.all_features {
-                Some("--all-features")
+                Some("--all-features".to_owned())
+            } else {
+                None
+            })
+            .chain(if let Some(jobs) = self.jobs {
+                Some(format!("--jobs={}", jobs))
             } else {
                 None
             })
     }
-    fn all_args(&self) -> impl Iterator<Item = &str> {
+    fn all_args(&self) -> impl Iterator<Item = String> {
         self.args_without_target()
             .chain(to_arg(&self.target, "--target"))
     }
