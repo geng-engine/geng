@@ -41,6 +41,7 @@ impl Geng {
         })
     }
     pub fn new_with(options: ContextOptions) -> Self {
+        setup_panic_handler();
         let window = Window::new(&options.title, options.vsync);
         let ugli = window.ugli().clone();
         let shader_lib = ShaderLib::new(window.ugli());
