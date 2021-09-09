@@ -34,7 +34,13 @@ impl Default for ContextOptions {
 }
 
 impl Geng {
-    pub fn new(options: ContextOptions) -> Self {
+    pub fn new(title: &str) -> Self {
+        Self::new_with(ContextOptions {
+            title: title.to_owned(),
+            ..default()
+        })
+    }
+    pub fn new_with(options: ContextOptions) -> Self {
         let window = Window::new(&options.title, options.vsync);
         let ugli = window.ugli().clone();
         let shader_lib = ShaderLib::new(window.ugli());
