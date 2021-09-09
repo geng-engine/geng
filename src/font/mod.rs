@@ -92,22 +92,24 @@ impl Font {
     pub fn draw(
         &self,
         framebuffer: &mut ugli::Framebuffer,
+        camera: &impl Camera,
         text: &str,
-        mut pos: Vec2<f32>,
+        pos: Vec2<f32>,
         size: f32,
         color: Color<f32>,
     ) {
-        pos.y -= self.descent * size;
         let scale = rusttype::Scale { x: size, y: size };
         let pos = rusttype::Point {
             x: pos.x,
-            y: framebuffer.size().y as f32 - pos.y,
+            y: -pos.y,
         };
+        // pos.y += self.descent * size;
 
         let mut cache = self.cache.borrow_mut();
         let mut cache_texture = self.cache_texture.borrow_mut();
 
         // Workaround for https://gitlab.redox-os.org/redox-os/rusttype/-/merge_requests/158
+        // let glyphs = self.font.layout(text, scale, pos).collect::<Vec<_>>();
         let glyphs: Vec<_> = text
             .chars()
             .map(|c| self.font.glyph(c))
@@ -150,9 +152,9 @@ impl Font {
         for glyph in &glyphs {
             if let Some((texture_rect, rect)) = cache.rect_for(0, glyph).unwrap() {
                 let x1 = rect.min.x as f32;
-                let y1 = rect.min.y as f32;
+                let y1 = -rect.min.y as f32;
                 let x2 = rect.max.x as f32;
-                let y2 = rect.max.y as f32;
+                let y2 = -rect.max.y as f32;
                 let u1 = texture_rect.min.x;
                 let u2 = texture_rect.max.x;
                 let v1 = texture_rect.min.y;
@@ -192,11 +194,14 @@ impl Font {
             &self.program,
             ugli::DrawMode::Triangles,
             &*geometry,
-            ugli::uniforms! {
-                u_color: color,
-                u_cache_texture: &*cache_texture,
-                u_framebuffer_size: framebuffer_size,
-            },
+            (
+                ugli::uniforms! {
+                    u_color: color,
+                    u_cache_texture: &*cache_texture,
+                    u_framebuffer_size: framebuffer_size,
+                },
+                camera_uniforms(camera, framebuffer_size.map(|x| x as f32)),
+            ),
             ugli::DrawParameters {
                 depth_func: None,
                 blend_mode: Some(ugli::BlendMode::Alpha),
@@ -207,6 +212,7 @@ impl Font {
     pub fn draw_aligned(
         &self,
         framebuffer: &mut ugli::Framebuffer,
+        camera: &impl Camera,
         text: &str,
         pos: Vec2<f32>,
         align: f32,
@@ -215,6 +221,7 @@ impl Font {
     ) {
         self.draw(
             framebuffer,
+            camera,
             text,
             vec2(pos.x - self.measure(text, size).width() * align, pos.y),
             size,

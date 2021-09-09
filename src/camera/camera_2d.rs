@@ -9,12 +9,12 @@ pub struct Camera2d {
 impl Camera2d {
     pub fn new(center: Vec2<f32>, max_vertical_fov: f32, max_horizontal_fov: f32) -> Self {
         Self {
-            center: vec2(0.0, 0.0),
+            center,
             max_horizontal_fov,
             max_vertical_fov,
         }
     }
-    fn screen_to_world(&self, framebuffer_size: Vec2<f32>, pos: Vec2<f32>) -> Vec2<f32> {
+    pub fn screen_to_world(&self, framebuffer_size: Vec2<f32>, pos: Vec2<f32>) -> Vec2<f32> {
         let pos = vec2(
             pos.x / framebuffer_size.x * 2.0 - 1.0,
             pos.y / framebuffer_size.y * 2.0 - 1.0,

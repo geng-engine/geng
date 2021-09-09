@@ -54,6 +54,7 @@ impl<T: AsRef<str>, F: AsRef<Font>> Widget for Text<T, F> {
         );
         self.font.as_ref().draw(
             framebuffer,
+            &PixelPerfectCamera,
             self.text.as_ref(),
             self.core().position.bottom_left().map(|x| x as f32),
             size,
