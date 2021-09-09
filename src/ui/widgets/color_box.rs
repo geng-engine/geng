@@ -26,6 +26,7 @@ impl Widget for ColorBox {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         self.geng.draw_2d().quad(
             framebuffer,
+            &PixelPerfectCamera,
             self.core().position.map(|x| x as f32),
             self.color,
         );

@@ -14,6 +14,7 @@ use crate::prelude::*;
 use log::{trace, warn};
 
 mod asset;
+mod camera;
 mod context;
 mod debug_overlay;
 pub mod draw_2d;
@@ -30,6 +31,7 @@ pub mod ui;
 mod window;
 
 pub use asset::*;
+pub use camera::*;
 pub use context::*;
 pub use debug_overlay::*;
 pub use draw_2d::Draw2D;

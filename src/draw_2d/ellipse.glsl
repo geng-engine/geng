@@ -5,10 +5,11 @@ attribute vec2 a_quad_pos;
 uniform vec2 u_pos;
 uniform vec2 u_radius;
 uniform ivec2 u_framebuffer_size;
+uniform mat4 u_projection_matrix;
+uniform mat4 u_view_matrix;
 void main() {
     v_quad_pos = a_quad_pos;
-    vec2 pos = (u_pos + u_radius * a_quad_pos) / vec2(u_framebuffer_size) * 2.0 - 1.0;
-    gl_Position = vec4(pos, 0.0, 1.0);
+    gl_Position = u_projection_matrix * u_view_matrix * vec4(u_pos + u_radius * a_quad_pos, 0.0, 1.0);
 }
 #endif
 

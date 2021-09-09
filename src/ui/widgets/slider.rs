@@ -85,6 +85,7 @@ impl<'a> Widget for SliderUI<'a> {
                 * (position.width() - *self.tick_radius * 2.0);
         draw_2d.quad(
             framebuffer,
+            &PixelPerfectCamera,
             AABB::from_corners(
                 position.bottom_left()
                     + vec2(line_width / 2.0, (position.height() - line_width) / 2.0),
@@ -95,6 +96,7 @@ impl<'a> Widget for SliderUI<'a> {
         );
         draw_2d.quad(
             framebuffer,
+            &PixelPerfectCamera,
             AABB::from_corners(
                 position.bottom_left()
                     + vec2(value_position, (position.height() - line_width) / 2.0),
@@ -105,18 +107,21 @@ impl<'a> Widget for SliderUI<'a> {
         );
         draw_2d.circle(
             framebuffer,
+            &PixelPerfectCamera,
             position.bottom_left() + vec2(line_width / 2.0, position.height() / 2.0),
             line_width / 2.0,
             self.theme.hover_color,
         );
         draw_2d.circle(
             framebuffer,
+            &PixelPerfectCamera,
             position.top_right() - vec2(line_width / 2.0, position.height() / 2.0),
             line_width / 2.0,
             self.theme.usable_color,
         );
         draw_2d.circle(
             framebuffer,
+            &PixelPerfectCamera,
             position.bottom_left() + vec2(value_position, position.height() / 2.0),
             *self.tick_radius,
             self.theme.hover_color,
