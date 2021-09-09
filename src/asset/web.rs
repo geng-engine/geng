@@ -1,7 +1,7 @@
 use super::*;
 
 impl LoadAsset for ugli::Texture {
-    fn load(geng: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
+    fn load(geng: &Geng, path: &str) -> AssetFuture<Self> {
         let (sender, receiver) = futures::channel::oneshot::channel();
         let image = web_sys::HtmlImageElement::new().unwrap();
         let path = Rc::new(path.to_owned());
@@ -41,7 +41,7 @@ impl LoadAsset for ugli::Texture {
 
 #[cfg(feature = "audio")]
 impl LoadAsset for Sound {
-    fn load(_: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
+    fn load(_: &Geng, path: &str) -> AssetFuture<Self> {
         let (sender, receiver) = futures::channel::oneshot::channel();
         let audio = web_sys::HtmlAudioElement::new_with_src(&path).unwrap();
         let path = Rc::new(path.to_owned());
@@ -82,7 +82,7 @@ impl LoadAsset for Sound {
 }
 
 impl LoadAsset for String {
-    fn load(_: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
+    fn load(_: &Geng, path: &str) -> AssetFuture<Self> {
         let (sender, receiver) = futures::channel::oneshot::channel();
         let request = web_sys::XmlHttpRequest::new().unwrap();
         request.open("GET", &path).unwrap();
@@ -124,7 +124,7 @@ impl LoadAsset for String {
 }
 
 impl LoadAsset for Vec<u8> {
-    fn load(_: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
+    fn load(_: &Geng, path: &str) -> AssetFuture<Self> {
         let (sender, receiver) = futures::channel::oneshot::channel();
         let request = web_sys::XmlHttpRequest::new().unwrap();
         request.set_response_type(web_sys::XmlHttpRequestResponseType::Arraybuffer);

@@ -12,7 +12,7 @@ struct Data {
 }
 
 impl Data {
-    fn new(geng: &Rc<Geng>) -> Self {
+    fn new(geng: &Geng) -> Self {
         Self {
             fps_counter: FpsCounter::new(geng),
             console: Console::new(geng),
@@ -39,7 +39,7 @@ pub struct DebugOverlay {
 }
 
 impl DebugOverlay {
-    pub fn new(geng: &Rc<Geng>, state: impl State) -> Self {
+    pub fn new(geng: &Geng, state: impl State) -> Self {
         Self {
             ui_controller: ui::Controller::new(),
             data: Data::new(geng),

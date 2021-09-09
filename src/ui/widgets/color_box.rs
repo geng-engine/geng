@@ -1,13 +1,13 @@
 use super::*;
 
 pub struct ColorBox {
-    geng: Rc<Geng>,
+    geng: Geng,
     core: WidgetCore,
     pub color: Color<f32>,
 }
 
 impl ColorBox {
-    pub fn new(geng: &Rc<Geng>, color: Color<f32>) -> Self {
+    pub fn new(geng: &Geng, color: Color<f32>) -> Self {
         Self {
             geng: geng.clone(),
             core: WidgetCore::void(),

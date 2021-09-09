@@ -119,7 +119,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
             let expanded = quote! {
                 impl geng::LoadAsset for #input_type
                     /* where #(#field_constraints),* */ {
-                    fn load(geng: &Rc<Geng>, base_path: &str) -> geng::AssetFuture<Self> {
+                    fn load(geng: &Geng, base_path: &str) -> geng::AssetFuture<Self> {
                         let (#(#field_names,)*) = (#(#field_loaders,)*);
                         Box::pin(async move {
                             let (#(#field_names,)*) = futures::try_join!(#(#field_names,)*)?;

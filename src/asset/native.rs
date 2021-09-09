@@ -17,10 +17,10 @@ impl AssetManager {
 }
 
 impl LoadAsset for ugli::Texture {
-    fn load(geng: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
+    fn load(geng: &Geng, path: &str) -> AssetFuture<Self> {
         let ugli = geng.ugli().clone();
         let path = path.to_owned();
-        let image_future = geng.asset_manager.threadpool.spawn(move || {
+        let image_future = geng.inner.asset_manager.threadpool.spawn(move || {
             info!("Loading {:?}", path);
             fn load(path: &str) -> Result<image::RgbaImage, anyhow::Error> {
                 let image = image::open(path).context(path.to_owned())?;
@@ -38,21 +38,22 @@ impl LoadAsset for ugli::Texture {
 
 #[cfg(feature = "audio")]
 impl LoadAsset for Sound {
-    fn load(geng: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
+    fn load(geng: &Geng, path: &str) -> AssetFuture<Self> {
         let geng = geng.clone();
         let path = path.to_owned();
-        let data = geng
-            .asset_manager
-            .threadpool
-            .spawn(move || -> Result<_, anyhow::Error> {
-                info!("Loading {:?}", path);
-                let mut data = Vec::new();
-                std::fs::File::open(path)?.read_to_end(&mut data)?;
-                Ok(data)
-            });
+        let data =
+            geng.inner
+                .asset_manager
+                .threadpool
+                .spawn(move || -> Result<_, anyhow::Error> {
+                    info!("Loading {:?}", path);
+                    let mut data = Vec::new();
+                    std::fs::File::open(path)?.read_to_end(&mut data)?;
+                    Ok(data)
+                });
         Box::pin(async move {
             Ok(Sound {
-                output_stream_handle: geng.audio.output_stream_handle.clone(),
+                output_stream_handle: geng.inner.audio.output_stream_handle.clone(),
                 data: data.await??.into(),
                 looped: false,
             })
@@ -62,10 +63,10 @@ impl LoadAsset for Sound {
 }
 
 impl LoadAsset for String {
-    fn load(geng: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
+    fn load(geng: &Geng, path: &str) -> AssetFuture<Self> {
         let geng = geng.clone();
         let path = path.to_owned();
-        let future = geng.asset_manager.threadpool.spawn(move || {
+        let future = geng.inner.asset_manager.threadpool.spawn(move || {
             info!("Loading {:?}", path);
             let mut result = String::new();
             std::fs::File::open(path)?.read_to_string(&mut result)?;
@@ -77,10 +78,10 @@ impl LoadAsset for String {
 }
 
 impl LoadAsset for Vec<u8> {
-    fn load(geng: &Rc<Geng>, path: &str) -> AssetFuture<Self> {
+    fn load(geng: &Geng, path: &str) -> AssetFuture<Self> {
         let geng = geng.clone();
         let path = path.to_owned();
-        let future = geng.asset_manager.threadpool.spawn(move || {
+        let future = geng.inner.asset_manager.threadpool.spawn(move || {
             info!("Loading {:?}", path);
             let mut result = Vec::new();
             std::fs::File::open(path)?.read_to_end(&mut result)?;

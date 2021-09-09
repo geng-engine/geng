@@ -46,14 +46,14 @@ fn logger() -> impl log::Log {
 }
 
 pub struct Console {
-    geng: Rc<Geng>,
+    geng: Geng,
     receiver: std::sync::mpsc::Receiver<Record>,
     records: std::collections::VecDeque<Record>,
 }
 
 impl Console {
     const MAX_RECORDS: usize = 10;
-    pub fn new(geng: &Rc<Geng>) -> Self {
+    pub fn new(geng: &Geng) -> Self {
         logger::add_logger(Box::new(logger()));
         let receiver = CHANNEL.lock().unwrap().1.take().unwrap();
         info!("Debug overlay initialized");

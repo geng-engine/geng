@@ -1,7 +1,7 @@
 use super::*;
 
 pub struct FpsCounter {
-    geng: Rc<Geng>,
+    geng: Geng,
     next_fps_update: f64,
     frames: usize,
     fps: f64,
@@ -12,7 +12,7 @@ pub struct FpsCounter {
 impl FpsCounter {
     const FPS_UPDATE_INTERVAL: f64 = 1.0;
 
-    pub fn new(geng: &Rc<Geng>) -> Self {
+    pub fn new(geng: &Geng) -> Self {
         Self {
             geng: geng.clone(),
             next_fps_update: Self::FPS_UPDATE_INTERVAL,

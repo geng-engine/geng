@@ -9,5 +9,9 @@ impl geng::State for State {
 }
 
 fn main() {
-    geng::run(Rc::new(Geng::new(default())), State)
+    let geng = Geng::new(geng::ContextOptions {
+        title: "Blank".to_owned(),
+        ..default()
+    });
+    geng::run(&geng, State)
 }

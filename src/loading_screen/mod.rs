@@ -28,7 +28,7 @@ where
     G: State,
 {
     pub fn new<F: FnOnce(T) -> G + 'static>(
-        #[allow(unused_variables)] geng: &Rc<Geng>,
+        #[allow(unused_variables)] geng: &Geng,
         state: L,
         future: impl Future<Output = T> + 'static,
         f: F,

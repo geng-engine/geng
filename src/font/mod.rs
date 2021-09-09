@@ -18,7 +18,7 @@ pub struct Font {
 const CACHE_SIZE: usize = 1024;
 
 impl Font {
-    pub fn new(geng: &Rc<Geng>, data: Vec<u8>) -> Result<Font, anyhow::Error> {
+    pub fn new(geng: &Geng, data: Vec<u8>) -> Result<Font, anyhow::Error> {
         Self::new_with(geng.ugli(), geng.shader_lib(), data)
     }
     pub(crate) fn new_with(

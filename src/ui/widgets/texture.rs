@@ -1,14 +1,14 @@
 use super::*;
 
 pub struct Texture<'a> {
-    geng: Rc<Geng>,
+    geng: Geng,
     core: WidgetCore,
     texture: &'a ugli::Texture,
     color: Color<f32>,
 }
 
 impl<'a> Texture<'a> {
-    pub fn colored(geng: &Rc<Geng>, texture: &'a ugli::Texture, color: Color<f32>) -> Self {
+    pub fn colored(geng: &Geng, texture: &'a ugli::Texture, color: Color<f32>) -> Self {
         Self {
             geng: geng.clone(),
             core: WidgetCore::void(),
