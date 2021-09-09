@@ -1,14 +1,35 @@
+// This imports a lot of useful stuff >:)
 use geng::prelude::*;
 
+// Struct representing game state (blank in this example)
 struct State;
 
 impl geng::State for State {
-    fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
-        ugli::clear(framebuffer, Some(Color::BLACK), None);
+    // Specify how to draw each game frame
+
+    fn draw(
+        &mut self,
+        framebuffer: &mut ugli::Framebuffer, // The framebuffer to draw onto
+    ) {
+        // Clear the whole framebuffer
+        ugli::clear(
+            framebuffer,
+            Some(Color::BLACK), // using black color
+            None,               // without clearing depth buffer
+        );
     }
 }
 
 fn main() {
+    // Initialize logger
+    logger::init().unwrap();
+
+    // Initialize the engine using default options
     let geng = Geng::new("Blank");
-    geng::run(&geng, State)
+
+    // Create the game state
+    let state = State;
+
+    // Run the game
+    geng::run(&geng, state)
 }
