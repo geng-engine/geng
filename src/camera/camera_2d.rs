@@ -14,6 +14,13 @@ impl Camera2d {
             max_vertical_fov,
         }
     }
+    pub fn containing(rect: AABB<f32>) -> Self {
+        Self {
+            center: rect.center(),
+            max_horizontal_fov: rect.width(),
+            max_vertical_fov: rect.height(),
+        }
+    }
     pub fn screen_to_world(&self, framebuffer_size: Vec2<f32>, pos: Vec2<f32>) -> Vec2<f32> {
         let pos = vec2(
             pos.x / framebuffer_size.x * 2.0 - 1.0,
