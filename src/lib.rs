@@ -3,6 +3,7 @@
 pub use geng_derive::*;
 
 pub mod prelude {
+    pub use crate::CameraExt as _;
     pub use crate::{draw_2d, Geng};
     pub use ::batbox::*;
     pub use ugli::{self, Ugli};
