@@ -14,6 +14,10 @@ impl Camera2d {
             max_vertical_fov,
         }
     }
+    pub fn set_max_fov(&mut self, fov: f32) {
+        self.max_horizontal_fov = fov;
+        self.max_vertical_fov = fov;
+    }
     pub fn containing(rect: AABB<f32>) -> Self {
         Self {
             center: rect.center(),
