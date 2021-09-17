@@ -34,6 +34,14 @@ impl Camera2d {
             * pos.extend(0.0).extend(1.0);
         pos.xy()
     }
+
+    pub fn world_to_screen(
+        &self,
+        framebuffer_size: Vec2<f32>,
+        pos: Vec2<f32>,
+    ) -> Option<Vec2<f32>> {
+        CameraExt::world_to_screen(self, framebuffer_size, pos.extend(0.0))
+    }
 }
 
 impl Camera for Camera2d {
