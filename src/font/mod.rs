@@ -99,7 +99,7 @@ impl Font {
     pub fn measure(&self, text: &str, size: f32) -> AABB<f32> {
         self.measure_at(text, vec2(0.0, 0.0), size)
     }
-    pub fn draw(
+    fn draw_impl(
         &self,
         framebuffer: &mut ugli::Framebuffer,
         camera: &impl Camera,
@@ -218,7 +218,7 @@ impl Font {
         );
     }
     #[allow(clippy::too_many_arguments)]
-    pub fn draw_aligned(
+    pub fn draw(
         &self,
         framebuffer: &mut ugli::Framebuffer,
         camera: &impl Camera,
@@ -228,7 +228,7 @@ impl Font {
         size: f32,
         color: Color<f32>,
     ) {
-        self.draw(
+        self.draw_impl(
             framebuffer,
             camera,
             text,

@@ -57,6 +57,7 @@ impl<T: AsRef<str>, F: AsRef<Font>> Widget for Text<T, F> {
             &PixelPerfectCamera,
             self.text.as_ref(),
             self.core().position.bottom_left().map(|x| x as f32),
+            TextAlign::LEFT,
             size,
             self.color,
         );

@@ -18,7 +18,7 @@ impl geng::State for State {
         ugli::clear(framebuffer, Some(Color::BLACK), None);
 
         // Draw text using default font
-        self.geng.default_font().draw_aligned(
+        self.geng.default_font().draw(
             framebuffer,
             &geng::PixelPerfectCamera, // using pixel coordinates
             "Hello, World!",
