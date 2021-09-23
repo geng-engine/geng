@@ -108,10 +108,24 @@ impl Font {
         size: f32,
         color: Color<f32>,
     ) {
-        let scale = rusttype::Scale { x: size, y: size };
-        let pos = rusttype::Point {
-            x: pos.x,
-            y: -pos.y,
+        let pos = pos.extend(0.0);
+        let pixel_size = {
+            let p1 = match camera.world_to_screen(framebuffer.size().map(|x| x as f32), pos) {
+                Some(pos) => pos,
+                None => return,
+            };
+            let p2 = match camera.world_to_screen(
+                framebuffer.size().map(|x| x as f32),
+                pos + vec3(0.0, size, 0.0),
+            ) {
+                Some(pos) => pos,
+                None => return,
+            };
+            (p1 - p2).len().max(1.0)
+        };
+        let scale = rusttype::Scale {
+            x: pixel_size,
+            y: pixel_size,
         };
         // pos.y += self.descent * size;
 
@@ -119,7 +133,7 @@ impl Font {
         let mut cache_texture = self.cache_texture.borrow_mut();
 
         // Workaround for https://gitlab.redox-os.org/redox-os/rusttype/-/merge_requests/158
-        // let glyphs = self.font.layout(text, scale, pos).collect::<Vec<_>>();
+        // let glyphs = self.font.layout(text, scale, vec2(0, 0)).collect::<Vec<_>>();
         let glyphs: Vec<_> = text
             .chars()
             .map(|c| self.font.glyph(c))
@@ -129,7 +143,7 @@ impl Font {
                     *x += self.font.pair_kerning(scale, *last, g.id());
                 }
                 let w = g.h_metrics().advance_width;
-                let next = g.positioned(pos + rusttype::vector(*x, 0.0));
+                let next = g.positioned(rusttype::Point { x: *x, y: 0.0 });
                 *last = Some(next.id());
                 *x += w;
                 Some(next)
@@ -159,10 +173,10 @@ impl Font {
         geometry.clear();
         for glyph in &glyphs {
             if let Some((texture_rect, rect)) = cache.rect_for(0, glyph).unwrap() {
-                let x1 = rect.min.x as f32;
-                let y1 = -rect.min.y as f32;
-                let x2 = rect.max.x as f32;
-                let y2 = -rect.max.y as f32;
+                let x1 = pos.x + rect.min.x as f32 * size / pixel_size;
+                let y1 = pos.y - rect.min.y as f32 * size / pixel_size;
+                let x2 = pos.x + rect.max.x as f32 * size / pixel_size;
+                let y2 = pos.y - rect.max.y as f32 * size / pixel_size;
                 let u1 = texture_rect.min.x;
                 let u2 = texture_rect.max.x;
                 let v1 = texture_rect.min.y;
