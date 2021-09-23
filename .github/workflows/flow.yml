@@ -5,16 +5,59 @@ on:
   workflow_dispatch:
 
 jobs:
-  main:
+  test:
+    name: Test (native)
+    runs-on: ${{ matrix.platform.runs-on }}
+    strategy:
+      matrix:
+        platform:
+          - runs-on: ubuntu-latest
+            channel: linux
+          - runs-on: macos-latest
+            channel: mac
+          - runs-on: windows-latest
+            channel: windows
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install things
+        if: matrix.platform.channel == 'linux'
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+
+      - name: Install cargo-geng
+        run: cargo install cargo-geng --path cargo-geng
+
+      - name: Test
+        uses: actions-rs/cargo@v1
+        with:
+          command: geng
+          args: test
+
+  test-web:
+    name: Test (web)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Build & Push
-        uses: docker/build-push-action@v1
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
         with:
-          path: cargo-geng
-          repository: kuviman/geng
-          tags: latest
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          toolchain: stable
+          profile: minimal
+          target: wasm32-unknown-unknown
+
+      - name: Install cargo-geng
+        run: |
+          cargo install cargo-geng --path cargo-geng
+          cargo install wasm-bindgen-cli
+
+      - name: Test
+        run: cargo geng check --target wasm32-unknown-unknown
