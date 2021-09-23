@@ -15,6 +15,15 @@ pub struct Font {
     descent: f32,
 }
 
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
+pub struct TextAlign(pub f32);
+
+impl TextAlign {
+    pub const LEFT: Self = Self(0.0);
+    pub const CENTER: Self = Self(0.5);
+    pub const RIGHT: Self = Self(1.0);
+}
+
 const CACHE_SIZE: usize = 1024;
 
 impl Font {
@@ -215,7 +224,7 @@ impl Font {
         camera: &impl Camera,
         text: &str,
         pos: Vec2<f32>,
-        align: f32,
+        align: TextAlign,
         size: f32,
         color: Color<f32>,
     ) {
@@ -223,7 +232,7 @@ impl Font {
             framebuffer,
             camera,
             text,
-            vec2(pos.x - self.measure(text, size).width() * align, pos.y),
+            vec2(pos.x - self.measure(text, size).width() * align.0, pos.y),
             size,
             color,
         );

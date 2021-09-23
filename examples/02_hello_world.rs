@@ -23,8 +23,8 @@ impl geng::State for State {
             &geng::PixelPerfectCamera, // using pixel coordinates
             "Hello, World!",
             framebuffer.size().map(|x| x as f32 / 2.0), // in the middle of the screen
-            0.5,  // center-aligned (0.0 is left, 1.0 is right)
-            32.0, // 32 pixels high
+            geng::TextAlign::CENTER,                    // center-aligned
+            32.0,                                       // 32 pixels high
             Color::WHITE,
         );
     }
