@@ -143,7 +143,6 @@ fn main() -> Result<(), anyhow::Error> {
     let opt: Opt = Clap::parse_from(args);
     match opt.sub {
         Sub::Build | Sub::Run => {
-            exec(Command::new("cargo").arg("build").args(opt.all_args()))?;
             let metadata = cargo_metadata::MetadataCommand::new()
                 .other_options(opt.args_for_metadata().collect::<Vec<_>>())
                 .exec()?;
@@ -165,6 +164,7 @@ fn main() -> Result<(), anyhow::Error> {
                     }
                 })
                 .unwrap();
+            exec(Command::new("cargo").arg("build").args(opt.all_args()))?;
             let out_dir = metadata.target_directory.join("geng");
             if out_dir.exists() {
                 std::fs::remove_dir_all(&out_dir)?;
