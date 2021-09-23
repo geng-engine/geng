@@ -9,6 +9,7 @@ These are games made by myself (in order of personal preference):
 - [LD 45 - Egg Farm](https://kuviman.itch.io/egg-farm)
 - [LD 48 - Dig World](https://kuviman.itch.io/dig-world)
 - [TriJam 135 - Circle Race](https://kuviman.itch.io/circle-race)
+- [VimJam 2 - Monke Pizza](https://kuviman.itch.io/monke-pizza)
 - [LD 44 - LifeShot](https://kuviman.itch.io/lifeshot)
 - LifeShot.io (LD 44 post jam version) - TODO upload to itch
 - LD 47 - The Island - TODO upload to itch
