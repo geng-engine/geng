@@ -25,6 +25,7 @@ pub struct Window {
     glutin_window: glutin::WindowedContext<glutin::PossiblyCurrent>,
     #[cfg(not(target_arch = "wasm32"))]
     glutin_event_loop: RefCell<glutin::event_loop::EventLoop<()>>,
+    #[allow(clippy::type_complexity)]
     event_handler: Rc<RefCell<Option<Box<dyn FnMut(Event)>>>>,
     pressed_keys: Rc<RefCell<HashSet<Key>>>,
     pressed_buttons: Rc<RefCell<HashSet<MouseButton>>>,

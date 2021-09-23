@@ -67,6 +67,7 @@ pub struct Controller {
 }
 
 impl Controller {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             size: vec2(1.0, 1.0),

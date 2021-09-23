@@ -16,6 +16,7 @@ impl Container for Button {
 }
 
 impl Button {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             core: WidgetCore::new(),

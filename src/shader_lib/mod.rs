@@ -41,7 +41,7 @@ impl ShaderLib {
                 }
             } else {
                 result.push_str(line);
-                result.push_str("\n");
+                result.push('\n');
             }
         }
         Ok(result)

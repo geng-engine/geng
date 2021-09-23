@@ -31,18 +31,21 @@ impl log::Log for Logger {
     fn flush(&self) {}
 }
 
-static CHANNEL: once_cell::sync::Lazy<
-    Mutex<(
-        Option<std::sync::mpsc::Sender<Record>>,
-        Option<std::sync::mpsc::Receiver<Record>>,
-    )>,
-> = once_cell::sync::Lazy::new(|| {
+struct Channel {
+    sender: Option<std::sync::mpsc::Sender<Record>>,
+    receiver: Option<std::sync::mpsc::Receiver<Record>>,
+}
+
+static CHANNEL: once_cell::sync::Lazy<Mutex<Channel>> = once_cell::sync::Lazy::new(|| {
     let (sender, receiver) = std::sync::mpsc::channel();
-    Mutex::new((Some(sender), Some(receiver)))
+    Mutex::new(Channel {
+        sender: Some(sender),
+        receiver: Some(receiver),
+    })
 });
 
 fn logger() -> impl log::Log {
-    Logger::new(CHANNEL.lock().unwrap().0.take().unwrap())
+    Logger::new(CHANNEL.lock().unwrap().sender.take().unwrap())
 }
 
 pub struct Console {
@@ -55,7 +58,7 @@ impl Console {
     const MAX_RECORDS: usize = 10;
     pub fn new(geng: &Geng) -> Self {
         logger::add_logger(Box::new(logger()));
-        let receiver = CHANNEL.lock().unwrap().1.take().unwrap();
+        let receiver = CHANNEL.lock().unwrap().receiver.take().unwrap();
         info!("Debug overlay initialized");
         Self {
             geng: geng.clone(),

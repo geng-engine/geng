@@ -58,10 +58,10 @@ impl SliderUI<'_> {
 
 impl<'a> Widget for SliderUI<'a> {
     fn core(&self) -> &WidgetCore {
-        &self.core
+        self.core
     }
     fn core_mut(&mut self) -> &mut WidgetCore {
-        &mut self.core
+        self.core
     }
     fn update(&mut self, delta_time: f64) {
         let height = self.core.position().height() as f32;

@@ -116,7 +116,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                 }
             });
 
-            let expanded = quote! {
+            quote! {
                 impl geng::LoadAsset for #input_type
                     /* where #(#field_constraints),* */ {
                     fn load(geng: &Geng, base_path: &str) -> geng::AssetFuture<Self> {
@@ -130,8 +130,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                     }
                     const DEFAULT_EXT: Option<&'static str> = None;
                 }
-            };
-            expanded.into()
+            }
         }
         _ => panic!("geng::Assets can only be derived by structs"),
     }

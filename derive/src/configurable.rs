@@ -20,7 +20,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                 proc_macro2::Span::call_site(),
             );
 
-            let expanded = quote! {
+            quote! {
                 pub struct #config_ident {
                     theme: Rc<geng::ui::Theme>,
                     #(#field_names: <#field_tys as geng::ui::Configurable>::Config,)*
@@ -52,8 +52,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                         }
                     }
                 }
-            };
-            expanded.into()
+            }
         }
         _ => panic!("geng::ui::Configurable can only be derived by structs"),
     }

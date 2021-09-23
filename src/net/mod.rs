@@ -40,6 +40,7 @@ pub struct Traffic {
 }
 
 impl Traffic {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             inbound: std::sync::atomic::AtomicUsize::new(0),

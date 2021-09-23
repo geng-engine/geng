@@ -95,13 +95,13 @@ impl SoundEffect {
     }
     pub fn play(&mut self) {
         #[cfg(target_arch = "wasm32")]
-        self.inner.play();
+        let _ = self.inner.play().unwrap();
         #[cfg(not(target_arch = "wasm32"))]
         self.sink().play();
     }
     pub fn pause(&mut self) {
         #[cfg(target_arch = "wasm32")]
-        self.inner.pause();
+        self.inner.pause().unwrap();
         #[cfg(not(target_arch = "wasm32"))]
         self.sink().pause();
     }

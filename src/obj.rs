@@ -41,7 +41,7 @@ pub fn parse(source: &str) -> HashMap<String, Vec<Vertex>> {
             let mut parts = line.split_whitespace();
             parts.next();
             let to_vertex = |s: &str| {
-                let mut parts = s.split("/");
+                let mut parts = s.split('/');
                 let i_v: usize = parts.next().unwrap().parse().unwrap();
                 let i_vt: usize = parts.next().unwrap().parse().unwrap();
                 let i_vn: usize = parts.next().unwrap().parse().unwrap();
@@ -52,7 +52,7 @@ pub fn parse(source: &str) -> HashMap<String, Vec<Vertex>> {
                 }
             };
             let mut cur = Vec::new();
-            while let Some(s) = parts.next() {
+            for s in parts {
                 cur.push(to_vertex(s));
             }
             for i in 2..cur.len() {
@@ -61,7 +61,7 @@ pub fn parse(source: &str) -> HashMap<String, Vec<Vertex>> {
                 current_obj.push(cur[i]);
             }
         } else if line.starts_with("o ") || line.starts_with("g ") {
-            if current_obj.len() != 0 {
+            if !current_obj.is_empty() {
                 result.insert(current_name.clone(), current_obj);
                 current_obj = Vec::new();
             }

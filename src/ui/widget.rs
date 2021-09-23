@@ -16,6 +16,7 @@ pub struct WidgetCore {
 }
 
 impl WidgetCore {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             id: ID::new(),

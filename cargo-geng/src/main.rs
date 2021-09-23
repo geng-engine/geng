@@ -124,11 +124,7 @@ impl Opt {
             } else {
                 None
             })
-            .chain(if let Some(jobs) = self.jobs {
-                Some(format!("--jobs={}", jobs))
-            } else {
-                None
-            })
+            .chain(self.jobs.map(|jobs| format!("--jobs={}", jobs)))
     }
     fn all_args(&self) -> impl Iterator<Item = String> {
         self.args_without_target()
@@ -149,11 +145,7 @@ fn main() -> Result<(), anyhow::Error> {
         Sub::Build | Sub::Run => {
             exec(Command::new("cargo").arg("build").args(opt.all_args()))?;
             let metadata = cargo_metadata::MetadataCommand::new()
-                .other_options(
-                    opt.args_for_metadata()
-                        .map(|arg| arg.to_owned())
-                        .collect::<Vec<_>>(),
-                )
+                .other_options(opt.args_for_metadata().collect::<Vec<_>>())
                 .exec()?;
             let package = metadata
                 .packages
@@ -216,9 +208,9 @@ fn main() -> Result<(), anyhow::Error> {
                 }
             }
             command.wait()?;
-            let executable = executable.ok_or(anyhow::anyhow!("executable not found"))?;
+            let executable = executable.ok_or_else(|| anyhow::anyhow!("executable not found"))?;
 
-            if executable.extension() == Some("wasm".as_ref()) {
+            if executable.extension() == Some("wasm") {
                 exec(
                     Command::new("wasm-bindgen")
                         .arg("--target=web")
@@ -228,12 +220,7 @@ fn main() -> Result<(), anyhow::Error> {
                         .arg(&executable),
                 )?;
                 std::fs::write(
-                    out_dir.join(
-                        opt.index_file
-                            .as_ref()
-                            .map(|s| s.as_str())
-                            .unwrap_or("index.html"),
-                    ),
+                    out_dir.join(opt.index_file.as_deref().unwrap_or("index.html")),
                     include_str!("index.html")
                         .replace("<app-name>", executable.file_stem().unwrap()),
                 )?;

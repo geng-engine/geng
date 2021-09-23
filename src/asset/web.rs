@@ -43,11 +43,10 @@ impl LoadAsset for ugli::Texture {
 impl LoadAsset for Sound {
     fn load(_: &Geng, path: &str) -> AssetFuture<Self> {
         let (sender, receiver) = futures::channel::oneshot::channel();
-        let audio = web_sys::HtmlAudioElement::new_with_src(&path).unwrap();
+        let audio = web_sys::HtmlAudioElement::new_with_src(path).unwrap();
         let path = Rc::new(path.to_owned());
         let handler = {
             let audio = audio.clone();
-            let path = path.clone();
             move |success: bool| {
                 sender
                     .send(if success {
@@ -85,11 +84,10 @@ impl LoadAsset for String {
     fn load(_: &Geng, path: &str) -> AssetFuture<Self> {
         let (sender, receiver) = futures::channel::oneshot::channel();
         let request = web_sys::XmlHttpRequest::new().unwrap();
-        request.open("GET", &path).unwrap();
+        request.open("GET", path).unwrap();
         let path = Rc::new(path.to_owned());
         let handler = {
             let request = request.clone();
-            let path = path.clone();
             move |success: bool| {
                 sender
                     .send(if success {
@@ -128,11 +126,10 @@ impl LoadAsset for Vec<u8> {
         let (sender, receiver) = futures::channel::oneshot::channel();
         let request = web_sys::XmlHttpRequest::new().unwrap();
         request.set_response_type(web_sys::XmlHttpRequestResponseType::Arraybuffer);
-        request.open("GET", &path).unwrap();
+        request.open("GET", path).unwrap();
         let path = Rc::new(path.to_owned());
         let handler = {
             let request = request.clone();
-            let path = path.clone();
             move |success: bool| {
                 sender
                     .send(if success {

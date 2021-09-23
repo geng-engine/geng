@@ -5,6 +5,7 @@ pub struct StateManager {
 }
 
 impl StateManager {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self { stack: Vec::new() }
     }

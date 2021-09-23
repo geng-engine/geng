@@ -41,8 +41,8 @@ impl Window {
                     if let Some(key) = input.virtual_keycode {
                         let key = from_glutin_key(key);
                         events.push(match input.state {
-                            glutin::event::ElementState::Pressed => Event::KeyDown { key: key },
-                            glutin::event::ElementState::Released => Event::KeyUp { key: key },
+                            glutin::event::ElementState::Pressed => Event::KeyDown { key },
+                            glutin::event::ElementState::Released => Event::KeyUp { key },
                         });
                     }
                 }

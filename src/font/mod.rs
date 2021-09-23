@@ -35,7 +35,8 @@ impl Font {
         shader_lib: &ShaderLib,
         data: Vec<u8>,
     ) -> Result<Font, anyhow::Error> {
-        let font = rusttype::Font::try_from_vec(data).ok_or(anyhow!("Failed to read font"))?;
+        let font =
+            rusttype::Font::try_from_vec(data).ok_or_else(|| anyhow!("Failed to read font"))?;
         let descent = font.v_metrics(rusttype::Scale { x: 1.0, y: 1.0 }).descent;
         Ok(Font {
             font,
@@ -150,9 +151,7 @@ impl Font {
                     rgba_data[i * 4 + 3] = data[i];
                 }
 
-                unsafe {
-                    cache_texture.sub_image(vec2(x, y), vec2(width, height), &rgba_data);
-                }
+                cache_texture.sub_image(vec2(x, y), vec2(width, height), &rgba_data);
             })
             .unwrap();
 
@@ -218,6 +217,7 @@ impl Font {
             },
         );
     }
+    #[allow(clippy::too_many_arguments)]
     pub fn draw_aligned(
         &self,
         framebuffer: &mut ugli::Framebuffer,

@@ -3,6 +3,7 @@ use super::*;
 pub(crate) struct GengImpl {
     window: Window,
     #[cfg(feature = "audio")]
+    #[allow(dead_code)]
     pub(crate) audio: AudioContext,
     shader_lib: ShaderLib,
     draw_2d: Rc<Draw2D>,
