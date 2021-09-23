@@ -60,3 +60,18 @@ jobs:
 
       - name: Test
         run: cargo check --target wasm32-unknown-unknown
+
+  docker:
+    name: Docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build & Push
+        uses: docker/build-push-action@v1
+        with:
+          path: cargo-geng
+          repository: kuviman/geng
+          tags: latest
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
