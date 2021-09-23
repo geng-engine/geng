@@ -68,6 +68,7 @@ impl Context {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn read_pixels<T>(
         &self,
         x: Int,

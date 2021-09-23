@@ -1,6 +1,3 @@
-use gl;
-use std;
-
 pub type BitField = gl::types::GLbitfield;
 pub type Bool = gl::types::GLboolean;
 pub type Char = gl::types::GLchar;

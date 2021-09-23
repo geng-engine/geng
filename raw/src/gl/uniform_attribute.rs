@@ -51,7 +51,11 @@ impl Context {
         let size = unsafe { size.assume_init() };
         let typ = unsafe { typ.assume_init() };
         buf.truncate(length);
-        let name = String::from_utf8(unsafe { std::mem::transmute(buf) }).unwrap();
+        let name = String::from_utf8(unsafe {
+            #[allow(clippy::unsound_collection_transmute)]
+            std::mem::transmute(buf)
+        })
+        .unwrap();
         ActiveInfo { name, size, typ }
     }
 
@@ -84,7 +88,11 @@ impl Context {
         let size = unsafe { size.assume_init() };
         let typ = unsafe { typ.assume_init() };
         buf.truncate(length);
-        let name = String::from_utf8(unsafe { std::mem::transmute(buf) }).unwrap();
+        let name = String::from_utf8(unsafe {
+            #[allow(clippy::unsound_collection_transmute)]
+            std::mem::transmute(buf)
+        })
+        .unwrap();
         ActiveInfo { name, size, typ }
     }
 

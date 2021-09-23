@@ -68,7 +68,11 @@ impl Context {
                 info_log_bytes.as_mut_ptr() as *mut _,
             );
         }
-        String::from_utf8(unsafe { std::mem::transmute(info_log_bytes) }).unwrap()
+        String::from_utf8(unsafe {
+            #[allow(clippy::unsound_collection_transmute)]
+            std::mem::transmute(info_log_bytes)
+        })
+        .unwrap()
     }
 
     pub fn get_program_parameter_bool(&self, program: &Program, pname: Enum) -> Bool {
@@ -99,7 +103,11 @@ impl Context {
                 info_log_bytes.as_mut_ptr() as *mut _,
             )
         };
-        String::from_utf8(unsafe { std::mem::transmute(info_log_bytes) }).unwrap()
+        String::from_utf8(unsafe {
+            #[allow(clippy::unsound_collection_transmute)]
+            std::mem::transmute(info_log_bytes)
+        })
+        .unwrap()
     }
 
     pub fn get_shader_parameter_bool(&self, shader: &Shader, pname: Enum) -> Bool {

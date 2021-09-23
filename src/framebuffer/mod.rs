@@ -17,7 +17,7 @@ pub enum DepthAttachmentRead<'a> {
 }
 
 pub struct FramebufferRead<'a> {
-    pub(crate) fbo: FBO,
+    pub(crate) fbo: Fbo,
     color: ColorAttachmentRead<'a>,
     depth: DepthAttachmentRead<'a>,
     size: Vec2<usize>,
@@ -30,12 +30,12 @@ impl<'a> FramebufferRead<'a> {
         depth: DepthAttachmentRead<'a>,
     ) -> Self {
         let gl = &ugli.inner;
-        let fbo = FBO::new(ugli);
+        let fbo = Fbo::new(ugli);
         fbo.bind();
         let mut size = None;
         match color {
             ColorAttachmentRead::None => {}
-            ColorAttachmentRead::Texture(ref texture) => {
+            ColorAttachmentRead::Texture(texture) => {
                 gl.framebuffer_texture_2d(
                     raw::FRAMEBUFFER,
                     raw::COLOR_ATTACHMENT0,
@@ -48,7 +48,7 @@ impl<'a> FramebufferRead<'a> {
         }
         match depth {
             DepthAttachmentRead::None => {}
-            DepthAttachmentRead::Renderbuffer(ref renderbuffer) => {
+            DepthAttachmentRead::Renderbuffer(renderbuffer) => {
                 gl.framebuffer_renderbuffer(
                     raw::FRAMEBUFFER,
                     raw::DEPTH_ATTACHMENT,
@@ -131,7 +131,7 @@ impl<'a> Framebuffer<'a> {
     pub fn default(ugli: &Rc<Ugli>) -> Self {
         Self {
             read: FramebufferRead {
-                fbo: FBO::default(ugli),
+                fbo: Fbo::default(ugli),
                 color: ColorAttachmentRead::None,
                 depth: DepthAttachmentRead::None,
                 size: ugli.size(),

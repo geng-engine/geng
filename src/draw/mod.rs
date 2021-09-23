@@ -58,13 +58,13 @@ pub fn draw<V, U, DP>(
     uniforms.walk_uniforms(&mut UC { program });
 
     #[cfg(not(target_arch = "wasm32"))]
-    let vao = VAO::new(gl);
+    let vao = Vao::new(gl);
     #[cfg(not(target_arch = "wasm32"))]
     vao.bind();
 
     let mut vertex_count = None;
     let mut instance_count = None;
-    vertices.walk_data(VDC {
+    vertices.walk_data(Vdc {
         program,
         vertex_count: &mut vertex_count,
         instance_count: &mut instance_count,
@@ -104,12 +104,12 @@ pub fn draw<V, U, DP>(
         }
     };
 
-    if let Some(instance_count) = instance_count {
-        if vertex_count != 0 && instance_count != 0 {
-            gl.draw_arrays_instanced(gl_mode, 0, vertex_count as _, instance_count as _);
-        }
-    } else {
-        if vertex_count != 0 {
+    if vertex_count != 0 {
+        if let Some(instance_count) = instance_count {
+            if instance_count != 0 {
+                gl.draw_arrays_instanced(gl_mode, 0, vertex_count as _, instance_count as _);
+            }
+        } else {
             gl.draw_arrays(gl_mode, 0, vertex_count as _);
         }
     }
@@ -132,13 +132,13 @@ pub fn draw<V, U, DP>(
     }
 
     #[cfg(not(target_arch = "wasm32"))]
-    struct VAO<'a> {
+    struct Vao<'a> {
         handle: raw::VertexArrayObject,
         gl: &'a raw::Context,
     }
 
     #[cfg(not(target_arch = "wasm32"))]
-    impl<'a> VAO<'a> {
+    impl<'a> Vao<'a> {
         fn new(gl: &'a raw::Context) -> Self {
             Self {
                 handle: gl.create_vertex_array().unwrap(),
@@ -151,18 +151,18 @@ pub fn draw<V, U, DP>(
     }
 
     #[cfg(not(target_arch = "wasm32"))]
-    impl<'a> Drop for VAO<'a> {
+    impl<'a> Drop for Vao<'a> {
         fn drop(&mut self) {
             self.gl.delete_vertex_array(&self.handle);
         }
     }
 
-    struct VDC<'a> {
+    struct Vdc<'a> {
         program: &'a Program,
         vertex_count: &'a mut Option<usize>,
         instance_count: &'a mut Option<usize>,
     }
-    impl<'a> VertexDataVisitor for VDC<'a> {
+    impl<'a> VertexDataVisitor for Vdc<'a> {
         fn visit<'b, D: Vertex + 'b, T: IntoVertexBufferSlice<'b, D>>(
             &mut self,
             data: T,
@@ -181,22 +181,25 @@ pub fn draw<V, U, DP>(
             } else {
                 *self.vertex_count = Some(data.len());
             }
-            let sample = unsafe { mem::MaybeUninit::<D>::uninit().assume_init() };
+            let sample = unsafe {
+                #[allow(clippy::uninit_assumed_init)] // TODO: check
+                mem::MaybeUninit::<D>::uninit().assume_init()
+            };
             data.buffer.bind();
-            sample.walk_attributes(VAC {
+            sample.walk_attributes(Vac {
                 sample: &sample,
                 divisor,
                 program: self.program,
                 offset: data.range.start * mem::size_of::<D>(),
             });
             mem::forget(sample);
-            struct VAC<'a, D: Vertex + 'a> {
+            struct Vac<'a, D: Vertex + 'a> {
                 offset: usize,
                 sample: &'a D,
                 divisor: Option<usize>,
                 program: &'a Program,
             }
-            impl<'a, D: Vertex> VertexAttributeVisitor for VAC<'a, D> {
+            impl<'a, D: Vertex> VertexAttributeVisitor for Vac<'a, D> {
                 fn visit<A: VertexAttribute>(&mut self, name: &str, attribute: &A) {
                     let gl = &self.program.ugli.inner;
                     if let Some(attribute_info) = self.program.attributes.get(name) {

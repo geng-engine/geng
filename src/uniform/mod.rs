@@ -102,7 +102,7 @@ impl<T: AsUniform> Uniform for T {
 impl<'a, U: Uniform> AsUniform for &'a U {
     type Uniform = U;
     fn as_uniform(&self) -> &U {
-        &self
+        self
     }
 }
 

@@ -40,6 +40,7 @@ impl Context {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn tex_image_2d<T>(
         &self,
         target: Enum,
@@ -76,6 +77,7 @@ impl Context {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn tex_sub_image_2d<T>(
         &self,
         target: Enum,
@@ -103,6 +105,7 @@ impl Context {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn copy_tex_sub_image_2d(
         &self,
         target: Enum,

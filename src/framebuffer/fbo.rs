@@ -1,12 +1,12 @@
 use super::*;
 
-pub struct FBO {
+pub struct Fbo {
     pub(crate) ugli: Rc<Ugli>,
     pub(crate) handle: Option<raw::Framebuffer>,
     phantom_data: PhantomData<*mut ()>,
 }
 
-impl FBO {
+impl Fbo {
     pub fn new(ugli: &Rc<Ugli>) -> Self {
         let gl = &ugli.inner;
         Self {
@@ -38,7 +38,7 @@ impl FBO {
     }
 }
 
-impl Drop for FBO {
+impl Drop for Fbo {
     fn drop(&mut self) {
         let gl = &self.ugli.inner;
         if let Some(ref handle) = self.handle {

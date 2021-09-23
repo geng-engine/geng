@@ -33,10 +33,9 @@ fn simple_derive(
     let input_type = &ast.ident;
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     let impl_body = expand(&ast);
-    let expanded = quote! {
+    quote! {
         impl#impl_generics #typ for #input_type#ty_generics #where_clause {
             #impl_body
         }
-    };
-    expanded.into()
+    }
 }

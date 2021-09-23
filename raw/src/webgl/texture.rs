@@ -23,6 +23,7 @@ impl Context {
         self.inner.generate_mipmap(target);
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn tex_image_2d<T>(
         &self,
         target: Enum,
@@ -80,6 +81,7 @@ impl Context {
         self.inner.tex_parameteri(target, pname, param);
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn tex_sub_image_2d<T>(
         &self,
         target: Enum,
@@ -112,6 +114,7 @@ impl Context {
             .unwrap();
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn copy_tex_sub_image_2d(
         &self,
         target: Enum,

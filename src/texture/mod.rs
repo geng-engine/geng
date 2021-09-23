@@ -125,7 +125,7 @@ impl<P: TexturePixel> Texture2d<P> {
     }
 
     // TODO: use like Matrix<Color>?
-    pub unsafe fn sub_image(&mut self, pos: Vec2<usize>, size: Vec2<usize>, data: &[u8]) {
+    pub fn sub_image(&mut self, pos: Vec2<usize>, size: Vec2<usize>, data: &[u8]) {
         assert_eq!(
             size.x
                 * size.y

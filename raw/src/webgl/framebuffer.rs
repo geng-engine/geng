@@ -42,6 +42,7 @@ impl Context {
             .framebuffer_texture_2d(target, attachment, texture_target, texture, level);
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn read_pixels<T>(
         &self,
         x: Int,

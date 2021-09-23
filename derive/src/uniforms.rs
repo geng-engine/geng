@@ -5,7 +5,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
 }
 
 fn expand(input: &syn::DeriveInput) -> TokenStream {
-    let expanded = match input.data {
+    match input.data {
         syn::Data::Struct(syn::DataStruct { ref fields, .. }) => {
             let field_names = fields.iter().map(|field| field.ident.as_ref().unwrap());
             let field_names_copy = fields.iter().map(|field| field.ident.as_ref().unwrap());
@@ -16,6 +16,5 @@ fn expand(input: &syn::DeriveInput) -> TokenStream {
             }
         }
         _ => panic!("ugli::Uniforms can only be derived by structs"),
-    };
-    expanded.into()
+    }
 }
