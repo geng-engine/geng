@@ -14,7 +14,7 @@ impl ThreadPoolExt for ThreadPool {
     ) -> futures::channel::oneshot::Receiver<T> {
         let (sender, receiver) = futures::channel::oneshot::channel();
         self.execute(move || {
-            if let Err(_) = sender.send(f()) {
+            if sender.send(f()).is_err() {
                 panic!("Failed to send value");
             }
         });

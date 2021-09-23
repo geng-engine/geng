@@ -20,6 +20,7 @@ fn now() -> f64 {
 }
 
 impl Timer {
+    #[allow(clippy::new_without_default)]
     /// Constructs a new timer.
     pub fn new() -> Self {
         Self {

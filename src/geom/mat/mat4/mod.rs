@@ -12,11 +12,7 @@ pub struct Mat4<T>([[T; 4]; 4]);
 
 impl<T> Mat4<T> {
     pub fn map<U, F: Fn(T) -> U>(self, f: F) -> Mat4<U> {
-        fn map_arr<T, U, F: Fn(T) -> U>(arr: [T; 4], f: F) -> [U; 4] {
-            let [a, b, c, d] = arr;
-            [f(a), f(b), f(c), f(d)]
-        }
-        Mat4(map_arr(self.0, |row| map_arr(row, &f)))
+        Mat4(self.0.map(|row| row.map(&f)))
     }
 }
 

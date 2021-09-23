@@ -15,9 +15,9 @@ fn detect_locale() -> String {
     let locale = unsafe {
         let locale = libc::setlocale(
             libc::LC_COLLATE,
-            b"\0" as *const _ as *const std::os::raw::c_char,
-        ) as *const _;
-        if locale == std::ptr::null() {
+            std::ffi::CStr::from_bytes_with_nul_unchecked(b"\0").as_ptr(),
+        );
+        if locale.is_null() {
             None
         } else {
             std::ffi::CStr::from_ptr(locale)

@@ -53,7 +53,7 @@ impl<T: Real> Float for T {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, PartialOrd, Serialize)]
+#[derive(Copy, Clone, PartialEq, Serialize)]
 #[repr(transparent)]
 pub struct RealImpl<T: Float>(T);
 
@@ -111,6 +111,12 @@ impl<T: Float> RealImpl<T> {
 }
 
 impl<T: Float> Eq for RealImpl<T> {}
+
+impl<T: Float> PartialOrd for RealImpl<T> {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.0.partial_cmp(&other.0)
+    }
+}
 
 impl<T: Float> Ord for RealImpl<T> {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
@@ -256,6 +262,9 @@ fn test_reals() {
     println!("a * b = {:?}", a * b);
     println!("a / b = {:?}", a / b);
     println!("sin_cos(a) = {:?}", a.sin_cos());
+
+    let mut arr = [r32(1.0), r32(0.0)];
+    arr.sort();
 }
 
 #[test]
