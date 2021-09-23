@@ -59,4 +59,4 @@ jobs:
           cargo install wasm-bindgen-cli
 
       - name: Test
-        run: cargo geng check --target wasm32-unknown-unknown
+        run: cargo check --target wasm32-unknown-unknown
