@@ -41,6 +41,7 @@ impl geng::State for State {
             framebuffer,
             &geng::Camera2d {
                 center: vec2(0.0, 0.0),
+                rotation: 0.0,
                 fov: 10.0,
             },
             self.position,
