@@ -30,7 +30,7 @@ pub struct CollectionDelta<T: HasId + Diff> {
 }
 
 impl<T: HasId + Clone + Diff> Diff for Collection<T> {
-    type Delta = CollectionDelta<T>;
+    type Delta = Option<CollectionDelta<T>>;
     fn diff(&self, to: &Self) -> Self::Delta {
         let mut new_entities = Vec::new();
         let mut deleted_entities = Vec::new();
@@ -50,23 +50,29 @@ impl<T: HasId + Clone + Diff> Diff for Collection<T> {
                 deleted_entities.push(entity.id().clone());
             }
         }
-        CollectionDelta {
-            new_entities,
-            deleted_entities,
-            mutated_entities,
+        if new_entities.is_empty() && deleted_entities.is_empty() && mutated_entities.is_empty() {
+            None
+        } else {
+            Some(CollectionDelta {
+                new_entities,
+                deleted_entities,
+                mutated_entities,
+            })
         }
     }
     fn update(&mut self, delta: &Self::Delta) {
-        for id in &delta.deleted_entities {
-            self.remove(id);
-        }
-        for (id, delta) in &delta.mutated_entities {
-            self.get_mut(id)
-                .expect("Delta was not built correctly")
-                .update(delta);
-        }
-        for entity in &delta.new_entities {
-            self.insert(entity.clone());
+        if let Some(delta) = delta {
+            for id in &delta.deleted_entities {
+                self.remove(id);
+            }
+            for (id, delta) in &delta.mutated_entities {
+                self.get_mut(id)
+                    .expect("Delta was not built correctly")
+                    .update(delta);
+            }
+            for entity in &delta.new_entities {
+                self.insert(entity.clone());
+            }
         }
     }
 }
