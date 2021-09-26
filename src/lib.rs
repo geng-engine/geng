@@ -63,6 +63,7 @@ pub use batbox_derive::*;
 
 mod approx;
 mod autosave;
+mod collection;
 mod color;
 mod diff;
 mod future_ext;
@@ -76,6 +77,7 @@ mod timer;
 
 pub use approx::*;
 pub use autosave::*;
+pub use collection::*;
 pub use color::*;
 pub use diff::*;
 pub use future_ext::ext::*;
