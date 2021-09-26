@@ -65,39 +65,37 @@ impl<T: Float> Mat4<T> {
         let b10 = self[(1, 2)] * self[(3, 3)] - self[(3, 2)] * self[(1, 3)];
         let b11 = self[(2, 2)] * self[(3, 3)] - self[(3, 2)] * self[(2, 3)];
 
-        let mut det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+        let det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
 
         if det == T::ZERO {
             Self::identity()
         } else {
-            det = T::ONE / det;
-
             Mat4::new([
                 [
-                    (self[(1, 1)] * b11 - self[(2, 1)] * b10 + self[(3, 1)] * b09) * det,
-                    (self[(2, 1)] * b08 - self[(0, 1)] * b11 - self[(3, 1)] * b07) * det,
-                    (self[(0, 1)] * b10 - self[(1, 1)] * b08 + self[(3, 1)] * b06) * det,
-                    (self[(1, 1)] * b07 - self[(0, 1)] * b09 - self[(2, 1)] * b06) * det,
+                    self[(1, 1)] * b11 - self[(2, 1)] * b10 + self[(3, 1)] * b09,
+                    self[(2, 1)] * b08 - self[(0, 1)] * b11 - self[(3, 1)] * b07,
+                    self[(0, 1)] * b10 - self[(1, 1)] * b08 + self[(3, 1)] * b06,
+                    self[(1, 1)] * b07 - self[(0, 1)] * b09 - self[(2, 1)] * b06,
                 ],
                 [
-                    (self[(2, 0)] * b10 - self[(1, 0)] * b11 - self[(3, 0)] * b09) * det,
-                    (self[(0, 0)] * b11 - self[(2, 0)] * b08 + self[(3, 0)] * b07) * det,
-                    (self[(1, 0)] * b08 - self[(0, 0)] * b10 - self[(3, 0)] * b06) * det,
-                    (self[(0, 0)] * b09 - self[(1, 0)] * b07 + self[(2, 0)] * b06) * det,
+                    self[(2, 0)] * b10 - self[(1, 0)] * b11 - self[(3, 0)] * b09,
+                    self[(0, 0)] * b11 - self[(2, 0)] * b08 + self[(3, 0)] * b07,
+                    self[(1, 0)] * b08 - self[(0, 0)] * b10 - self[(3, 0)] * b06,
+                    self[(0, 0)] * b09 - self[(1, 0)] * b07 + self[(2, 0)] * b06,
                 ],
                 [
-                    (self[(1, 3)] * b05 - self[(2, 3)] * b04 + self[(3, 3)] * b03) * det,
-                    (self[(2, 3)] * b02 - self[(0, 3)] * b05 - self[(3, 3)] * b01) * det,
-                    (self[(0, 3)] * b04 - self[(1, 3)] * b02 + self[(3, 3)] * b00) * det,
-                    (self[(1, 3)] * b01 - self[(0, 3)] * b03 - self[(2, 3)] * b00) * det,
+                    self[(1, 3)] * b05 - self[(2, 3)] * b04 + self[(3, 3)] * b03,
+                    self[(2, 3)] * b02 - self[(0, 3)] * b05 - self[(3, 3)] * b01,
+                    self[(0, 3)] * b04 - self[(1, 3)] * b02 + self[(3, 3)] * b00,
+                    self[(1, 3)] * b01 - self[(0, 3)] * b03 - self[(2, 3)] * b00,
                 ],
                 [
-                    (self[(2, 2)] * b04 - self[(1, 2)] * b05 - self[(3, 2)] * b03) * det,
-                    (self[(0, 2)] * b05 - self[(2, 2)] * b02 + self[(3, 2)] * b01) * det,
-                    (self[(1, 2)] * b02 - self[(0, 2)] * b04 - self[(3, 2)] * b00) * det,
-                    (self[(0, 2)] * b03 - self[(1, 2)] * b01 + self[(2, 2)] * b00) * det,
+                    self[(2, 2)] * b04 - self[(1, 2)] * b05 - self[(3, 2)] * b03,
+                    self[(0, 2)] * b05 - self[(2, 2)] * b02 + self[(3, 2)] * b01,
+                    self[(1, 2)] * b02 - self[(0, 2)] * b04 - self[(3, 2)] * b00,
+                    self[(0, 2)] * b03 - self[(1, 2)] * b01 + self[(2, 2)] * b00,
                 ],
-            ])
+            ]) / det
         }
     }
 }
