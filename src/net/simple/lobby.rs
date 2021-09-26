@@ -54,7 +54,6 @@ impl<T: Model, G: State> geng::State for ConnectingState<T, G> {
             Color::BLACK,
         );
     }
-    fn update(&mut self, delta_time: f64) {}
     fn handle_event(&mut self, event: geng::Event) {
         match event {
             geng::Event::KeyDown { key, .. } => match key {
