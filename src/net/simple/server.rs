@@ -82,17 +82,23 @@ impl<T: Model> Server<T> {
         let server_thread = std::thread::spawn({
             let state = self.state;
             let running = running.clone();
-            let mut sleep_time = 0.0;
+            let mut timer = Timer::new();
+            let mut unprocessed_time = 0.0;
             move || {
                 while running.load(std::sync::atomic::Ordering::Relaxed) {
-                    // TODO: smoother TPS
-                    std::thread::sleep(std::time::Duration::from_secs_f32(sleep_time));
+                    unprocessed_time += timer.tick() as f32;
+                    unprocessed_time = unprocessed_time.min(1.0);
                     {
                         let mut state = state.lock().unwrap();
-                        state.current.tick();
+                        while unprocessed_time > 1.0 / T::TICKS_PER_SECOND {
+                            unprocessed_time -= 1.0 / T::TICKS_PER_SECOND;
+                            state.current.tick();
+                        }
                         state.update();
                     }
-                    sleep_time = 1.0 / T::TICKS_PER_SECOND;
+                    std::thread::sleep(std::time::Duration::from_secs_f32(
+                        1.0 / T::TICKS_PER_SECOND - unprocessed_time,
+                    ));
                 }
             }
         });
