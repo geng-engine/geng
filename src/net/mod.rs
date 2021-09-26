@@ -1,5 +1,7 @@
 use super::*;
 
+pub mod simple;
+
 pub mod client;
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -8,9 +10,9 @@ pub mod server;
 #[cfg(not(target_arch = "wasm32"))]
 pub use server::{Server, ServerHandle};
 
-pub trait Message: Debug + Serialize + for<'de> Deserialize<'de> + Send + 'static {}
+pub trait Message: Debug + Serialize + for<'de> Deserialize<'de> + Send + 'static + Unpin {}
 
-impl<T: Debug + Serialize + for<'de> Deserialize<'de> + Send + 'static> Message for T {}
+impl<T: Debug + Serialize + for<'de> Deserialize<'de> + Send + 'static + Unpin> Message for T {}
 
 fn serialize_message<T: Message>(message: T) -> Vec<u8> {
     bincode::serialize(&message).unwrap()

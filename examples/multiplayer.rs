@@ -1,0 +1,139 @@
+use geng::net::simple as simple_net;
+use geng::{prelude::*, TextAlign};
+
+type PlayerId = usize;
+
+#[derive(Debug, Serialize, Deserialize, Diff, Clone, PartialEq)]
+struct Model {
+    current_time: f32,
+    next_player_id: PlayerId,
+    #[diff = "clone"]
+    players: HashMap<PlayerId, Vec2<f32>>,
+}
+
+impl Model {
+    fn new() -> Self {
+        Self {
+            current_time: 0.0,
+            next_player_id: 1,
+            players: HashMap::new(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum Message {
+    UpdatePosition(Vec2<f32>),
+}
+
+impl simple_net::Model for Model {
+    type PlayerId = PlayerId;
+    type Message = Message;
+    const TICKS_PER_SECOND: f32 = 20.0;
+    fn new_player(&mut self) -> Self::PlayerId {
+        let player_id = self.next_player_id;
+        self.next_player_id += 1;
+        player_id
+    }
+    fn drop_player(&mut self, player_id: &PlayerId) {
+        self.players.remove(player_id);
+    }
+    fn handle_message(&mut self, player_id: &PlayerId, message: Self::Message) {
+        match message {
+            Message::UpdatePosition(pos) => {
+                self.players.insert(*player_id, pos);
+            }
+        }
+    }
+    fn tick(&mut self) {
+        self.current_time += 1.0 / Self::TICKS_PER_SECOND;
+    }
+}
+
+struct Game {
+    geng: Geng,
+    player_id: PlayerId,
+    model: simple_net::Remote<Model>,
+    position: Vec2<f32>,
+    current_time: f32,
+}
+
+impl Game {
+    fn new(geng: &Geng, player_id: PlayerId, model: simple_net::Remote<Model>) -> Self {
+        Self {
+            model,
+            player_id,
+            geng: geng.clone(),
+            position: vec2(0.0, 0.0),
+            current_time: 0.0,
+        }
+    }
+}
+
+impl geng::State for Game {
+    fn update(&mut self, delta_time: f64) {
+        let delta_time = delta_time as f32;
+
+        self.current_time += delta_time;
+
+        const SPEED: f32 = 10.0;
+        if self.geng.window().is_key_pressed(geng::Key::Left)
+            || self.geng.window().is_key_pressed(geng::Key::A)
+        {
+            self.position.x -= SPEED * delta_time;
+        }
+        if self.geng.window().is_key_pressed(geng::Key::Right)
+            || self.geng.window().is_key_pressed(geng::Key::D)
+        {
+            self.position.x += SPEED * delta_time;
+        }
+        if self.geng.window().is_key_pressed(geng::Key::Up)
+            || self.geng.window().is_key_pressed(geng::Key::W)
+        {
+            self.position.y += SPEED * delta_time;
+        }
+        if self.geng.window().is_key_pressed(geng::Key::Down)
+            || self.geng.window().is_key_pressed(geng::Key::S)
+        {
+            self.position.y -= SPEED * delta_time;
+        }
+        self.model.send(Message::UpdatePosition(self.position));
+    }
+    fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
+        ugli::clear(framebuffer, Some(Color::BLACK), None);
+        let camera = geng::Camera2d::new(vec2(0.0, 0.0), 100.0, 100.0);
+        let model = self.model.get();
+        for (&player_id, &player_pos) in &model.players {
+            self.geng
+                .draw_2d()
+                .circle(framebuffer, &camera, player_pos, 1.0, Color::GRAY);
+        }
+        self.geng
+            .draw_2d()
+            .circle(framebuffer, &camera, self.position, 1.0, Color::WHITE);
+        self.geng.default_font().draw(
+            framebuffer,
+            &geng::PixelPerfectCamera,
+            &format!("Server time: {:.1}", model.current_time),
+            vec2(0.0, 0.0),
+            TextAlign::LEFT,
+            32.0,
+            Color::WHITE,
+        );
+        self.geng.default_font().draw(
+            framebuffer,
+            &geng::PixelPerfectCamera,
+            &format!("Client time: {:.1}", self.current_time),
+            vec2(0.0, 32.0),
+            TextAlign::LEFT,
+            32.0,
+            Color::WHITE,
+        );
+    }
+}
+
+fn main() {
+    logger::init().unwrap();
+
+    geng::net::simple::run("Multiplayer", Model::new, Game::new);
+}
