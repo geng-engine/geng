@@ -4,11 +4,23 @@ use geng::{prelude::*, TextAlign};
 type PlayerId = usize;
 
 #[derive(Debug, Serialize, Deserialize, Diff, Clone, PartialEq)]
+struct Player {
+    id: PlayerId,
+    position: Vec2<f32>,
+}
+
+impl HasId for Player {
+    type Id = PlayerId;
+    fn id(&self) -> &PlayerId {
+        &self.id
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Diff, Clone, PartialEq)]
 struct Model {
     current_time: f32,
     next_player_id: PlayerId,
-    #[diff = "clone"]
-    players: HashMap<PlayerId, Vec2<f32>>,
+    players: Collection<Player>,
 }
 
 impl Model {
@@ -16,7 +28,7 @@ impl Model {
         Self {
             current_time: 0.0,
             next_player_id: 1,
-            players: HashMap::new(),
+            players: Collection::new(),
         }
     }
 }
@@ -33,6 +45,13 @@ impl simple_net::Model for Model {
     fn new_player(&mut self) -> Self::PlayerId {
         let player_id = self.next_player_id;
         self.next_player_id += 1;
+        self.players.insert(Player {
+            id: player_id,
+            position: vec2(
+                global_rng().gen_range(-5.0..=5.0),
+                global_rng().gen_range(-5.0..=5.0),
+            ),
+        });
         player_id
     }
     fn drop_player(&mut self, player_id: &PlayerId) {
@@ -40,8 +59,8 @@ impl simple_net::Model for Model {
     }
     fn handle_message(&mut self, player_id: &PlayerId, message: Self::Message) {
         match message {
-            Message::UpdatePosition(pos) => {
-                self.players.insert(*player_id, pos);
+            Message::UpdatePosition(position) => {
+                self.players.get_mut(player_id).unwrap().position = position;
             }
         }
     }
@@ -54,22 +73,21 @@ struct Game {
     geng: Geng,
     traffic_watcher: geng::net::TrafficWatcher,
     next_update: f32,
-    player_id: PlayerId,
+    player: Player,
     model: simple_net::Remote<Model>,
-    position: Vec2<f32>,
     current_time: f32,
 }
 
 impl Game {
     fn new(geng: &Geng, player_id: PlayerId, model: simple_net::Remote<Model>) -> Self {
         let current_time = model.get().current_time;
+        let player = model.get().players.get(&player_id).unwrap().clone();
         Self {
             geng: geng.clone(),
             traffic_watcher: geng::net::TrafficWatcher::new(),
             next_update: 0.0,
             model,
-            player_id,
-            position: vec2(0.0, 0.0),
+            player,
             current_time,
         }
     }
@@ -86,22 +104,22 @@ impl geng::State for Game {
         if self.geng.window().is_key_pressed(geng::Key::Left)
             || self.geng.window().is_key_pressed(geng::Key::A)
         {
-            self.position.x -= SPEED * delta_time;
+            self.player.position.x -= SPEED * delta_time;
         }
         if self.geng.window().is_key_pressed(geng::Key::Right)
             || self.geng.window().is_key_pressed(geng::Key::D)
         {
-            self.position.x += SPEED * delta_time;
+            self.player.position.x += SPEED * delta_time;
         }
         if self.geng.window().is_key_pressed(geng::Key::Up)
             || self.geng.window().is_key_pressed(geng::Key::W)
         {
-            self.position.y += SPEED * delta_time;
+            self.player.position.y += SPEED * delta_time;
         }
         if self.geng.window().is_key_pressed(geng::Key::Down)
             || self.geng.window().is_key_pressed(geng::Key::S)
         {
-            self.position.y -= SPEED * delta_time;
+            self.player.position.y -= SPEED * delta_time;
         }
 
         self.next_update -= delta_time;
@@ -109,21 +127,26 @@ impl geng::State for Game {
             while self.next_update < 0.0 {
                 self.next_update += 1.0 / <Model as simple_net::Model>::TICKS_PER_SECOND;
             }
-            self.model.send(Message::UpdatePosition(self.position));
+            self.model
+                .send(Message::UpdatePosition(self.player.position));
         }
     }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         ugli::clear(framebuffer, Some(Color::BLACK), None);
         let camera = geng::Camera2d::new(vec2(0.0, 0.0), 100.0, 100.0);
         let model = self.model.get();
-        for (&player_id, &player_pos) in &model.players {
+        for player in &model.players {
             self.geng
                 .draw_2d()
-                .circle(framebuffer, &camera, player_pos, 1.0, Color::GRAY);
+                .circle(framebuffer, &camera, player.position, 1.0, Color::GRAY);
         }
-        self.geng
-            .draw_2d()
-            .circle(framebuffer, &camera, self.position, 1.0, Color::WHITE);
+        self.geng.draw_2d().circle(
+            framebuffer,
+            &camera,
+            self.player.position,
+            1.0,
+            Color::WHITE,
+        );
         self.geng.default_font().draw(
             framebuffer,
             &geng::PixelPerfectCamera,
