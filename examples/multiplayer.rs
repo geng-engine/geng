@@ -52,6 +52,8 @@ impl simple_net::Model for Model {
 
 struct Game {
     geng: Geng,
+    traffic_watcher: geng::net::TrafficWatcher,
+    next_update: f32,
     player_id: PlayerId,
     model: simple_net::Remote<Model>,
     position: Vec2<f32>,
@@ -60,18 +62,22 @@ struct Game {
 
 impl Game {
     fn new(geng: &Geng, player_id: PlayerId, model: simple_net::Remote<Model>) -> Self {
+        let current_time = model.get().current_time;
         Self {
+            geng: geng.clone(),
+            traffic_watcher: geng::net::TrafficWatcher::new(),
+            next_update: 0.0,
             model,
             player_id,
-            geng: geng.clone(),
             position: vec2(0.0, 0.0),
-            current_time: 0.0,
+            current_time,
         }
     }
 }
 
 impl geng::State for Game {
     fn update(&mut self, delta_time: f64) {
+        self.traffic_watcher.update(&self.model.traffic());
         let delta_time = delta_time as f32;
 
         self.current_time += delta_time;
@@ -97,7 +103,14 @@ impl geng::State for Game {
         {
             self.position.y -= SPEED * delta_time;
         }
-        self.model.send(Message::UpdatePosition(self.position));
+
+        self.next_update -= delta_time;
+        if self.next_update < 0.0 {
+            while self.next_update < 0.0 {
+                self.next_update += 1.0 / <Model as simple_net::Model>::TICKS_PER_SECOND;
+            }
+            self.model.send(Message::UpdatePosition(self.position));
+        }
     }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         ugli::clear(framebuffer, Some(Color::BLACK), None);
@@ -125,6 +138,15 @@ impl geng::State for Game {
             &geng::PixelPerfectCamera,
             &format!("Client time: {:.1}", self.current_time),
             vec2(0.0, 32.0),
+            TextAlign::LEFT,
+            32.0,
+            Color::WHITE,
+        );
+        self.geng.default_font().draw(
+            framebuffer,
+            &geng::PixelPerfectCamera,
+            &format!("traffic: {}", self.traffic_watcher),
+            vec2(0.0, 32.0 * 2.0),
             TextAlign::LEFT,
             32.0,
             Color::WHITE,

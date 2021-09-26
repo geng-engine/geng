@@ -13,7 +13,7 @@ pub struct Connection<S: Message, C: Message> {
 }
 
 impl<S: Message, C: Message> Connection<S, C> {
-    pub fn traffic(&self) -> &Traffic {
+    pub fn traffic(&self) -> Traffic {
         self.inner.traffic()
     }
     pub fn send(&mut self, message: C) {

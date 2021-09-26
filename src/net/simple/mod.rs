@@ -50,4 +50,7 @@ impl<T: Model> Remote<T> {
     pub fn send(&self, message: T::Message) {
         self.connection.borrow_mut().send(message);
     }
+    pub fn traffic(&self) -> Traffic {
+        self.connection.borrow().traffic().clone()
+    }
 }

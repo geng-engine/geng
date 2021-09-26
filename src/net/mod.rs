@@ -1,14 +1,14 @@
 use super::*;
 
-pub mod simple;
-
 pub mod client;
-
 #[cfg(not(target_arch = "wasm32"))]
 pub mod server;
+pub mod simple;
+mod traffic;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub use server::{Server, ServerHandle};
+pub use traffic::*;
 
 pub trait Message: Debug + Serialize + for<'de> Deserialize<'de> + Send + 'static + Unpin {}
 
@@ -34,37 +34,4 @@ pub trait Sender<T>: Send {
 
 pub trait Receiver<T> {
     fn handle(&mut self, message: T);
-}
-
-pub struct Traffic {
-    inbound: std::sync::atomic::AtomicUsize,
-    outbound: std::sync::atomic::AtomicUsize,
-}
-
-impl Traffic {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        Self {
-            inbound: std::sync::atomic::AtomicUsize::new(0),
-            outbound: std::sync::atomic::AtomicUsize::new(0),
-        }
-    }
-
-    fn add_inbound(&self, amount: usize) {
-        self.inbound
-            .fetch_add(amount, std::sync::atomic::Ordering::Relaxed);
-    }
-
-    fn add_outbound(&self, amount: usize) {
-        self.outbound
-            .fetch_add(amount, std::sync::atomic::Ordering::Relaxed);
-    }
-
-    pub fn inbound(&self) -> usize {
-        self.inbound.load(std::sync::atomic::Ordering::Relaxed)
-    }
-
-    pub fn outbound(&self) -> usize {
-        self.outbound.load(std::sync::atomic::Ordering::Relaxed)
-    }
 }

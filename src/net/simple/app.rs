@@ -21,7 +21,7 @@ impl Opt {
 
 pub fn run<T: Model, G: State>(
     game_name: &str,
-    model_constructor: impl FnOnce() -> T,
+    #[cfg_attr(target_arch = "wasm32", allow(unused_variables))] model_constructor: impl FnOnce() -> T,
     game_constructor: impl FnOnce(&Geng, T::PlayerId, Remote<T>) -> G + 'static,
 ) {
     let opt: Opt = Clap::parse();

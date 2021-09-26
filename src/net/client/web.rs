@@ -4,12 +4,12 @@ pub struct Connection<S: Message, C: Message> {
     ws: web_sys::WebSocket,
     recv: futures::channel::mpsc::UnboundedReceiver<S>,
     phantom_data: PhantomData<(S, C)>,
-    traffic: Arc<Traffic>,
+    traffic: Arc<Mutex<Traffic>>,
 }
 
 impl<S: Message, C: Message> Connection<S, C> {
-    pub fn traffic(&self) -> &Traffic {
-        &self.traffic
+    pub fn traffic(&self) -> Traffic {
+        self.traffic.lock().unwrap().clone()
     }
     pub fn try_recv(&mut self) -> Option<S> {
         match self.recv.try_next() {
@@ -20,7 +20,7 @@ impl<S: Message, C: Message> Connection<S, C> {
     }
     pub fn send(&mut self, message: C) {
         let data = serialize_message(message);
-        self.traffic.add_outbound(data.len());
+        self.traffic.lock().unwrap().outbound += data.len();
         self.ws
             .send_with_u8_array(&data)
             .expect("Failed to send message");
@@ -47,7 +47,7 @@ pub fn connect<S: Message, C: Message>(addr: &str) -> impl Future<Output = Conne
     let ws = web_sys::WebSocket::new(addr).unwrap();
     let (connection_sender, connection_receiver) = futures::channel::oneshot::channel();
     let (recv_sender, recv) = futures::channel::mpsc::unbounded();
-    let traffic = Arc::new(Traffic::new());
+    let traffic = Arc::new(Mutex::new(Traffic::new()));
     let connection = Connection {
         ws: ws.clone(),
         phantom_data: PhantomData,
@@ -80,7 +80,7 @@ pub fn connect<S: Message, C: Message>(addr: &str) -> impl Future<Output = Conne
                     .as_ref(),
             )
             .to_vec();
-            traffic.add_inbound(data.len());
+            traffic.lock().unwrap().inbound += data.len();
             let message = deserialize_message(&data);
             recv_sender.unbounded_send(message).unwrap();
         }) as Box<dyn FnMut(web_sys::MessageEvent)>);
