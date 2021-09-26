@@ -109,17 +109,11 @@ impl Font {
         color: Color<f32>,
     ) {
         let pixel_size = {
-            let p1 = match camera.world_to_screen(framebuffer.size().map(|x| x as f32), pos) {
-                Some(pos) => pos,
-                None => return,
-            };
-            let p2 = match camera
-                .world_to_screen(framebuffer.size().map(|x| x as f32), pos + vec2(0.0, size))
-            {
-                Some(pos) => pos,
-                None => return,
-            };
-            (p1 - p2).len().max(1.0)
+            let m = camera.projection_matrix(framebuffer.size().map(|x| x as f32))
+                * camera.view_matrix();
+            ((m * vec3(0.0, size, 0.0)).xy() * framebuffer.size().map(|x| x as f32))
+                .len()
+                .max(1.0)
         };
         let scale = rusttype::Scale {
             x: pixel_size,
