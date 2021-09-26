@@ -16,12 +16,14 @@ pub trait AbstractCamera2d: Sized {
     fn projection_matrix(&self, framebuffer_size: Vec2<f32>) -> Mat3<f32>;
 }
 
-impl<C: AbstractCamera2d> AbstractCamera3d for C {
+pub struct Camera2dAs3d<T>(pub T);
+
+impl<C: AbstractCamera2d> AbstractCamera3d for Camera2dAs3d<C> {
     fn view_matrix(&self) -> Mat4<f32> {
-        AbstractCamera2d::view_matrix(self).extend3d()
+        self.0.view_matrix().extend3d()
     }
     fn projection_matrix(&self, framebuffer_size: Vec2<f32>) -> Mat4<f32> {
-        AbstractCamera2d::projection_matrix(self, framebuffer_size).extend3d()
+        self.0.projection_matrix(framebuffer_size).extend3d()
     }
 }
 
@@ -39,7 +41,15 @@ pub trait Camera2dExt: AbstractCamera2d {
     }
 
     fn world_to_screen(&self, framebuffer_size: Vec2<f32>, pos: Vec2<f32>) -> Option<Vec2<f32>> {
-        Camera3dExt::world_to_screen(self, framebuffer_size, pos.extend(0.0))
+        let pos = (self.projection_matrix(framebuffer_size) * self.view_matrix()) * pos.extend(1.0);
+        let pos = pos.xy() / pos.z;
+        if pos.x.abs() > 1.0 || pos.y.abs() > 1.0 {
+            return None;
+        }
+        Some(vec2(
+            (pos.x + 1.0) / 2.0 * framebuffer_size.x,
+            (pos.y + 1.0) / 2.0 * framebuffer_size.y,
+        ))
     }
 }
 

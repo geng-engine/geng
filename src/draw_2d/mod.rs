@@ -67,7 +67,7 @@ impl Draw2D {
     pub fn draw<V>(
         &self,
         framebuffer: &mut ugli::Framebuffer,
-        camera: &impl AbstractCamera3d,
+        camera: &impl AbstractCamera2d,
         vertices: &[V],
         color: Color<f32>,
         mode: ugli::DrawMode,
@@ -93,7 +93,7 @@ impl Draw2D {
                     u_color: color,
                     u_framebuffer_size: framebuffer_size,
                 },
-                camera3d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
+                camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
             ),
             ugli::DrawParameters {
                 blend_mode: Some(default()),
@@ -105,7 +105,7 @@ impl Draw2D {
     pub fn draw_textured<V>(
         &self,
         framebuffer: &mut ugli::Framebuffer,
-        camera: &impl AbstractCamera3d,
+        camera: &impl AbstractCamera2d,
         vertices: &[V],
         texture: &ugli::Texture,
         color: Color<f32>,
@@ -133,7 +133,7 @@ impl Draw2D {
                     u_texture: texture,
                     u_framebuffer_size: framebuffer_size,
                 },
-                camera3d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
+                camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
             ),
             ugli::DrawParameters {
                 blend_mode: Some(default()),
@@ -145,7 +145,7 @@ impl Draw2D {
     pub fn quad(
         &self,
         framebuffer: &mut ugli::Framebuffer,
-        camera: &impl AbstractCamera3d,
+        camera: &impl AbstractCamera2d,
         position: AABB<f32>,
         color: Color<f32>,
     ) {
@@ -166,7 +166,7 @@ impl Draw2D {
     pub fn textured<V>(
         &self,
         framebuffer: &mut ugli::Framebuffer,
-        camera: &impl AbstractCamera3d,
+        camera: &impl AbstractCamera2d,
         vertices: &[V],
         texture: &ugli::Texture,
         color: Color<f32>,
@@ -194,7 +194,7 @@ impl Draw2D {
                     u_framebuffer_size: framebuffer_size,
                     u_texture: texture,
                 },
-                camera3d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
+                camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
             ),
             ugli::DrawParameters {
                 blend_mode: Some(default()),
@@ -206,7 +206,7 @@ impl Draw2D {
     pub fn textured_quad(
         &self,
         framebuffer: &mut ugli::Framebuffer,
-        camera: &impl AbstractCamera3d,
+        camera: &impl AbstractCamera2d,
         position: AABB<f32>,
         texture: &ugli::Texture,
         color: Color<f32>,
@@ -245,7 +245,7 @@ impl Draw2D {
     pub fn ellipse(
         &self,
         framebuffer: &mut ugli::Framebuffer,
-        camera: &impl AbstractCamera3d,
+        camera: &impl AbstractCamera2d,
         position: Vec2<f32>,
         radius: Vec2<f32>,
         color: Color<f32>,
@@ -263,7 +263,7 @@ impl Draw2D {
                     u_color: color,
                     u_framebuffer_size: framebuffer_size,
                 },
-                camera3d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
+                camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
             ),
             ugli::DrawParameters {
                 blend_mode: Some(default()),
@@ -275,7 +275,7 @@ impl Draw2D {
     pub fn circle(
         &self,
         framebuffer: &mut ugli::Framebuffer,
-        camera: &impl AbstractCamera3d,
+        camera: &impl AbstractCamera2d,
         position: Vec2<f32>,
         radius: f32,
         color: Color<f32>,

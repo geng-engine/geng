@@ -102,22 +102,20 @@ impl Font {
     fn draw_impl(
         &self,
         framebuffer: &mut ugli::Framebuffer,
-        camera: &impl AbstractCamera3d,
+        camera: &impl AbstractCamera2d,
         text: &str,
         pos: Vec2<f32>,
         size: f32,
         color: Color<f32>,
     ) {
-        let pos = pos.extend(0.0);
         let pixel_size = {
             let p1 = match camera.world_to_screen(framebuffer.size().map(|x| x as f32), pos) {
                 Some(pos) => pos,
                 None => return,
             };
-            let p2 = match camera.world_to_screen(
-                framebuffer.size().map(|x| x as f32),
-                pos + vec3(0.0, size, 0.0),
-            ) {
+            let p2 = match camera
+                .world_to_screen(framebuffer.size().map(|x| x as f32), pos + vec2(0.0, size))
+            {
                 Some(pos) => pos,
                 None => return,
             };
@@ -222,7 +220,7 @@ impl Font {
                     u_cache_texture: &*cache_texture,
                     u_framebuffer_size: framebuffer_size,
                 },
-                camera3d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
+                camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
             ),
             ugli::DrawParameters {
                 depth_func: None,
@@ -235,7 +233,7 @@ impl Font {
     pub fn draw(
         &self,
         framebuffer: &mut ugli::Framebuffer,
-        camera: &impl AbstractCamera3d,
+        camera: &impl AbstractCamera2d,
         text: &str,
         pos: Vec2<f32>,
         align: TextAlign,

@@ -2,14 +2,15 @@ varying vec2 v_vt;
 
 #ifdef VERTEX_SHADER
 uniform ivec2 u_framebuffer_size;
-uniform mat4 u_projection_matrix;
-uniform mat4 u_view_matrix;
+uniform mat3 u_projection_matrix;
+uniform mat3 u_view_matrix;
 
 attribute vec2 a_vt;
 attribute vec2 a_pos;
 void main() {
     v_vt = a_vt;
-    gl_Position = u_projection_matrix * u_view_matrix * vec4(a_pos, 0.0, 1.0);
+    vec3 pos = u_projection_matrix * u_view_matrix * vec3(a_pos, 1.0);
+    gl_Position = vec4(pos.xy, 0.0, pos.z);
     // gl_Position.y = -gl_Position.y;
 }
 #endif
