@@ -168,6 +168,19 @@ impl Context {
         }
     }
 
+    pub fn uniform_matrix3fv(
+        &self,
+        location: &UniformLocation,
+        count: SizeI,
+        transpose: Bool,
+        v: &[Float],
+    ) {
+        debug_assert_eq!(v.len(), count as usize * 3 * 3);
+        unsafe {
+            gl::UniformMatrix3fv(*location, count, transpose, v.as_ptr());
+        }
+    }
+
     pub fn uniform_matrix4fv(
         &self,
         location: &UniformLocation,

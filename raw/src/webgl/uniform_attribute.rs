@@ -83,6 +83,18 @@ impl Context {
         self.inner.uniform4f(Some(location), v0, v1, v2, v3);
     }
 
+    pub fn uniform_matrix3fv(
+        &self,
+        location: &UniformLocation,
+        count: SizeI,
+        transpose: Bool,
+        v: &[Float],
+    ) {
+        debug_assert_eq!(v.len(), count as usize * 3 * 3);
+        self.inner
+            .uniform_matrix3fv_with_f32_array(Some(location), transpose, v);
+    }
+
     pub fn uniform_matrix4fv(
         &self,
         location: &UniformLocation,

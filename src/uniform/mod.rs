@@ -63,6 +63,12 @@ impl_primitive_uniform!(u32 as raw::Int: [uniform_1i, uniform_2i, uniform_3i, un
 impl_primitive_uniform!(u64 as raw::Int: [uniform_1i, uniform_2i, uniform_3i, uniform_4i]);
 impl_primitive_uniform!(usize as raw::Int: [uniform_1i, uniform_2i, uniform_3i, uniform_4i]);
 
+impl Uniform for Mat3<f32> {
+    fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
+        gl.uniform_matrix3fv(&info.location, 1, raw::FALSE, self.as_flat_array());
+    }
+}
+
 impl Uniform for Mat4<f32> {
     fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
         gl.uniform_matrix4fv(&info.location, 1, raw::FALSE, self.as_flat_array());
