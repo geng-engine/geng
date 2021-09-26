@@ -102,7 +102,7 @@ impl Font {
     fn draw_impl(
         &self,
         framebuffer: &mut ugli::Framebuffer,
-        camera: &impl Camera,
+        camera: &impl AbstractCamera3d,
         text: &str,
         pos: Vec2<f32>,
         size: f32,
@@ -222,7 +222,7 @@ impl Font {
                     u_cache_texture: &*cache_texture,
                     u_framebuffer_size: framebuffer_size,
                 },
-                camera_uniforms(camera, framebuffer_size.map(|x| x as f32)),
+                camera3d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
             ),
             ugli::DrawParameters {
                 depth_func: None,
@@ -235,7 +235,7 @@ impl Font {
     pub fn draw(
         &self,
         framebuffer: &mut ugli::Framebuffer,
-        camera: &impl Camera,
+        camera: &impl AbstractCamera3d,
         text: &str,
         pos: Vec2<f32>,
         align: TextAlign,

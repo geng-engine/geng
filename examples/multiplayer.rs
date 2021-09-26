@@ -133,7 +133,10 @@ impl geng::State for Game {
     }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         ugli::clear(framebuffer, Some(Color::BLACK), None);
-        let camera = geng::Camera2d::new(vec2(0.0, 0.0), 100.0, 100.0);
+        let camera = geng::Camera2d {
+            center: vec2(0.0, 0.0),
+            fov: 100.0,
+        };
         let model = self.model.get();
         for player in &model.players {
             self.geng

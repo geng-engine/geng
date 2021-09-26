@@ -39,7 +39,10 @@ impl geng::State for State {
         ugli::clear(framebuffer, Some(Color::BLACK), None);
         self.geng.draw_2d().circle(
             framebuffer,
-            &geng::Camera2d::new(vec2(0.0, 0.0), 10.0, 10.0),
+            &geng::Camera2d {
+                center: vec2(0.0, 0.0),
+                fov: 10.0,
+            },
             self.position,
             1.0,
             Color::WHITE,

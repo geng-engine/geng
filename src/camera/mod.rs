@@ -6,10 +6,44 @@ mod pixel_perfect;
 pub use camera_2d::*;
 pub use pixel_perfect::*;
 
-pub trait Camera {
+pub trait AbstractCamera3d: Sized {
     fn view_matrix(&self) -> Mat4<f32>;
     fn projection_matrix(&self, framebuffer_size: Vec2<f32>) -> Mat4<f32>;
 }
+
+pub trait AbstractCamera2d: Sized {
+    fn view_matrix(&self) -> Mat3<f32>;
+    fn projection_matrix(&self, framebuffer_size: Vec2<f32>) -> Mat3<f32>;
+}
+
+impl<C: AbstractCamera2d> AbstractCamera3d for C {
+    fn view_matrix(&self) -> Mat4<f32> {
+        AbstractCamera2d::view_matrix(self).extend3d()
+    }
+    fn projection_matrix(&self, framebuffer_size: Vec2<f32>) -> Mat4<f32> {
+        AbstractCamera2d::projection_matrix(self, framebuffer_size).extend3d()
+    }
+}
+
+pub trait Camera2dExt: AbstractCamera2d {
+    fn screen_to_world(&self, framebuffer_size: Vec2<f32>, pos: Vec2<f32>) -> Vec2<f32> {
+        let pos = vec2(
+            pos.x / framebuffer_size.x * 2.0 - 1.0,
+            pos.y / framebuffer_size.y * 2.0 - 1.0,
+        );
+        let pos = (AbstractCamera2d::projection_matrix(self, framebuffer_size)
+            * AbstractCamera2d::view_matrix(self))
+        .inverse()
+            * pos.extend(1.0);
+        pos.xy()
+    }
+
+    fn world_to_screen(&self, framebuffer_size: Vec2<f32>, pos: Vec2<f32>) -> Option<Vec2<f32>> {
+        Camera3dExt::world_to_screen(self, framebuffer_size, pos.extend(0.0))
+    }
+}
+
+impl<C: AbstractCamera2d> Camera2dExt for C {}
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct CameraRay {
@@ -17,7 +51,7 @@ pub struct CameraRay {
     pub dir: Vec3<f32>,
 }
 
-pub trait CameraExt: Camera {
+pub trait Camera3dExt: AbstractCamera3d {
     fn world_to_screen(&self, framebuffer_size: Vec2<f32>, pos: Vec3<f32>) -> Option<Vec2<f32>> {
         let pos = (self.projection_matrix(framebuffer_size) * self.view_matrix()) * pos.extend(1.0);
         let pos = pos.xyz() / pos.w;
@@ -47,9 +81,22 @@ pub trait CameraExt: Camera {
     }
 }
 
-impl<C: Camera> CameraExt for C {}
+impl<C: AbstractCamera3d> Camera3dExt for C {}
 
-pub fn camera_uniforms<C: Camera>(camera: &C, framebuffer_size: Vec2<f32>) -> impl ugli::Uniforms {
+pub fn camera3d_uniforms<C: AbstractCamera3d>(
+    camera: &C,
+    framebuffer_size: Vec2<f32>,
+) -> impl ugli::Uniforms {
+    ugli::uniforms! {
+        u_projection_matrix: camera.projection_matrix(framebuffer_size),
+        u_view_matrix: camera.view_matrix(),
+    }
+}
+
+pub fn camera2d_uniforms<C: AbstractCamera2d>(
+    camera: &C,
+    framebuffer_size: Vec2<f32>,
+) -> impl ugli::Uniforms {
     ugli::uniforms! {
         u_projection_matrix: camera.projection_matrix(framebuffer_size),
         u_view_matrix: camera.view_matrix(),

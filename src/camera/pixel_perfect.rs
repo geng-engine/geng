@@ -2,16 +2,12 @@ use super::*;
 
 pub struct PixelPerfectCamera;
 
-impl Camera for PixelPerfectCamera {
-    fn view_matrix(&self) -> Mat4<f32> {
-        Mat4::identity()
+impl AbstractCamera2d for PixelPerfectCamera {
+    fn view_matrix(&self) -> Mat3<f32> {
+        Mat3::identity()
     }
-    fn projection_matrix(&self, framebuffer_size: Vec2<f32>) -> Mat4<f32> {
-        Mat4::translate(vec3(-1.0, -1.0, 0.0))
-            * Mat4::scale(vec3(
-                2.0 / framebuffer_size.x,
-                2.0 / framebuffer_size.y,
-                1.0,
-            ))
+    fn projection_matrix(&self, framebuffer_size: Vec2<f32>) -> Mat3<f32> {
+        Mat3::translate(vec2(-1.0, -1.0))
+            * Mat3::scale(vec2(2.0 / framebuffer_size.x, 2.0 / framebuffer_size.y))
     }
 }
