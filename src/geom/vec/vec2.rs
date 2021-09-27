@@ -64,6 +64,11 @@ impl<T> Vec2<T> {
     }
 }
 
+impl<T: UNum> Vec2<T> {
+    /// A zero 2-d vector
+    pub const ZERO: Self = vec2(T::ZERO, T::ZERO);
+}
+
 impl<T: Num + Copy> Vec2<T> {
     /// Calculate dot product of two vectors.
     ///
