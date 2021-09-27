@@ -10,7 +10,7 @@ edition = "2018"
 [dependencies]
 syn = { version = "1", features = ["full"] }
 quote = "1"
-batbox = "0.7.0-alpha"
+batbox = { path = "../batbox", version = "0.7.0-alpha" }
 proc-macro2 = "1"
 
 [lib]
