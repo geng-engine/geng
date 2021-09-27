@@ -41,7 +41,7 @@ impl<T: UNum> AABB<T> {
     /// # Examples
     /// ```
     /// # use batbox::*;
-    /// assert_eq!(AABB::ZERO, AABB::point(Vec2::ZERO));
+    /// assert_eq!(AABB::<f32>::ZERO, AABB::point(Vec2::ZERO));
     /// ```
     pub fn point(point: Vec2<T>) -> Self {
         Self {
@@ -65,6 +65,39 @@ impl<T: UNum> AABB<T> {
             x_max: self.x_max + extend,
             y_min: self.y_min - extend,
             y_max: self.y_max + extend,
+        }
+    }
+
+    /// Extend the boundaries equally right and left and equally up and down
+    /// # Examples
+    /// ```
+    /// # use batbox::*;
+    /// let aabb = AABB::ZERO.extend_symmetric(vec2(10.0, 5.0));
+    /// let same = AABB::from_corners(vec2(-10.0, -5.0), vec2(10.0, 5.0));
+    /// assert_eq!(aabb, same);
+    /// ```
+    pub fn extend_symmetric(self, extend: Vec2<T>) -> Self {
+        Self {
+            x_min: self.x_min - extend.x,
+            x_max: self.x_max + extend.x,
+            y_min: self.y_min - extend.y,
+            y_max: self.y_max + extend.y,
+        }
+    }
+
+    /// Extend the boundaries to the right and up by the given values
+    /// # Examples
+    /// ```
+    /// # use batbox::*;
+    /// let aabb = AABB::point(vec2(-10.0, -5.0)).extend_positive(vec2(20.0, 10.0));
+    /// let same = AABB::ZERO.extend_symmetric(vec2(10.0, 5.0));
+    /// assert_eq!(aabb, same);
+    /// ```
+    pub fn extend_positive(self, extend: Vec2<T>) -> Self {
+        Self {
+            x_max: self.x_max + extend.x,
+            y_max: self.y_max + extend.y,
+            ..self
         }
     }
 
@@ -98,6 +131,18 @@ impl<T: UNum> AABB<T> {
             y_min: self.y_min - extend,
             ..self
         }
+    }
+
+    /// Ensure that the AABB has positive size
+    /// # Examples
+    /// ```
+    /// # use batbox::*;
+    /// let original = AABB::point(vec2(10.0, 5.0)).extend_positive(vec2(-20.0, -10.0));
+    /// let normalized = AABB::ZERO.extend_symmetric(vec2(10.0, 5.0));
+    /// assert_eq!(original.normalized(), normalized);
+    /// ```
+    pub fn normalized(self) -> Self {
+        Self::from_corners(self.bottom_left(), self.top_right())
     }
 
     /// Get the bottom-left corner of the AABB.
