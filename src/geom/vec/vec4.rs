@@ -64,6 +64,11 @@ impl<T> Vec4<T> {
     }
 }
 
+impl<T: UNum> Vec4<T> {
+    /// A zero 4-d vector
+    pub const ZERO: Self = vec4(T::ZERO, T::ZERO, T::ZERO, T::ZERO);
+}
+
 impl<T: Copy + Num> Vec4<T> {
     /// Calculate dot product of two vectors.
     ///

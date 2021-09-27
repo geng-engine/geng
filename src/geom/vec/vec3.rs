@@ -62,6 +62,11 @@ impl<T> Vec3<T> {
     }
 }
 
+impl<T: UNum> Vec3<T> {
+    /// A zero 3-d vector
+    pub const ZERO: Self = vec3(T::ZERO, T::ZERO, T::ZERO);
+}
+
 impl<T: Copy + Num> Vec3<T> {
     /// Calculate dot product of two vectors.
     ///
