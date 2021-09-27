@@ -32,6 +32,7 @@ impl Display for TrafficWatcher {
 }
 
 impl TrafficWatcher {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             timer: Timer::new(),

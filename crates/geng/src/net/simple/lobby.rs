@@ -4,9 +4,11 @@ type Connection<T> = client::Connection<ServerMessage<T>, <T as Model>::Message>
 
 pub struct ConnectingState<T: Model, G: State> {
     geng: Geng,
+    #[allow(clippy::type_complexity)]
     connection: Option<Pin<Box<dyn Future<Output = (T::PlayerId, T, Connection<T>)>>>>,
+    #[allow(clippy::type_complexity)]
     f: Option<Box<dyn FnOnce(T::PlayerId, Remote<T>) -> G + 'static>>,
-    transition: Option<geng::Transition>,
+    transition: Option<Transition>,
 }
 
 impl<T: Model, G: State> ConnectingState<T, G> {
@@ -16,21 +18,19 @@ impl<T: Model, G: State> ConnectingState<T, G> {
         f: impl FnOnce(T::PlayerId, Remote<T>) -> G + 'static,
     ) -> Self {
         let addr = format!("{}://{}", option_env!("WSS").unwrap_or("ws"), addr);
-        let connection = Box::pin(geng::net::client::connect(&addr).then(
-            |connection| async move {
-                let (message, connection) = connection.into_future().await;
-                let player_id = match message {
-                    Some(ServerMessage::PlayerId(id)) => id,
-                    _ => unreachable!(),
-                };
-                let (message, connection) = connection.into_future().await;
-                let initial_state = match message {
-                    Some(ServerMessage::Full(state)) => state,
-                    _ => unreachable!(),
-                };
-                (player_id, initial_state, connection)
-            },
-        ));
+        let connection = Box::pin(net::client::connect(&addr).then(|connection| async move {
+            let (message, connection) = connection.into_future().await;
+            let player_id = match message {
+                Some(ServerMessage::PlayerId(id)) => id,
+                _ => unreachable!(),
+            };
+            let (message, connection) = connection.into_future().await;
+            let initial_state = match message {
+                Some(ServerMessage::Full(state)) => state,
+                _ => unreachable!(),
+            };
+            (player_id, initial_state, connection)
+        }));
         Self {
             geng: geng.clone(),
             f: Some(Box::new(f)),
@@ -40,13 +40,13 @@ impl<T: Model, G: State> ConnectingState<T, G> {
     }
 }
 
-impl<T: Model, G: State> geng::State for ConnectingState<T, G> {
+impl<T: Model, G: State> State for ConnectingState<T, G> {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         let framebuffer_size = framebuffer.size();
         ugli::clear(framebuffer, Some(Color::WHITE), None);
         self.geng.default_font().draw(
             framebuffer,
-            &geng::PixelPerfectCamera,
+            &PixelPerfectCamera,
             "Connecting to the server...",
             framebuffer_size.map(|x| x as f32) / 2.0,
             TextAlign::CENTER,
@@ -54,18 +54,12 @@ impl<T: Model, G: State> geng::State for ConnectingState<T, G> {
             Color::BLACK,
         );
     }
-    fn handle_event(&mut self, event: geng::Event) {
-        match event {
-            geng::Event::KeyDown { key, .. } => match key {
-                geng::Key::Escape => {
-                    self.transition = Some(geng::Transition::Pop);
-                }
-                _ => {}
-            },
-            _ => {}
+    fn handle_event(&mut self, event: Event) {
+        if matches!(event, Event::KeyDown { key: Key::Escape }) {
+            self.transition = Some(Transition::Pop);
         }
     }
-    fn transition(&mut self) -> Option<geng::Transition> {
+    fn transition(&mut self) -> Option<Transition> {
         if let Some(connection) = &mut self.connection {
             if let std::task::Poll::Ready((player_id, initial_state, connection)) = connection
                 .as_mut()
@@ -73,7 +67,7 @@ impl<T: Model, G: State> geng::State for ConnectingState<T, G> {
                     futures::task::noop_waker_ref(),
                 ))
             {
-                return Some(geng::Transition::Switch(Box::new(self.f.take().unwrap()(
+                return Some(Transition::Switch(Box::new(self.f.take().unwrap()(
                     player_id,
                     Remote {
                         connection: RefCell::new(connection),

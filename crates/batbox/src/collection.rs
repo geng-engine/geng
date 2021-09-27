@@ -87,13 +87,13 @@ impl<T: HasId> Collection<T> {
         self.by_id.insert(obj.id().clone(), obj);
     }
     pub fn get(&self, id: &T::Id) -> Option<&T> {
-        self.by_id.get(&id)
+        self.by_id.get(id)
     }
     pub fn get_mut(&mut self, id: &T::Id) -> Option<&mut T> {
-        self.by_id.get_mut(&id)
+        self.by_id.get_mut(id)
     }
     pub fn remove(&mut self, id: &T::Id) -> Option<T> {
-        self.by_id.remove(&id)
+        self.by_id.remove(id)
     }
     pub fn retain<F: FnMut(&T) -> bool>(&mut self, mut f: F) {
         self.by_id.retain(move |_, obj| f(obj));
@@ -109,6 +109,15 @@ impl<T: HasId> Collection<T> {
     }
     pub fn len(&self) -> usize {
         self.by_id.len()
+    }
+    pub fn is_empty(&self) -> bool {
+        self.by_id.is_empty()
+    }
+}
+
+impl<T: HasId> Default for Collection<T> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

@@ -51,6 +51,6 @@ impl<T: Model> Remote<T> {
         self.connection.borrow_mut().send(message);
     }
     pub fn traffic(&self) -> Traffic {
-        self.connection.borrow().traffic().clone()
+        self.connection.borrow().traffic()
     }
 }

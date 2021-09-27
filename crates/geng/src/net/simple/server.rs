@@ -60,18 +60,13 @@ impl<T: Model> Server<T> {
     pub fn new<A: std::net::ToSocketAddrs + Debug + Copy>(addr: A, model: T) -> Self {
         let state = Arc::new(Mutex::new(ServerState {
             current: model.clone(),
-            previous: model.clone(),
+            previous: model,
             next_client_id: 0,
             clients: HashMap::new(),
         }));
         Self {
             state: state.clone(),
-            inner: net::Server::new(
-                ServerApp {
-                    state: state.clone(),
-                },
-                addr,
-            ),
+            inner: net::Server::new(ServerApp { state }, addr),
         }
     }
     pub fn handle(&self) -> ServerHandle {
