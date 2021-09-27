@@ -2,7 +2,11 @@
 
 Game ENGine for Rust Programming Language
 
-## Games made using it
+## Examples
+
+You can see examples in [examples directory of the main crate](crates/geng/examples)
+
+## Games made using geng
 
 These are games made by myself (in order of personal preference):
 
