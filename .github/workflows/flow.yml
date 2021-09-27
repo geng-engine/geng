@@ -31,9 +31,6 @@ jobs:
           toolchain: stable
           profile: minimal
 
-      - name: Install cargo-geng
-        run: cargo install cargo-geng --path cargo-geng
-
       - name: Test
         uses: actions-rs/cargo@v1
         with:
@@ -55,11 +52,11 @@ jobs:
 
       - name: Install cargo-geng
         run: |
-          cargo install cargo-geng --path cargo-geng
+          cargo install cargo-geng --path crates/cargo-geng
           cargo install wasm-bindgen-cli
 
       - name: Test
-        run: cargo check --target wasm32-unknown-unknown
+        run: cargo check --workspace --exclude cargo-geng --target wasm32-unknown-unknown
 
   docker:
     name: Docker
@@ -70,7 +67,7 @@ jobs:
       - name: Build & Push
         uses: docker/build-push-action@v1
         with:
-          path: cargo-geng
+          path: crates/cargo-geng
           repository: kuviman/geng
           tags: latest
           username: ${{ secrets.DOCKER_USERNAME }}
