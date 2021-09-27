@@ -96,7 +96,7 @@ impl Controller {
             widget.calc_constraints();
         });
         root.calc_constraints();
-        root.core_mut().position = AABB::pos_size(vec2(0.0, 0.0), self.size);
+        root.core_mut().position = AABB::ZERO.extend_positive(self.size);
         traverse_mut(
             root,
             &mut |widget| {

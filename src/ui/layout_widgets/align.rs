@@ -101,14 +101,14 @@ impl<T: Widget> Widget for Align<T> {
                 child_size.x = child_size.y * aspect;
             }
         }
-        self.child.core_mut().position = AABB::pos_size(
+        self.child.core_mut().position = AABB::point(
             self.core().position.bottom_left()
                 + vec2(
                     (size.x - child_size.x) * self.align.x,
                     (size.y - child_size.y) * self.align.y,
                 ),
-            child_size,
-        );
+        )
+        .extend_positive(child_size);
     }
     fn walk_children_mut<'a>(&mut self, mut f: Box<dyn FnMut(&mut dyn Widget) + 'a>) {
         f(&mut self.child);

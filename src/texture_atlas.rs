@@ -24,16 +24,15 @@ impl TextureAtlas {
             );
             framebuffer.copy_to_texture(
                 &mut atlas_texture,
-                AABB::pos_size(vec2(0, 0), texture.size()),
+                AABB::ZERO.extend_positive(texture.size()),
                 vec2(x, 0),
             );
-            uvs.push(AABB::pos_size(
-                vec2(x as f32 / width as f32, 0.0),
-                vec2(
+            uvs.push(
+                AABB::point(vec2(x as f32 / width as f32, 0.0)).extend_positive(vec2(
                     texture.size().x as f32 / width as f32,
                     texture.size().y as f32 / height as f32,
-                ),
-            ));
+                )),
+            );
             x += texture.size().x;
         }
         Self {

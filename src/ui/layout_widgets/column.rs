@@ -68,10 +68,8 @@ impl<'a> Widget for Column<'a> {
             let height = child.core().constraints.min_size.y
                 + child.core().constraints.flex.y * size_per_flex;
             pos -= height;
-            child.core_mut().position = AABB::pos_size(
-                vec2(self.core.position.x_min, pos),
-                vec2(self.core.position.width(), height),
-            );
+            child.core_mut().position = AABB::point(vec2(self.core.position.x_min, pos))
+                .extend_positive(vec2(self.core.position.width(), height));
         }
     }
     fn walk_children_mut<'b>(&mut self, mut f: Box<dyn FnMut(&mut dyn Widget) + 'b>) {

@@ -67,10 +67,8 @@ impl<'a> Widget for Row<'a> {
         for child in &mut self.children {
             let width = child.core().constraints.min_size.x
                 + child.core().constraints.flex.x * size_per_flex;
-            child.core_mut().position = AABB::pos_size(
-                vec2(pos, self.core.position.y_min),
-                vec2(width, self.core.position.height()),
-            );
+            child.core_mut().position = AABB::point(vec2(pos, self.core.position.y_min))
+                .extend_positive(vec2(width, self.core.position.height()));
             pos += width;
         }
     }
