@@ -1,0 +1,2 @@
+[alias]
+geng = "run --release --package cargo-geng --"
