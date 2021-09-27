@@ -1,0 +1,17 @@
+[package]
+name = "ugli-derive"
+version = "0.7.0-alpha.0"
+authors = ["kuviman <kuviman@gmail.com>"]
+description = "Universal OpenGL Interface (derive macros)"
+license = "MIT"
+homepage = "https://github.com/kuviman/ugli"
+edition = "2018"
+
+[dependencies]
+syn = { version = "1", features = ["full"] }
+quote = "1"
+batbox = "0.7.0-alpha"
+proc-macro2 = "1"
+
+[lib]
+proc-macro = true

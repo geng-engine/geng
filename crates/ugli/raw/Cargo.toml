@@ -1,0 +1,17 @@
+[package]
+name = "ugli-raw"
+version = "0.7.0-alpha.1"
+authors = ["kuviman <kuviman@gmail.com>"]
+description = "Universal OpenGL Interface (Raw)"
+license = "MIT"
+homepage = "https://github.com/kuviman/ugli"
+edition = "2018"
+
+[dependencies]
+batbox = "0.7.0-alpha"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+gl = "0.14"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "0.2"
