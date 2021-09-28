@@ -65,7 +65,7 @@ jobs:
       - name: Build & Push
         uses: docker/build-push-action@v1
         with:
-          path: crates/cargo-geng
+          path: .
           repository: kuviman/geng
           tags: latest
           username: ${{ secrets.DOCKER_USERNAME }}

@@ -36,5 +36,5 @@ RUN set -eux; \
     rustup target add wasm32-unknown-unknown; \
     cargo install wasm-bindgen-cli
     
-COPY . /tmp/cargo-geng
-RUN cargo install --path /tmp/cargo-geng
+COPY . /src
+RUN cargo install --path /src/crates/cargo-geng
