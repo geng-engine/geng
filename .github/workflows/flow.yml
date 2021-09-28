@@ -1,7 +1,6 @@
 on:
   push:
-    branches:
-      - main
+  pull_request:
   workflow_dispatch:
 
 jobs:
@@ -56,7 +55,46 @@ jobs:
       - name: Test
         run: cargo check --workspace --exclude cargo-geng --target wasm32-unknown-unknown
 
+  pages:
+    needs:
+      - test
+      - test-web
+    name: Pages
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          target: wasm32-unknown-unknown
+
+      - name: Install wasm-bindgen
+        run: cargo install wasm-bindgen-cli
+
+      - name: Build examples
+        run: |
+          for example in 01_blank 02_hello_world 03_moving
+          do
+            cargo geng build --release --target wasm32-unknown-unknown -p geng --example $example
+            mv target/geng pages/examples/$example
+          done
+
+      - name: Deploy GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: pages
+
   docker:
+    needs:
+      - test
+      - test-web
+    if: github.ref == 'refs/heads/main'
     name: Docker
     runs-on: ubuntu-latest
     steps:
