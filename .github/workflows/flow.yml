@@ -78,6 +78,7 @@ jobs:
 
       - name: Build examples
         run: |
+          mkdir -p pages/examples
           for example in 01_blank 02_hello_world 03_moving
           do
             cargo geng build --release --target wasm32-unknown-unknown -p geng --example $example
