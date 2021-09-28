@@ -60,7 +60,7 @@ jobs:
       - test
       - test-web
     name: Pages
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.repository_owner == 'kuviman'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -95,7 +95,7 @@ jobs:
     needs:
       - test
       - test-web
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.repository_owner == 'kuviman'
     name: Docker
     runs-on: ubuntu-latest
     steps:
