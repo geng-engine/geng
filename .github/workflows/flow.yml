@@ -79,11 +79,15 @@ jobs:
       - name: Build examples
         run: |
           mkdir -p pages/examples
-          for example in 01_blank 02_hello_world 03_moving 04_camera_controls pong
-          do
+          example_options_html=""
+          for example in crates/geng/examples/*; do
+            example=$(basename $example)
+            example=${example%.rs}
             cargo geng build --release --target wasm32-unknown-unknown -p geng --example $example
             mv target/geng pages/examples/$example
+            example_options_html="$example_options_html<option>$example</option>"
           done
+          sed -i "s|<option>EXAMPLE</option>|$example_options_html|g" pages/index.html
 
       - name: Deploy GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
