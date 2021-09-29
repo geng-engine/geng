@@ -1,7 +1,12 @@
 use super::*;
 
 pub fn derive(input: TokenStream) -> TokenStream {
-    simple_derive(input, syn::parse_str("ugli::Uniforms").unwrap(), expand)
+    simple_derive(
+        input,
+        true,
+        syn::parse_str("ugli::Uniforms").unwrap(),
+        expand,
+    )
 }
 
 fn expand(input: &syn::DeriveInput) -> TokenStream {

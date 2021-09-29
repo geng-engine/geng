@@ -25,6 +25,7 @@ pub fn derive_vertex(input: proc_macro::TokenStream) -> proc_macro::TokenStream 
 
 fn simple_derive(
     input: TokenStream,
+    safe: bool,
     typ: syn::Path,
     expand: fn(&syn::DeriveInput) -> TokenStream,
 ) -> TokenStream {
@@ -33,7 +34,13 @@ fn simple_derive(
     let input_type = &ast.ident;
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     let impl_body = expand(&ast);
+    let safe = if safe {
+        quote! {}
+    } else {
+        quote! { unsafe }
+    };
     quote! {
+        #safe
         impl#impl_generics #typ for #input_type#ty_generics #where_clause {
             #impl_body
         }

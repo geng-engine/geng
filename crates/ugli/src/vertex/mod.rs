@@ -6,12 +6,14 @@ mod buffer;
 pub use attribute::*;
 pub use buffer::*;
 
-pub trait VertexAttributeVisitor {
-    fn visit<A: VertexAttribute>(&mut self, name: &str, attribute: &A);
+pub unsafe trait VertexAttributeVisitor {
+    #[allow(clippy::missing_safety_doc)]
+    unsafe fn visit<A: VertexAttribute>(&mut self, name: &str, attribute: *const A);
 }
 
-pub trait Vertex {
-    fn walk_attributes<C>(&self, visitor: C)
+pub unsafe trait Vertex {
+    #[allow(clippy::missing_safety_doc)]
+    unsafe fn walk_attributes<C>(sample: *const Self, visitor: C)
     where
         C: VertexAttributeVisitor;
 }

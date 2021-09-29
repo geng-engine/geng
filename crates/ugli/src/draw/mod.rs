@@ -181,30 +181,31 @@ pub fn draw<V, U, DP>(
             } else {
                 *self.vertex_count = Some(data.len());
             }
-            let sample = unsafe {
-                #[allow(clippy::uninit_assumed_init)] // TODO: check
-                mem::MaybeUninit::<D>::uninit().assume_init()
-            };
+            let sample = mem::MaybeUninit::uninit();
+            let sample = sample.as_ptr();
             data.buffer.bind();
-            sample.walk_attributes(Vac {
-                sample: &sample,
-                divisor,
-                program: self.program,
-                offset: data.range.start * mem::size_of::<D>(),
-            });
-            mem::forget(sample);
+            unsafe {
+                D::walk_attributes(
+                    sample,
+                    Vac {
+                        sample,
+                        divisor,
+                        program: self.program,
+                        offset: data.range.start * mem::size_of::<D>(),
+                    },
+                );
+            }
             struct Vac<'a, D: Vertex + 'a> {
                 offset: usize,
-                sample: &'a D,
+                sample: *const D,
                 divisor: Option<usize>,
                 program: &'a Program,
             }
-            impl<'a, D: Vertex> VertexAttributeVisitor for Vac<'a, D> {
-                fn visit<A: VertexAttribute>(&mut self, name: &str, attribute: &A) {
+            unsafe impl<'a, D: Vertex> VertexAttributeVisitor for Vac<'a, D> {
+                unsafe fn visit<A: VertexAttribute>(&mut self, name: &str, attribute: *const A) {
                     let gl = &self.program.ugli.inner;
                     if let Some(attribute_info) = self.program.attributes.get(name) {
-                        let offset = self.offset + attribute as *const _ as usize
-                            - self.sample as *const _ as usize;
+                        let offset = self.offset + attribute as usize - self.sample as usize;
                         gl.enable_vertex_attrib_array(attribute_info.location);
                         gl.vertex_attrib_pointer(
                             attribute_info.location,
