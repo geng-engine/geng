@@ -234,13 +234,17 @@ impl Font {
         size: f32,
         color: Color<f32>,
     ) {
-        self.draw_impl(
-            framebuffer,
-            camera,
-            text,
-            vec2(pos.x - self.measure(text, size).width() * align.0, pos.y),
-            size,
-            color,
-        );
+        let mut pos = pos;
+        for line in text.lines().rev() {
+            self.draw_impl(
+                framebuffer,
+                camera,
+                line,
+                vec2(pos.x - self.measure(line, size).width() * align.0, pos.y),
+                size,
+                color,
+            );
+            pos.y += size;
+        }
     }
 }
