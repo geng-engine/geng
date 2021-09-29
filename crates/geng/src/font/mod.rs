@@ -113,7 +113,7 @@ impl Font {
                 * camera.view_matrix();
             ((m * vec3(0.0, size, 0.0)).xy() * framebuffer.size().map(|x| x as f32))
                 .len()
-                .max(1.0)
+                .clamp(1.0, 256.0)
         };
         let scale = rusttype::Scale {
             x: pixel_size,
