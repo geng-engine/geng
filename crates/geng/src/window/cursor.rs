@@ -53,4 +53,12 @@ impl Window {
     pub fn cursor_position(&self) -> Vec2<f64> {
         self.mouse_pos.get()
     }
+
+    pub fn lock_cursor(&self) {
+        self.lock_cursor.set(true);
+        #[cfg(target_arch = "wasm32")]
+        self.canvas.request_pointer_lock();
+        // #[cfg(not(target_arch = "wasm32"))]
+        // let _ = self.glutin_window.window().set_cursor_grab(true);
+    }
 }

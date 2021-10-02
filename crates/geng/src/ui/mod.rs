@@ -122,7 +122,7 @@ impl Controller {
         traverse_mut(
             root,
             &mut |widget| match event {
-                RawEvent::MouseMove { position } => {
+                RawEvent::MouseMove { position, .. } => {
                     widget.core_mut().hovered = widget.core().position.contains(position);
                     widget.handle_event(&Event::MouseMove { position });
                 }

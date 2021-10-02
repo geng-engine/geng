@@ -32,6 +32,7 @@ pub enum Event {
     },
     MouseMove {
         position: Vec2<f64>,
+        delta: Vec2<f64>,
     },
     Wheel {
         delta: f64,
@@ -62,7 +63,9 @@ impl Event {
             | MouseUp {
                 ref mut position, ..
             }
-            | MouseMove { ref mut position } => *position += delta,
+            | MouseMove {
+                ref mut position, ..
+            } => *position += delta,
             TouchStart { ref mut touches } | TouchMove { ref mut touches } => {
                 for touch in touches {
                     touch.position += delta;
