@@ -129,7 +129,7 @@ impl Window {
             for event in self.internal_get_events() {
                 match event {
                     Event::KeyDown { key: Key::Escape } => {
-                        self.lock_cursor.set(false);
+                        self.unlock_cursor();
                     }
                     _ => {}
                 }
