@@ -95,6 +95,7 @@ impl Game {
 
 impl geng::State for Game {
     fn update(&mut self, delta_time: f64) {
+        self.model.update();
         self.traffic_watcher.update(&self.model.traffic());
         let delta_time = delta_time as f32;
 

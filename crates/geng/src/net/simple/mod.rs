@@ -33,7 +33,7 @@ pub struct Remote<T: Model> {
 }
 
 impl<T: Model> Remote<T> {
-    fn update(&self) {
+    pub fn update(&self) {
         let mut model = self.model.borrow_mut();
         for message in self.connection.borrow_mut().new_messages() {
             match message {
@@ -44,7 +44,6 @@ impl<T: Model> Remote<T> {
         }
     }
     pub fn get(&self) -> Ref<T> {
-        self.update();
         self.model.borrow()
     }
     pub fn send(&self, message: T::Message) {

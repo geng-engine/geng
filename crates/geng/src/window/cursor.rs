@@ -40,7 +40,8 @@ impl Window {
     }
 
     pub fn set_cursor_position(&self, position: Vec2<f64>) {
-        #![allow(unused_variables)]
+        self.mouse_pos.set(position);
+        let position = vec2(position.x, self.size().y as f64 - 1.0 - position.y); // TODO: WAT
         #[cfg(target_arch = "wasm32")]
         unimplemented!();
         #[cfg(not(target_arch = "wasm32"))]

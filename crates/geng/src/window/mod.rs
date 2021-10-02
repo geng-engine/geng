@@ -123,7 +123,6 @@ impl Window {
         {
             if self.lock_cursor.get() {
                 let pos = self.size().map(|x| x as f64) / 2.0;
-                self.mouse_pos.set(pos);
                 self.set_cursor_position(pos);
             }
             for event in self.internal_get_events() {
