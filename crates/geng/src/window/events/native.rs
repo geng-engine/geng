@@ -16,7 +16,10 @@ impl Window {
                 }
                 glutin::event::WindowEvent::CursorMoved { position, .. } => {
                     let position = vec2(position.x, self.size().y as f64 - 1.0 - position.y);
-                    events.push(Event::MouseMove { position })
+                    events.push(Event::MouseMove {
+                        position,
+                        delta: position - self.mouse_pos.get(),
+                    });
                 }
                 glutin::event::WindowEvent::MouseInput { state, button, .. } => {
                     let button = match button {

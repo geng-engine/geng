@@ -40,7 +40,8 @@ impl Window {
     }
 
     pub fn set_cursor_position(&self, position: Vec2<f64>) {
-        #![allow(unused_variables)]
+        self.mouse_pos.set(position);
+        let position = vec2(position.x, self.size().y as f64 - 1.0 - position.y); // TODO: WAT
         #[cfg(target_arch = "wasm32")]
         unimplemented!();
         #[cfg(not(target_arch = "wasm32"))]
@@ -52,5 +53,32 @@ impl Window {
 
     pub fn cursor_position(&self) -> Vec2<f64> {
         self.mouse_pos.get()
+    }
+
+    pub fn cursor_locked(&self) -> bool {
+        #[cfg(target_arch = "wasm32")]
+        return web_sys::window()
+            .unwrap()
+            .document()
+            .unwrap()
+            .pointer_lock_element()
+            .is_some();
+        #[cfg(not(target_arch = "wasm32"))]
+        return self.lock_cursor.get();
+    }
+
+    pub fn lock_cursor(&self) {
+        self.lock_cursor.set(true);
+        #[cfg(target_arch = "wasm32")]
+        self.canvas.request_pointer_lock();
+        #[cfg(not(target_arch = "wasm32"))]
+        self.glutin_window.window().set_cursor_visible(false);
+        // let _ = self.glutin_window.window().set_cursor_grab(true);
+    }
+
+    pub fn unlock_cursor(&self) {
+        self.lock_cursor.set(false);
+        #[cfg(not(target_arch = "wasm32"))]
+        self.glutin_window.window().set_cursor_visible(true);
     }
 }

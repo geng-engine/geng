@@ -41,6 +41,7 @@ pub enum Message {
 impl simple_net::Model for Model {
     type PlayerId = PlayerId;
     type Message = Message;
+    type Event = ();
     const TICKS_PER_SECOND: f32 = 20.0;
     fn new_player(&mut self) -> Self::PlayerId {
         let player_id = self.next_player_id;
@@ -64,7 +65,7 @@ impl simple_net::Model for Model {
             }
         }
     }
-    fn tick(&mut self) {
+    fn tick(&mut self, _events: &mut Vec<()>) {
         self.current_time += 1.0 / Self::TICKS_PER_SECOND;
     }
 }
@@ -95,6 +96,7 @@ impl Game {
 
 impl geng::State for Game {
     fn update(&mut self, delta_time: f64) {
+        self.model.update();
         self.traffic_watcher.update(&self.model.traffic());
         let delta_time = delta_time as f32;
 

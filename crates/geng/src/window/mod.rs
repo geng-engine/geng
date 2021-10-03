@@ -19,6 +19,7 @@ mod js {
 }
 
 pub struct Window {
+    lock_cursor: Cell<bool>,
     #[cfg(target_arch = "wasm32")]
     canvas: web_sys::HtmlCanvasElement,
     #[cfg(not(target_arch = "wasm32"))]
@@ -53,6 +54,7 @@ impl Window {
             js::initialize_window(&canvas);
             let ugli = Rc::new(Ugli::create_webgl(&canvas));
             let window = Self {
+                lock_cursor: Cell::new(false),
                 canvas,
                 event_handler: Rc::new(RefCell::new(None)),
                 ugli,
@@ -87,6 +89,7 @@ impl Window {
             let glutin_window = unsafe { glutin_window.make_current() }.unwrap();
             let ugli = Rc::new(Ugli::create_from_glutin(&glutin_window));
             Self {
+                lock_cursor: Cell::new(false),
                 glutin_window,
                 glutin_event_loop: RefCell::new(glutin_event_loop),
                 event_handler: Rc::new(RefCell::new(None)),
@@ -117,15 +120,27 @@ impl Window {
             self.glutin_window.swap_buffers().unwrap();
         }
         #[cfg(not(target_arch = "wasm32"))]
-        for event in self.internal_get_events() {
-            Self::default_handler(
-                &event,
-                &self.pressed_keys,
-                &self.pressed_buttons,
-                &self.mouse_pos,
-            );
-            if let Some(ref mut handler) = *self.event_handler.borrow_mut() {
-                handler(event);
+        {
+            if self.lock_cursor.get() {
+                let pos = self.size().map(|x| x as f64) / 2.0;
+                self.set_cursor_position(pos);
+            }
+            for event in self.internal_get_events() {
+                match event {
+                    Event::KeyDown { key: Key::Escape } => {
+                        self.unlock_cursor();
+                    }
+                    _ => {}
+                }
+                Self::default_handler(
+                    &event,
+                    &self.pressed_keys,
+                    &self.pressed_buttons,
+                    &self.mouse_pos,
+                );
+                if let Some(ref mut handler) = *self.event_handler.borrow_mut() {
+                    handler(event);
+                }
             }
         }
     }
@@ -143,7 +158,7 @@ impl Window {
             Event::KeyUp { key } => {
                 pressed_keys.borrow_mut().remove(&key);
             }
-            Event::MouseMove { position } => {
+            Event::MouseMove { position, .. } => {
                 mouse_pos.set(position);
             }
             Event::MouseDown { button, .. } => {

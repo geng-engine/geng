@@ -134,7 +134,10 @@ impl Convert<web_sys::MouseEvent> for Event {
                 position,
                 button: button?,
             },
-            "mousemove" => Event::MouseMove { position },
+            "mousemove" => Event::MouseMove {
+                position,
+                delta: vec2(event.movement_x(), -event.movement_y()).map(|x| x as f64),
+            },
             _ => return None,
         })
     }
