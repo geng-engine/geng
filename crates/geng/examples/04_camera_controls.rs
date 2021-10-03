@@ -69,7 +69,7 @@ impl geng::State for State {
                 );
             }
             // Drag move
-            geng::Event::MouseMove { position } => {
+            geng::Event::MouseMove { position, .. } => {
                 if let Some(start) = self.drag_start {
                     // Find current world position under cursor
                     let current_pos = self
