@@ -84,12 +84,18 @@ impl<T: Model> Server<T> {
                     unprocessed_time += timer.tick() as f32;
                     unprocessed_time = unprocessed_time.min(1.0);
                     {
+                        let mut events = Vec::new();
                         let mut state = state.lock().unwrap();
                         while unprocessed_time > 1.0 / T::TICKS_PER_SECOND {
                             unprocessed_time -= 1.0 / T::TICKS_PER_SECOND;
-                            state.current.tick();
+                            state.current.tick(&mut events);
                         }
                         state.update();
+                        if !events.is_empty() {
+                            for client in state.clients.values_mut() {
+                                client.sender.send(ServerMessage::Events(events.clone()));
+                            }
+                        }
                     }
                     std::thread::sleep(std::time::Duration::from_secs_f32(
                         1.0 / T::TICKS_PER_SECOND - unprocessed_time,

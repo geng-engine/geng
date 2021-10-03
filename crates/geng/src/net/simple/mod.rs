@@ -13,11 +13,12 @@ pub use server::*;
 pub trait Model: Diff + Message {
     type PlayerId: Message + Clone;
     type Message: Message;
+    type Event: Message + Clone;
     const TICKS_PER_SECOND: f32;
     fn new_player(&mut self) -> Self::PlayerId;
     fn drop_player(&mut self, player_id: &Self::PlayerId);
     fn handle_message(&mut self, player_id: &Self::PlayerId, message: Self::Message);
-    fn tick(&mut self);
+    fn tick(&mut self, events: &mut Vec<Self::Event>);
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -25,6 +26,7 @@ pub enum ServerMessage<T: Model> {
     PlayerId(T::PlayerId),
     Delta(#[serde(bound = "")] <T as Diff>::Delta),
     Full(#[serde(bound = "")] T),
+    Events(Vec<T::Event>),
 }
 
 pub struct Remote<T: Model> {
@@ -33,15 +35,18 @@ pub struct Remote<T: Model> {
 }
 
 impl<T: Model> Remote<T> {
-    pub fn update(&self) {
+    pub fn update(&self) -> Vec<T::Event> {
         let mut model = self.model.borrow_mut();
+        let mut events = Vec::new();
         for message in self.connection.borrow_mut().new_messages() {
             match message {
                 ServerMessage::Full(state) => *model = state,
                 ServerMessage::Delta(delta) => model.update(&delta),
                 ServerMessage::PlayerId(_) => unreachable!(),
+                ServerMessage::Events(e) => events.extend(e),
             }
         }
+        events
     }
     pub fn get(&self) -> Ref<T> {
         self.model.borrow()
