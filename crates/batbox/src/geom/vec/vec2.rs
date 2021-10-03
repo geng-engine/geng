@@ -94,6 +94,13 @@ impl<T: Num + Copy> Vec2<T> {
 }
 
 impl<T: Neg<Output = T>> Vec2<T> {
+    /// Rotate a vector by 90 degrees counter clockwise.
+    /// # Examples
+    /// ```
+    /// use batbox::*;
+    /// let v = vec2(3.0, 4.0);
+    /// assert_eq!(v.rotate_90(), vec2(-4.0, 3.0));
+    /// ```
     pub fn rotate_90(self) -> Self {
         vec2(-self.y, self.x)
     }
@@ -113,11 +120,23 @@ impl<T: Float> Vec2<T> {
     }
 
     /// Calculate length of a vector.
+    /// # Examples
+    /// ```
+    /// use batbox::*;
+    /// let v = vec2(3.0, 4.0);
+    /// assert_eq!(v.len(), 5.0);
+    /// ```
     pub fn len(self) -> T {
         T::sqrt(self.x * self.x + self.y * self.y)
     }
 
     /// Rotate a vector by a given angle.
+    /// # Examples
+    /// ```
+    /// use batbox::*;
+    /// let v = vec2(1.0, 2.0);
+    /// assert!((v.rotate(std::f32::consts::FRAC_PI_2) - vec2(-2.0, 1.0)).len() < 1e-5);
+    /// ```
     pub fn rotate(self, angle: T) -> Self {
         let (sin, cos) = T::sin_cos(angle);
         Self {
@@ -126,6 +145,13 @@ impl<T: Float> Vec2<T> {
         }
     }
 
+    /// Clamp vector's length from above.
+    /// # Examples
+    /// ```
+    /// use batbox::*;
+    /// let v = vec2(1.0, 2.0);
+    /// assert_eq!(v.clamp(1.0), v.normalize());
+    /// ```
     pub fn clamp(self, max_len: T) -> Self {
         let len = self.len();
         if len > max_len {
@@ -135,6 +161,13 @@ impl<T: Float> Vec2<T> {
         }
     }
 
+    /// Get an angle between the positive direction of the x-axis.
+    /// # Examples
+    /// ```
+    /// use batbox::*;
+    /// let v = vec2(0.0, 1.0);
+    /// assert_eq!(v.arg(), std::f32::consts::FRAC_PI_2);
+    /// ```
     pub fn arg(self) -> T {
         T::atan2(self.y, self.x)
     }
