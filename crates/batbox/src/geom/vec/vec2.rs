@@ -118,11 +118,11 @@ impl<T: Float> Vec2<T> {
     }
 
     /// Rotate a vector by a given angle.
-    pub fn rotated(v: Self, angle: T) -> Self {
+    pub fn rotate(self, angle: T) -> Self {
         let (sin, cos) = T::sin_cos(angle);
         Self {
-            x: v.x * cos - v.y * sin,
-            y: v.x * sin + v.y * cos,
+            x: self.x * cos - self.y * sin,
+            y: self.x * sin + self.y * cos,
         }
     }
 
