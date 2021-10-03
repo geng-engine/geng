@@ -55,6 +55,18 @@ impl Window {
         self.mouse_pos.get()
     }
 
+    pub fn cursor_locked(&self) -> bool {
+        #[cfg(target_arch = "wasm32")]
+        return web_sys::window()
+            .unwrap()
+            .document()
+            .unwrap()
+            .pointer_lock_element()
+            .is_some();
+        #[cfg(not(target_arch = "wasm32"))]
+        return self.lock_cursor.get();
+    }
+
     pub fn lock_cursor(&self) {
         self.lock_cursor.set(true);
         #[cfg(target_arch = "wasm32")]
