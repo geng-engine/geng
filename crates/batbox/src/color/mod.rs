@@ -103,6 +103,28 @@ impl<T: ColorComponent> Color<T> {
         }
     }
 
+    /// Applies a function to every component of two colors and produces a new color.
+    /// # Examples
+    /// ```
+    /// use batbox::*;
+    /// let a = Color::rgba(0.2, 0.1, 0.3, 0.6);
+    /// let b = Color::rgba(0.5, 0.3, 0.2, 0.2);
+    /// let f = |a: f32, b: f32| a + b;
+    /// assert_eq!(a.zip_map(b, f), Color::rgba(0.7, 0.4, 0.5, 0.8));
+    /// ```
+    pub fn zip_map<F: Fn(T, U) -> V, U, V: ColorComponent>(
+        self,
+        other: Color<U>,
+        f: F,
+    ) -> Color<V> {
+        Color {
+            r: f(self.r, other.r),
+            g: f(self.g, other.g),
+            b: f(self.b, other.b),
+            a: f(self.a, other.a),
+        }
+    }
+
     /// Convert `Color<T>` to `Color<U>` by applying `ColorComponent::convert()` method.
     /// # Examples
     /// ```
@@ -126,12 +148,7 @@ impl<T: ColorComponent> Color<T> {
     /// assert_eq!(interpolated.a, 1.0);
     /// ```
     pub fn lerp(start: Self, end: Self, t: f32) -> Self {
-        Self {
-            r: T::lerp(start.r, end.r, t),
-            g: T::lerp(start.g, end.g, t),
-            b: T::lerp(start.b, end.b, t),
-            a: T::lerp(start.a, end.a, t),
-        }
+        start.zip_map(end, |start, end| T::lerp(start, end, t))
     }
 }
 
