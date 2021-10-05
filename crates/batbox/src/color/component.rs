@@ -1,6 +1,7 @@
 #[allow(unused_imports)]
 use super::*;
 
+/// A trait representing a color component in `Color`.
 pub trait ColorComponent: Copy {
     const ZERO: Self;
     const HALF: Self;
@@ -8,8 +9,14 @@ pub trait ColorComponent: Copy {
     fn as_f32(self) -> f32;
     fn from_f32(value: f32) -> Self;
 
+    /// Convert from one type to another
     fn convert<U: ColorComponent>(self) -> U {
         U::from_f32(self.as_f32())
+    }
+
+    /// Linearly interpolate between `start` and `end` values.
+    fn lerp(start: Self, end: Self, t: f32) -> Self {
+        Self::from_f32((1.0 - t) * start.as_f32() + t * end.as_f32())
     }
 }
 

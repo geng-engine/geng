@@ -50,7 +50,7 @@ fn test_display() {
     assert_eq!(Color::<f32>::rgb(0.1, 0.2, 0.3).to_string(), "#19334c");
 }
 
-impl<T: ColorComponent + Eq> PartialEq for Color<T> {
+impl<T: ColorComponent + PartialEq> PartialEq for Color<T> {
     fn eq(&self, other: &Self) -> bool {
         self.r == other.r && self.g == other.g && self.b == other.b && self.a == other.a
     }
@@ -58,18 +58,79 @@ impl<T: ColorComponent + Eq> PartialEq for Color<T> {
 impl<T: ColorComponent + Eq> Eq for Color<T> {}
 
 impl<T: ColorComponent> Color<T> {
+    /// Construct `Color` from red, green, and blue components.
     pub fn rgb(r: T, g: T, b: T) -> Self {
         Self { r, g, b, a: T::MAX }
     }
+
+    /// Construct `Color` from red, green, blue, and alpha components.
     pub fn rgba(r: T, g: T, b: T, a: T) -> Self {
         Self { r, g, b, a }
     }
-    pub fn convert<U: ColorComponent>(self) -> Color<U> {
+
+    /// Convert `Color<T>` to `Color<U>` by applying a function to every color component excluding alpha.
+    /// The resulting alpha is calculated by applying ColorComponent::convert() method.
+    /// # Examples
+    /// ```
+    /// use batbox::*;
+    /// let initial = Color::rgba(0.7, 0.4, 1.0, 1.0);
+    /// let f = |component: f32| component / 2.0;
+    /// assert_eq!(initial.map_color(f), Color::rgba(0.35, 0.2, 0.5, 1.0));
+    /// ```
+    pub fn map_color<F: Fn(T) -> U, U: ColorComponent>(self, f: F) -> Color<U> {
         Color {
-            r: self.r.convert(),
-            g: self.g.convert(),
-            b: self.b.convert(),
+            r: f(self.r),
+            g: f(self.g),
+            b: f(self.b),
             a: self.a.convert(),
+        }
+    }
+
+    /// Convert `Color<T>` to `Color<U>` by applying a function to every color component.
+    /// # Examples
+    /// ```
+    /// use batbox::*;
+    /// let initial = Color::rgba(0.7, 0.4, 1.0, 1.0);
+    /// let f = |component: f32| component / 2.0;
+    /// assert_eq!(initial.map(f), Color::rgba(0.35, 0.2, 0.5, 0.5));
+    /// ```
+    pub fn map<F: Fn(T) -> U, U: ColorComponent>(self, f: F) -> Color<U> {
+        Color {
+            r: f(self.r),
+            g: f(self.g),
+            b: f(self.b),
+            a: f(self.a),
+        }
+    }
+
+    /// Convert `Color<T>` to `Color<U>` by applying `ColorComponent::convert()` method.
+    /// # Examples
+    /// ```
+    /// use batbox::*;
+    /// assert_eq!(Color::rgb(0, 255, 0).convert(), Color::rgb(0.0, 1.0, 0.0));
+    /// ```
+    pub fn convert<U: ColorComponent>(self) -> Color<U> {
+        self.map(|component| component.convert())
+    }
+
+    /// Linearly interpolate between `start` and `end` values.
+    /// # Examples
+    /// ```
+    /// use batbox::*;
+    /// let start = Color::rgb(0.0, 0.0, 0.0);
+    /// let end = Color::rgb(1.0, 1.0, 1.0);
+    /// let interpolated = Color::lerp(start, end, 0.3);
+    /// assert!(interpolated.r - 0.3 < 1e-5);
+    /// assert!(interpolated.g - 0.3 < 1e-5);
+    /// assert!(interpolated.b - 0.3 < 1e-5);
+    /// assert_eq!(interpolated.a, 1.0);
+    /// ```
+    pub fn lerp(start: Self, end: Self, t: f32) -> Self {
+        Self {
+            r: T::lerp(start.r, end.r, t),
+            g: T::lerp(start.g, end.g, t),
+            b: T::lerp(start.b, end.b, t),
+            a: T::lerp(start.a, end.a, t),
         }
     }
 }
