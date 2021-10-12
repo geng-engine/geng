@@ -16,6 +16,9 @@ pub use derive_more::{Deref, DerefMut};
 pub use dyn_clone::{clone_box, DynClone};
 #[doc(no_inline)]
 pub use futures::{self, prelude::*};
+pub use itertools;
+#[doc(no_inline)]
+pub use itertools::izip;
 #[doc(no_inline)]
 pub use log::{self, debug, error, info, log_enabled, trace, warn};
 #[doc(no_inline)]

@@ -7,7 +7,6 @@ extern crate proc_macro;
 extern crate quote;
 
 use batbox::*;
-use itertools::izip;
 use proc_macro2::TokenStream;
 
 mod assets;
