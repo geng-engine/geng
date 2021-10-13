@@ -3,6 +3,7 @@ use std::{
     cell::{Cell, UnsafeCell},
     collections::HashMap,
     fmt::Debug,
+    marker::PhantomData,
     ops::{Deref, DerefMut},
 };
 
@@ -108,6 +109,9 @@ impl Entity {
             single_component_storage::Storage::new(component),
         );
     }
+    pub fn has<T: Component>(&self) -> bool {
+        self.components.contains_key(&TypeId::of::<T>())
+    }
     pub fn remove<T: Component>(&mut self) -> Option<T> {
         unsafe {
             self.components
@@ -151,17 +155,20 @@ impl Entity {
 pub struct EntityQuery<'a, Q: Query<'a>> {
     #[allow(dead_code)]
     borrows: Option<Q::DirectBorrows>,
-    item: Option<Q>,
+    item: Option<Q::Output>,
 }
 
-impl<'a, Q: Query<'a> + Debug> Debug for EntityQuery<'a, Q> {
+impl<'a, Q: Query<'a>> Debug for EntityQuery<'a, Q>
+where
+    Q::Output: Debug,
+{
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self.item)
     }
 }
 
 impl<'a, Q: Query<'a>> Deref for EntityQuery<'a, Q> {
-    type Target = Option<Q>;
+    type Target = Option<Q::Output>;
     fn deref(&self) -> &Self::Target {
         &self.item
     }
@@ -174,38 +181,84 @@ impl<'a, Q: Query<'a>> DerefMut for EntityQuery<'a, Q> {
 }
 
 pub unsafe trait Query<'a>: Sized {
+    type Output;
     type DirectBorrows;
     unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows>;
-    unsafe fn get_direct(entity: &'a Entity) -> Option<Self>;
+    unsafe fn get_direct(entity: &'a Entity) -> Option<Self::Output>;
 }
 
 unsafe impl<'a, T: Component> Query<'a> for &'a T {
+    type Output = Self;
     type DirectBorrows = single_component_storage::Borrow<'a>;
     unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows> {
         entity.borrow::<T>()
     }
-    unsafe fn get_direct(entity: &'a Entity) -> Option<Self> {
+    unsafe fn get_direct(entity: &'a Entity) -> Option<Self::Output> {
         entity.get::<T>()
     }
 }
 
 unsafe impl<'a, T: Component> Query<'a> for &'a mut T {
+    type Output = Self;
     type DirectBorrows = single_component_storage::BorrowMut<'a>;
     unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows> {
         entity.borrow_mut::<T>()
     }
-    unsafe fn get_direct(entity: &'a Entity) -> Option<Self> {
+    unsafe fn get_direct(entity: &'a Entity) -> Option<Self::Output> {
         entity.get_mut::<T>()
     }
 }
 
 unsafe impl<'a, Q: Query<'a>> Query<'a> for Option<Q> {
+    type Output = Option<Q::Output>;
     type DirectBorrows = Option<Q::DirectBorrows>;
     unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows> {
         Some(Q::borrow_direct(entity))
     }
-    unsafe fn get_direct(entity: &'a Entity) -> Option<Self> {
+    unsafe fn get_direct(entity: &'a Entity) -> Option<Self::Output> {
         Some(Q::get_direct(entity))
+    }
+}
+
+pub struct With<T>(PhantomData<T>);
+
+unsafe impl<'a, T: Component> Query<'a> for With<T> {
+    type Output = ();
+    type DirectBorrows = ();
+    unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows> {
+        if entity.has::<T>() {
+            Some(())
+        } else {
+            None
+        }
+    }
+    unsafe fn get_direct(entity: &'a Entity) -> Option<Self::Output> {
+        if entity.has::<T>() {
+            Some(())
+        } else {
+            None
+        }
+    }
+}
+
+pub struct Without<T>(PhantomData<T>);
+
+unsafe impl<'a, T: Component> Query<'a> for Without<T> {
+    type Output = ();
+    type DirectBorrows = ();
+    unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows> {
+        if entity.has::<T>() {
+            None
+        } else {
+            Some(())
+        }
+    }
+    unsafe fn get_direct(entity: &'a Entity) -> Option<Self::Output> {
+        if entity.has::<T>() {
+            None
+        } else {
+            Some(())
+        }
     }
 }
 
@@ -214,12 +267,13 @@ macro_rules! impl_for_tuple {
         #[allow(non_camel_case_types)]
         #[allow(unused_variables)]
         unsafe impl<'a, $($name: Query<'a>),*> Query<'a> for ($($name,)*) {
+            type Output = ($($name::Output,)*);
             type DirectBorrows = ($($name::DirectBorrows,)*);
             unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows> {
                 $(let $name = $name::borrow_direct(entity)?;)*
                 Some(($($name,)*))
             }
-            unsafe fn get_direct(entity: &'a Entity) -> Option<Self> {
+            unsafe fn get_direct(entity: &'a Entity) -> Option<Self::Output> {
                 Some(($($name::get_direct(entity).unwrap(),)*))
             }
         }
@@ -255,6 +309,19 @@ fn test_option() {
 }
 
 #[test]
+fn test_with_without() {
+    struct Flag;
+    struct Flag2;
+    let mut entity = Entity::new();
+    entity.add(123i32);
+    entity.add(Flag);
+    assert_eq!(*entity.query::<(&i32, With<Flag>)>(), Some((&123, ())));
+    assert_eq!(*entity.query::<(&i32, Without<Flag>)>(), None);
+    assert_eq!(*entity.query::<(&i32, With<Flag2>)>(), None);
+    assert_eq!(*entity.query::<(&i32, Without<Flag2>)>(), Some((&123, ())));
+}
+
+#[test]
 fn test_double_borrow() {
     let mut entity = Entity::new();
     entity.add(123i32);
@@ -270,6 +337,7 @@ fn test_manual_impl() {
     }
 
     unsafe impl<'a> Query<'a> for Foo<'a> {
+        type Output = Self;
         type DirectBorrows = (
             <&'a i32 as Query<'a>>::DirectBorrows,
             <&'a mut bool as Query<'a>>::DirectBorrows,

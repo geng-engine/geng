@@ -20,7 +20,8 @@ pub fn derive(input: TokenStream) -> TokenStream {
             let field_names = &field_names;
 
             let expanded = quote! {
-            unsafe impl#impl_generics ecs::Query<#query_lifetime> for #input_type#ty_generics #where_clause {
+                unsafe impl#impl_generics ecs::Query<#query_lifetime> for #input_type#ty_generics #where_clause {
+                    type Output = Self;
                     type DirectBorrows = (#(<#field_tys as ecs::Query<#query_lifetime>>::DirectBorrows,)*);
                     unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows> {
                         #(let #field_names = <#field_tys as Query<#query_lifetime>>::borrow_direct(entity)?;)*
