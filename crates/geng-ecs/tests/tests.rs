@@ -1,10 +1,10 @@
-use ecs::Entity;
+use ecs::{Entity, World};
 use geng_ecs as ecs;
 
 #[test]
-fn test() {
+fn test_entity() {
     let mut entity = Entity::new();
-    entity.add(123i32);
+    entity.add(123);
     entity.add("Hello, world!");
     assert_eq!(*entity.query::<&i32>(), Some(&123));
     assert_eq!(
@@ -14,9 +14,29 @@ fn test() {
 }
 
 #[test]
+fn test_world() {
+    let mut world = World::new();
+
+    let mut entity = Entity::new();
+    entity.add(1);
+    entity.add("A");
+    world.add(entity);
+
+    let mut entity = Entity::new();
+    entity.add(2);
+    world.add(entity);
+
+    let mut entity = Entity::new();
+    entity.add("B");
+    world.add(entity);
+
+    assert_eq!(world.query::<&i32>().iter().collect::<Vec<_>>(), &[&1, &2]);
+}
+
+#[test]
 fn test_option() {
     let mut entity = Entity::new();
-    entity.add(123i32);
+    entity.add(123);
     assert_eq!(*entity.query::<&i32>(), Some(&123));
     assert_eq!(
         *entity.query::<(Option<&mut i32>, Option<&&str>)>(),
@@ -29,7 +49,7 @@ fn test_with_without() {
     struct Flag;
     struct Flag2;
     let mut entity = Entity::new();
-    entity.add(123i32);
+    entity.add(123);
     entity.add(Flag);
     assert_eq!(*entity.query::<(&i32, ecs::With<Flag>)>(), Some((&123, ())));
     assert_eq!(*entity.query::<(&i32, ecs::Without<Flag>)>(), None);
@@ -43,7 +63,7 @@ fn test_with_without() {
 #[test]
 fn test_double_borrow() {
     let mut entity = Entity::new();
-    entity.add(123i32);
+    entity.add(123);
     assert_eq!(*entity.query::<(&i32, &i32)>(), Some((&123, &123)));
 }
 
@@ -57,6 +77,21 @@ fn test_manual_impl() {
 
     unsafe impl<'a> ecs::Query<'a> for Foo<'a> {
         type Output = Self;
+        type WorldBorrows = (
+            <&'a i32 as ecs::Query<'a>>::WorldBorrows,
+            <&'a mut bool as ecs::Query<'a>>::WorldBorrows,
+        );
+        unsafe fn borrow_world(world: &'a ecs::World) -> Option<Self::WorldBorrows> {
+            let x = <&'a i32 as ecs::Query<'a>>::borrow_world(world)?;
+            let y = <&'a mut bool as ecs::Query<'a>>::borrow_world(world)?;
+            Some((x, y))
+        }
+        unsafe fn get_world(borrows: &Self::WorldBorrows, id: ecs::Id) -> Option<Self> {
+            let (x, y) = borrows;
+            let x = <&'a i32 as ecs::Query<'a>>::get_world(x, id)?;
+            let y = <&'a mut bool as ecs::Query<'a>>::get_world(y, id)?;
+            Some(Foo { x, y })
+        }
         type DirectBorrows = (
             <&'a i32 as ecs::Query<'a>>::DirectBorrows,
             <&'a mut bool as ecs::Query<'a>>::DirectBorrows,
@@ -75,7 +110,7 @@ fn test_manual_impl() {
     }
 
     let mut entity = Entity::new();
-    entity.add(42i32);
+    entity.add(42);
     entity.add(false);
     assert_eq!(
         *entity.query::<Foo>(),
@@ -95,7 +130,7 @@ fn test_derive() {
     }
 
     let mut entity = Entity::new();
-    entity.add(42i32);
+    entity.add(42);
     entity.add(false);
     assert_eq!(
         *entity.query::<Foo>(),
@@ -110,7 +145,7 @@ fn test_derive() {
 #[should_panic]
 fn test_double_mutable_borrow() {
     let mut entity = Entity::new();
-    entity.add(123i32);
+    entity.add(123);
     assert_eq!(
         *entity.query::<(&mut i32, &mut i32)>(),
         Some((&mut 123, &mut 123))

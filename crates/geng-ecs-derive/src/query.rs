@@ -23,6 +23,16 @@ pub fn derive(input: TokenStream) -> TokenStream {
             let expanded = quote! {
                 unsafe impl#impl_generics #crate_path::Query<#query_lifetime> for #input_type#ty_generics #where_clause {
                     type Output = Self;
+                    type WorldBorrows = (#(<#field_tys as #crate_path::Query<#query_lifetime>>::WorldBorrows,)*);
+                    unsafe fn borrow_world(world: &'a #crate_path::World) -> Option<Self::WorldBorrows> {
+                        #(let #field_names = <#field_tys as #crate_path::Query<#query_lifetime>>::borrow_world(world)?;)*
+                        Some((#(#field_names,)*))
+                    }
+                    unsafe fn get_world(borrows: &Self::WorldBorrows, id: #crate_path::Id) -> Option<Self> {
+                        let (#(#field_names,)*) = borrows;
+                        #(let #field_names = <#field_tys as #crate_path::Query<#query_lifetime>>::get_world(#field_names, id)?;)*
+                        Some(Self { #(#field_names,)* })
+                    }
                     type DirectBorrows = (#(<#field_tys as #crate_path::Query<#query_lifetime>>::DirectBorrows,)*);
                     unsafe fn borrow_direct(entity: &'a #crate_path::Entity) -> Option<Self::DirectBorrows> {
                         #(let #field_names = <#field_tys as #crate_path::Query<#query_lifetime>>::borrow_direct(entity)?;)*

@@ -1,7 +1,7 @@
 use super::*;
 
 pub struct Entity {
-    components: HashMap<TypeId, single_component_storage::Storage>,
+    pub(crate) components: HashMap<TypeId, single_component_storage::Storage>,
 }
 
 impl Entity {
