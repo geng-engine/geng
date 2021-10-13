@@ -26,9 +26,9 @@ pub fn derive(input: TokenStream) -> TokenStream {
                         #(let #field_names = <#field_tys as Query<#query_lifetime>>::borrow_direct(entity)?;)*
                         Some((#(#field_names,)*))
                     }
-                    unsafe fn get_direct(entity: &'a Entity) -> Self {
-                        #(let #field_names = <#field_tys as Query<#query_lifetime>>::get_direct(entity);)*
-                        Self { #(#field_names,)* }
+                    unsafe fn get_direct(entity: &'a Entity) -> Option<Self> {
+                        #(let #field_names = <#field_tys as Query<#query_lifetime>>::get_direct(entity).unwrap();)*
+                        Some(Self { #(#field_names,)* })
                     }
                 }
             };

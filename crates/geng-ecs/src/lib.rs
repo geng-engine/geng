@@ -119,7 +119,7 @@ impl Entity {
         unsafe {
             let borrows = Q::borrow_direct(self);
             let item = if borrows.is_some() {
-                Some(Q::get_direct(self))
+                Some(Q::get_direct(self).unwrap())
             } else {
                 None
             };
@@ -131,16 +131,20 @@ impl Entity {
             .get(&TypeId::of::<T>())
             .map(|storage| storage.borrow())
     }
-    unsafe fn get<T: Component>(&self) -> &T {
-        self.components.get(&TypeId::of::<T>()).unwrap().get()
+    unsafe fn get<T: Component>(&self) -> Option<&T> {
+        self.components
+            .get(&TypeId::of::<T>())
+            .map(|storage| storage.get())
     }
     unsafe fn borrow_mut<T: Component>(&self) -> Option<single_component_storage::BorrowMut> {
         self.components
             .get(&TypeId::of::<T>())
             .map(|storage| storage.borrow_mut())
     }
-    unsafe fn get_mut<T: Component>(&self) -> &mut T {
-        self.components.get(&TypeId::of::<T>()).unwrap().get_mut()
+    unsafe fn get_mut<T: Component>(&self) -> Option<&mut T> {
+        self.components
+            .get(&TypeId::of::<T>())
+            .map(|storage| storage.get_mut())
     }
 }
 
@@ -169,10 +173,10 @@ impl<'a, Q: Query<'a>> DerefMut for EntityQuery<'a, Q> {
     }
 }
 
-pub unsafe trait Query<'a> {
+pub unsafe trait Query<'a>: Sized {
     type DirectBorrows;
     unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows>;
-    unsafe fn get_direct(entity: &'a Entity) -> Self;
+    unsafe fn get_direct(entity: &'a Entity) -> Option<Self>;
 }
 
 unsafe impl<'a, T: Component> Query<'a> for &'a T {
@@ -180,7 +184,7 @@ unsafe impl<'a, T: Component> Query<'a> for &'a T {
     unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows> {
         entity.borrow::<T>()
     }
-    unsafe fn get_direct(entity: &'a Entity) -> Self {
+    unsafe fn get_direct(entity: &'a Entity) -> Option<Self> {
         entity.get::<T>()
     }
 }
@@ -190,8 +194,18 @@ unsafe impl<'a, T: Component> Query<'a> for &'a mut T {
     unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows> {
         entity.borrow_mut::<T>()
     }
-    unsafe fn get_direct(entity: &'a Entity) -> Self {
+    unsafe fn get_direct(entity: &'a Entity) -> Option<Self> {
         entity.get_mut::<T>()
+    }
+}
+
+unsafe impl<'a, Q: Query<'a>> Query<'a> for Option<Q> {
+    type DirectBorrows = Option<Q::DirectBorrows>;
+    unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows> {
+        Some(Q::borrow_direct(entity))
+    }
+    unsafe fn get_direct(entity: &'a Entity) -> Option<Self> {
+        Some(Q::get_direct(entity))
     }
 }
 
@@ -205,8 +219,8 @@ macro_rules! impl_for_tuple {
                 $(let $name = $name::borrow_direct(entity)?;)*
                 Some(($($name,)*))
             }
-            unsafe fn get_direct(entity: &'a Entity) -> Self {
-                ($($name::get_direct(entity),)*)
+            unsafe fn get_direct(entity: &'a Entity) -> Option<Self> {
+                Some(($($name::get_direct(entity).unwrap(),)*))
             }
         }
     };
@@ -226,6 +240,17 @@ fn test() {
     assert_eq!(
         *entity.query::<(&mut i32, &&str)>(),
         Some((&mut 123, &"Hello, world!"))
+    );
+}
+
+#[test]
+fn test_option() {
+    let mut entity = Entity::new();
+    entity.add(123i32);
+    assert_eq!(*entity.query::<&i32>(), Some(&123));
+    assert_eq!(
+        *entity.query::<(Option<&mut i32>, Option<&&str>)>(),
+        Some((Some(&mut 123), None))
     );
 }
 
@@ -254,10 +279,10 @@ fn test_manual_impl() {
             let y = <&'a mut bool as Query<'a>>::borrow_direct(entity)?;
             Some((x, y))
         }
-        unsafe fn get_direct(entity: &'a Entity) -> Self {
-            let x = <&'a i32 as Query<'a>>::get_direct(entity);
-            let y = <&'a mut bool as Query<'a>>::get_direct(entity);
-            Foo { x, y }
+        unsafe fn get_direct(entity: &'a Entity) -> Option<Self> {
+            let x = <&'a i32 as Query<'a>>::get_direct(entity).unwrap();
+            let y = <&'a mut bool as Query<'a>>::get_direct(entity).unwrap();
+            Some(Foo { x, y })
         }
     }
 
