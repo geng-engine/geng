@@ -3,11 +3,13 @@ use std::{
     cell::{Cell, UnsafeCell},
     collections::HashMap,
     fmt::Debug,
-    marker::PhantomData,
     ops::{Deref, DerefMut},
 };
 
-pub type Id = usize;
+#[allow(unused_imports)]
+use crate as ecs;
+
+pub use geng_ecs_derive::*;
 
 pub trait Component: Sized + 'static {}
 
@@ -113,11 +115,11 @@ impl Entity {
                 .map(|storage| storage.into_inner())
         }
     }
-    pub fn query<'a, Q: Query>(&'a mut self) -> EntityQuery<'a, Q> {
+    pub fn query<'a, Q: Query<'a>>(&'a mut self) -> EntityQuery<'a, Q> {
         unsafe {
-            let borrows = Q::Fetch::borrow_direct(self);
+            let borrows = Q::borrow_direct(self);
             let item = if borrows.is_some() {
-                Some(Q::Fetch::get_direct(self))
+                Some(Q::get_direct(self))
             } else {
                 None
             };
@@ -142,79 +144,53 @@ impl Entity {
     }
 }
 
-pub struct EntityQuery<'a, Q: Query> {
+pub struct EntityQuery<'a, Q: Query<'a>> {
     #[allow(dead_code)]
-    borrows: Option<<Q::Fetch as Fetch<'a>>::DirectBorrows>,
-    item: Option<<Q::Fetch as Fetch<'a>>::Item>,
+    borrows: Option<Q::DirectBorrows>,
+    item: Option<Q>,
 }
 
-impl<'a, Q: Query> Debug for EntityQuery<'a, Q>
-where
-    <Q::Fetch as Fetch<'a>>::Item: Debug,
-{
+impl<'a, Q: Query<'a> + Debug> Debug for EntityQuery<'a, Q> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self.item)
     }
 }
 
-impl<'a, Q: Query> Deref for EntityQuery<'a, Q> {
-    type Target = Option<<Q::Fetch as Fetch<'a>>::Item>;
+impl<'a, Q: Query<'a>> Deref for EntityQuery<'a, Q> {
+    type Target = Option<Q>;
     fn deref(&self) -> &Self::Target {
         &self.item
     }
 }
 
-impl<'a, Q: Query> DerefMut for EntityQuery<'a, Q> {
+impl<'a, Q: Query<'a>> DerefMut for EntityQuery<'a, Q> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.item
     }
 }
 
-pub trait Query {
-    type Fetch: for<'a> Fetch<'a>;
-}
-
-pub unsafe trait Fetch<'a> {
-    type Item;
+pub unsafe trait Query<'a> {
     type DirectBorrows;
     unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows>;
-    unsafe fn get_direct(entity: &'a Entity) -> Self::Item;
+    unsafe fn get_direct(entity: &'a Entity) -> Self;
 }
 
-impl<'a, T: Component> Query for &'a T {
-    type Fetch = FetchRead<T>;
-}
-
-pub struct FetchRead<T> {
-    phantom_data: PhantomData<T>,
-}
-
-unsafe impl<'a, T: Component> Fetch<'a> for FetchRead<T> {
-    type Item = &'a T;
+unsafe impl<'a, T: Component> Query<'a> for &'a T {
     type DirectBorrows = single_component_storage::Borrow<'a>;
     unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows> {
         entity.borrow::<T>()
     }
-    unsafe fn get_direct(entity: &'a Entity) -> Self::Item {
+    unsafe fn get_direct(entity: &'a Entity) -> Self {
         entity.get::<T>()
     }
 }
 
-impl<'a, T: Component> Query for &'a mut T {
-    type Fetch = FetchWrite<T>;
-}
-
-pub struct FetchWrite<T> {
-    phantom_data: PhantomData<T>,
-}
-
-unsafe impl<'a, T: Component> Fetch<'a> for FetchWrite<T> {
-    type Item = &'a mut T;
+unsafe impl<'a, T: Component> Query<'a> for &'a mut T {
     type DirectBorrows = single_component_storage::BorrowMut<'a>;
     unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows> {
         entity.borrow_mut::<T>()
     }
-    unsafe fn get_direct(entity: &'a Entity) -> Self::Item {
+    unsafe fn get_direct(entity: &'a Entity) -> Self {
         entity.get_mut::<T>()
     }
 }
@@ -222,20 +198,14 @@ unsafe impl<'a, T: Component> Fetch<'a> for FetchWrite<T> {
 macro_rules! impl_for_tuple {
     ($($name:ident),*) => {
         #[allow(non_camel_case_types)]
-        impl<$($name: Query),*> Query for ($($name,)*) {
-            type Fetch = ($($name::Fetch,)*);
-        }
-
-        #[allow(non_camel_case_types)]
         #[allow(unused_variables)]
-        unsafe impl<'a, $($name: Fetch<'a>),*> Fetch<'a> for ($($name,)*) {
-            type Item = ($($name::Item,)*);
+        unsafe impl<'a, $($name: Query<'a>),*> Query<'a> for ($($name,)*) {
             type DirectBorrows = ($($name::DirectBorrows,)*);
             unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows> {
                 $(let $name = $name::borrow_direct(entity)?;)*
                 Some(($($name,)*))
             }
-            unsafe fn get_direct(entity: &'a Entity) -> Self::Item {
+            unsafe fn get_direct(entity: &'a Entity) -> Self {
                 ($($name::get_direct(entity),)*)
             }
         }
@@ -264,6 +234,63 @@ fn test_double_borrow() {
     let mut entity = Entity::new();
     entity.add(123i32);
     assert_eq!(*entity.query::<(&i32, &i32)>(), Some((&123, &123)));
+}
+
+#[test]
+fn test_manual_impl() {
+    #[derive(Debug, PartialEq)]
+    struct Foo<'a> {
+        x: &'a i32,
+        y: &'a mut bool,
+    }
+
+    unsafe impl<'a> Query<'a> for Foo<'a> {
+        type DirectBorrows = (
+            <&'a i32 as Query<'a>>::DirectBorrows,
+            <&'a mut bool as Query<'a>>::DirectBorrows,
+        );
+        unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows> {
+            let x = <&'a i32 as Query<'a>>::borrow_direct(entity)?;
+            let y = <&'a mut bool as Query<'a>>::borrow_direct(entity)?;
+            Some((x, y))
+        }
+        unsafe fn get_direct(entity: &'a Entity) -> Self {
+            let x = <&'a i32 as Query<'a>>::get_direct(entity);
+            let y = <&'a mut bool as Query<'a>>::get_direct(entity);
+            Foo { x, y }
+        }
+    }
+
+    let mut entity = Entity::new();
+    entity.add(42i32);
+    entity.add(false);
+    assert_eq!(
+        *entity.query::<Foo>(),
+        Some(Foo {
+            x: &42,
+            y: &mut false
+        }),
+    );
+}
+
+#[test]
+fn test_derive() {
+    #[derive(Query, Debug, PartialEq)]
+    struct Foo<'a> {
+        x: &'a i32,
+        y: &'a mut bool,
+    }
+
+    let mut entity = Entity::new();
+    entity.add(42i32);
+    entity.add(false);
+    assert_eq!(
+        *entity.query::<Foo>(),
+        Some(Foo {
+            x: &42,
+            y: &mut false
+        }),
+    );
 }
 
 #[test]
