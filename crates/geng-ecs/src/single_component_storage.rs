@@ -22,20 +22,14 @@ impl Storage {
         );
         *self.data.into_inner().downcast().unwrap()
     }
-    pub unsafe fn borrow(&self) -> Borrow {
+    pub unsafe fn borrow<T: Component>(&self) -> Borrow<T> {
         if self.borrowed_mutably.get() {
             panic!("Failed to borrow, already mutably borrowed");
         }
         self.borrows.set(self.borrows.get() + 1);
-        Borrow(self)
+        Borrow(self, (*self.data.get()).downcast_ref().unwrap())
     }
-    pub unsafe fn get<T: Component>(&self) -> &T {
-        (*self.data.get()).downcast_ref().unwrap()
-    }
-    unsafe fn release(&self) {
-        self.borrows.set(self.borrows.get() - 1);
-    }
-    pub unsafe fn borrow_mut(&self) -> BorrowMut {
+    pub unsafe fn borrow_mut<T: Component>(&self) -> BorrowMut<T> {
         if self.borrows.get() != 0 {
             panic!("Failed to mutably borrow, already borrowed");
         }
@@ -43,32 +37,34 @@ impl Storage {
             panic!("Failed to mutably borrow, already mutably borrowed");
         }
         self.borrowed_mutably.set(true);
-        BorrowMut(self)
-    }
-    pub unsafe fn get_mut<T: Component>(&self) -> &mut T {
-        (*self.data.get()).downcast_mut().unwrap()
-    }
-    unsafe fn release_mut(&self) {
-        self.borrowed_mutably.set(false);
+        BorrowMut(self, (*self.data.get()).downcast_mut().unwrap())
     }
 }
 
-pub struct Borrow<'a>(&'a Storage);
+pub struct Borrow<'a, T: Component>(&'a Storage, *const T);
 
-impl<'a> Drop for Borrow<'a> {
-    fn drop(&mut self) {
-        unsafe {
-            self.0.release();
-        }
+impl<'a, T: Component> Borrow<'a, T> {
+    pub unsafe fn get(&self) -> &'a T {
+        &*self.1
     }
 }
 
-pub struct BorrowMut<'a>(&'a Storage);
-
-impl<'a> Drop for BorrowMut<'a> {
+impl<'a, T: Component> Drop for Borrow<'a, T> {
     fn drop(&mut self) {
-        unsafe {
-            self.0.release_mut();
-        }
+        self.0.borrows.set(self.0.borrows.get() - 1);
+    }
+}
+
+pub struct BorrowMut<'a, T: Component>(&'a Storage, *mut T);
+
+impl<'a, T: Component> BorrowMut<'a, T> {
+    pub unsafe fn get(&self) -> &'a mut T {
+        &mut *self.1
+    }
+}
+
+impl<'a, T: Component> Drop for BorrowMut<'a, T> {
+    fn drop(&mut self) {
+        self.0.borrowed_mutably.set(false);
     }
 }

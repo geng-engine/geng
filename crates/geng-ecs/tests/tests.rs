@@ -66,10 +66,11 @@ fn test_manual_impl() {
             let y = <&'a mut bool as ecs::Query<'a>>::borrow_direct(entity)?;
             Some((x, y))
         }
-        unsafe fn get_direct(entity: &'a Entity) -> Option<Self> {
-            let x = <&'a i32 as ecs::Query<'a>>::get_direct(entity).unwrap();
-            let y = <&'a mut bool as ecs::Query<'a>>::get_direct(entity).unwrap();
-            Some(Foo { x, y })
+        unsafe fn get(borrows: &Self::DirectBorrows) -> Self {
+            let (x, y) = borrows;
+            let x = <&'a i32 as ecs::Query<'a>>::get(x);
+            let y = <&'a mut bool as ecs::Query<'a>>::get(y);
+            Foo { x, y }
         }
     }
 

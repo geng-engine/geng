@@ -28,9 +28,10 @@ pub fn derive(input: TokenStream) -> TokenStream {
                         #(let #field_names = <#field_tys as #crate_path::Query<#query_lifetime>>::borrow_direct(entity)?;)*
                         Some((#(#field_names,)*))
                     }
-                    unsafe fn get_direct(entity: &'a #crate_path::Entity) -> Option<Self> {
-                        #(let #field_names = <#field_tys as #crate_path::Query<#query_lifetime>>::get_direct(entity).unwrap();)*
-                        Some(Self { #(#field_names,)* })
+                    unsafe fn get(borrows: &Self::DirectBorrows) -> Self {
+                        let (#(#field_names,)*) = borrows;
+                        #(let #field_names = <#field_tys as #crate_path::Query<#query_lifetime>>::get(#field_names);)*
+                        Self { #(#field_names,)* }
                     }
                 }
             };

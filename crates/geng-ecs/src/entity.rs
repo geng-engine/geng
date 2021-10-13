@@ -29,39 +29,27 @@ impl Entity {
     pub fn query<'a, Q: Query<'a>>(&'a mut self) -> EntityQuery<'a, Q> {
         unsafe {
             let borrows = Q::borrow_direct(self);
-            let item = if borrows.is_some() {
-                Some(Q::get_direct(self).unwrap())
-            } else {
-                None
-            };
+            let item = borrows.as_ref().map(|borrows| Q::get(borrows));
             EntityQuery { borrows, item }
         }
     }
-    pub unsafe fn borrow<T: Component>(&self) -> Option<single_component_storage::Borrow> {
+    pub unsafe fn borrow<T: Component>(&self) -> Option<single_component_storage::Borrow<T>> {
         self.components
             .get(&TypeId::of::<T>())
             .map(|storage| storage.borrow())
     }
-    pub unsafe fn get<T: Component>(&self) -> Option<&T> {
-        self.components
-            .get(&TypeId::of::<T>())
-            .map(|storage| storage.get())
-    }
-    pub unsafe fn borrow_mut<T: Component>(&self) -> Option<single_component_storage::BorrowMut> {
+    pub unsafe fn borrow_mut<T: Component>(
+        &self,
+    ) -> Option<single_component_storage::BorrowMut<T>> {
         self.components
             .get(&TypeId::of::<T>())
             .map(|storage| storage.borrow_mut())
-    }
-    pub unsafe fn get_mut<T: Component>(&self) -> Option<&mut T> {
-        self.components
-            .get(&TypeId::of::<T>())
-            .map(|storage| storage.get_mut())
     }
 }
 
 pub struct EntityQuery<'a, Q: Query<'a>> {
     #[allow(dead_code)]
-    borrows: Option<Q::DirectBorrows>,
+    borrows: Option<Q::DirectBorrows>, // This is here for the Drop impl
     item: Option<Q::Output>,
 }
 
