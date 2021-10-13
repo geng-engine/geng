@@ -8,6 +8,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
     let generics = &ast.generics;
 
     let query_lifetime = generics.params.iter().next().unwrap();
+    let crate_path = syn::parse_str::<syn::Path>("ecs").unwrap();
 
     match ast.data {
         syn::Data::Struct(syn::DataStruct { ref fields, .. }) => {
@@ -20,15 +21,15 @@ pub fn derive(input: TokenStream) -> TokenStream {
             let field_names = &field_names;
 
             let expanded = quote! {
-                unsafe impl#impl_generics ecs::Query<#query_lifetime> for #input_type#ty_generics #where_clause {
+                unsafe impl#impl_generics #crate_path::Query<#query_lifetime> for #input_type#ty_generics #where_clause {
                     type Output = Self;
-                    type DirectBorrows = (#(<#field_tys as ecs::Query<#query_lifetime>>::DirectBorrows,)*);
-                    unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows> {
-                        #(let #field_names = <#field_tys as Query<#query_lifetime>>::borrow_direct(entity)?;)*
+                    type DirectBorrows = (#(<#field_tys as #crate_path::Query<#query_lifetime>>::DirectBorrows,)*);
+                    unsafe fn borrow_direct(entity: &'a #crate_path::Entity) -> Option<Self::DirectBorrows> {
+                        #(let #field_names = <#field_tys as #crate_path::Query<#query_lifetime>>::borrow_direct(entity)?;)*
                         Some((#(#field_names,)*))
                     }
-                    unsafe fn get_direct(entity: &'a Entity) -> Option<Self> {
-                        #(let #field_names = <#field_tys as Query<#query_lifetime>>::get_direct(entity).unwrap();)*
+                    unsafe fn get_direct(entity: &'a #crate_path::Entity) -> Option<Self> {
+                        #(let #field_names = <#field_tys as #crate_path::Query<#query_lifetime>>::get_direct(entity).unwrap();)*
                         Some(Self { #(#field_names,)* })
                     }
                 }
