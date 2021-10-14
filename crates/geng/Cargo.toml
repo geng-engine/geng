@@ -13,6 +13,7 @@ audio = ["rodio"]
 
 [dependencies]
 batbox = { path = "../batbox", version = "0.7.0-alpha" }
+geng-ecs = { path = "../geng-ecs" }
 geng-derive = { path = "../geng-derive", version = "0.8.0-alpha" }
 geng-ui-macros = { path = "../geng-ui-macros", version = "0.8.0-alpha" }
 ugli = { path = "../ugli", version = "0.7.0-alpha" }
