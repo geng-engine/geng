@@ -26,10 +26,18 @@ impl Entity {
                 .map(|storage| storage.into_inner())
         }
     }
-    pub fn query<'a, Q: Query<'a>>(&'a mut self) -> EntityQuery<'a, Q> {
+    pub fn query<'a, Q: Query<'a>>(&'a mut self) -> EntityQuery<'a, Q, ()> {
+        self.query_filtered::<Q, ()>()
+    }
+    pub fn query_filtered<'a, Q: Query<'a>, F: Filter<'a>>(&'a mut self) -> EntityQuery<'a, Q, F> {
+        unsafe fn borrow<'a, Q: Query<'a>, F: Filter<'a>>(
+            entity: &'a Entity,
+        ) -> Option<(Q::DirectBorrows, F::DirectBorrows)> {
+            Some((Q::borrow_direct(entity)?, F::borrow_direct(entity)?))
+        }
         unsafe {
-            let borrows = Q::borrow_direct(self);
-            let item = borrows.as_ref().map(|borrows| Q::get(borrows));
+            let borrows = borrow::<Q, F>(self);
+            let item = borrows.as_ref().map(|(borrows, _)| Q::get(borrows));
             EntityQuery { borrows, item }
         }
     }
@@ -47,29 +55,26 @@ impl Entity {
     }
 }
 
-pub struct EntityQuery<'a, Q: Query<'a>> {
+pub struct EntityQuery<'a, Q: Query<'a>, F: Filter<'a>> {
     #[allow(dead_code)]
-    borrows: Option<Q::DirectBorrows>, // This is here for the Drop impl
-    item: Option<Q::Output>,
+    borrows: Option<(Q::DirectBorrows, F::DirectBorrows)>, // This is here for the Drop impl
+    item: Option<Q>,
 }
 
-impl<'a, Q: Query<'a>> Debug for EntityQuery<'a, Q>
-where
-    Q::Output: Debug,
-{
+impl<'a, Q: Query<'a> + Debug, F: Filter<'a>> Debug for EntityQuery<'a, Q, F> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self.item)
     }
 }
 
-impl<'a, Q: Query<'a>> Deref for EntityQuery<'a, Q> {
-    type Target = Option<Q::Output>;
+impl<'a, Q: Query<'a>, F: Filter<'a>> Deref for EntityQuery<'a, Q, F> {
+    type Target = Option<Q>;
     fn deref(&self) -> &Self::Target {
         &self.item
     }
 }
 
-impl<'a, Q: Query<'a>> DerefMut for EntityQuery<'a, Q> {
+impl<'a, Q: Query<'a>, F: Filter<'a>> DerefMut for EntityQuery<'a, Q, F> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.item
     }

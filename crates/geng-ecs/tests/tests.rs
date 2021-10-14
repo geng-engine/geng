@@ -1,5 +1,6 @@
 use ecs::{Entity, World};
 use geng_ecs as ecs;
+use std::collections::HashSet;
 
 #[test]
 fn test_entity() {
@@ -30,7 +31,12 @@ fn test_world() {
     entity.add("B");
     world.add(entity);
 
-    assert_eq!(world.query::<&i32>().iter().collect::<Vec<_>>(), &[&1, &2]);
+    assert_eq!(world.query::<&i32>().iter().collect::<HashSet<_>>(), {
+        let mut expected = HashSet::new();
+        expected.insert(&1);
+        expected.insert(&2);
+        expected
+    });
 }
 
 #[test]
@@ -51,12 +57,15 @@ fn test_with_without() {
     let mut entity = Entity::new();
     entity.add(123);
     entity.add(Flag);
-    assert_eq!(*entity.query::<(&i32, ecs::With<Flag>)>(), Some((&123, ())));
-    assert_eq!(*entity.query::<(&i32, ecs::Without<Flag>)>(), None);
-    assert_eq!(*entity.query::<(&i32, ecs::With<Flag2>)>(), None);
     assert_eq!(
-        *entity.query::<(&i32, ecs::Without<Flag2>)>(),
-        Some((&123, ()))
+        *entity.query_filtered::<&i32, ecs::With<Flag>>(),
+        Some(&123)
+    );
+    assert_eq!(*entity.query_filtered::<&i32, ecs::Without<Flag>>(), None);
+    assert_eq!(*entity.query_filtered::<&i32, ecs::With<Flag2>>(), None);
+    assert_eq!(
+        *entity.query_filtered::<&i32, ecs::Without<Flag2>>(),
+        Some(&123)
     );
 }
 
@@ -76,7 +85,6 @@ fn test_manual_impl() {
     }
 
     unsafe impl<'a> ecs::Query<'a> for Foo<'a> {
-        type Output = Self;
         type WorldBorrows = (
             <&'a i32 as ecs::Query<'a>>::WorldBorrows,
             <&'a mut bool as ecs::Query<'a>>::WorldBorrows,
