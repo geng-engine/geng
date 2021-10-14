@@ -1,7 +1,7 @@
 use super::*;
 
 pub struct Entity {
-    pub(crate) components: HashMap<TypeId, single_component_storage::Storage>,
+    pub(crate) components: HashMap<TypeId, storage::Entity>,
 }
 
 impl Entity {
@@ -11,10 +11,8 @@ impl Entity {
         }
     }
     pub fn add<T: Component>(&mut self, component: T) {
-        self.components.insert(
-            TypeId::of::<T>(),
-            single_component_storage::Storage::new(component),
-        );
+        self.components
+            .insert(TypeId::of::<T>(), storage::Entity::new(component));
     }
     pub fn has<T: Component>(&self) -> bool {
         self.components.contains_key(&TypeId::of::<T>())
@@ -53,14 +51,12 @@ impl Entity {
     pub fn filter<F: Filter>(&mut self) -> bool {
         self.query_filtered::<(), F>().is_some()
     }
-    pub unsafe fn borrow<T: Component>(&self) -> Option<single_component_storage::Borrow<T>> {
+    pub unsafe fn borrow<T: Component>(&self) -> Option<storage::entity::Borrow<T>> {
         self.components
             .get(&TypeId::of::<T>())
             .map(|storage| storage.borrow())
     }
-    pub unsafe fn borrow_mut<T: Component>(
-        &self,
-    ) -> Option<single_component_storage::BorrowMut<T>> {
+    pub unsafe fn borrow_mut<T: Component>(&self) -> Option<storage::entity::BorrowMut<T>> {
         self.components
             .get(&TypeId::of::<T>())
             .map(|storage| storage.borrow_mut())

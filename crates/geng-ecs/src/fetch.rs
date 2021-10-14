@@ -18,14 +18,14 @@ pub struct FetchRead<T: Component>(T);
 
 unsafe impl<'a, T: Component> Fetch<'a> for FetchRead<T> {
     type Output = &'a T;
-    type WorldBorrows = component_storage::Borrow<'a, T>;
+    type WorldBorrows = storage::world::Borrow<'a, T>;
     unsafe fn borrow_world(world: &'a World) -> Option<Self::WorldBorrows> {
         world.borrow::<T>()
     }
     unsafe fn get_world(borrows: &Self::WorldBorrows, id: Id) -> Option<&'a T> {
         borrows.get(id)
     }
-    type DirectBorrows = single_component_storage::Borrow<'a, T>;
+    type DirectBorrows = storage::entity::Borrow<'a, T>;
     unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows> {
         entity.borrow::<T>()
     }
@@ -42,14 +42,14 @@ pub struct FetchWrite<T: Component>(T);
 
 unsafe impl<'a, T: Component> Fetch<'a> for FetchWrite<T> {
     type Output = &'a mut T;
-    type WorldBorrows = component_storage::BorrowMut<'a, T>;
+    type WorldBorrows = storage::world::BorrowMut<'a, T>;
     unsafe fn borrow_world(world: &'a World) -> Option<Self::WorldBorrows> {
         world.borrow_mut::<T>()
     }
     unsafe fn get_world(borrows: &Self::WorldBorrows, id: Id) -> Option<&'a mut T> {
         borrows.get(id)
     }
-    type DirectBorrows = single_component_storage::BorrowMut<'a, T>;
+    type DirectBorrows = storage::entity::BorrowMut<'a, T>;
     unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows> {
         entity.borrow_mut::<T>()
     }

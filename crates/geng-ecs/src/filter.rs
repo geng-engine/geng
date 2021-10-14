@@ -24,7 +24,7 @@ impl<T: Component> Query for With<T> {
 
 unsafe impl<'a, T: Component> Fetch<'a> for With<T> {
     type Output = bool;
-    type WorldBorrows = Option<component_storage::Borrow<'a, T>>;
+    type WorldBorrows = Option<storage::world::Borrow<'a, T>>;
     unsafe fn borrow_world(world: &'a World) -> Option<Self::WorldBorrows> {
         Some(world.borrow::<T>())
     }

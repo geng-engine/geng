@@ -35,12 +35,11 @@ macro_rules! impl_tuples {
     };
 }
 
-mod component_storage;
 mod entity;
 mod fetch;
 mod filter;
 mod query;
-mod single_component_storage;
+mod storage;
 mod world;
 
 pub use entity::*;

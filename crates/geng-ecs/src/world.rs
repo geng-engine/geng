@@ -1,7 +1,7 @@
 use super::*;
 
 pub struct World {
-    pub(crate) components: HashMap<TypeId, component_storage::Storage>,
+    pub(crate) components: HashMap<TypeId, storage::World>,
     ids: HashSet<Id>,
     next_id: u32,
 }
@@ -20,7 +20,7 @@ impl World {
         for (type_id, value) in entity.components {
             self.components
                 .entry(type_id)
-                .or_insert(component_storage::Storage::new())
+                .or_insert(storage::World::new())
                 .insert_any(id, value.into_inner_any());
         }
         self.ids.insert(id);
@@ -43,12 +43,12 @@ impl World {
             }
         }
     }
-    pub unsafe fn borrow<T: Component>(&self) -> Option<component_storage::Borrow<T>> {
+    pub unsafe fn borrow<T: Component>(&self) -> Option<storage::world::Borrow<T>> {
         self.components
             .get(&TypeId::of::<T>())
             .map(|storage| storage.borrow())
     }
-    pub unsafe fn borrow_mut<T: Component>(&self) -> Option<component_storage::BorrowMut<T>> {
+    pub unsafe fn borrow_mut<T: Component>(&self) -> Option<storage::world::BorrowMut<T>> {
         self.components
             .get(&TypeId::of::<T>())
             .map(|storage| storage.borrow_mut())
