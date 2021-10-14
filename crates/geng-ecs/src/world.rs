@@ -25,10 +25,10 @@ impl World {
         }
         self.ids.insert(id);
     }
-    pub fn query<Q: Query>(&mut self) -> WorldQuery<Q> {
+    pub fn query<Q: Query>(&self) -> WorldQuery<Q> {
         self.filter(()).query()
     }
-    pub fn filter<F: Filter>(&mut self, filter: F) -> FilteredWorld<F> {
+    pub fn filter<F: Filter>(&self, filter: F) -> FilteredWorld<F> {
         FilteredWorld {
             world: self,
             filter,
@@ -47,7 +47,7 @@ impl World {
 }
 
 pub struct FilteredWorld<'a, T> {
-    world: &'a mut World,
+    world: &'a World,
     filter: T,
 }
 
@@ -68,7 +68,6 @@ impl<'a, F: Filter> FilteredWorld<'a, F> {
                 query,
                 filter,
                 world: self.world,
-                phantom_data: PhantomData,
             }
         }
     }
@@ -91,33 +90,36 @@ pub struct WorldQuery<'a, Q: Query, F: Filter = ()> {
     query: Q::Fetch,
     filter: F::Fetch,
     world: &'a World,
-    phantom_data: PhantomData<Q>,
 }
 
 impl<'a, Q: Query, F: Filter> WorldQuery<'a, Q, F> {
-    pub fn iter<'q>(&'q self) -> WorldQueryIter<'a, 'q, Q, F> {
-        WorldQueryIter {
-            inner: self,
+    pub fn iter<'q>(&'q mut self) -> WorldQueryIter<'q, Q, F> {
+        WorldQueryIter::<'q, Q, F> {
+            borrows: unsafe { std::mem::transmute(self.borrows.as_ref()) }, // TODO: WTF
+            query: &self.query,
+            filter: &self.filter,
             id_iter: self.world.ids.iter(),
         }
     }
 }
 
-pub struct WorldQueryIter<'a, 'q, Q: Query, F: Filter> {
-    inner: &'q WorldQuery<'a, Q, F>,
+pub struct WorldQueryIter<'a, Q: Query, F: Filter> {
+    borrows: Option<&'a Borrows<'a, Q, F>>,
+    query: &'a Q::Fetch,
+    filter: &'a F::Fetch,
     id_iter: std::collections::hash_set::Iter<'a, Id>,
 }
 
-impl<'a, 'q, Q: Query, F: Filter> Iterator for WorldQueryIter<'a, 'q, Q, F> {
+impl<'a, Q: Query, F: Filter> Iterator for WorldQueryIter<'a, Q, F> {
     type Item = QueryOutput<'a, Q>;
     fn next(&mut self) -> Option<Self::Item> {
         unsafe {
             while let Some(&id) = self.id_iter.next() {
-                let (querry_borrows, filter_borrows) = self.inner.borrows.as_ref()?;
-                if !F::get_world(&self.inner.filter, filter_borrows, id) {
+                let (querry_borrows, filter_borrows) = self.borrows?;
+                if !F::get_world(self.filter, filter_borrows, id) {
                     continue;
                 }
-                if let Some(item) = self.inner.query.get_world(querry_borrows, id) {
+                if let Some(item) = self.query.get_world(querry_borrows, id) {
                     return Some(item);
                 }
             }

@@ -24,10 +24,10 @@ impl Entity {
                 .map(|storage| storage.into_inner())
         }
     }
-    pub fn query<Q: Query>(&mut self) -> EntityQuery<Q> {
+    pub fn query<Q: Query>(&self) -> EntityQuery<Q> {
         self.filter(()).query()
     }
-    pub fn filter<F: Filter>(&mut self, filter: F) -> FilteredEntity<F> {
+    pub fn filter<F: Filter>(&self, filter: F) -> FilteredEntity<F> {
         FilteredEntity {
             entity: self,
             filter,
@@ -49,7 +49,7 @@ impl Entity {
 }
 
 pub struct FilteredEntity<'a, T> {
-    entity: &'a mut Entity,
+    entity: &'a Entity,
     filter: T,
 }
 

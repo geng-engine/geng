@@ -59,6 +59,72 @@ fn test_world() {
 }
 
 #[test]
+fn test_simultanious_queries() {
+    let mut world = World::new();
+
+    let mut entity = Entity::new();
+    entity.add(1);
+    entity.add("A");
+    world.add(entity);
+
+    let mut entity = Entity::new();
+    entity.add(2);
+    world.add(entity);
+
+    let mut entity = Entity::new();
+    entity.add("B");
+    world.add(entity);
+
+    let mut ints = world.query::<&mut i32>();
+    assert_eq!(
+        ints.iter().collect::<HashSet<_>>(),
+        HashSet::from_iter([&mut 1, &mut 2]),
+    );
+
+    // This should not compile, since this creates multiple mutable refs
+    //
+    // let i1 = ints.iter().collect::<HashSet<_>>();
+    // let i2 = ints.iter().collect::<HashSet<_>>();
+    // println!("{:?}, {:?}", i1, i2);
+
+    let mut strs = world.query::<&mut &str>();
+    assert_eq!(
+        strs.iter().collect::<HashSet<_>>(),
+        HashSet::from_iter([&mut "A", &mut "B"]),
+    );
+}
+
+#[test]
+#[should_panic]
+fn test_incorrect_simultanious_queries() {
+    let mut world = World::new();
+
+    let mut entity = Entity::new();
+    entity.add(1);
+    entity.add("A");
+    world.add(entity);
+
+    let mut entity = Entity::new();
+    entity.add(2);
+    world.add(entity);
+
+    let mut entity = Entity::new();
+    entity.add("B");
+    world.add(entity);
+
+    let mut ints = world.query::<&mut i32>();
+    assert_eq!(
+        ints.iter().collect::<HashSet<_>>(),
+        HashSet::from_iter([&mut 1, &mut 2]),
+    );
+    let mut strs = world.query::<(&mut &str, &mut i32)>();
+    assert_eq!(
+        strs.iter().collect::<HashSet<_>>(),
+        HashSet::from_iter([(&mut "A", &mut 1)]),
+    );
+}
+
+#[test]
 fn test_option() {
     let mut entity = Entity::new();
     entity.add(123);
