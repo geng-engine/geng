@@ -92,6 +92,11 @@ fn test_simultanious_queries() {
         strs.iter().collect::<HashSet<_>>(),
         HashSet::from_iter([&mut "A", &mut "B"]),
     );
+
+    std::mem::drop((ints, strs));
+
+    let mut _q1 = world.query::<&i32>();
+    let mut _q2 = world.query::<(&i32, &mut &str)>();
 }
 
 #[test]
