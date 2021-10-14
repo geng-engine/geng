@@ -72,6 +72,12 @@ impl<'a, F: Filter> FilteredWorld<'a, F> {
             }
         }
     }
+    pub fn filter<F2: Filter>(self, filter: F2) -> FilteredWorld<'a, (F, F2)> {
+        FilteredWorld {
+            world: self.world,
+            filter: (self.filter, filter),
+        }
+    }
 }
 
 type Borrows<'a, Q, F> = (

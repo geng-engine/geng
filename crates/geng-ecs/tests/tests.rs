@@ -50,6 +50,7 @@ fn test_world() {
     assert_eq!(
         world
             .filter(with::<i32>())
+            .filter(with::<i32>())
             .query::<Option<&mut &str>>()
             .iter()
             .collect::<HashSet<_>>(),
