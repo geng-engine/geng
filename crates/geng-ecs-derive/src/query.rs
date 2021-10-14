@@ -12,7 +12,8 @@ pub fn derive(input: TokenStream) -> TokenStream {
     };
     let mut fetch_generics = ast.generics.clone();
     fetch_generics.params = fetch_generics.params.iter().cloned().skip(1).collect();
-    let (_, fetch_ty_generics, fetch_where_clause) = fetch_generics.split_for_impl();
+    let (fetch_impl_generics, fetch_ty_generics, fetch_where_clause) =
+        fetch_generics.split_for_impl();
     let fetch_type = syn::parse_str::<syn::Ident>(&format!("{}Fetch", input_type)).unwrap();
     let crate_path = syn::parse_str::<syn::Path>("ecs").unwrap();
 
@@ -66,26 +67,46 @@ pub fn derive(input: TokenStream) -> TokenStream {
                     #(#field_names: #fetch_field_tys,)*
                 }
 
+                impl#fetch_impl_generics Default for #fetch_type#fetch_ty_generics #fetch_where_clause {
+                    fn default() -> Self {
+                        Self {
+                            #(#field_names: Default::default(),)*
+                        }
+                    }
+                }
+
                 unsafe impl#impl_generics #crate_path::Fetch<#fetch_lifetime> for #fetch_type#fetch_ty_generics #fetch_where_clause {
                     type Output = #input_type#ty_generics;
                     type WorldBorrows = (#(#field_fetches::WorldBorrows,)*);
-                    unsafe fn borrow_world(world: &'a #crate_path::World) -> Option<Self::WorldBorrows> {
-                        #(let #field_names = #field_fetches::borrow_world(world)?;)*
+                    unsafe fn borrow_world(&self, world: &'a #crate_path::World) -> Option<Self::WorldBorrows> {
+                        let (#(#field_names,)*) = (#(&self.#field_names,)*);
+                        #(let #field_names = #field_fetches::borrow_world(#field_names, world)?;)*
                         Some((#(#field_names,)*))
                     }
-                    unsafe fn get_world(borrows: &Self::WorldBorrows, id: #crate_path::Id) -> Option<Self::Output> {
-                        let (#(#field_names,)*) = borrows;
-                        #(let #field_names = #field_fetches::get_world(#field_names, id)?;)*
+                    unsafe fn get_world(&self, borrows: &Self::WorldBorrows, id: #crate_path::Id) -> Option<Self::Output> {
+                        use #crate_path::util::{AsRefExt as _, ZipExt as _};
+                        let fetches = (#(&self.#field_names,)*);
+                        let (#(#field_names,)*) = fetches.as_ref().zip(borrows.as_ref());
+                        #(
+                            let (fetch, borrows) = #field_names;
+                            let #field_names = #field_fetches::get_world(fetch, borrows, id)?;
+                        )*
                         Some(#input_type { #(#field_names,)* })
                     }
                     type DirectBorrows = (#(<<#field_tys as #crate_path::Query>::Fetch as #crate_path::Fetch<#fetch_lifetime>>::DirectBorrows,)*);
-                    unsafe fn borrow_direct(entity: &'a #crate_path::Entity) -> Option<Self::DirectBorrows> {
-                        #(let #field_names = #field_fetches::borrow_direct(entity)?;)*
+                    unsafe fn borrow_direct(&self, entity: &'a #crate_path::Entity) -> Option<Self::DirectBorrows> {
+                        let (#(#field_names,)*) = (#(&self.#field_names,)*);
+                        #(let #field_names = #field_fetches::borrow_direct(#field_names, entity)?;)*
                         Some((#(#field_names,)*))
                     }
-                    unsafe fn get(borrows: &Self::DirectBorrows) -> Self::Output {
-                        let (#(#field_names,)*) = borrows;
-                        #(let #field_names = #field_fetches::get(#field_names);)*
+                    unsafe fn get(&self, borrows: &Self::DirectBorrows) -> Self::Output {
+                        use #crate_path::util::{AsRefExt as _, ZipExt as _};
+                        let fetches = (#(&self.#field_names,)*);
+                        let (#(#field_names,)*) = fetches.as_ref().zip(borrows.as_ref());
+                        #(
+                            let (fetch, borrows) = #field_names;
+                            let #field_names = #field_fetches::get(fetch, borrows);
+                        )*
                         #input_type { #(#field_names,)* }
                     }
                 }

@@ -1,4 +1,4 @@
-use ecs::{Entity, World};
+use ecs::*;
 use geng_ecs as ecs;
 use std::{collections::HashSet, iter::FromIterator};
 
@@ -41,14 +41,16 @@ fn test_world() {
     );
     assert_eq!(
         world
-            .query_filtered::<&i32, ecs::Without<&str>>()
+            .filter(without::<&str>())
+            .query::<&i32>()
             .iter()
             .collect::<HashSet<_>>(),
         HashSet::from_iter([&2]),
     );
     assert_eq!(
         world
-            .query_filtered::<Option<&mut &str>, ecs::With<i32>>()
+            .filter(with::<i32>())
+            .query::<Option<&mut &str>>()
             .iter()
             .collect::<HashSet<_>>(),
         HashSet::from_iter([Some(&mut "A"), None]),
@@ -73,26 +75,52 @@ fn test_with_without() {
     let mut entity = Entity::new();
     entity.add(123);
     entity.add(Flag);
+    assert_eq!(*entity.filter(with::<Flag>()).query::<&i32>(), Some(&123));
     assert_eq!(
-        *entity.query_filtered::<&i32, ecs::With<Flag>>(),
-        Some(&123)
-    );
-    assert_eq!(
-        *entity.query::<(ecs::With<Flag>, ecs::With<Flag2>)>(),
+        *entity.query::<(Is<With<Flag>>, Is<With<Flag2>>)>(),
         Some((true, false))
     );
-    assert_eq!(*entity.query_filtered::<&i32, ecs::Without<Flag>>(), None);
+    assert_eq!(*entity.filter(without::<Flag>()).query::<&i32>(), None);
+    assert_eq!(entity.is((with::<Flag>(), without::<Flag2>())), true);
+    assert_eq!(entity.is((without::<Flag>(), without::<Flag2>())), false);
     assert_eq!(
-        entity.filter::<(ecs::With<Flag>, ecs::Without<Flag2>)>(),
+        *entity.filter(without::<Flag2>()).query::<&i32>(),
+        Some(&123)
+    );
+}
+
+#[test]
+fn test_eq() {
+    let mut world = World::new();
+
+    let mut entity = Entity::new();
+    entity.add(1);
+
+    assert_eq!(entity.is(equal(1)), true);
+    assert_eq!(entity.is(equal(2)), false);
+    assert_eq!(entity.is(equal(1) & equal(2)), false);
+    assert_eq!(
+        entity.is((equal(1) | equal(2)) & with::<i32>() & without::<String>()),
         true
     );
+
+    world.add(entity);
+
+    let mut entity = Entity::new();
+    entity.add(2);
+    world.add(entity);
+
+    let mut entity = Entity::new();
+    entity.add(3);
+    world.add(entity);
+
     assert_eq!(
-        entity.filter::<(ecs::Without<Flag>, ecs::Without<Flag2>)>(),
-        false
-    );
-    assert_eq!(
-        *entity.query_filtered::<&i32, ecs::Without<Flag2>>(),
-        Some(&123)
+        world
+            .filter(!equal(2))
+            .query::<&i32>()
+            .iter()
+            .collect::<HashSet<_>>(),
+        HashSet::from_iter([&1, &3])
     );
 }
 
@@ -105,8 +133,8 @@ fn test_double_borrow() {
 
 #[test]
 fn test_derive() {
-    #[derive(ecs::Query, Debug, PartialEq)]
-    struct Foo<'a, T: ecs::Component> {
+    #[derive(Query, Debug, PartialEq)]
+    struct Foo<'a, T: Component> {
         x: &'a T,
         y: &'a mut bool,
     }

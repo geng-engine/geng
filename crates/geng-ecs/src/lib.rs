@@ -19,31 +19,17 @@ pub trait Component: Sized + 'static {}
 
 impl<T: 'static> Component for T {}
 
-macro_rules! impl_tuples {
-    ($macro:ident) => {
-        $macro!();
-        $macro!(a);
-        $macro!(a, b);
-        $macro!(a, b, c);
-        $macro!(a, b, c, d);
-        $macro!(a, b, c, d, e);
-        $macro!(a, b, c, d, e, f);
-        $macro!(a, b, c, d, e, f, g);
-        $macro!(a, b, c, d, e, f, g, h);
-        $macro!(a, b, c, d, e, f, g, h, i);
-        $macro!(a, b, c, d, e, f, g, h, i, j);
-    };
-}
-
 mod entity;
 mod fetch;
 mod filter;
 mod query;
 mod storage;
+pub mod util;
 mod world;
 
 pub use entity::*;
 pub use fetch::*;
 pub use filter::*;
 pub use query::*;
+use util::*;
 pub use world::*;

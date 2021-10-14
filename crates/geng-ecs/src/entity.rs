@@ -25,31 +25,16 @@ impl Entity {
         }
     }
     pub fn query<Q: Query>(&mut self) -> EntityQuery<Q> {
-        self.query_filtered::<Q, ()>()
+        self.filter(()).query()
     }
-    pub fn query_filtered<Q: Query, F: Filter>(&mut self) -> EntityQuery<Q> {
-        unsafe {
-            let filtered = {
-                if let Some(borrows) = F::Fetch::borrow_direct(self) {
-                    F::get(&borrows)
-                } else {
-                    false
-                }
-            };
-            if filtered {
-                let borrows = Q::Fetch::borrow_direct(self);
-                let item = borrows.as_ref().map(|borrows| Q::Fetch::get(borrows));
-                EntityQuery { borrows, item }
-            } else {
-                EntityQuery {
-                    borrows: None,
-                    item: None,
-                }
-            }
+    pub fn filter<F: Filter>(&mut self, filter: F) -> FilteredEntity<F> {
+        FilteredEntity {
+            entity: self,
+            filter,
         }
     }
-    pub fn filter<F: Filter>(&mut self) -> bool {
-        self.query_filtered::<(), F>().is_some()
+    pub fn is<F: Filter>(&mut self, filter: F) -> bool {
+        self.filter(filter).query::<()>().is_some()
     }
     pub unsafe fn borrow<T: Component>(&self) -> Option<storage::entity::Borrow<T>> {
         self.components
@@ -60,6 +45,37 @@ impl Entity {
         self.components
             .get(&TypeId::of::<T>())
             .map(|storage| storage.borrow_mut())
+    }
+}
+
+pub struct FilteredEntity<'a, T> {
+    entity: &'a mut Entity,
+    filter: T,
+}
+
+impl<'a, F: Filter> FilteredEntity<'a, F> {
+    pub fn query<Q: Query>(self) -> EntityQuery<'a, Q> {
+        unsafe {
+            let query = Q::Fetch::default();
+            let filter = self.filter.fetch();
+            let filtered = {
+                if let Some(borrows) = filter.borrow_direct(self.entity) {
+                    F::get(&filter, &borrows)
+                } else {
+                    false
+                }
+            };
+            if filtered {
+                let borrows = query.borrow_direct(self.entity);
+                let item = borrows.as_ref().map(|borrows| query.get(borrows));
+                EntityQuery { borrows, item }
+            } else {
+                EntityQuery {
+                    borrows: None,
+                    item: None,
+                }
+            }
+        }
     }
 }
 

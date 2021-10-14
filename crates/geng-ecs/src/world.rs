@@ -26,21 +26,12 @@ impl World {
         self.ids.insert(id);
     }
     pub fn query<Q: Query>(&mut self) -> WorldQuery<Q> {
-        self.query_filtered()
+        self.filter(()).query()
     }
-    pub fn query_filtered<Q: Query, F: Filter>(&mut self) -> WorldQuery<Q, F> {
-        unsafe fn borrow<'a, Q: Query, F: Filter>(world: &'a World) -> Option<Borrows<'a, Q, F>> {
-            Some((
-                Q::Fetch::borrow_world(world)?,
-                F::Fetch::borrow_world(world)?,
-            ))
-        }
-        unsafe {
-            WorldQuery {
-                borrows: borrow::<Q, F>(self),
-                world: self,
-                phantom_data: PhantomData,
-            }
+    pub fn filter<F: Filter>(&mut self, filter: F) -> FilteredWorld<F> {
+        FilteredWorld {
+            world: self,
+            filter,
         }
     }
     pub unsafe fn borrow<T: Component>(&self) -> Option<storage::world::Borrow<T>> {
@@ -55,6 +46,34 @@ impl World {
     }
 }
 
+pub struct FilteredWorld<'a, T> {
+    world: &'a mut World,
+    filter: T,
+}
+
+impl<'a, F: Filter> FilteredWorld<'a, F> {
+    pub fn query<Q: Query>(self) -> WorldQuery<'a, Q, F> {
+        unsafe fn borrow<'a, Q: Query, F: Filter>(
+            query: &Q::Fetch,
+            filter: &F::Fetch,
+            world: &'a World,
+        ) -> Option<Borrows<'a, Q, F>> {
+            Some((query.borrow_world(world)?, filter.borrow_world(world)?))
+        }
+        unsafe {
+            let query = Q::Fetch::default();
+            let filter = self.filter.fetch();
+            WorldQuery {
+                borrows: borrow::<Q, F>(&query, &filter, self.world),
+                query,
+                filter,
+                world: self.world,
+                phantom_data: PhantomData,
+            }
+        }
+    }
+}
+
 type Borrows<'a, Q, F> = (
     <<Q as Query>::Fetch as Fetch<'a>>::WorldBorrows,
     <<F as Filter>::Fetch as Fetch<'a>>::WorldBorrows,
@@ -63,6 +82,8 @@ type Borrows<'a, Q, F> = (
 pub struct WorldQuery<'a, Q: Query, F: Filter = ()> {
     #[allow(dead_code)]
     borrows: Option<Borrows<'a, Q, F>>, // This is here for the Drop impl
+    query: Q::Fetch,
+    filter: F::Fetch,
     world: &'a World,
     phantom_data: PhantomData<Q>,
 }
@@ -87,10 +108,10 @@ impl<'a, 'q, Q: Query, F: Filter> Iterator for WorldQueryIter<'a, 'q, Q, F> {
         unsafe {
             while let Some(&id) = self.id_iter.next() {
                 let (querry_borrows, filter_borrows) = self.inner.borrows.as_ref()?;
-                if !<F as Filter>::get_world(filter_borrows, id) {
+                if !F::get_world(&self.inner.filter, filter_borrows, id) {
                     continue;
                 }
-                if let Some(item) = Q::Fetch::get_world(querry_borrows, id) {
+                if let Some(item) = self.inner.query.get_world(querry_borrows, id) {
                     return Some(item);
                 }
             }
