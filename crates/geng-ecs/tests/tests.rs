@@ -1,6 +1,6 @@
 use ecs::{Entity, World};
 use geng_ecs as ecs;
-use std::collections::HashSet;
+use std::{collections::HashSet, iter::FromIterator};
 
 #[test]
 fn test_entity() {
@@ -31,12 +31,28 @@ fn test_world() {
     entity.add("B");
     world.add(entity);
 
-    assert_eq!(world.query::<&i32>().iter().collect::<HashSet<_>>(), {
-        let mut expected = HashSet::new();
-        expected.insert(&1);
-        expected.insert(&2);
-        expected
-    });
+    assert_eq!(
+        world.query::<&mut i32>().iter().collect::<HashSet<_>>(),
+        HashSet::from_iter([&mut 1, &mut 2]),
+    );
+    assert_eq!(
+        world.query::<&&str>().iter().collect::<HashSet<_>>(),
+        HashSet::from_iter([&"A", &"B"]),
+    );
+    assert_eq!(
+        world
+            .query_filtered::<&i32, ecs::Without<&str>>()
+            .iter()
+            .collect::<HashSet<_>>(),
+        HashSet::from_iter([&2]),
+    );
+    assert_eq!(
+        world
+            .query_filtered::<Option<&mut &str>, ecs::With<i32>>()
+            .iter()
+            .collect::<HashSet<_>>(),
+        HashSet::from_iter([Some(&mut "A"), None]),
+    );
 }
 
 #[test]
