@@ -25,14 +25,12 @@ impl World {
         }
         self.ids.insert(id);
     }
-    pub fn query<'a, Q: Query<'a>>(&'a mut self) -> WorldQuery<'a, Q, ()> {
-        self.query_filtered::<Q, ()>()
+    pub fn query<Q: Query>(&mut self) -> WorldQuery<Q> {
+        self.query_filtered()
     }
-    pub fn query_filtered<'a, Q: Query<'a>, F: Filter<'a>>(&'a mut self) -> WorldQuery<'a, Q, F> {
-        unsafe fn borrow<'a, Q: Query<'a>, F: Filter<'a>>(
-            world: &'a World,
-        ) -> Option<(Q::WorldBorrows, F::WorldBorrows)> {
-            Some((Q::borrow_world(world)?, F::borrow_world(world)?))
+    pub fn query_filtered<Q: Query, F: Filter>(&mut self) -> WorldQuery<Q, F> {
+        unsafe fn borrow<'a, Q: Query, F: Filter>(world: &'a World) -> Option<Borrows<'a, Q, F>> {
+            Some((Q::Fetch::borrow_world(world)?, F::borrow_world(world)?))
         }
         unsafe {
             WorldQuery {
@@ -54,14 +52,19 @@ impl World {
     }
 }
 
-pub struct WorldQuery<'a, Q: Query<'a>, F: Filter<'a>> {
+type Borrows<'a, Q, F> = (
+    <<Q as Query>::Fetch as Fetch<'a>>::WorldBorrows,
+    <F as Fetch<'a>>::WorldBorrows,
+);
+
+pub struct WorldQuery<'a, Q: Query, F: Filter = ()> {
     #[allow(dead_code)]
-    borrows: Option<(Q::WorldBorrows, F::WorldBorrows)>, // This is here for the Drop impl
+    borrows: Option<Borrows<'a, Q, F>>, // This is here for the Drop impl
     world: &'a World,
     phantom_data: PhantomData<Q>,
 }
 
-impl<'a, Q: Query<'a>, F: Filter<'a>> WorldQuery<'a, Q, F> {
+impl<'a, Q: Query, F: Filter> WorldQuery<'a, Q, F> {
     pub fn iter<'q>(&'q self) -> WorldQueryIter<'a, 'q, Q, F> {
         WorldQueryIter {
             inner: self,
@@ -70,21 +73,21 @@ impl<'a, Q: Query<'a>, F: Filter<'a>> WorldQuery<'a, Q, F> {
     }
 }
 
-pub struct WorldQueryIter<'a, 'q, Q: Query<'a>, F: Filter<'a>> {
+pub struct WorldQueryIter<'a, 'q, Q: Query, F: Filter> {
     inner: &'q WorldQuery<'a, Q, F>,
     id_iter: std::collections::hash_set::Iter<'a, Id>,
 }
 
-impl<'a, 'q, Q: Query<'a>, F: Filter<'a>> Iterator for WorldQueryIter<'a, 'q, Q, F> {
-    type Item = Q;
-    fn next(&mut self) -> Option<Q> {
+impl<'a, 'q, Q: Query, F: Filter> Iterator for WorldQueryIter<'a, 'q, Q, F> {
+    type Item = QueryOutput<'a, Q>;
+    fn next(&mut self) -> Option<Self::Item> {
         unsafe {
             while let Some(&id) = self.id_iter.next() {
                 let (querry_borrows, filter_borrows) = self.inner.borrows.as_ref()?;
-                if !F::get_world(filter_borrows, id) {
+                if !<F as Filter>::get_world(filter_borrows, id) {
                     continue;
                 }
-                if let Some(item) = Q::get_world(querry_borrows, id) {
+                if let Some(item) = Q::Fetch::get_world(querry_borrows, id) {
                     return Some(item);
                 }
             }

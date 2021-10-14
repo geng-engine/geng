@@ -1,76 +1,95 @@
 use super::*;
 
-pub unsafe trait Filter<'a> {
-    type WorldBorrows;
-    unsafe fn borrow_world(world: &'a World) -> Option<Self::WorldBorrows>;
-    unsafe fn get_world(borrows: &Self::WorldBorrows, id: Id) -> bool;
-    type DirectBorrows;
-    unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows>;
+pub trait Filter: for<'a> Fetch<'a> {
+    unsafe fn get_world<'a>(borrows: &<Self as Fetch<'a>>::WorldBorrows, id: Id) -> bool;
+    unsafe fn get<'a>(borrows: &<Self as Fetch<'a>>::DirectBorrows) -> bool;
+}
+
+impl<F: for<'a> Fetch<'a, Output = bool>> Filter for F {
+    unsafe fn get_world<'a>(borrows: &<Self as Fetch<'a>>::WorldBorrows, id: Id) -> bool {
+        F::get_world(borrows, id).unwrap()
+    }
+    unsafe fn get<'a>(borrows: &<Self as Fetch<'a>>::DirectBorrows) -> bool {
+        F::get(borrows)
+    }
 }
 
 pub struct With<T>(PhantomData<T>);
 
-unsafe impl<'a, T: Component> Filter<'a> for With<T> {
-    type WorldBorrows = component_storage::Borrow<'a, T>;
+impl<T: Component> Query for With<T> {
+    type Fetch = Self;
+}
+
+unsafe impl<'a, T: Component> Fetch<'a> for With<T> {
+    type Output = bool;
+    type WorldBorrows = Option<component_storage::Borrow<'a, T>>;
     unsafe fn borrow_world(world: &'a World) -> Option<Self::WorldBorrows> {
-        world.borrow::<T>()
+        Some(world.borrow::<T>())
     }
-    unsafe fn get_world(borrows: &Self::WorldBorrows, id: Id) -> bool {
-        borrows.get(id).is_some()
-    }
-    type DirectBorrows = ();
-    unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows> {
-        if entity.has::<T>() {
-            Some(())
+    unsafe fn get_world(borrows: &Self::WorldBorrows, id: Id) -> Option<bool> {
+        if let Some(borrows) = borrows {
+            Some(borrows.get(id).is_some())
         } else {
-            None
+            Some(false)
         }
+    }
+    type DirectBorrows = &'a Entity;
+    unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows> {
+        Some(entity)
+    }
+    unsafe fn get(borrows: &Self::DirectBorrows) -> bool {
+        borrows.has::<T>()
     }
 }
 
-pub struct Without<T>(PhantomData<T>);
+pub struct Inverse<F>(F);
 
-unsafe impl<'a, T: Component> Filter<'a> for Without<T> {
-    type WorldBorrows = component_storage::Borrow<'a, T>;
+impl<F: Filter> Query for Inverse<F> {
+    type Fetch = Self;
+}
+
+unsafe impl<'a, F: Filter> Fetch<'a> for Inverse<F> {
+    type Output = bool;
+    type WorldBorrows = <F as Fetch<'a>>::WorldBorrows;
     unsafe fn borrow_world(world: &'a World) -> Option<Self::WorldBorrows> {
-        world.borrow::<T>()
+        F::borrow_world(world)
     }
-    unsafe fn get_world(borrows: &Self::WorldBorrows, id: Id) -> bool {
-        borrows.get(id).is_none()
+    unsafe fn get_world(borrows: &Self::WorldBorrows, id: Id) -> Option<bool> {
+        Some(!<F as Filter>::get_world(borrows, id))
     }
-    type DirectBorrows = ();
+    type DirectBorrows = <F as Fetch<'a>>::DirectBorrows;
     unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows> {
-        if entity.has::<T>() {
-            None
-        } else {
-            Some(())
-        }
+        F::borrow_direct(entity)
+    }
+    unsafe fn get(borrows: &Self::DirectBorrows) -> bool {
+        !<F as Filter>::get(borrows)
     }
 }
+
+pub type Without<T> = Inverse<With<T>>;
 
 macro_rules! impl_for_tuple {
     ($($name:ident),*) => {
         #[allow(non_camel_case_types)]
         #[allow(unused_variables)]
-        unsafe impl<'a, $($name: Filter<'a>),*> Filter<'a> for ($($name,)*) {
-            type WorldBorrows = ($($name::WorldBorrows,)*);
-            unsafe fn borrow_world(world: &'a World) -> Option<Self::WorldBorrows> {
-                $(let $name = $name::borrow_world(world)?;)*
-                Some(($($name,)*))
-            }
-            unsafe fn get_world(borrows: &Self::WorldBorrows, id: Id) -> bool {
+        impl<$($name: Filter),*> Filter for ($($name,)*) {
+            unsafe fn get_world<'a>(borrows: &<Self as Fetch<'a>>::WorldBorrows, id: Id) -> bool {
                 let ($($name,)*) = borrows;
                 $(
-                    if !$name::get_world($name, id) {
+                    if !<$name as Filter>::get_world($name, id) {
                         return false;
                     }
                 )*
                 true
             }
-            type DirectBorrows = ($($name::DirectBorrows,)*);
-            unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows> {
-                $(let $name = $name::borrow_direct(entity)?;)*
-                Some(($($name,)*))
+            unsafe fn get<'a>(borrows: &<Self as Fetch<'a>>::DirectBorrows) -> bool {
+                let ($($name,)*) = borrows;
+                $(
+                    if !<$name as Filter>::get($name) {
+                        return false;
+                    }
+                )*
+                true
             }
         }
     };
