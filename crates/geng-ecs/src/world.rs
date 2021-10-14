@@ -30,7 +30,10 @@ impl World {
     }
     pub fn query_filtered<Q: Query, F: Filter>(&mut self) -> WorldQuery<Q, F> {
         unsafe fn borrow<'a, Q: Query, F: Filter>(world: &'a World) -> Option<Borrows<'a, Q, F>> {
-            Some((Q::Fetch::borrow_world(world)?, F::borrow_world(world)?))
+            Some((
+                Q::Fetch::borrow_world(world)?,
+                F::Fetch::borrow_world(world)?,
+            ))
         }
         unsafe {
             WorldQuery {
@@ -54,7 +57,7 @@ impl World {
 
 type Borrows<'a, Q, F> = (
     <<Q as Query>::Fetch as Fetch<'a>>::WorldBorrows,
-    <F as Fetch<'a>>::WorldBorrows,
+    <<F as Filter>::Fetch as Fetch<'a>>::WorldBorrows,
 );
 
 pub struct WorldQuery<'a, Q: Query, F: Filter = ()> {

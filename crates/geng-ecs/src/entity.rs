@@ -32,8 +32,11 @@ impl Entity {
     pub fn query_filtered<Q: Query, F: Filter>(&mut self) -> EntityQuery<Q> {
         unsafe {
             let filtered = {
-                let borrows = F::borrow_direct(self);
-                borrows.map_or(false, |borrows| <F as Filter>::get(&borrows))
+                if let Some(borrows) = F::Fetch::borrow_direct(self) {
+                    F::get(&borrows)
+                } else {
+                    false
+                }
             };
             if filtered {
                 let borrows = Q::Fetch::borrow_direct(self);

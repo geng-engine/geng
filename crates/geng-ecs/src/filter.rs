@@ -1,11 +1,13 @@
 use super::*;
 
-pub trait Filter: for<'a> Fetch<'a> {
-    unsafe fn get_world<'a>(borrows: &<Self as Fetch<'a>>::WorldBorrows, id: Id) -> bool;
-    unsafe fn get<'a>(borrows: &<Self as Fetch<'a>>::DirectBorrows) -> bool;
+pub trait Filter {
+    type Fetch: for<'a> Fetch<'a>;
+    unsafe fn get_world<'a>(borrows: &<Self::Fetch as Fetch<'a>>::WorldBorrows, id: Id) -> bool;
+    unsafe fn get<'a>(borrows: &<Self::Fetch as Fetch<'a>>::DirectBorrows) -> bool;
 }
 
 impl<F: for<'a> Fetch<'a, Output = bool>> Filter for F {
+    type Fetch = Self;
     unsafe fn get_world<'a>(borrows: &<Self as Fetch<'a>>::WorldBorrows, id: Id) -> bool {
         F::get_world(borrows, id).unwrap()
     }
@@ -50,16 +52,16 @@ impl<F: Filter> Query for Inverse<F> {
 
 unsafe impl<'a, F: Filter> Fetch<'a> for Inverse<F> {
     type Output = bool;
-    type WorldBorrows = <F as Fetch<'a>>::WorldBorrows;
+    type WorldBorrows = <F::Fetch as Fetch<'a>>::WorldBorrows;
     unsafe fn borrow_world(world: &'a World) -> Option<Self::WorldBorrows> {
-        F::borrow_world(world)
+        F::Fetch::borrow_world(world)
     }
     unsafe fn get_world(borrows: &Self::WorldBorrows, id: Id) -> Option<bool> {
         Some(!<F as Filter>::get_world(borrows, id))
     }
-    type DirectBorrows = <F as Fetch<'a>>::DirectBorrows;
+    type DirectBorrows = <F::Fetch as Fetch<'a>>::DirectBorrows;
     unsafe fn borrow_direct(entity: &'a Entity) -> Option<Self::DirectBorrows> {
-        F::borrow_direct(entity)
+        F::Fetch::borrow_direct(entity)
     }
     unsafe fn get(borrows: &Self::DirectBorrows) -> bool {
         !<F as Filter>::get(borrows)
@@ -73,7 +75,8 @@ macro_rules! impl_for_tuple {
         #[allow(non_camel_case_types)]
         #[allow(unused_variables)]
         impl<$($name: Filter),*> Filter for ($($name,)*) {
-            unsafe fn get_world<'a>(borrows: &<Self as Fetch<'a>>::WorldBorrows, id: Id) -> bool {
+            type Fetch = ($($name::Fetch,)*);
+            unsafe fn get_world<'a>(borrows: &<Self::Fetch as Fetch<'a>>::WorldBorrows, id: Id) -> bool {
                 let ($($name,)*) = borrows;
                 $(
                     if !<$name as Filter>::get_world($name, id) {
@@ -82,7 +85,7 @@ macro_rules! impl_for_tuple {
                 )*
                 true
             }
-            unsafe fn get<'a>(borrows: &<Self as Fetch<'a>>::DirectBorrows) -> bool {
+            unsafe fn get<'a>(borrows: &<Self::Fetch as Fetch<'a>>::DirectBorrows) -> bool {
                 let ($($name,)*) = borrows;
                 $(
                     if !<$name as Filter>::get($name) {
