@@ -84,6 +84,12 @@ pub fn init() -> Result<(), log::SetLoggerError> {
     init_with(builder())
 }
 
+pub fn init_for_tests() {
+    let mut builder = logger::builder();
+    builder.is_test(true);
+    let _ = init_with(builder);
+}
+
 pub fn add_logger(logger: Box<dyn log::Log>) {
     LOGGERS.lock().unwrap().push(logger);
 }
