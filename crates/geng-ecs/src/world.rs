@@ -14,7 +14,7 @@ impl World {
             next_id: 0,
         }
     }
-    pub fn add(&mut self, entity: Entity) {
+    pub fn spawn(&mut self, entity: Entity) {
         let id = Id(self.next_id);
         self.next_id += 1;
         for (type_id, value) in entity.components {

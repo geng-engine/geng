@@ -21,15 +21,15 @@ fn test_world() {
     let mut entity = Entity::new();
     entity.add(1);
     entity.add("A");
-    world.add(entity);
+    world.spawn(entity);
 
     let mut entity = Entity::new();
     entity.add(2);
-    world.add(entity);
+    world.spawn(entity);
 
     let mut entity = Entity::new();
     entity.add("B");
-    world.add(entity);
+    world.spawn(entity);
 
     assert_eq!(
         world.query::<&mut i32>().iter().collect::<HashSet<_>>(),
@@ -65,15 +65,15 @@ fn test_simultanious_queries() {
     let mut entity = Entity::new();
     entity.add(1);
     entity.add("A");
-    world.add(entity);
+    world.spawn(entity);
 
     let mut entity = Entity::new();
     entity.add(2);
-    world.add(entity);
+    world.spawn(entity);
 
     let mut entity = Entity::new();
     entity.add("B");
-    world.add(entity);
+    world.spawn(entity);
 
     let mut ints = world.query::<&mut i32>();
     assert_eq!(
@@ -107,15 +107,15 @@ fn test_incorrect_simultanious_queries() {
     let mut entity = Entity::new();
     entity.add(1);
     entity.add("A");
-    world.add(entity);
+    world.spawn(entity);
 
     let mut entity = Entity::new();
     entity.add(2);
-    world.add(entity);
+    world.spawn(entity);
 
     let mut entity = Entity::new();
     entity.add("B");
-    world.add(entity);
+    world.spawn(entity);
 
     let mut ints = world.query::<&mut i32>();
     assert_eq!(
@@ -176,15 +176,15 @@ fn test_eq() {
         true
     );
 
-    world.add(entity);
+    world.spawn(entity);
 
     let mut entity = Entity::new();
     entity.add(2);
-    world.add(entity);
+    world.spawn(entity);
 
     let mut entity = Entity::new();
     entity.add(3);
-    world.add(entity);
+    world.spawn(entity);
 
     assert_eq!(
         world
@@ -241,12 +241,12 @@ fn test_remove() {
     let mut entity = Entity::new();
     entity.add(1);
     entity.add("One");
-    world.add(entity);
+    world.spawn(entity);
 
     let mut entity = Entity::new();
     entity.add(2);
     entity.add("Two");
-    world.add(entity);
+    world.spawn(entity);
 
     let entity = world.remove(equal(2)).next().unwrap();
     assert_eq!(*entity.query::<&&str>(), Some(&"Two"));
