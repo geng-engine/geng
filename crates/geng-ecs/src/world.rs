@@ -43,12 +43,12 @@ impl World {
             id_iter: iter,
         }
     }
-    pub unsafe fn borrow<T: Component>(&self) -> Option<storage::world::Borrow<T>> {
+    pub fn borrow<T: Component>(&self) -> Option<storage::world::Borrow<T>> {
         self.components
             .get(&TypeId::of::<T>())
             .map(|storage| storage.borrow())
     }
-    pub unsafe fn borrow_mut<T: Component>(&self) -> Option<storage::world::BorrowMut<T>> {
+    pub fn borrow_mut<T: Component>(&self) -> Option<storage::world::BorrowMut<T>> {
         self.components
             .get(&TypeId::of::<T>())
             .map(|storage| storage.borrow_mut())
@@ -62,14 +62,14 @@ pub struct FilteredWorld<'a, T> {
 
 impl<'a, F: Filter> FilteredWorld<'a, F> {
     pub fn query<Q: Query>(self) -> WorldQuery<'a, Q, F> {
-        unsafe fn borrow<'a, Q: Query, F: Filter>(
+        fn borrow<'a, Q: Query, F: Filter>(
             query: &Q::Fetch,
             filter: &F::Fetch,
             world: &'a World,
         ) -> Option<Borrows<'a, Q, F>> {
             Some((query.borrow_world(world)?, filter.borrow_world(world)?))
         }
-        unsafe {
+        {
             let query = Q::Fetch::default();
             let filter = self.filter.fetch();
             WorldQuery {
@@ -113,7 +113,7 @@ impl<'a, Q: Query, F: Filter> WorldQuery<'a, Q, F> {
 }
 
 pub struct WorldQueryIter<'a, Q: Query, F: Filter> {
-    borrows: Option<&'a Borrows<'a, Q, F>>,
+    borrows: Option<&'a mut Borrows<'a, Q, F>>,
     query: &'a Q::Fetch,
     filter: &'a F::Fetch,
     id_iter: std::collections::hash_set::Iter<'a, Id>,
@@ -121,10 +121,12 @@ pub struct WorldQueryIter<'a, Q: Query, F: Filter> {
 
 impl<'a, Q: Query, F: Filter> Iterator for WorldQueryIter<'a, Q, F> {
     type Item = QueryOutput<'a, Q>;
-    fn next(&mut self) -> Option<Self::Item> {
-        unsafe {
+    fn next<'b>(&'b mut self) -> Option<Self::Item> {
+        {
             while let Some(&id) = self.id_iter.next() {
-                let (querry_borrows, filter_borrows) = self.borrows?;
+                let borrows: &'a mut &'a mut Borrows<'a, Q, F> =
+                    unsafe { std::mem::transmute(self.borrows.as_mut()?) };
+                let (querry_borrows, filter_borrows) = borrows;
                 if !F::get_world(self.filter, filter_borrows, id) {
                     continue;
                 }
@@ -147,9 +149,11 @@ impl<'a, F: Filter> Iterator for WorldRemove<'a, F> {
     type Item = Entity;
     fn next(&mut self) -> Option<Entity> {
         while let Some(id) = self.id_iter.next() {
-            unsafe {
-                if let Some(filter_borrows) = self.filter.borrow_world(self.world) {
-                    if !F::get_world(&self.filter, &filter_borrows, id) {
+            {
+                if let Some(mut filter_borrows) = Fetch::<'a>::borrow_world(&self.filter, unsafe {
+                    std::mem::transmute(self.world)
+                }) {
+                    if !F::get_world(&self.filter, &mut filter_borrows, id) {
                         continue;
                     }
                 }

@@ -24,6 +24,11 @@ pub trait AsRefExt {
     fn as_ref(self) -> Self::Output;
 }
 
+pub trait AsMutExt {
+    type Output;
+    fn as_mut(self) -> Self::Output;
+}
+
 macro_rules! impl_zip_for_tuple {
     (($($a:ident),*), ($($b:ident),*)) => {
         #[allow(non_camel_case_types)]
@@ -66,6 +71,15 @@ macro_rules! impl_asref_for_tuple {
         impl<'a, $($a),*> AsRefExt for &'a ($($a,)*) {
             type Output = ($(&'a $a,)*);
             fn as_ref(self) -> Self::Output {
+                let ($($a,)*) = self;
+                ($($a,)*)
+            }
+        }
+        #[allow(non_camel_case_types)]
+        #[allow(unused_variables)]
+        impl<'a, $($a),*> AsMutExt for &'a mut ($($a,)*) {
+            type Output = ($(&'a mut $a,)*);
+            fn as_mut(self) -> Self::Output {
                 let ($($a,)*) = self;
                 ($($a,)*)
             }

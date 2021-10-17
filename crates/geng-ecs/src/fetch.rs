@@ -1,13 +1,13 @@
 use super::*;
 
-pub unsafe trait Fetch<'a>: Sized {
+pub trait Fetch<'a>: Sized + 'a {
     type Output;
     type WorldBorrows;
-    unsafe fn borrow_world(&self, world: &'a World) -> Option<Self::WorldBorrows>;
-    unsafe fn get_world(&self, borrows: &Self::WorldBorrows, id: Id) -> Option<Self::Output>;
+    fn borrow_world(&self, world: &'a World) -> Option<Self::WorldBorrows>;
+    fn get_world(&self, borrows: &'a mut Self::WorldBorrows, id: Id) -> Option<Self::Output>;
     type DirectBorrows;
-    unsafe fn borrow_direct(&self, entity: &'a Entity) -> Option<Self::DirectBorrows>;
-    unsafe fn get(&self, borrows: &Self::DirectBorrows) -> Self::Output;
+    fn borrow_direct(&self, entity: &'a Entity) -> Option<Self::DirectBorrows>;
+    fn get(&self, borrows: &'a mut Self::DirectBorrows) -> Self::Output;
 }
 
 pub struct FetchRead<T>(PhantomData<T>);
@@ -18,21 +18,21 @@ impl<T> Default for FetchRead<T> {
     }
 }
 
-unsafe impl<'a, T: Component> Fetch<'a> for FetchRead<T> {
+impl<'a, T: Component> Fetch<'a> for FetchRead<T> {
     type Output = &'a T;
     type WorldBorrows = storage::world::Borrow<'a, T>;
-    unsafe fn borrow_world(&self, world: &'a World) -> Option<Self::WorldBorrows> {
+    fn borrow_world(&self, world: &'a World) -> Option<Self::WorldBorrows> {
         world.borrow::<T>()
     }
-    unsafe fn get_world(&self, borrows: &Self::WorldBorrows, id: Id) -> Option<&'a T> {
+    fn get_world(&self, borrows: &'a mut Self::WorldBorrows, id: Id) -> Option<&'a T> {
         borrows.get(id)
     }
     type DirectBorrows = storage::entity::Borrow<'a, T>;
-    unsafe fn borrow_direct(&self, entity: &'a Entity) -> Option<Self::DirectBorrows> {
+    fn borrow_direct(&self, entity: &'a Entity) -> Option<Self::DirectBorrows> {
         entity.borrow::<T>()
     }
-    unsafe fn get(&self, borrows: &Self::DirectBorrows) -> &'a T {
-        borrows.get()
+    fn get(&self, borrows: &'a mut Self::DirectBorrows) -> &'a T {
+        &**borrows
     }
 }
 
@@ -44,44 +44,44 @@ impl<T> Default for FetchWrite<T> {
     }
 }
 
-unsafe impl<'a, T: Component> Fetch<'a> for FetchWrite<T> {
+impl<'a, T: Component> Fetch<'a> for FetchWrite<T> {
     type Output = &'a mut T;
     type WorldBorrows = storage::world::BorrowMut<'a, T>;
-    unsafe fn borrow_world(&self, world: &'a World) -> Option<Self::WorldBorrows> {
+    fn borrow_world(&self, world: &'a World) -> Option<Self::WorldBorrows> {
         world.borrow_mut::<T>()
     }
-    unsafe fn get_world(&self, borrows: &Self::WorldBorrows, id: Id) -> Option<&'a mut T> {
-        borrows.get(id)
+    fn get_world(&self, borrows: &'a mut Self::WorldBorrows, id: Id) -> Option<&'a mut T> {
+        borrows.get_mut(id)
     }
     type DirectBorrows = storage::entity::BorrowMut<'a, T>;
-    unsafe fn borrow_direct(&self, entity: &'a Entity) -> Option<Self::DirectBorrows> {
+    fn borrow_direct(&self, entity: &'a Entity) -> Option<Self::DirectBorrows> {
         entity.borrow_mut::<T>()
     }
-    unsafe fn get(&self, borrows: &Self::DirectBorrows) -> &'a mut T {
-        borrows.get()
+    fn get(&self, borrows: &'a mut Self::DirectBorrows) -> &'a mut T {
+        &mut **borrows
     }
 }
 
 #[derive(Default)]
 pub struct OptionFetch<T>(T);
 
-unsafe impl<'a, F: Fetch<'a>> Fetch<'a> for OptionFetch<F> {
+impl<'a, F: Fetch<'a>> Fetch<'a> for OptionFetch<F> {
     type Output = Option<F::Output>;
     type WorldBorrows = Option<F::WorldBorrows>;
-    unsafe fn borrow_world(&self, world: &'a World) -> Option<Self::WorldBorrows> {
+    fn borrow_world(&self, world: &'a World) -> Option<Self::WorldBorrows> {
         Some(F::borrow_world(&self.0, world))
     }
-    unsafe fn get_world(&self, borrows: &Self::WorldBorrows, id: Id) -> Option<Self::Output> {
+    fn get_world(&self, borrows: &'a mut Self::WorldBorrows, id: Id) -> Option<Self::Output> {
         borrows
-            .as_ref()
+            .as_mut()
             .map(|borrows| F::get_world(&self.0, borrows, id))
     }
     type DirectBorrows = Option<F::DirectBorrows>;
-    unsafe fn borrow_direct(&self, entity: &'a Entity) -> Option<Self::DirectBorrows> {
+    fn borrow_direct(&self, entity: &'a Entity) -> Option<Self::DirectBorrows> {
         Some(F::borrow_direct(&self.0, entity))
     }
-    unsafe fn get(&self, borrows: &Self::DirectBorrows) -> Self::Output {
-        borrows.as_ref().map(|borrows| F::get(&self.0, borrows))
+    fn get(&self, borrows: &'a mut Self::DirectBorrows) -> Self::Output {
+        borrows.as_mut().map(|borrows| F::get(&self.0, borrows))
     }
 }
 
@@ -93,20 +93,20 @@ impl<F: Filter + Default> Default for FilterFetch<F> {
     }
 }
 
-unsafe impl<'a, F: Filter> Fetch<'a> for FilterFetch<F> {
+impl<'a, F: Filter + 'a> Fetch<'a> for FilterFetch<F> {
     type Output = bool;
     type WorldBorrows = <F::Fetch as Fetch<'a>>::WorldBorrows;
-    unsafe fn borrow_world(&self, world: &'a World) -> Option<Self::WorldBorrows> {
+    fn borrow_world(&self, world: &'a World) -> Option<Self::WorldBorrows> {
         self.0.borrow_world(world)
     }
-    unsafe fn get_world(&self, borrows: &Self::WorldBorrows, id: Id) -> Option<Self::Output> {
+    fn get_world(&self, borrows: &'a mut Self::WorldBorrows, id: Id) -> Option<bool> {
         Some(F::get_world(&self.0, borrows, id))
     }
     type DirectBorrows = <F::Fetch as Fetch<'a>>::DirectBorrows;
-    unsafe fn borrow_direct(&self, entity: &'a Entity) -> Option<Self::DirectBorrows> {
+    fn borrow_direct(&self, entity: &'a Entity) -> Option<Self::DirectBorrows> {
         self.0.borrow_direct(entity)
     }
-    unsafe fn get(&self, borrows: &Self::DirectBorrows) -> Self::Output {
+    fn get(&self, borrows: &'a mut Self::DirectBorrows) -> bool {
         F::get(&self.0, borrows)
     }
 }
@@ -115,16 +115,16 @@ macro_rules! impl_for_tuple {
     ($($name:ident),*) => {
         #[allow(non_camel_case_types)]
         #[allow(unused_variables)]
-        unsafe impl<'a, $($name: Fetch<'a>),*> Fetch<'a> for ($($name,)*) {
+         impl<'a, $($name: Fetch<'a>),*> Fetch<'a> for ($($name,)*) {
             type Output = ($($name::Output,)*);
             type WorldBorrows = ($($name::WorldBorrows,)*);
-            unsafe fn borrow_world(&self, world: &'a World) -> Option<Self::WorldBorrows> {
+            fn borrow_world(&self, world: &'a World) -> Option<Self::WorldBorrows> {
                 let ($($name,)*) = self;
                 $(let $name = $name::borrow_world($name, world)?;)*
                 Some(($($name,)*))
             }
-            unsafe fn get_world(&self, borrows: &Self::WorldBorrows, id: Id) -> Option<Self::Output> {
-                let ($($name,)*) = ZipExt::<<&Self::WorldBorrows as AsRefExt>::Output>::zip(self.as_ref(), borrows.as_ref());
+            fn get_world(&self, borrows: &'a mut Self::WorldBorrows, id: Id) -> Option<Self::Output> {
+                let ($($name,)*) = ZipExt::zip(self.as_ref(), borrows.as_mut());
                 $(
                     let (fetch, borrows) = $name;
                     let $name = $name::get_world(fetch, borrows, id)?;
@@ -132,13 +132,13 @@ macro_rules! impl_for_tuple {
                 Some(($($name,)*))
             }
             type DirectBorrows = ($($name::DirectBorrows,)*);
-            unsafe fn borrow_direct(&self, entity: &'a Entity) -> Option<Self::DirectBorrows> {
+            fn borrow_direct(&self, entity: &'a Entity) -> Option<Self::DirectBorrows> {
                 let ($($name,)*) = self;
                 $(let $name = $name::borrow_direct($name, entity)?;)*
                 Some(($($name,)*))
             }
-            unsafe fn get(&self, borrows: &Self::DirectBorrows) -> Self::Output {
-                let ($($name,)*) = ZipExt::zip(self.as_ref(), borrows.as_ref());
+            fn get(&self, borrows: &'a mut Self::DirectBorrows) -> Self::Output {
+                let ($($name,)*) = ZipExt::zip(self.as_ref(), borrows.as_mut());
                 ($({
                     let (fetch, borrows) = $name;
                     $name::get(fetch, borrows)

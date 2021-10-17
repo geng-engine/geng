@@ -1,74 +1,50 @@
 use super::*;
 
 pub struct Storage {
-    data: HashMap<Id, UnsafeCell<Box<dyn Any>>>,
-    borrows: Cell<usize>,
-    borrowed_mutably: Cell<bool>,
+    data: RefCell<HashMap<Id, Box<dyn Any>>>,
 }
 
 impl Storage {
     pub fn new() -> Self {
         Self {
-            data: HashMap::new(),
-            borrows: Cell::new(0),
-            borrowed_mutably: Cell::new(false),
+            data: RefCell::new(HashMap::new()),
         }
     }
     pub fn insert_any(&mut self, id: Id, data: Box<dyn Any>) {
-        self.data.insert(id, UnsafeCell::new(data));
+        self.data.get_mut().insert(id, data);
     }
     pub fn remove_any(&mut self, id: Id) -> Option<Box<dyn Any>> {
-        self.data.remove(&id).map(|value| value.into_inner())
+        self.data.get_mut().remove(&id)
     }
-    pub unsafe fn borrow<T: Component>(&self) -> Borrow<'_, T> {
-        if self.borrowed_mutably.get() {
-            panic!("Failed to borrow, already mutably borrowed");
-        }
-        self.borrows.set(self.borrows.get() + 1);
-        Borrow(self, PhantomData)
+    pub fn borrow<T: Component>(&self) -> Borrow<T> {
+        Borrow(self.data.borrow(), PhantomData)
     }
-    pub unsafe fn borrow_mut<T: Component>(&self) -> BorrowMut<'_, T> {
-        if self.borrows.get() != 0 {
-            panic!("Failed to mutably borrow, already borrowed");
-        }
-        if self.borrowed_mutably.get() {
-            panic!("Failed to mutably borrow, already mutably borrowed");
-        }
-        self.borrowed_mutably.set(true);
-        BorrowMut(self, PhantomData)
+    pub fn borrow_mut<T: Component>(&self) -> BorrowMut<T> {
+        BorrowMut(self.data.borrow_mut(), PhantomData)
     }
 }
 
-pub struct Borrow<'a, T: Component>(&'a Storage, PhantomData<&'a T>);
+pub struct Borrow<'a, T: Component>(
+    std::cell::Ref<'a, HashMap<Id, Box<dyn Any>>>,
+    PhantomData<&'a T>,
+);
 
 impl<'a, T: Component> Borrow<'a, T> {
-    pub unsafe fn get(&self, id: Id) -> Option<&'a T> {
-        self.0
-            .data
-            .get(&id)
-            .map(|data| (*data.get()).downcast_ref().unwrap())
+    pub fn get(&self, id: Id) -> Option<&T> {
+        self.0.get(&id).map(|data| data.downcast_ref().unwrap())
     }
 }
 
-impl<'a, T: Component> Drop for Borrow<'a, T> {
-    fn drop(&mut self) {
-        self.0.borrows.set(self.0.borrows.get() - 1);
-    }
-}
-
-pub struct BorrowMut<'a, T: Component>(&'a Storage, PhantomData<&'a mut T>);
+pub struct BorrowMut<'a, T: Component>(
+    std::cell::RefMut<'a, HashMap<Id, Box<dyn Any>>>,
+    PhantomData<&'a mut T>,
+);
 
 impl<'a, T: Component> BorrowMut<'a, T> {
-    pub unsafe fn get(&self, id: Id) -> Option<&'a mut T> {
-        self.0
-            .data
-            .get(&id)
-            .map(|data| (*data.get()).downcast_mut().unwrap())
+    pub fn get(&self, id: Id) -> Option<&T> {
+        self.0.get(&id).map(|data| data.downcast_ref().unwrap())
     }
-}
-
-impl<'a, T: Component> Drop for BorrowMut<'a, T> {
-    fn drop(&mut self) {
-        self.0.borrowed_mutably.set(false);
+    pub fn get_mut(&mut self, id: Id) -> Option<&mut T> {
+        self.0.get_mut(&id).map(|data| data.downcast_mut().unwrap())
     }
 }

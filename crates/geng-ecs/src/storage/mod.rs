@@ -9,7 +9,7 @@ pub use world::Storage as World;
 // GAT waiting room
 // https://github.com/rust-lang/rust/issues/44265
 
-// pub unsafe trait Storage {
+// pub  trait Storage {
 //     type Ref<'a, T: Component>: Ref<'a, T>;
 //     fn borrow<'a, T: Component>(&'a self) -> Self::Ref<'a, T>;
 
@@ -17,12 +17,12 @@ pub use world::Storage as World;
 //     fn borrow_mut<'a, T: Component>(&'a self) -> Self::RefMut<'a, T>;
 // }
 
-// pub unsafe trait Ref<'a, T: Component> {
+// pub  trait Ref<'a, T: Component> {
 //     type Key;
 //     fn get(&self, key: Self::Key) -> &'a T;
 // }
 
-// pub unsafe trait RefMut<'a, T: Component> {
+// pub  trait RefMut<'a, T: Component> {
 //     type Key;
 //     fn get(&self, key: Self::Key) -> &'a mut T;
 // }
