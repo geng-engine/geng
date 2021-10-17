@@ -22,6 +22,7 @@ RUN set -eux; \
         jq \
         mingw-w64 \
         libxml2-dev \
+        gcc-arm-linux-gnueabihf \
     ; \
     rm -rf /var/lib/apt/lists/*
 
@@ -32,7 +33,9 @@ ENV RUSTUP_HOME=/usr/local/rustup \
 RUN set -eux; \
     curl https://sh.rustup.rs -sSf | sh -s - -y --no-modify-path --profile minimal; \
     rustup target add x86_64-pc-windows-gnu; \
-    printf "[target.x86_64-pc-windows-gnu]\nlinker = \"x86_64-w64-mingw32-gcc\"\n" > $CARGO_HOME/config; \
+    printf "[target.x86_64-pc-windows-gnu]\nlinker = \"x86_64-w64-mingw32-gcc\"\n" >> $CARGO_HOME/config; \
+    rustup target add armv7-unknown-linux-gnueabihf; \
+    printf "[target.armv7-unknown-linux-gnueabihf]\nlinker = \"arm-linux-gnueabihf-gcc\"\n" >> $CARGO_HOME/config; \
     rustup target add wasm32-unknown-unknown; \
     cargo install wasm-bindgen-cli
     
