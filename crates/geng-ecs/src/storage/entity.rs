@@ -8,8 +8,11 @@ pub struct Storage {
 
 impl Storage {
     pub fn new<T: Component>(value: T) -> Self {
+        Self::new_any(Box::new(value))
+    }
+    pub fn new_any(value: Box<dyn Any>) -> Self {
         Self {
-            data: UnsafeCell::new(Box::new(value)),
+            data: UnsafeCell::new(value),
             borrows: Cell::new(0),
             borrowed_mutably: Cell::new(false),
         }

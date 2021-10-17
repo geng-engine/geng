@@ -233,3 +233,21 @@ fn test_double_mutable_borrow() {
         Some((&mut 123, &mut 123))
     );
 }
+
+#[test]
+fn test_remove() {
+    let mut world = World::new();
+
+    let mut entity = Entity::new();
+    entity.add(1);
+    entity.add("One");
+    world.add(entity);
+
+    let mut entity = Entity::new();
+    entity.add(2);
+    entity.add("Two");
+    world.add(entity);
+
+    let entity = world.remove(equal(2)).next().unwrap();
+    assert_eq!(*entity.query::<&&str>(), Some(&"Two"));
+}

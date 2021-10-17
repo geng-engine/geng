@@ -34,6 +34,15 @@ impl World {
             filter,
         }
     }
+    pub fn remove<F: Filter>(&mut self, filter: F) -> WorldRemove<F> {
+        let filter = filter.fetch();
+        let iter = self.ids.clone().into_iter();
+        WorldRemove {
+            world: self,
+            filter,
+            id_iter: iter,
+        }
+    }
     pub unsafe fn borrow<T: Component>(&self) -> Option<storage::world::Borrow<T>> {
         self.components
             .get(&TypeId::of::<T>())
@@ -125,5 +134,37 @@ impl<'a, Q: Query, F: Filter> Iterator for WorldQueryIter<'a, Q, F> {
             }
             None
         }
+    }
+}
+
+pub struct WorldRemove<'a, F: Filter> {
+    world: &'a mut World,
+    filter: F::Fetch,
+    id_iter: std::collections::hash_set::IntoIter<Id>,
+}
+
+impl<'a, F: Filter> Iterator for WorldRemove<'a, F> {
+    type Item = Entity;
+    fn next(&mut self) -> Option<Entity> {
+        while let Some(id) = self.id_iter.next() {
+            unsafe {
+                if let Some(filter_borrows) = self.filter.borrow_world(self.world) {
+                    if !F::get_world(&self.filter, &filter_borrows, id) {
+                        continue;
+                    }
+                }
+            }
+            let mut entity = Entity::new();
+            for (&type_id, storage) in &mut self.world.components {
+                if let Some(value) = storage.remove_any(id) {
+                    entity
+                        .components
+                        .insert(type_id, storage::Entity::new_any(value));
+                }
+            }
+            self.world.ids.remove(&id);
+            return Some(entity);
+        }
+        None
     }
 }

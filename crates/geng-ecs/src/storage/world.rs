@@ -17,6 +17,9 @@ impl Storage {
     pub fn insert_any(&mut self, id: Id, data: Box<dyn Any>) {
         self.data.insert(id, UnsafeCell::new(data));
     }
+    pub fn remove_any(&mut self, id: Id) -> Option<Box<dyn Any>> {
+        self.data.remove(&id).map(|value| value.into_inner())
+    }
     pub unsafe fn borrow<T: Component>(&self) -> Borrow<'_, T> {
         if self.borrowed_mutably.get() {
             panic!("Failed to borrow, already mutably borrowed");
