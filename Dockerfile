@@ -42,3 +42,4 @@ RUN set -eux; \
     
 COPY . /src
 RUN cargo install --path /src/crates/cargo-geng
+RUN rm -rf /src
