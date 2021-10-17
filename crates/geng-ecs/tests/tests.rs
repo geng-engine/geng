@@ -248,6 +248,9 @@ fn test_remove() {
     entity.add("Two");
     world.spawn(entity);
 
-    let entity = world.remove(equal(2)).next().unwrap();
+    let mut twos = world.remove(equal(2));
+    let entity = twos.next().unwrap();
     assert_eq!(*entity.query::<&&str>(), Some(&"Two"));
+    assert!(twos.next().is_none());
+    assert_eq!(world.query::<&i32>().iter().collect::<Vec<_>>(), vec![&1]);
 }
