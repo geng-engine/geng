@@ -8,7 +8,7 @@ pub use async_trait::*;
 #[doc(no_inline)]
 pub use bincode;
 #[doc(no_inline)]
-pub use clap::{self, Clap};
+pub use clap;
 pub use derive_more;
 #[doc(no_inline)]
 pub use derive_more::{Deref, DerefMut};

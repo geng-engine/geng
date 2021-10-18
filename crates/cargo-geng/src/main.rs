@@ -1,4 +1,3 @@
-use clap::Clap;
 use std::process::Command;
 
 const SERVE_PORT: u16 = 8000;
@@ -47,7 +46,7 @@ where
     });
 }
 
-#[derive(Clap, PartialEq, Eq)]
+#[derive(clap::Parser, PartialEq, Eq)]
 enum Sub {
     Build,
     Run,
@@ -77,7 +76,7 @@ impl ToString for Sub {
     }
 }
 
-#[derive(Clap)]
+#[derive(clap::Parser)]
 struct Opt {
     sub: Sub,
     #[clap(long, short = 'p')]
@@ -140,7 +139,7 @@ fn main() -> Result<(), anyhow::Error> {
     if args.is_empty() {
         todo!("Help");
     }
-    let opt: Opt = Clap::parse_from(args);
+    let opt: Opt = clap::Parser::parse_from(args);
     match opt.sub {
         Sub::Build | Sub::Run => {
             let metadata = cargo_metadata::MetadataCommand::new()
