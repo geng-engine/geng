@@ -21,7 +21,7 @@ impl LoadAsset for ugli::Texture {
         let ugli = geng.ugli().clone();
         let path = path.to_owned();
         let image_future = geng.inner.asset_manager.threadpool.spawn(move || {
-            info!("Loading {:?}", path);
+            debug!("Loading {:?}", path);
             fn load(path: &str) -> Result<image::RgbaImage, anyhow::Error> {
                 let image = image::open(path).context(path.to_owned())?;
                 Ok(match image {
@@ -46,7 +46,7 @@ impl LoadAsset for Sound {
                 .asset_manager
                 .threadpool
                 .spawn(move || -> Result<_, anyhow::Error> {
-                    info!("Loading {:?}", path);
+                    debug!("Loading {:?}", path);
                     let mut data = Vec::new();
                     std::fs::File::open(path)?.read_to_end(&mut data)?;
                     Ok(data)
@@ -67,7 +67,7 @@ impl LoadAsset for String {
         let geng = geng.clone();
         let path = path.to_owned();
         let future = geng.inner.asset_manager.threadpool.spawn(move || {
-            info!("Loading {:?}", path);
+            debug!("Loading {:?}", path);
             let mut result = String::new();
             std::fs::File::open(path)?.read_to_string(&mut result)?;
             Ok(result)
@@ -82,7 +82,7 @@ impl LoadAsset for Vec<u8> {
         let geng = geng.clone();
         let path = path.to_owned();
         let future = geng.inner.asset_manager.threadpool.spawn(move || {
-            info!("Loading {:?}", path);
+            debug!("Loading {:?}", path);
             let mut result = Vec::new();
             std::fs::File::open(path)?.read_to_end(&mut result)?;
             Ok(result)

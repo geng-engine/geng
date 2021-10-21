@@ -109,7 +109,7 @@ fn load<T: for<'de> Deserialize<'de>>(path: &str) -> Option<T> {
         };
         match serde_json::from_reader(file) {
             Ok(value) => {
-                info!("Successfully loaded {:?}", path);
+                debug!("Successfully loaded {:?}", path);
                 Some(value)
             }
             Err(e) => {
