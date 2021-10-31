@@ -1,6 +1,10 @@
 [package]
 name = "geng-ecs-derive"
-version = "0.1.0"
+version = "0.8.0"
+authors = ["kuviman <kuviman@gmail.com>"]
+description = "Game Engine (ecs derive macros)"
+license = "MIT"
+homepage = "https://github.com/kuviman/geng"
 edition = "2018"
 
 [dependencies]

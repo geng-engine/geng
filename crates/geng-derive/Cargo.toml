@@ -1,6 +1,6 @@
 [package]
 name = "geng-derive"
-version = "0.8.0-alpha.1"
+version = "0.8.0"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Game Engine (derive macros)"
 license = "MIT"
@@ -8,7 +8,7 @@ homepage = "https://github.com/kuviman/geng"
 edition = "2018"
 
 [dependencies]
-batbox = { path = "../batbox", version = "0.7.0-alpha" }
+batbox = { path = "../batbox", version = "0.8.0" }
 syn = { version = "1", features = ["full"] }
 quote = "1"
 proc-macro2 = "1"
