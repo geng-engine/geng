@@ -119,6 +119,26 @@ impl<T: Float> Vec2<T> {
         self / self.len()
     }
 
+    /// Normalizes a vector unless its length its approximately 0.
+    /// Can be used to avoid division by 0.
+    ///
+    /// # Examples
+    /// ```
+    /// use batbox::*;
+    /// let v = vec2(1.0, 2.0);
+    /// assert_eq!(v.normalize_or_zero(), v.normalize());
+    /// let v = vec2(1e-10, 1e-10);
+    /// assert_eq!(v.normalize_or_zero(), Vec2::ZERO);
+    /// ```
+    pub fn normalize_or_zero(self) -> Self {
+        let len = self.len();
+        if len.approx_eq(&T::ZERO) {
+            Vec2::ZERO
+        } else {
+            self / len
+        }
+    }
+
     /// Calculate length of a vector.
     /// # Examples
     /// ```
