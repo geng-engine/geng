@@ -6,7 +6,7 @@
 //! # Quick start
 //! More examples are available [here](https://github.com/kuviman/geng/tree/main/crates/geng/examples).
 //!
-//! ```
+//! ```no_run
 //! use geng::prelude::*;
 //!
 //! struct State;
