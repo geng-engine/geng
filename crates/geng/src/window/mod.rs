@@ -38,11 +38,9 @@ pub struct Window {
 }
 
 impl Window {
-    pub fn new(title: &str, vsync: bool) -> Self {
+    pub(crate) fn new(options: &ContextOptions) -> Self {
         #[cfg(target_arch = "wasm32")]
         let window = {
-            let _ = title;
-            let _ = vsync;
             let canvas = web_sys::window()
                 .unwrap()
                 .document()
@@ -52,7 +50,13 @@ impl Window {
                 .dyn_into::<web_sys::HtmlCanvasElement>()
                 .expect("#geng-canvas is not a canvas");
             js::initialize_window(&canvas);
-            let ugli = Rc::new(Ugli::create_webgl(&canvas));
+            let ugli = Rc::new(Ugli::create_webgl(
+                &canvas,
+                ugli::WebGLContextOptions {
+                    antialias: options.antialias,
+                    ..default()
+                },
+            ));
             let window = Self {
                 lock_cursor: Cell::new(false),
                 canvas,
@@ -80,9 +84,10 @@ impl Window {
             let glutin_event_loop = glutin::event_loop::EventLoop::<()>::new();
             // glutin::ContextBuilder::new(),
             let glutin_window = glutin::ContextBuilder::new()
-                .with_vsync(vsync)
+                .with_vsync(options.vsync)
+                .with_multisampling(if options.antialias { 16 } else { 0 })
                 .build_windowed(
-                    glutin::window::WindowBuilder::new().with_title(title), //.with_visibility(false)
+                    glutin::window::WindowBuilder::new().with_title(&options.title), //.with_visibility(false)
                     &glutin_event_loop,
                 )
                 .unwrap();

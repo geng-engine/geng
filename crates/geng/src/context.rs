@@ -22,6 +22,7 @@ pub struct ContextOptions {
     pub title: String,
     pub vsync: bool,
     pub max_delta_time: f64,
+    pub antialias: bool,
 }
 
 impl Default for ContextOptions {
@@ -30,6 +31,7 @@ impl Default for ContextOptions {
             title: "Geng Application".to_string(),
             vsync: true,
             max_delta_time: 0.1,
+            antialias: false,
         }
     }
 }
@@ -43,7 +45,7 @@ impl Geng {
     }
     pub fn new_with(options: ContextOptions) -> Self {
         setup_panic_handler();
-        let window = Window::new(&options.title, options.vsync);
+        let window = Window::new(&options);
         let ugli = window.ugli().clone();
         let shader_lib = ShaderLib::new(window.ugli());
         let draw_2d = Rc::new(Draw2D::new(&shader_lib, &ugli));

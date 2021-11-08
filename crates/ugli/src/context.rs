@@ -7,31 +7,37 @@ pub struct Ugli {
 }
 
 #[cfg(target_arch = "wasm32")]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WebGLContextOptions {
+    pub alpha: bool,
+    pub preserve_drawing_buffer: bool,
+    pub stencil: bool,
+    pub premultiplied_alpha: bool,
+    pub power_preference: &'static str,
+    pub depth: bool,
+    pub antialias: bool,
+}
+
+#[cfg(target_arch = "wasm32")]
+impl Default for WebGLContextOptions {
+    fn default() -> Self {
+        Self {
+            alpha: false,
+            preserve_drawing_buffer: true,
+            stencil: false,
+            premultiplied_alpha: false,
+            power_preference: "high-performance",
+            depth: true,
+            antialias: false,
+        }
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
 impl Ugli {
-    pub fn create_webgl(canvas: &web_sys::HtmlCanvasElement) -> Self {
-        let context_options = JsValue::from_serde({
-            #[derive(Serialize, Deserialize)]
-            #[serde(rename_all = "camelCase")]
-            struct ContextOptions {
-                alpha: bool,
-                preserve_drawing_buffer: bool,
-                stencil: bool,
-                premultiplied_alpha: bool,
-                power_preference: &'static str,
-                depth: bool,
-                antialias: bool,
-            }
-            &ContextOptions {
-                alpha: false,
-                preserve_drawing_buffer: true,
-                stencil: false,
-                premultiplied_alpha: false,
-                power_preference: "high-performance",
-                depth: true,
-                antialias: false,
-            }
-        })
-        .unwrap();
+    pub fn create_webgl(canvas: &web_sys::HtmlCanvasElement, options: WebGLContextOptions) -> Self {
+        let context_options = JsValue::from_serde(&options).unwrap();
         let webgl;
         if let Some(context) = canvas
             .get_context_with_context_options("webgl", &context_options)
