@@ -6,7 +6,6 @@ struct State;
 
 impl geng::State for State {
     // Specify how to draw each game frame
-
     fn draw(
         &mut self,
         framebuffer: &mut ugli::Framebuffer, // The framebuffer to draw onto
@@ -17,6 +16,10 @@ impl geng::State for State {
             Some(Color::BLACK), // using black color
             None,               // without clearing depth buffer
         );
+    }
+
+    fn fixed_update(&mut self, delta_time: f64) {
+        println!("fixed update: {}", delta_time);
     }
 }
 

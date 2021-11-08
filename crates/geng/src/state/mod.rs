@@ -13,6 +13,13 @@ pub enum Transition {
 pub trait State: 'static {
     #[allow(unused_variables)]
     fn update(&mut self, delta_time: f64) {}
+
+    #[allow(unused_variables)]
+    /// Called periodically every `fixed_delta_time` defined in [ContextOptions].
+    /// To start the application with different `fixed_delta_time`,
+    /// initialize geng with [`Geng::new_with()`].
+    fn fixed_update(&mut self, delta_time: f64) {}
+
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer);
 
     #[allow(unused_variables)]
@@ -34,6 +41,9 @@ impl State for EmptyState {
 impl<T: State + ?Sized> State for Box<T> {
     fn update(&mut self, delta_time: f64) {
         <T as State>::update(self, delta_time);
+    }
+    fn fixed_update(&mut self, delta_time: f64) {
+        <T as State>::fixed_update(self, delta_time);
     }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         <T as State>::draw(self, framebuffer);
