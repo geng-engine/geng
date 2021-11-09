@@ -85,7 +85,7 @@ impl Window {
             // glutin::ContextBuilder::new(),
             let glutin_window = glutin::ContextBuilder::new()
                 .with_vsync(options.vsync)
-                .with_multisampling(if options.antialias { 16 } else { 0 })
+                .with_multisampling(if options.antialias { 8 } else { 0 })
                 .build_windowed(
                     glutin::window::WindowBuilder::new().with_title(&options.title), //.with_visibility(false)
                     &glutin_event_loop,
