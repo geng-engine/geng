@@ -1,5 +1,6 @@
 use super::*;
 
+/// 2d camera used for rendering in pixel space.
 pub struct PixelPerfectCamera;
 
 impl AbstractCamera2d for PixelPerfectCamera {
