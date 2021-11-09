@@ -47,7 +47,7 @@ impl Geng {
         setup_panic_handler();
         let window = Window::new(&options);
         let ugli = window.ugli().clone();
-        let shader_lib = ShaderLib::new(window.ugli());
+        let shader_lib = ShaderLib::new_impl(&ugli, &options);
         let draw_2d = Rc::new(Draw2D::new(&shader_lib, &ugli));
         let default_font = Rc::new({
             let data = include_bytes!("font/default.ttf") as &[u8];
