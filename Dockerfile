@@ -38,7 +38,8 @@ RUN set -eux; \
     rustup target add armv7-unknown-linux-gnueabihf; \
     printf "[target.armv7-unknown-linux-gnueabihf]\nlinker = \"arm-linux-gnueabihf-gcc\"\n" >> $CARGO_HOME/config; \
     rustup target add wasm32-unknown-unknown; \
-    cargo install wasm-bindgen-cli
+    cargo install wasm-bindgen-cli; \
+    printf "[net]\ngit-fetch-with-cli = true\n" >> $CARGO_HOME/config;
     
 COPY . /src
 RUN cargo install --path /src/crates/cargo-geng
