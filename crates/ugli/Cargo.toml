@@ -5,7 +5,7 @@ authors = ["kuviman <kuviman@gmail.com>"]
 description = "Universal OpenGL Interface"
 license = "MIT"
 homepage = "https://github.com/kuviman/ugli"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 batbox = { path = "../batbox", version = "0.8.0" }

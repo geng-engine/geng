@@ -59,15 +59,15 @@ pub fn derive(input: TokenStream) -> TokenStream {
             });
 
             let expanded = quote! {
-                impl#impl_generics #crate_path::Query for #input_type#ty_generics #where_clause {
-                    type Fetch = #fetch_type#fetch_ty_generics;
+                impl #impl_generics #crate_path::Query for #input_type #ty_generics #where_clause {
+                    type Fetch = #fetch_type #fetch_ty_generics;
                 }
 
-                struct #fetch_type#fetch_generics {
+                struct #fetch_type #fetch_generics {
                     #(#field_names: #fetch_field_tys,)*
                 }
 
-                impl#fetch_impl_generics Default for #fetch_type#fetch_ty_generics #fetch_where_clause {
+                impl #fetch_impl_generics Default for #fetch_type #fetch_ty_generics #fetch_where_clause {
                     fn default() -> Self {
                         Self {
                             #(#field_names: Default::default(),)*
@@ -75,8 +75,8 @@ pub fn derive(input: TokenStream) -> TokenStream {
                     }
                 }
 
-                unsafe impl#impl_generics #crate_path::Fetch<#fetch_lifetime> for #fetch_type#fetch_ty_generics #fetch_where_clause {
-                    type Output = #input_type#ty_generics;
+                unsafe impl #impl_generics #crate_path::Fetch<#fetch_lifetime> for #fetch_type #fetch_ty_generics #fetch_where_clause {
+                    type Output = #input_type #ty_generics;
                     type WorldBorrows = (#(#field_fetches::WorldBorrows,)*);
                     unsafe fn borrow_world(&self, world: &'a #crate_path::World) -> Option<Self::WorldBorrows> {
                         let (#(#field_names,)*) = (#(&self.#field_names,)*);
