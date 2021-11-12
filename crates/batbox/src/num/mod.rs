@@ -62,3 +62,11 @@ macro_rules! impl_int {
 
 impl_uint! { u8, u16, u32, u64, usize }
 impl_int! { i8, i16, i32, i64, isize }
+
+pub trait MulExt: Mul + Sized + Copy {
+    fn sqr(self) -> <Self as Mul>::Output {
+        self * self
+    }
+}
+
+impl<T: Mul + Copy> MulExt for T {}
