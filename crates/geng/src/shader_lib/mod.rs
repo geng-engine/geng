@@ -6,12 +6,16 @@ pub struct ShaderLib {
 }
 
 impl ShaderLib {
-    pub fn new(ugli: &Rc<Ugli>) -> Self {
+    pub(crate) fn new_impl(ugli: &Rc<Ugli>, options: &ContextOptions) -> Self {
         let lib = Self {
             ugli: ugli.clone(),
             files: RefCell::new(HashMap::new()),
         };
-        lib.add("prelude", include_str!("include/prelude.glsl"));
+        let mut prelude = include_str!("include/prelude.glsl").to_owned();
+        if options.antialias {
+            prelude = "#define GENG_ANTIALIAS\n".to_owned() + &prelude;
+        }
+        lib.add("prelude", &prelude);
         lib
     }
 

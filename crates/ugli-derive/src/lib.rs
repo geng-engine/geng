@@ -41,7 +41,7 @@ fn simple_derive(
     };
     quote! {
         #safe
-        impl#impl_generics #typ for #input_type#ty_generics #where_clause {
+        impl #impl_generics #typ for #input_type #ty_generics #where_clause {
             #impl_body
         }
     }

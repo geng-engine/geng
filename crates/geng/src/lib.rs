@@ -1,10 +1,38 @@
 #![recursion_limit = "256"]
 
+//!
+//! `geng` (Game ENGine) is an engine for Rust Programming Language.
+//!
+//! # Quick start
+//! More examples are available [here](https://github.com/kuviman/geng/tree/main/crates/geng/examples).
+//!
+//! ```no_run
+//! use geng::prelude::*;
+//!
+//! struct State;
+//!
+//! impl geng::State for State {
+//!     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
+//!         ugli::clear(framebuffer, Some(Color::BLACK), None);
+//!     }
+//! }
+//!
+//! fn main() {
+//!     logger::init().unwrap();
+//!     geng::setup_panic_handler();
+//!     let geng = Geng::new("Application Name");
+//!     let state = State;
+//!     geng::run(&geng, state)
+//! }
+//! ```
+//!
+
 pub use geng_derive::*;
 
 pub mod prelude {
     pub use crate::{draw_2d, Geng};
     pub use crate::{Camera2dExt as _, Camera3dExt as _};
+    pub use ::batbox;
     pub use ::batbox::*;
     pub use ::geng_ecs as ecs;
     pub use ugli::{self, Ugli};
