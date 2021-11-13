@@ -204,6 +204,20 @@ impl<T: Float> Vec2<T> {
         vec2(clamp(self.x, min.x, max.x), clamp(self.y, min.y, max.y))
     }
 
+    /// Clamp vector by `aabb` corners.max
+    /// # Examples
+    /// ```
+    /// use batbox::*;
+    /// let v = vec2(0.5, 2.0);
+    /// let min = vec2(0.0, 0.0);
+    /// let max = vec2(1.0, 1.0);
+    /// let aabb = AABB::from_corners(min, max);
+    /// assert_eq!(v.clamp_aabb(aabb), v.clamp_min_max(min, max));
+    /// ```
+    pub fn clamp_aabb(self, aabb: AABB<T>) -> Self {
+        self.clamp_min_max(aabb.bottom_left(), aabb.top_right())
+    }
+
     /// Get an angle between the positive direction of the x-axis.
     /// # Examples
     /// ```
