@@ -17,10 +17,6 @@ impl geng::State for State {
             None,               // without clearing depth buffer
         );
     }
-
-    fn fixed_update(&mut self, delta_time: f64) {
-        println!("fixed update: {}", delta_time);
-    }
 }
 
 fn main() {
