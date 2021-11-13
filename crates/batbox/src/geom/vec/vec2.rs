@@ -165,46 +165,36 @@ impl<T: Float> Vec2<T> {
         }
     }
 
-    /// Clamp vector's length from above.
+    /// Clamp vector's length. Note that the range must be inclusive.
     /// # Examples
     /// ```
     /// use batbox::*;
     /// let v = vec2(1.0, 2.0);
-    /// assert_eq!(v.clamp(1.0), v.normalize());
+    /// assert_eq!(v.clamp_len(..=1.0), v.normalize());
     /// ```
-    pub fn clamp(self, max_len: T) -> Self {
+    pub fn clamp_len(self, len_range: impl RangeBounds<T>) -> Self {
         let len = self.len();
-        if len > max_len {
-            self * max_len / len
-        } else {
-            self
-        }
+        let target_len = len.clamp(len_range);
+        self * target_len / len
     }
 
-    /// Clamp vector by `min` and `max` values.
+    /// Clamp vector in range. Note the range must be inclusive.
     /// # Examples
     /// ```
     /// use batbox::*;
     /// let v = vec2(0.5, 2.0);
     /// let min = vec2(0.0, 0.0);
     /// let max = vec2(1.0, 1.0);
-    /// assert_eq!(v.clamp_min_max(min, max), vec2(0.5, 1.0));
+    /// assert_eq!(v.clamp_range(min..=max), vec2(0.5, 1.0));
     /// ```
-    pub fn clamp_min_max(self, min: Self, max: Self) -> Self {
-        fn clamp<T: PartialOrd>(value: T, min: T, max: T) -> T {
-            if value < min {
-                min
-            } else if value > max {
-                max
-            } else {
-                value
-            }
-        }
-
-        vec2(clamp(self.x, min.x, max.x), clamp(self.y, min.y, max.y))
+    pub fn clamp_range(self, range: RangeInclusive<Self>) -> Self {
+        vec2(
+            self.x.clamp(range.start().x..=range.end().x),
+            self.y.clamp(range.start().y..=range.end().y),
+        )
     }
 
-    /// Clamp vector by `aabb` corners.max
+    /// Clamp vector by `aabb` corners.
     /// # Examples
     /// ```
     /// use batbox::*;
@@ -212,10 +202,10 @@ impl<T: Float> Vec2<T> {
     /// let min = vec2(0.0, 0.0);
     /// let max = vec2(1.0, 1.0);
     /// let aabb = AABB::from_corners(min, max);
-    /// assert_eq!(v.clamp_aabb(aabb), v.clamp_min_max(min, max));
+    /// assert_eq!(v.clamp_aabb(aabb), v.clamp_range(min..=max));
     /// ```
     pub fn clamp_aabb(self, aabb: AABB<T>) -> Self {
-        self.clamp_min_max(aabb.bottom_left(), aabb.top_right())
+        self.clamp_range(aabb.bottom_left()..=aabb.top_right())
     }
 
     /// Get an angle between the positive direction of the x-axis.

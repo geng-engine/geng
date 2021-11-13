@@ -43,8 +43,7 @@ impl<T: AsRef<str>, F: AsRef<Font>> Widget for Text<T, F> {
         if self.text.as_ref().is_empty() {
             return;
         }
-        let size = partial_min(
-            self.core().position.height() as f32,
+        let size = (self.core().position.height() as f32).partial_min(
             self.size * self.core().position.width() as f32
                 / self
                     .font

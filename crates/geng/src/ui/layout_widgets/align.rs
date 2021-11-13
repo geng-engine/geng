@@ -81,12 +81,12 @@ impl<T: Widget> Widget for Align<T> {
         let size = self.core().position.size();
         let mut child_size = vec2(
             if self.child.core().constraints.flex.x == 0.0 {
-                partial_min(self.child.core().constraints.min_size.x, size.x)
+                self.child.core().constraints.min_size.x.partial_min(size.x)
             } else {
                 size.x
             },
             if self.child.core().constraints.flex.y == 0.0 {
-                partial_min(self.child.core().constraints.min_size.y, size.y)
+                self.child.core().constraints.min_size.y.partial_min(size.y)
             } else {
                 size.y
             },

@@ -70,10 +70,8 @@ impl<'a> Widget for SliderUI<'a> {
         } else {
             height / 6.0
         };
-        *self.tick_radius += clamp_abs(
-            target_tick_radius - *self.tick_radius,
-            Self::ANIMATION_SPEED * delta_time as f32 * height,
-        );
+        *self.tick_radius += (target_tick_radius - *self.tick_radius)
+            .clamp_abs(Self::ANIMATION_SPEED * delta_time as f32 * height);
     }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         let draw_2d = self.theme.geng().draw_2d();
@@ -132,11 +130,10 @@ impl<'a> Widget for SliderUI<'a> {
             if let Event::MouseDown { position, .. } | Event::MouseMove { position } = &event {
                 let position = position.x - self.core.position().x_min;
                 let new_value = *self.range.start()
-                    + clamp(
-                        (position - self.core.position().height() / 2.0)
-                            / (self.core.position().width() - self.core.position().height()),
-                        0.0..=1.0,
-                    ) * (*self.range.end() - *self.range.start());
+                    + ((position - self.core.position().height() / 2.0)
+                        / (self.core.position().width() - self.core.position().height()))
+                    .clamp(0.0, 1.0)
+                        * (*self.range.end() - *self.range.start());
                 (self.f)(new_value);
             }
         }

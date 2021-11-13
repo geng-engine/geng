@@ -69,12 +69,12 @@ impl Font {
                 if let Some(cur) = result {
                     result = Some(AABB::from_corners(
                         vec2(
-                            partial_min(bb.min.x as f32, cur.x_min),
-                            partial_min(bb.min.y as f32, cur.y_min),
+                            (bb.min.x as f32).partial_min(cur.x_min),
+                            (bb.min.y as f32).partial_min(cur.y_min),
                         ),
                         vec2(
-                            partial_max(bb.max.x as f32, cur.x_max),
-                            partial_max(bb.max.y as f32, cur.y_max),
+                            (bb.max.x as f32).partial_max(cur.x_max),
+                            (bb.max.y as f32).partial_max(cur.y_max),
                         ),
                     ));
                 } else {
