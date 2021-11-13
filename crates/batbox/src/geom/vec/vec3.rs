@@ -133,6 +133,13 @@ impl<T: Float> Vec3<T> {
         T::sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
     }
 
+    /// Clamp vector's length from above.
+    /// # Examples
+    /// ```
+    /// use batbox::*;
+    /// let v = vec3(1.0, 2.0, 3.0);
+    /// assert_eq!(v.clamp(1.0), v.normalize());
+    /// ```
     pub fn clamp(self, max_len: T) -> Self {
         let len = self.len();
         if len > max_len {
@@ -140,5 +147,32 @@ impl<T: Float> Vec3<T> {
         } else {
             self
         }
+    }
+
+    /// Clamp vector by `min` and `max` values.
+    /// # Examples
+    /// ```
+    /// use batbox::*;
+    /// let v = vec3(0.5, 2.0, -3.0);
+    /// let min = vec3(0.0, 0.0, 0.0);
+    /// let max = vec3(1.0, 1.0, 1.0);
+    /// assert_eq!(v.clamp_min_max(min, max), vec3(0.5, 1.0, 0.0));
+    /// ```
+    pub fn clamp_min_max(self, min: Self, max: Self) -> Self {
+        fn clamp<T: PartialOrd>(value: T, min: T, max: T) -> T {
+            if value < min {
+                min
+            } else if value > max {
+                max
+            } else {
+                value
+            }
+        }
+
+        vec3(
+            clamp(self.x, min.x, max.x),
+            clamp(self.y, min.y, max.y),
+            clamp(self.z, min.z, max.z),
+        )
     }
 }

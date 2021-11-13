@@ -181,6 +181,29 @@ impl<T: Float> Vec2<T> {
         }
     }
 
+    /// Clamp vector by `min` and `max` values.
+    /// # Examples
+    /// ```
+    /// use batbox::*;
+    /// let v = vec2(0.5, 2.0);
+    /// let min = vec2(0.0, 0.0);
+    /// let max = vec2(1.0, 1.0);
+    /// assert_eq!(v.clamp_min_max(min, max), vec2(0.5, 1.0));
+    /// ```
+    pub fn clamp_min_max(self, min: Self, max: Self) -> Self {
+        fn clamp<T: PartialOrd>(value: T, min: T, max: T) -> T {
+            if value < min {
+                min
+            } else if value > max {
+                max
+            } else {
+                value
+            }
+        }
+
+        vec2(clamp(self.x, min.x, max.x), clamp(self.y, min.y, max.y))
+    }
+
     /// Get an angle between the positive direction of the x-axis.
     /// # Examples
     /// ```
