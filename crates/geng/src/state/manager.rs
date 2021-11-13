@@ -37,7 +37,6 @@ impl State for StateManager {
         }
     }
     fn fixed_update(&mut self, delta_time: f64) {
-        println!("fixed");
         if let Some(state) = self.current_state() {
             state.fixed_update(delta_time);
         }
