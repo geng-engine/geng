@@ -104,6 +104,18 @@ pub fn min_max<T: Ord>(a: T, b: T) -> (T, T) {
 
 impl<T: PartialOrd + Sized + Clone> PartialOrdExt for T {}
 
+pub fn partial_min<T: PartialOrdExt>(a: T, b: T) -> T {
+    a.partial_min(b)
+}
+
+pub fn partial_max<T: PartialOrdExt>(a: T, b: T) -> T {
+    a.partial_max(b)
+}
+
+pub fn partial_min_max<T: PartialOrdExt>(a: T, b: T) -> (T, T) {
+    a.partial_min_max(b)
+}
+
 pub trait PartialOrdExt: PartialOrd + Sized + Clone {
     fn partial_min(self, other: Self) -> Self {
         self.partial_min_max(other).0
