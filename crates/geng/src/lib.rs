@@ -31,7 +31,6 @@ mod sound;
 mod state;
 mod texture_atlas;
 pub mod ui;
-mod updater;
 mod window;
 
 pub use asset::*;
@@ -46,7 +45,6 @@ pub use shader_lib::*;
 pub use sound::*;
 pub use state::*;
 pub use texture_atlas::*;
-pub use updater::*;
 pub use window::*;
 
 #[cfg(not(target_arch = "wasm32"))]

@@ -77,6 +77,7 @@ mod num;
 pub mod program_args;
 mod rng;
 mod timer;
+mod updater;
 
 pub use approx::*;
 pub use autosave::*;
@@ -89,6 +90,7 @@ pub use localization::*;
 pub use num::*;
 pub use rng::*;
 pub use timer::*;
+pub use updater::*;
 
 pub fn default<T: Default>() -> T {
     T::default()

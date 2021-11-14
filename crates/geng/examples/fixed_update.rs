@@ -1,4 +1,4 @@
-use geng::{prelude::*, Camera2d, FixedUpdater};
+use geng::{prelude::*, Camera2d};
 
 struct State {
     // geng and camera will be used for rendering
@@ -6,7 +6,7 @@ struct State {
     camera: Camera2d,
 
     // This timer will be updated every second
-    timer: f32,
+    timer: f64,
     // by this updater
     timer_updater: FixedUpdater,
 }
@@ -33,7 +33,7 @@ impl geng::State for State {
         // fixed updates that should be called in this frame.
         // Sometimes this number can be 0, and sometimes
         // it can be more than 1.
-        for _ in 0..self.timer_updater.update(delta_time as f32) {
+        for _ in 0..self.timer_updater.update(delta_time) {
             self.timer += self.timer_updater.fixed_delta_time;
         }
     }
