@@ -133,12 +133,36 @@ impl<T: Float> Vec3<T> {
         T::sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
     }
 
-    pub fn clamp(self, max_len: T) -> Self {
+    /// Clamp vector's length. Note that the range must be inclusive.
+    /// # Examples
+    /// ```
+    /// use batbox::*;
+    /// let v = vec3(1.0, 2.0, 3.0);
+    /// assert_eq!(v.clamp_len(..=1.0), v.normalize());
+    /// ```
+    pub fn clamp_len(self, len_range: impl RangeBounds<T>) -> Self {
         let len = self.len();
-        if len > max_len {
-            self * max_len / len
-        } else {
-            self
-        }
+        let target_len = len.clamp(len_range);
+        self * target_len / len
+    }
+
+    /// Clamp vector in range. Note the range must be inclusive.
+    /// # Examples
+    /// ```
+    /// use batbox::*;
+    /// let v = vec3(1.0, 2.0, 3.0);
+    /// assert_eq!(v.clamp_coordinates(.., 0.0..=1.0, 5.0..), vec3(1.0, 1.0, 5.0));
+    /// ```
+    pub fn clamp_coordinates(
+        self,
+        x_range: impl RangeBounds<T>,
+        y_range: impl RangeBounds<T>,
+        z_range: impl RangeBounds<T>,
+    ) -> Self {
+        vec3(
+            self.x.clamp(x_range),
+            self.y.clamp(y_range),
+            self.z.clamp(z_range),
+        )
     }
 }

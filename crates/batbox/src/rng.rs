@@ -30,7 +30,7 @@ pub fn global_rng() -> impl Rng {
         static GLOBAL_RNG: once_cell::sync::Lazy<Mutex<StdRng>> =
             once_cell::sync::Lazy::new(|| {
                 fn gen_byte() -> u8 {
-                    clamp(js_sys::Math::random() * 256.0, 0.0..=255.0) as u8
+                    (js_sys::Math::random() * 256.0).clamp(0.0, 255.0) as u8
                 }
                 let mut seed: [mem::MaybeUninit<u8>; 32] =
                     unsafe { mem::MaybeUninit::uninit().assume_init() };

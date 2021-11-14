@@ -105,38 +105,79 @@ pub fn min_max<T: Ord>(a: T, b: T) -> (T, T) {
     }
 }
 
+impl<T: PartialOrd> PartialOrdExt for T {}
+
 pub fn partial_min<T: PartialOrd>(a: T, b: T) -> T {
-    partial_min_max(a, b).0
+    a.partial_min(b)
 }
 
 pub fn partial_max<T: PartialOrd>(a: T, b: T) -> T {
-    partial_min_max(a, b).1
+    a.partial_max(b)
 }
 
 pub fn partial_min_max<T: PartialOrd>(a: T, b: T) -> (T, T) {
-    if a.partial_cmp(&b).unwrap() == std::cmp::Ordering::Less {
-        (a, b)
-    } else {
-        (b, a)
-    }
+    a.partial_min_max(b)
 }
 
-pub fn clamp<T: PartialOrd>(x: T, range: RangeInclusive<T>) -> T {
-    let (min, max) = range.into_inner();
-    if x < min {
-        min
-    } else if x > max {
-        max
-    } else {
-        x
+pub trait PartialOrdExt: PartialOrd {
+    fn partial_min(self, other: Self) -> Self
+    where
+        Self: Sized,
+    {
+        self.partial_min_max(other).0
     }
-}
 
-pub fn clamp_abs<T>(x: T, max: T) -> T
-where
-    T: PartialOrd + Neg<Output = T> + Copy,
-{
-    clamp(x, -max..=max)
+    fn partial_max(self, other: Self) -> Self
+    where
+        Self: Sized,
+    {
+        self.partial_min_max(other).1
+    }
+
+    fn partial_min_max(self, other: Self) -> (Self, Self)
+    where
+        Self: Sized,
+    {
+        if self.partial_cmp(&other).unwrap() == std::cmp::Ordering::Less {
+            (self, other)
+        } else {
+            (other, self)
+        }
+    }
+
+    /// Clamps a value in range.
+    /// # Panics
+    /// Panics if range is exclusive.
+    /// # Examples
+    /// ```
+    /// # use batbox::*;
+    /// assert_eq!(2.0.clamp(0.0..=1.0), 1.0);
+    /// assert_eq!(2.0.clamp(3.0..), 3.0);
+    /// assert_eq!(2.0.clamp(..=0.0), 0.0);
+    /// ```
+    fn clamp(mut self, range: impl RangeBounds<Self>) -> Self
+    where
+        Self: Clone,
+    {
+        match range.start_bound().cloned() {
+            Bound::Included(start) => self = self.partial_max(start),
+            Bound::Excluded(_) => panic!("Clamping with an exclusive range is undefined"),
+            Bound::Unbounded => (),
+        }
+        match range.end_bound().cloned() {
+            Bound::Included(end) => self = self.partial_min(end),
+            Bound::Excluded(_) => panic!("Clamping with an exclusive range is undefined"),
+            Bound::Unbounded => (),
+        }
+        self
+    }
+
+    fn clamp_abs(self, max: Self) -> Self
+    where
+        Self: Neg<Output = Self> + Copy,
+    {
+        self.clamp(-max..=max)
+    }
 }
 
 pub fn index_range<R>(len: usize, range: R) -> Range<usize>

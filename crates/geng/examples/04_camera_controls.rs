@@ -56,7 +56,7 @@ impl geng::State for State {
             }
             // Scrolling to zoom
             geng::Event::Wheel { delta } => {
-                self.camera.fov = clamp(self.camera.fov * 1.01f32.powf(-delta as f32), 1.0..=30.0);
+                self.camera.fov = (self.camera.fov * 1.01f32.powf(-delta as f32)).clamp(1.0, 30.0);
             }
             // Drag start
             geng::Event::MouseDown {
