@@ -107,7 +107,7 @@ fn run_impl(geng: &Geng, state: impl State) {
     }));
 
     let mut timer = Timer::new();
-    let mut fixed_delta_accum = 0.0;
+    let mut fixed_updater = FixedUpdater::new(geng.inner.fixed_delta_time.get(), 0.0);
     let mut main_loop = {
         let geng = geng.clone();
         move || {
@@ -116,11 +116,10 @@ fn run_impl(geng: &Geng, state: impl State) {
             let delta_time = delta_time.min(geng.inner.max_delta_time.get());
             state.borrow_mut().update(delta_time);
 
-            fixed_delta_accum += delta_time;
-            let fixed_delta_time = geng.inner.fixed_delta_time.get();
-            while fixed_delta_accum >= fixed_delta_time {
-                fixed_delta_accum -= fixed_delta_time;
-                state.borrow_mut().fixed_update(fixed_delta_time);
+            for _ in 0..fixed_updater.update(delta_time) {
+                state
+                    .borrow_mut()
+                    .fixed_update(fixed_updater.fixed_delta_time);
             }
 
             let window_size = geng.inner.window.real_size();
@@ -165,7 +164,6 @@ fn run_impl(geng: &Geng, state: impl State) {
         }
     }
 }
-
 
 /// Run the application
 pub fn run(geng: &Geng, state: impl State) {
