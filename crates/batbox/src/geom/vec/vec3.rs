@@ -150,16 +150,19 @@ impl<T: Float> Vec3<T> {
     /// # Examples
     /// ```
     /// use batbox::*;
-    /// let v = vec3(0.5, 2.0, -3.0);
-    /// let min = vec3(0.0, 0.0, 0.0);
-    /// let max = vec3(1.0, 1.0, 1.0);
-    /// assert_eq!(v.clamp_range(min..=max), vec3(0.5, 1.0, 0.0));
+    /// let v = vec3(1.0, 2.0, 3.0);
+    /// assert_eq!(v.clamp_coordinates(.., 0.0..=1.0, 5.0..), vec3(1.0, 1.0, 5.0));
     /// ```
-    pub fn clamp_range(self, range: RangeInclusive<Self>) -> Self {
+    pub fn clamp_coordinates(
+        self,
+        x_range: impl RangeBounds<T>,
+        y_range: impl RangeBounds<T>,
+        z_range: impl RangeBounds<T>,
+    ) -> Self {
         vec3(
-            self.x.clamp(range.start().x..=range.end().x),
-            self.y.clamp(range.start().y..=range.end().y),
-            self.z.clamp(range.start().z..=range.end().z),
+            self.x.clamp(x_range),
+            self.y.clamp(y_range),
+            self.z.clamp(z_range),
         )
     }
 }
