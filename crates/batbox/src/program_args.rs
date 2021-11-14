@@ -1,8 +1,8 @@
 use super::*;
 
-pub fn parse<T: clap::Parser>() -> T {
+pub fn args() -> Vec<String> {
     #[cfg(target_arch = "wasm32")]
-    return clap::Parser::parse_from({
+    return {
         let mut args = vec!["program".to_owned()]; // `Program` itself is the first arg
         let url = url::Url::parse(&web_sys::window().unwrap().location().href().unwrap())
             .expect("Failed to parse window.location.href");
@@ -13,7 +13,11 @@ pub fn parse<T: clap::Parser>() -> T {
         }
         trace!("href => args: {:?}", args);
         args
-    });
+    };
     #[cfg(not(target_arch = "wasm32"))]
-    return clap::Parser::parse();
+    return std::env::args().collect();
+}
+
+pub fn parse<T: clap::Parser>() -> T {
+    return clap::Parser::parse_from(args());
 }

@@ -87,6 +87,7 @@ pub use future_ext::ext::*;
 pub use geom::*;
 pub use localization::*;
 pub use num::*;
+pub use program_args::args as program_args;
 pub use rng::*;
 pub use timer::*;
 
