@@ -133,46 +133,33 @@ impl<T: Float> Vec3<T> {
         T::sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
     }
 
-    /// Clamp vector's length from above.
+    /// Clamp vector's length. Note that the range must be inclusive.
     /// # Examples
     /// ```
     /// use batbox::*;
     /// let v = vec3(1.0, 2.0, 3.0);
-    /// assert_eq!(v.clamp(1.0), v.normalize());
+    /// assert_eq!(v.clamp_len(..=1.0), v.normalize());
     /// ```
-    pub fn clamp(self, max_len: T) -> Self {
+    pub fn clamp_len(self, len_range: impl RangeBounds<T>) -> Self {
         let len = self.len();
-        if len > max_len {
-            self * max_len / len
-        } else {
-            self
-        }
+        let target_len = len.clamp(len_range);
+        self * target_len / len
     }
 
-    /// Clamp vector by `min` and `max` values.
+    /// Clamp vector in range. Note the range must be inclusive.
     /// # Examples
     /// ```
     /// use batbox::*;
     /// let v = vec3(0.5, 2.0, -3.0);
     /// let min = vec3(0.0, 0.0, 0.0);
     /// let max = vec3(1.0, 1.0, 1.0);
-    /// assert_eq!(v.clamp_min_max(min, max), vec3(0.5, 1.0, 0.0));
+    /// assert_eq!(v.clamp_range(min..=max), vec3(0.5, 1.0, 0.0));
     /// ```
-    pub fn clamp_min_max(self, min: Self, max: Self) -> Self {
-        fn clamp<T: PartialOrd>(value: T, min: T, max: T) -> T {
-            if value < min {
-                min
-            } else if value > max {
-                max
-            } else {
-                value
-            }
-        }
-
+    pub fn clamp_range(self, range: RangeInclusive<Self>) -> Self {
         vec3(
-            clamp(self.x, min.x, max.x),
-            clamp(self.y, min.y, max.y),
-            clamp(self.z, min.z, max.z),
+            self.x.clamp(range.start().x..=range.end().x),
+            self.y.clamp(range.start().y..=range.end().y),
+            self.z.clamp(range.start().z..=range.end().z),
         )
     }
 }

@@ -102,30 +102,39 @@ pub fn min_max<T: Ord>(a: T, b: T) -> (T, T) {
     }
 }
 
-impl<T: PartialOrd + Sized + Clone> PartialOrdExt for T {}
+impl<T: PartialOrd> PartialOrdExt for T {}
 
-pub fn partial_min<T: PartialOrdExt>(a: T, b: T) -> T {
+pub fn partial_min<T: PartialOrd>(a: T, b: T) -> T {
     a.partial_min(b)
 }
 
-pub fn partial_max<T: PartialOrdExt>(a: T, b: T) -> T {
+pub fn partial_max<T: PartialOrd>(a: T, b: T) -> T {
     a.partial_max(b)
 }
 
-pub fn partial_min_max<T: PartialOrdExt>(a: T, b: T) -> (T, T) {
+pub fn partial_min_max<T: PartialOrd>(a: T, b: T) -> (T, T) {
     a.partial_min_max(b)
 }
 
-pub trait PartialOrdExt: PartialOrd + Sized + Clone {
-    fn partial_min(self, other: Self) -> Self {
+pub trait PartialOrdExt: PartialOrd {
+    fn partial_min(self, other: Self) -> Self
+    where
+        Self: Sized,
+    {
         self.partial_min_max(other).0
     }
 
-    fn partial_max(self, other: Self) -> Self {
+    fn partial_max(self, other: Self) -> Self
+    where
+        Self: Sized,
+    {
         self.partial_min_max(other).1
     }
 
-    fn partial_min_max(self, other: Self) -> (Self, Self) {
+    fn partial_min_max(self, other: Self) -> (Self, Self)
+    where
+        Self: Sized,
+    {
         if self.partial_cmp(&other).unwrap() == std::cmp::Ordering::Less {
             (self, other)
         } else {
@@ -143,7 +152,10 @@ pub trait PartialOrdExt: PartialOrd + Sized + Clone {
     /// assert_eq!(2.0.clamp(3.0..), 3.0);
     /// assert_eq!(2.0.clamp(..=0.0), 0.0);
     /// ```
-    fn clamp(mut self, range: impl RangeBounds<Self>) -> Self {
+    fn clamp(mut self, range: impl RangeBounds<Self>) -> Self
+    where
+        Self: Clone,
+    {
         match range.start_bound().cloned() {
             Bound::Included(start) => self = self.partial_max(start),
             Bound::Excluded(_) => panic!("Clamping with an exclusive range is undefined"),
