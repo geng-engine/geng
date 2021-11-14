@@ -52,6 +52,10 @@ impl WidgetCore {
     }
 }
 
+pub fn void() -> impl Widget {
+    WidgetCore::void()
+}
+
 pub trait Widget {
     fn core(&self) -> &WidgetCore;
     fn core_mut(&mut self) -> &mut WidgetCore;

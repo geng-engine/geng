@@ -99,10 +99,17 @@ impl Geng {
 
 fn run_impl(geng: &Geng, state: impl State) {
     let state = Rc::new(RefCell::new(state));
+    let ui_controller = Rc::new(RefCell::new(ui::Controller::new()));
     geng.inner.window.set_event_handler(Box::new({
         let state = state.clone();
+        let ui_controller = ui_controller.clone();
         move |event| {
-            state.borrow_mut().handle_event(event);
+            if !ui_controller
+                .borrow_mut()
+                .handle_event(&mut state.borrow_mut().ui(), event.clone())
+            {
+                state.borrow_mut().handle_event(event);
+            }
         }
     }));
 
@@ -110,11 +117,14 @@ fn run_impl(geng: &Geng, state: impl State) {
     let mut fixed_updater = FixedUpdater::new(geng.inner.fixed_delta_time.get(), 0.0);
     let mut main_loop = {
         let geng = geng.clone();
+        // TODO: remove the busy loop to not use any resources?
         move || {
-            // TODO: remove the busy loop to not use any resources?
             let delta_time = timer.tick();
             let delta_time = delta_time.min(geng.inner.max_delta_time.get());
             state.borrow_mut().update(delta_time);
+            ui_controller
+                .borrow_mut()
+                .update(&mut state.borrow_mut().ui(), delta_time);
 
             for _ in 0..fixed_updater.update(delta_time) {
                 state
@@ -123,10 +133,13 @@ fn run_impl(geng: &Geng, state: impl State) {
             }
 
             let window_size = geng.inner.window.real_size();
-            // Whis means window is minimized?
+            // This means window is minimized?
             if window_size.x != 0 && window_size.y != 0 {
                 let mut framebuffer = ugli::Framebuffer::default(geng.ugli());
                 state.borrow_mut().draw(&mut framebuffer);
+                ui_controller
+                    .borrow_mut()
+                    .draw(&mut state.borrow_mut().ui(), &mut framebuffer);
             }
             geng.inner.window.swap_buffers();
 

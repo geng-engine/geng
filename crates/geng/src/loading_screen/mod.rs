@@ -74,4 +74,7 @@ where
         }
         None
     }
+    fn ui(&mut self) -> Box<dyn ui::Widget + '_> {
+        self.state.ui()
+    }
 }

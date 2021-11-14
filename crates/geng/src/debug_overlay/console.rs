@@ -66,15 +66,14 @@ impl Console {
             records: std::collections::VecDeque::new(),
         }
     }
-    pub fn before_draw(&mut self) {
+    pub fn ui(&mut self) -> impl ui::Widget + '_ {
         while let Ok(record) = self.receiver.try_recv() {
             self.records.push_back(record);
         }
         while self.records.len() > Self::MAX_RECORDS {
             self.records.pop_front();
         }
-    }
-    pub fn ui(&mut self) -> impl ui::Widget + '_ {
+
         use ui::*;
         let font = self.geng.default_font();
         column(

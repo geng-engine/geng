@@ -57,10 +57,6 @@ impl ID {
     }
 }
 
-pub trait State {
-    fn ui<'a>(&'a mut self) -> Box<dyn Widget + 'a>;
-}
-
 pub struct Controller {
     size: Vec2<f64>,
     last_touch_pos: Option<Vec2<f64>>,

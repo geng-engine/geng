@@ -23,7 +23,7 @@ impl FpsCounter {
         }
     }
 
-    pub fn before_draw(&mut self) {
+    pub fn ui(&mut self) -> impl ui::Widget + '_ {
         let delta_time = self.timer.tick();
         self.next_fps_update -= delta_time;
         self.frames += 1;
@@ -33,9 +33,6 @@ impl FpsCounter {
             self.frames = 0;
             self.text = format!("FPS: {}", self.fps.round() as i64);
         }
-    }
-
-    pub fn ui(&mut self) -> impl ui::Widget + '_ {
         ui::Text::new(&mut self.text, self.geng.default_font(), 16.0, Color::WHITE)
     }
 }

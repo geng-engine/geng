@@ -36,6 +36,10 @@ pub trait State: 'static {
     fn transition(&mut self) -> Option<Transition> {
         None
     }
+
+    fn ui(&mut self) -> Box<dyn ui::Widget + '_> {
+        Box::new(ui::void())
+    }
 }
 
 pub struct EmptyState;
@@ -61,5 +65,8 @@ impl<T: State + ?Sized> State for Box<T> {
     }
     fn transition(&mut self) -> Option<Transition> {
         <T as State>::transition(self)
+    }
+    fn ui(&mut self) -> Box<dyn ui::Widget + '_> {
+        <T as State>::ui(self)
     }
 }

@@ -58,4 +58,10 @@ impl State for StateManager {
             None
         }
     }
+    fn ui(&mut self) -> Box<dyn ui::Widget + '_> {
+        match self.current_state() {
+            Some(state) => state.ui(),
+            None => Box::new(ui::void()),
+        }
+    }
 }

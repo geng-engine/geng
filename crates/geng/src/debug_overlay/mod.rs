@@ -6,34 +6,9 @@ mod fps_counter;
 use console::*;
 use fps_counter::*;
 
-struct Data {
+pub struct DebugOverlay {
     fps_counter: FpsCounter,
     console: Console,
-}
-
-impl Data {
-    fn new(geng: &Geng) -> Self {
-        Self {
-            fps_counter: FpsCounter::new(geng),
-            console: Console::new(geng),
-        }
-    }
-    fn before_draw(&mut self) {
-        self.fps_counter.before_draw();
-        self.console.before_draw();
-    }
-    fn ui(&mut self) -> impl ui::Widget + '_ {
-        use ui::*;
-        ui::column![
-            self.fps_counter.ui().align(vec2(0.0, 1.0)),
-            self.console.ui(),
-        ]
-    }
-}
-
-pub struct DebugOverlay {
-    ui_controller: ui::Controller,
-    data: Data,
     state: Box<dyn State>,
     enabled: bool,
 }
@@ -41,8 +16,8 @@ pub struct DebugOverlay {
 impl DebugOverlay {
     pub fn new(geng: &Geng, state: impl State) -> Self {
         Self {
-            ui_controller: ui::Controller::new(),
-            data: Data::new(geng),
+            fps_counter: FpsCounter::new(geng),
+            console: Console::new(geng),
             state: Box::new(state),
             enabled: false,
         }
@@ -51,9 +26,6 @@ impl DebugOverlay {
 
 impl State for DebugOverlay {
     fn update(&mut self, delta_time: f64) {
-        if self.enabled {
-            self.ui_controller.update(&mut self.data.ui(), delta_time);
-        }
         self.state.update(delta_time);
     }
     fn fixed_update(&mut self, delta_time: f64) {
@@ -61,20 +33,11 @@ impl State for DebugOverlay {
     }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         self.state.draw(framebuffer);
-        if self.enabled {
-            self.data.before_draw();
-            self.ui_controller.draw(&mut self.data.ui(), framebuffer);
-        }
     }
     fn handle_event(&mut self, event: Event) {
         if let Event::KeyDown { key: Key::F3 } = event {
             self.enabled = !self.enabled;
-        }
-        if !self.enabled
-            || !self
-                .ui_controller
-                .handle_event(&mut self.data.ui(), event.clone())
-        {
+        } else {
             self.state.handle_event(event);
         }
     }
@@ -84,5 +47,18 @@ impl State for DebugOverlay {
             None => None,
             _ => unreachable!(),
         }
+    }
+    fn ui(&mut self) -> Box<dyn ui::Widget + '_> {
+        let overlay_ui: Box<dyn ui::Widget> = if self.enabled {
+            use ui::*;
+            let ui = ui::column![
+                self.fps_counter.ui().align(vec2(0.0, 1.0)),
+                self.console.ui(),
+            ];
+            Box::new(ui)
+        } else {
+            Box::new(ui::void())
+        };
+        Box::new(ui::stack![self.state.ui(), overlay_ui])
     }
 }
