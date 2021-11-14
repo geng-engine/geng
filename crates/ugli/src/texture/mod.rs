@@ -34,7 +34,7 @@ pub enum Filter {
 }
 
 pub struct Texture2d<P: TexturePixel> {
-    pub(crate) ugli: Rc<Ugli>,
+    pub(crate) ugli: Ugli,
     pub(crate) handle: raw::Texture,
     size: Cell<Vec2<usize>>,
     phantom_data: PhantomData<*mut P>,
@@ -42,7 +42,7 @@ pub struct Texture2d<P: TexturePixel> {
 
 impl<P: TexturePixel> Drop for Texture2d<P> {
     fn drop(&mut self) {
-        let gl = &self.ugli.inner;
+        let gl = &self.ugli.inner.raw;
         gl.delete_texture(&self.handle);
     }
 }
@@ -50,8 +50,8 @@ impl<P: TexturePixel> Drop for Texture2d<P> {
 pub type Texture = Texture2d<Color<f32>>;
 
 impl<P: TexturePixel> Texture2d<P> {
-    fn new_raw(ugli: &Rc<Ugli>, size: Vec2<usize>) -> Self {
-        let gl = &ugli.inner;
+    fn new_raw(ugli: &Ugli, size: Vec2<usize>) -> Self {
+        let gl = &ugli.inner.raw;
         let handle = gl.create_texture().unwrap();
         gl.bind_texture(raw::TEXTURE_2D, &handle);
         gl.tex_parameteri(
@@ -76,9 +76,9 @@ impl<P: TexturePixel> Texture2d<P> {
         size.x & (size.x - 1) == 0 && size.y & (size.y - 1) == 0
     }
 
-    pub fn new_uninitialized(ugli: &Rc<Ugli>, size: Vec2<usize>) -> Self {
+    pub fn new_uninitialized(ugli: &Ugli, size: Vec2<usize>) -> Self {
         let texture = Self::new_raw(ugli, size);
-        let gl = &ugli.inner;
+        let gl = &ugli.inner.raw;
         gl.tex_image_2d::<u8>(
             raw::TEXTURE_2D,
             0,
@@ -95,7 +95,7 @@ impl<P: TexturePixel> Texture2d<P> {
     }
     pub fn set_wrap_mode(&mut self, wrap_mode: WrapMode) {
         assert!(self.is_pot() || wrap_mode == WrapMode::Clamp);
-        let gl = &self.ugli.inner;
+        let gl = &self.ugli.inner.raw;
         gl.bind_texture(raw::TEXTURE_2D, &self.handle);
         gl.tex_parameteri(raw::TEXTURE_2D, raw::TEXTURE_WRAP_S, wrap_mode as raw::Int);
         gl.tex_parameteri(raw::TEXTURE_2D, raw::TEXTURE_WRAP_T, wrap_mode as raw::Int);
@@ -104,7 +104,7 @@ impl<P: TexturePixel> Texture2d<P> {
 
     pub fn set_filter(&mut self, filter: Filter) {
         assert!(self.is_pot() || filter == Filter::Nearest || filter == Filter::Linear);
-        let gl = &self.ugli.inner;
+        let gl = &self.ugli.inner.raw;
         gl.bind_texture(raw::TEXTURE_2D, &self.handle);
         gl.tex_parameteri(raw::TEXTURE_2D, raw::TEXTURE_MAG_FILTER, filter as raw::Int);
         self.ugli.debug_check();
@@ -136,7 +136,7 @@ impl<P: TexturePixel> Texture2d<P> {
                 },
             data.len()
         );
-        let gl = &self.ugli.inner;
+        let gl = &self.ugli.inner.raw;
         gl.bind_texture(raw::TEXTURE_2D, &self.handle);
         gl.tex_sub_image_2d(
             raw::TEXTURE_2D,
@@ -156,7 +156,7 @@ impl<P: TexturePixel> Texture2d<P> {
 impl Texture {
     pub fn gen_mipmaps(&mut self) {
         assert!(self.is_pot());
-        let gl = &self.ugli.inner;
+        let gl = &self.ugli.inner.raw;
         gl.bind_texture(raw::TEXTURE_2D, &self.handle);
         gl.generate_mipmap(raw::TEXTURE_2D);
         gl.tex_parameteri(
@@ -168,7 +168,7 @@ impl Texture {
     }
 
     pub fn new_with<F: FnMut(Vec2<usize>) -> Color<f32>>(
-        ugli: &Rc<Ugli>,
+        ugli: &Ugli,
         size: Vec2<usize>,
         mut f: F,
     ) -> Self {
@@ -183,7 +183,7 @@ impl Texture {
                 data.push((color.a * 255.0) as u8);
             }
         }
-        let gl = &ugli.inner;
+        let gl = &ugli.inner.raw;
         gl.tex_image_2d(
             raw::TEXTURE_2D,
             0,
@@ -199,10 +199,10 @@ impl Texture {
         texture
     }
 
-    pub fn from_image_image(ugli: &Rc<Ugli>, image: image::RgbaImage) -> Self {
+    pub fn from_image_image(ugli: &Ugli, image: image::RgbaImage) -> Self {
         let size = vec2(image.width() as usize, image.height() as usize);
         let mut texture = Texture2d::new_raw(ugli, size);
-        let gl = &ugli.inner;
+        let gl = &ugli.inner.raw;
         gl.tex_image_2d(
             raw::TEXTURE_2D,
             0,
@@ -222,15 +222,15 @@ impl Texture {
     }
 
     #[cfg(not(target_arch = "wasm32"))]
-    pub fn from_image(ugli: &Rc<Ugli>, image: image::RgbaImage) -> Self {
+    pub fn from_image(ugli: &Ugli, image: image::RgbaImage) -> Self {
         Self::from_image_image(ugli, image)
     }
 
     #[cfg(target_arch = "wasm32")]
-    pub fn from_image(ugli: &Rc<Ugli>, image: &web_sys::HtmlImageElement) -> Self {
+    pub fn from_image(ugli: &Ugli, image: &web_sys::HtmlImageElement) -> Self {
         let mut texture =
             Texture2d::new_raw(ugli, vec2(image.width() as usize, image.height() as usize));
-        let gl = &ugli.inner;
+        let gl = &ugli.inner.raw;
         gl.tex_image_2d_image(
             raw::TEXTURE_2D,
             0,

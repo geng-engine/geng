@@ -1,12 +1,12 @@
 use super::*;
 
 pub struct ShaderLib {
-    ugli: Rc<Ugli>,
+    ugli: Ugli,
     files: RefCell<HashMap<String, String>>,
 }
 
 impl ShaderLib {
-    pub(crate) fn new_impl(ugli: &Rc<Ugli>, options: &ContextOptions) -> Self {
+    pub(crate) fn new_impl(ugli: &Ugli, options: &ContextOptions) -> Self {
         let lib = Self {
             ugli: ugli.clone(),
             files: RefCell::new(HashMap::new()),

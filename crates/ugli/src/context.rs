@@ -1,9 +1,14 @@
 use super::*;
 
-pub struct Ugli {
-    pub(crate) inner: raw::Context,
+pub(crate) struct UgliImpl {
+    pub(crate) raw: raw::Context,
     size: Cell<Vec2<usize>>,
     phantom_data: PhantomData<*mut ()>,
+}
+
+#[derive(Clone)]
+pub struct Ugli {
+    pub(crate) inner: Rc<UgliImpl>,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -54,9 +59,11 @@ impl Ugli {
         }
         let webgl: web_sys::WebGlRenderingContext = webgl.dyn_into().unwrap();
         let ugli = Ugli {
-            inner: raw::Context::new(webgl),
-            size: Cell::new(vec2(1, 1)),
-            phantom_data: PhantomData,
+            inner: Rc::new(UgliImpl {
+                raw: raw::Context::new(webgl),
+                size: Cell::new(vec2(1, 1)),
+                phantom_data: PhantomData,
+            }),
         };
         ugli.init();
         ugli
@@ -67,11 +74,13 @@ impl Ugli {
 impl Ugli {
     pub fn create_from_glutin(glutin_context: &glutin::Context<glutin::PossiblyCurrent>) -> Self {
         let ugli = Ugli {
-            inner: raw::Context::new(|symbol| {
-                glutin_context.get_proc_address(symbol) as *const c_void
+            inner: Rc::new(UgliImpl {
+                raw: raw::Context::new(|symbol| {
+                    glutin_context.get_proc_address(symbol) as *const c_void
+                }),
+                size: Cell::new(vec2(1, 1)),
+                phantom_data: PhantomData,
             }),
-            size: Cell::new(vec2(1, 1)),
-            phantom_data: PhantomData,
         };
         ugli.init();
         ugli
@@ -80,7 +89,7 @@ impl Ugli {
 
 impl Ugli {
     pub fn init(&self) {
-        let gl = &self.inner;
+        let gl = &self.inner.raw;
         info!("GL version: {:?}", gl.get_version_string());
         gl.enable(raw::DEPTH_TEST);
         #[cfg(not(target_arch = "wasm32"))]
@@ -92,9 +101,9 @@ impl Ugli {
     }
     #[doc(hidden)]
     pub fn _set_size(&self, size: Vec2<usize>) {
-        self.size.set(size);
+        self.inner.size.set(size);
     }
     pub(crate) fn size(&self) -> Vec2<usize> {
-        self.size.get()
+        self.inner.size.get()
     }
 }

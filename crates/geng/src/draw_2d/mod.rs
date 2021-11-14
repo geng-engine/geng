@@ -37,7 +37,7 @@ pub struct Draw2D {
 }
 
 impl Draw2D {
-    pub(crate) fn new(shader_lib: &ShaderLib, ugli: &Rc<Ugli>) -> Self {
+    pub(crate) fn new(shader_lib: &ShaderLib, ugli: &Ugli) -> Self {
         Self {
             geometry: RefCell::new(ugli::VertexBuffer::new_dynamic(ugli, Vec::new())),
             textured_geometry: RefCell::new(ugli::VertexBuffer::new_dynamic(ugli, Vec::new())),

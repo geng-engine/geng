@@ -6,7 +6,7 @@ pub struct TextureAtlas {
 }
 
 impl TextureAtlas {
-    pub fn new(ugli: &Rc<Ugli>, textures: &[&ugli::Texture]) -> Self {
+    pub fn new(ugli: &Ugli, textures: &[&ugli::Texture]) -> Self {
         let mut width = 0;
         let mut height = 0;
         for texture in textures {

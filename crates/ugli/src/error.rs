@@ -15,7 +15,7 @@ pub enum Error {
 
 impl Ugli {
     pub fn try_check(&self) -> Result<(), Error> {
-        let error = self.inner.get_error();
+        let error = self.inner.raw.get_error();
         if error == raw::NO_ERROR {
             return Ok(());
         }

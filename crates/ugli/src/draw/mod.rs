@@ -16,7 +16,7 @@ pub enum DrawMode {
 }
 
 pub fn clear(framebuffer: &mut Framebuffer, color: Option<Color<f32>>, depth: Option<f32>) {
-    let gl = &framebuffer.fbo.ugli.inner;
+    let gl = &framebuffer.fbo.ugli.inner.raw;
     framebuffer.fbo.bind();
     let mut flags = 0;
     if let Some(color) = color {
@@ -46,7 +46,7 @@ pub fn draw<V, U, DP>(
     DP: std::borrow::Borrow<DrawParameters>,
 {
     program.ugli.debug_check();
-    let gl = &program.ugli.inner;
+    let gl = &program.ugli.inner.raw;
 
     framebuffer.fbo.bind();
     let draw_parameters = draw_parameters.borrow();
@@ -126,7 +126,7 @@ pub fn draw<V, U, DP>(
     impl<'a> UniformVisitor for UC<'a> {
         fn visit<U: Uniform>(&mut self, name: &str, uniform: &U) {
             if let Some(uniform_info) = self.program.uniforms.get(name) {
-                uniform.apply(&self.program.ugli.inner, uniform_info);
+                uniform.apply(&self.program.ugli.inner.raw, uniform_info);
             }
         }
     }
@@ -203,7 +203,7 @@ pub fn draw<V, U, DP>(
             }
             unsafe impl<'a, D: Vertex> VertexAttributeVisitor for Vac<'a, D> {
                 unsafe fn visit<A: VertexAttribute>(&mut self, name: &str, attribute: *const A) {
-                    let gl = &self.program.ugli.inner;
+                    let gl = &self.program.ugli.inner.raw;
                     if let Some(attribute_info) = self.program.attributes.get(name) {
                         let offset = self.offset + attribute as usize - self.sample as usize;
                         gl.enable_vertex_attrib_array(attribute_info.location);

@@ -1,7 +1,7 @@
 use super::*;
 
 pub struct Program {
-    pub(crate) ugli: Rc<Ugli>,
+    pub(crate) ugli: Ugli,
     pub(crate) handle: raw::Program,
     pub(crate) attributes: HashMap<String, AttributeInfo>,
     pub(crate) uniforms: HashMap<String, UniformInfo>,
@@ -22,7 +22,7 @@ pub struct UniformInfo {
 
 impl Drop for Program {
     fn drop(&mut self) {
-        self.ugli.inner.delete_program(&self.handle);
+        self.ugli.inner.raw.delete_program(&self.handle);
     }
 }
 
@@ -33,8 +33,8 @@ pub struct ProgramLinkError {
 }
 
 impl Program {
-    pub fn new(ugli: &Rc<Ugli>, shaders: &[&Shader]) -> Result<Self, ProgramLinkError> {
-        let gl = &ugli.inner;
+    pub fn new(ugli: &Ugli, shaders: &[&Shader]) -> Result<Self, ProgramLinkError> {
+        let gl = &ugli.inner.raw;
         let mut program = Program {
             ugli: ugli.clone(),
             handle: gl.create_program().unwrap(),
@@ -91,6 +91,6 @@ impl Program {
         Ok(program)
     }
     pub(crate) fn bind(&self) {
-        self.ugli.inner.use_program(&self.handle);
+        self.ugli.inner.raw.use_program(&self.handle);
     }
 }

@@ -1,7 +1,7 @@
 use super::*;
 
 struct RawBuffer {
-    ugli: Rc<Ugli>,
+    ugli: Ugli,
     handle: raw::Buffer,
     usage: raw::Enum,
     size: Cell<usize>,
@@ -9,8 +9,8 @@ struct RawBuffer {
 }
 
 impl RawBuffer {
-    fn new(ugli: &Rc<Ugli>, usage: raw::Enum) -> Self {
-        let gl = &ugli.inner;
+    fn new(ugli: &Ugli, usage: raw::Enum) -> Self {
+        let gl = &ugli.inner.raw;
         Self {
             ugli: ugli.clone(),
             handle: gl.create_buffer().unwrap(),
@@ -20,12 +20,12 @@ impl RawBuffer {
         }
     }
     fn bind(&self) {
-        let gl = &self.ugli.inner;
+        let gl = &self.ugli.inner.raw;
         gl.bind_buffer(raw::ARRAY_BUFFER, &self.handle);
         self.ugli.debug_check();
     }
     fn set_data<T>(&self, data: &Vec<T>) {
-        let gl = &self.ugli.inner;
+        let gl = &self.ugli.inner.raw;
         self.bind();
         let capacity = mem::size_of::<T>() * data.capacity();
         if self.size.get() < capacity {
@@ -44,7 +44,7 @@ impl RawBuffer {
 
 impl Drop for RawBuffer {
     fn drop(&mut self) {
-        let gl = &self.ugli.inner;
+        let gl = &self.ugli.inner.raw;
         gl.delete_buffer(&self.handle);
     }
 }
@@ -70,7 +70,7 @@ impl<T: Vertex> DerefMut for VertexBuffer<T> {
 }
 
 impl<T: Vertex> VertexBuffer<T> {
-    fn new(ugli: &Rc<Ugli>, data: Vec<T>, usage: raw::Enum) -> Self {
+    fn new(ugli: &Ugli, data: Vec<T>, usage: raw::Enum) -> Self {
         let buffer = RawBuffer::new(ugli, usage);
         buffer.set_data(&data);
         Self {
@@ -80,11 +80,11 @@ impl<T: Vertex> VertexBuffer<T> {
         }
     }
 
-    pub fn new_static(ugli: &Rc<Ugli>, data: Vec<T>) -> Self {
+    pub fn new_static(ugli: &Ugli, data: Vec<T>) -> Self {
         Self::new(ugli, data, raw::STATIC_DRAW)
     }
 
-    pub fn new_dynamic(ugli: &Rc<Ugli>, data: Vec<T>) -> Self {
+    pub fn new_dynamic(ugli: &Ugli, data: Vec<T>) -> Self {
         Self::new(ugli, data, raw::DYNAMIC_DRAW)
     }
 

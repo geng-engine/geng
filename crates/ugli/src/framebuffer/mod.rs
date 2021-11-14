@@ -25,11 +25,11 @@ pub struct FramebufferRead<'a> {
 
 impl<'a> FramebufferRead<'a> {
     pub fn new(
-        ugli: &Rc<Ugli>,
+        ugli: &Ugli,
         color: ColorAttachmentRead<'a>,
         depth: DepthAttachmentRead<'a>,
     ) -> Self {
-        let gl = &ugli.inner;
+        let gl = &ugli.inner.raw;
         let fbo = Fbo::new(ugli);
         fbo.bind();
         let mut size = None;
@@ -67,7 +67,7 @@ impl<'a> FramebufferRead<'a> {
             size: size.unwrap(),
         }
     }
-    pub fn new_color(ugli: &Rc<Ugli>, color: ColorAttachmentRead<'a>) -> Self {
+    pub fn new_color(ugli: &Ugli, color: ColorAttachmentRead<'a>) -> Self {
         Self::new(ugli, color, DepthAttachmentRead::None)
     }
     pub fn size(&self) -> Vec2<usize> {
@@ -102,7 +102,7 @@ pub struct Framebuffer<'a> {
 }
 
 impl<'a> Framebuffer<'a> {
-    pub fn new(ugli: &Rc<Ugli>, color: ColorAttachment<'a>, depth: DepthAttachment<'a>) -> Self {
+    pub fn new(ugli: &Ugli, color: ColorAttachment<'a>, depth: DepthAttachment<'a>) -> Self {
         Self {
             read: FramebufferRead::new(
                 ugli,
@@ -119,7 +119,7 @@ impl<'a> Framebuffer<'a> {
             ),
         }
     }
-    pub fn new_color(ugli: &Rc<Ugli>, color: ColorAttachment<'a>) -> Self {
+    pub fn new_color(ugli: &Ugli, color: ColorAttachment<'a>) -> Self {
         Self::new(ugli, color, DepthAttachment::None)
     }
     pub fn destruct(self) -> (ColorAttachmentRead<'a>, DepthAttachmentRead<'a>) {
@@ -128,7 +128,7 @@ impl<'a> Framebuffer<'a> {
 }
 
 impl<'a> Framebuffer<'a> {
-    pub fn default(ugli: &Rc<Ugli>) -> Self {
+    pub fn default(ugli: &Ugli) -> Self {
         Self {
             read: FramebufferRead {
                 fbo: Fbo::default(ugli),

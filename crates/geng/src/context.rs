@@ -80,7 +80,7 @@ impl Geng {
         &self.inner.window
     }
 
-    pub fn ugli(&self) -> &Rc<Ugli> {
+    pub fn ugli(&self) -> &Ugli {
         self.inner.window.ugli()
     }
 

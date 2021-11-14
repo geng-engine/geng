@@ -31,7 +31,7 @@ impl Font {
         Self::new_with(geng.ugli(), geng.shader_lib(), data)
     }
     pub(crate) fn new_with(
-        geng: &Rc<Ugli>,
+        geng: &Ugli,
         shader_lib: &ShaderLib,
         data: Vec<u8>,
     ) -> Result<Font, anyhow::Error> {

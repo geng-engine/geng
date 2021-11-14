@@ -22,7 +22,7 @@ impl<'a> ColorData<'a> {
 
 impl<'a> FramebufferRead<'a> {
     pub fn read_color(&self) -> ColorData {
-        let gl = &self.fbo.ugli.inner;
+        let gl = &self.fbo.ugli.inner.raw;
         // TODO
         // if self.fbo.handle != 0 {
         //     if let ColorAttachmentRead::None = self.color {
@@ -60,7 +60,7 @@ impl<'a> FramebufferRead<'a> {
         source_rect: AABB<usize>,
         dest: Vec2<usize>,
     ) {
-        let gl = &self.fbo.ugli.inner;
+        let gl = &self.fbo.ugli.inner.raw;
         self.fbo.bind();
         gl.bind_texture(raw::TEXTURE_2D, &texture.handle);
         gl.copy_tex_sub_image_2d(

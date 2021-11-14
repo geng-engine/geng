@@ -7,14 +7,14 @@ pub enum ShaderType {
 }
 
 pub struct Shader {
-    pub(crate) ugli: Rc<Ugli>,
+    pub(crate) ugli: Ugli,
     pub(crate) handle: raw::Shader,
     phantom_data: PhantomData<*mut ()>,
 }
 
 impl Drop for Shader {
     fn drop(&mut self) {
-        let gl = &self.ugli.inner;
+        let gl = &self.ugli.inner.raw;
         gl.delete_shader(&self.handle);
     }
 }
@@ -27,11 +27,11 @@ pub struct ShaderCompilationError {
 
 impl Shader {
     pub fn new(
-        ugli: &Rc<Ugli>,
+        ugli: &Ugli,
         shader_type: ShaderType,
         source: &str,
     ) -> Result<Self, ShaderCompilationError> {
-        let gl = &ugli.inner;
+        let gl = &ugli.inner.raw;
         let shader = Self {
             ugli: ugli.clone(),
             handle: gl

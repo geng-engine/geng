@@ -32,7 +32,7 @@ pub struct Window {
     pressed_buttons: Rc<RefCell<HashSet<MouseButton>>>,
     should_close: Cell<bool>,
     mouse_pos: Rc<Cell<Vec2<f64>>>,
-    ugli: Rc<Ugli>,
+    ugli: Ugli,
     #[cfg(not(target_arch = "wasm32"))]
     is_fullscreen: Cell<bool>,
 }
@@ -50,13 +50,13 @@ impl Window {
                 .dyn_into::<web_sys::HtmlCanvasElement>()
                 .expect("#geng-canvas is not a canvas");
             js::initialize_window(&canvas);
-            let ugli = Rc::new(Ugli::create_webgl(
+            let ugli = Ugli::create_webgl(
                 &canvas,
                 ugli::WebGLContextOptions {
                     antialias: options.antialias,
                     ..default()
                 },
-            ));
+            );
             let window = Self {
                 lock_cursor: Cell::new(false),
                 canvas,
@@ -92,7 +92,7 @@ impl Window {
                 )
                 .unwrap();
             let glutin_window = unsafe { glutin_window.make_current() }.unwrap();
-            let ugli = Rc::new(Ugli::create_from_glutin(&glutin_window));
+            let ugli = Ugli::create_from_glutin(&glutin_window);
             Self {
                 lock_cursor: Cell::new(false),
                 glutin_window,
@@ -194,7 +194,7 @@ impl Window {
         self.real_size().map(|x| x.max(1))
     }
 
-    pub fn ugli(&self) -> &Rc<Ugli> {
+    pub fn ugli(&self) -> &Ugli {
         self.ugli._set_size(self.size());
         &self.ugli
     }
