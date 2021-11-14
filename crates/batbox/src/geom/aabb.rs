@@ -27,8 +27,8 @@ impl<T: UNum> AABB<T> {
     /// assert_eq!(aabb, same);
     /// ```
     pub fn from_corners(p1: Vec2<T>, p2: Vec2<T>) -> Self {
-        let (x_min, x_max) = p1.x.partial_min_max(p2.x);
-        let (y_min, y_max) = p1.y.partial_min_max(p2.y);
+        let (x_min, x_max) = partial_min_max(p1.x, p2.x);
+        let (y_min, y_max) = partial_min_max(p1.y, p2.y);
         Self {
             x_min,
             x_max,
@@ -253,10 +253,10 @@ impl<T: UNum> AABB<T> {
         let mut y_max = y_min;
         for Vec2 { x, y } in points {
             // TODO: disallow partials?
-            x_min = x_min.partial_min(x);
-            y_min = y_min.partial_min(y);
-            x_max = x_max.partial_max(x);
-            y_max = y_max.partial_max(y);
+            x_min = partial_min(x_min, x);
+            y_min = partial_min(y_min, y);
+            x_max = partial_max(x_max, x);
+            y_max = partial_max(y_max, y);
         }
         AABB {
             x_min,
@@ -270,9 +270,12 @@ impl<T: UNum> AABB<T> {
 impl<T: Float> AABB<T> {
     /// Returns the distance between two AABB's.
     pub fn distance_to(&self, other: &Self) -> T {
-        ((self.x_min - other.x_max)
-            .partial_max(other.x_min - self.x_max)
-            .partial_max((self.y_min - other.y_max).partial_max(other.y_min - self.y_max)))
-        .partial_max(T::ZERO)
+        partial_max(
+            partial_max(
+                partial_max(self.x_min - other.x_max, other.x_min - self.x_max),
+                partial_max(self.y_min - other.y_max, other.y_min - self.y_max),
+            ),
+            T::ZERO,
+        )
     }
 }

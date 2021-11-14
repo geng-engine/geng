@@ -106,7 +106,7 @@ impl<T: Float> ApproxEq for Mat3<T> {
         let mut dist = 0.0;
         for i in 0..3 {
             for j in 0..3 {
-                dist = dist.partial_max((other[(i, j)] - self[(i, j)]).abs().as_f32());
+                dist = partial_max(dist, (other[(i, j)] - self[(i, j)]).abs().as_f32());
             }
         }
         dist
