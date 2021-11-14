@@ -50,6 +50,9 @@ where
         self.state.update(delta_time);
         // TODO: state.update_progress(future.progress().unwrap());
     }
+    fn fixed_update(&mut self, delta_time: f64) {
+        self.state.fixed_update(delta_time);
+    }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         self.state.draw(framebuffer);
     }

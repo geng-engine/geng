@@ -10,6 +10,7 @@ pub(crate) struct GengImpl {
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) asset_manager: AssetManager,
     default_font: Rc<Font>,
+    fixed_delta_time: Cell<f64>,
     max_delta_time: Cell<f64>,
 }
 
@@ -21,6 +22,7 @@ pub struct Geng {
 pub struct ContextOptions {
     pub title: String,
     pub vsync: bool,
+    pub fixed_delta_time: f64,
     pub max_delta_time: f64,
     pub antialias: bool,
 }
@@ -30,6 +32,7 @@ impl Default for ContextOptions {
         Self {
             title: "Geng Application".to_string(),
             vsync: true,
+            fixed_delta_time: 0.05,
             max_delta_time: 0.1,
             antialias: false,
         }
@@ -67,6 +70,7 @@ impl Geng {
                 #[cfg(not(target_arch = "wasm32"))]
                 asset_manager: AssetManager::new(),
                 default_font,
+                fixed_delta_time: Cell::new(options.fixed_delta_time),
                 max_delta_time: Cell::new(options.max_delta_time),
             }),
         }
@@ -103,6 +107,7 @@ fn run_impl(geng: &Geng, state: impl State) {
     }));
 
     let mut timer = Timer::new();
+    let mut fixed_updater = FixedUpdater::new(geng.inner.fixed_delta_time.get(), 0.0);
     let mut main_loop = {
         let geng = geng.clone();
         move || {
@@ -110,6 +115,12 @@ fn run_impl(geng: &Geng, state: impl State) {
             let delta_time = timer.tick();
             let delta_time = delta_time.min(geng.inner.max_delta_time.get());
             state.borrow_mut().update(delta_time);
+
+            for _ in 0..fixed_updater.update(delta_time) {
+                state
+                    .borrow_mut()
+                    .fixed_update(fixed_updater.fixed_delta_time);
+            }
 
             let window_size = geng.inner.window.real_size();
             // Whis means window is minimized?
@@ -153,7 +164,6 @@ fn run_impl(geng: &Geng, state: impl State) {
         }
     }
 }
-
 
 /// Run the application
 pub fn run(geng: &Geng, state: impl State) {

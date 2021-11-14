@@ -56,6 +56,9 @@ impl State for DebugOverlay {
         }
         self.state.update(delta_time);
     }
+    fn fixed_update(&mut self, delta_time: f64) {
+        self.state.fixed_update(delta_time);
+    }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         self.state.draw(framebuffer);
         if self.enabled {

@@ -6,7 +6,6 @@ struct State;
 
 impl geng::State for State {
     // Specify how to draw each game frame
-
     fn draw(
         &mut self,
         framebuffer: &mut ugli::Framebuffer, // The framebuffer to draw onto

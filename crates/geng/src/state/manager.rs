@@ -36,6 +36,11 @@ impl State for StateManager {
             }
         }
     }
+    fn fixed_update(&mut self, delta_time: f64) {
+        if let Some(state) = self.current_state() {
+            state.fixed_update(delta_time);
+        }
+    }
     fn handle_event(&mut self, event: Event) {
         if let Some(state) = self.current_state() {
             state.handle_event(event);
