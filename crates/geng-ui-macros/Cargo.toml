@@ -5,6 +5,6 @@ authors = ["kuviman <kuviman@gmail.com>"]
 description = "Game Engine"
 license = "MIT"
 homepage = "https://github.com/kuviman/geng"
-edition = "2018"
+edition = "2021"
 
 [dependencies]

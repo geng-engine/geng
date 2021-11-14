@@ -122,7 +122,8 @@ pub fn derive(input: TokenStream) -> TokenStream {
                     fn load(geng: &Geng, base_path: &str) -> geng::AssetFuture<Self> {
                         let (#(#field_names,)*) = (#(#field_loaders,)*);
                         Box::pin(async move {
-                            let (#(#field_names,)*) = futures::try_join!(#(#field_names,)*)?;
+                            let joined_future_result: Result<_, anyhow::Error> = futures::try_join!(#(#field_names,)*);
+                            let (#(#field_names,)*) = joined_future_result?;
                             Ok(Self {
                                 #(#field_names,)*
                             })

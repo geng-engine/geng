@@ -6,11 +6,13 @@ mod pixel_perfect;
 pub use camera_2d::*;
 pub use pixel_perfect::*;
 
+/// Represents any 3d camera.
 pub trait AbstractCamera3d: Sized {
     fn view_matrix(&self) -> Mat4<f32>;
     fn projection_matrix(&self, framebuffer_size: Vec2<f32>) -> Mat4<f32>;
 }
 
+/// Represents any 2d camera.
 pub trait AbstractCamera2d: Sized {
     fn view_matrix(&self) -> Mat3<f32>;
     fn projection_matrix(&self, framebuffer_size: Vec2<f32>) -> Mat3<f32>;
@@ -27,6 +29,7 @@ impl<C: AbstractCamera2d> AbstractCamera3d for Camera2dAs3d<C> {
     }
 }
 
+/// Extra methods available for 2d cameras.
 pub trait Camera2dExt: AbstractCamera2d {
     fn screen_to_world(&self, framebuffer_size: Vec2<f32>, pos: Vec2<f32>) -> Vec2<f32> {
         let pos = vec2(
@@ -61,6 +64,7 @@ pub struct CameraRay {
     pub dir: Vec3<f32>,
 }
 
+/// Extra methods available for 3d cameras.
 pub trait Camera3dExt: AbstractCamera3d {
     fn world_to_screen(&self, framebuffer_size: Vec2<f32>, pos: Vec3<f32>) -> Option<Vec2<f32>> {
         let pos = (self.projection_matrix(framebuffer_size) * self.view_matrix()) * pos.extend(1.0);

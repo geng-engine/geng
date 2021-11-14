@@ -103,11 +103,11 @@ pub fn derive(input: TokenStream) -> TokenStream {
 
             let expanded = quote! {
                 #[derive(Debug, Serialize, Deserialize, Clone)]
-                pub struct #delta_type#generics {
+                pub struct #delta_type #generics {
                     #(#field_names: #field_diff_types,)*
                 }
 
-                impl#impl_generics Diff for #input_type#ty_generics #where_clause {
+                impl #impl_generics Diff for #input_type #ty_generics #where_clause {
                     type Delta = #delta_type;
                     fn diff(&self, to: &Self) -> Self::Delta {
                         #delta_type {

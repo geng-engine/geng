@@ -208,6 +208,64 @@ impl<T: Float> RealImpl<T> {
     }
 }
 
+pub struct UniformReal<T: rand::distributions::uniform::SampleUniform>(T::Sampler);
+
+impl<T: Float + rand::distributions::uniform::SampleUniform>
+    rand::distributions::uniform::UniformSampler for UniformReal<T>
+{
+    type X = RealImpl<T>;
+
+    fn new<B1, B2>(low: B1, high: B2) -> Self
+    where
+        B1: rand::distributions::uniform::SampleBorrow<Self::X> + Sized,
+        B2: rand::distributions::uniform::SampleBorrow<Self::X> + Sized,
+    {
+        Self(T::Sampler::new(low.borrow().0, high.borrow().0))
+    }
+
+    fn new_inclusive<B1, B2>(low: B1, high: B2) -> Self
+    where
+        B1: rand::distributions::uniform::SampleBorrow<Self::X> + Sized,
+        B2: rand::distributions::uniform::SampleBorrow<Self::X> + Sized,
+    {
+        Self(T::Sampler::new_inclusive(low.borrow().0, high.borrow().0))
+    }
+
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Self::X {
+        RealImpl(self.0.sample(rng))
+    }
+
+    fn sample_single<R: Rng + ?Sized, B1, B2>(low: B1, high: B2, rng: &mut R) -> Self::X
+    where
+        B1: rand::distributions::uniform::SampleBorrow<Self::X> + Sized,
+        B2: rand::distributions::uniform::SampleBorrow<Self::X> + Sized,
+    {
+        RealImpl(T::Sampler::sample_single(
+            low.borrow().0,
+            high.borrow().0,
+            rng,
+        ))
+    }
+
+    fn sample_single_inclusive<R: Rng + ?Sized, B1, B2>(low: B1, high: B2, rng: &mut R) -> Self::X
+    where
+        B1: rand::distributions::uniform::SampleBorrow<Self::X> + Sized,
+        B2: rand::distributions::uniform::SampleBorrow<Self::X> + Sized,
+    {
+        RealImpl(T::Sampler::sample_single_inclusive(
+            low.borrow().0,
+            high.borrow().0,
+            rng,
+        ))
+    }
+}
+
+impl<T: Float + rand::distributions::uniform::SampleUniform>
+    rand::distributions::uniform::SampleUniform for RealImpl<T>
+{
+    type Sampler = UniformReal<T>;
+}
+
 impl<T: Float> Real for RealImpl<T> {
     const PI: Self = Self(T::PI);
     fn signum(self) -> Self {

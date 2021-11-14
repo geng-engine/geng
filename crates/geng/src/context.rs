@@ -24,6 +24,7 @@ pub struct ContextOptions {
     pub vsync: bool,
     pub fixed_delta_time: f64,
     pub max_delta_time: f64,
+    pub antialias: bool,
 }
 
 impl Default for ContextOptions {
@@ -33,22 +34,27 @@ impl Default for ContextOptions {
             vsync: true,
             fixed_delta_time: 0.05,
             max_delta_time: 0.1,
+            antialias: false,
         }
     }
 }
 
 impl Geng {
+    /// Initialize with default [ContextOptions] except for the title.
+    /// To initialize with different options see [`Geng::new_with()`].
     pub fn new(title: &str) -> Self {
         Self::new_with(ContextOptions {
             title: title.to_owned(),
             ..default()
         })
     }
+
+    /// Initialize with custom [ContextOptions].
     pub fn new_with(options: ContextOptions) -> Self {
         setup_panic_handler();
-        let window = Window::new(&options.title, options.vsync);
+        let window = Window::new(&options);
         let ugli = window.ugli().clone();
-        let shader_lib = ShaderLib::new(window.ugli());
+        let shader_lib = ShaderLib::new_impl(&ugli, &options);
         let draw_2d = Rc::new(Draw2D::new(&shader_lib, &ugli));
         let default_font = Rc::new({
             let data = include_bytes!("font/default.ttf") as &[u8];
@@ -160,6 +166,8 @@ fn run_impl(geng: &Geng, state: impl State) {
     }
 }
 
+
+/// Run the application
 pub fn run(geng: &Geng, state: impl State) {
     let mut state_manager = StateManager::new();
     state_manager.push(Box::new(state));

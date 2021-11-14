@@ -5,7 +5,7 @@ authors = ["kuviman <kuviman@gmail.com>"]
 description = "Batteries useful for projects"
 license = "MIT"
 homepage = "https://github.com/kuviman/batbox"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 batbox-derive = { path = "../batbox-derive", version = "0.8.0" }

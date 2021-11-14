@@ -258,8 +258,7 @@ impl Draw2D {
             &self.ellipse_geometry,
             (
                 ugli::uniforms! {
-                    u_pos: position,
-                    u_radius: radius,
+                    u_model_matrix: Mat3::translate(position) * Mat3::scale(radius),
                     u_color: color,
                     u_framebuffer_size: framebuffer_size,
                 },

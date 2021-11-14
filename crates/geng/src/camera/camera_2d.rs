@@ -1,6 +1,7 @@
 use super::*;
 
 #[derive(Debug, Clone)]
+/// 2-dimensional camera.
 pub struct Camera2d {
     pub center: Vec2<f32>,
     pub rotation: f32,
