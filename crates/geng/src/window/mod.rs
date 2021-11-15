@@ -131,11 +131,8 @@ impl Window {
                 self.set_cursor_position(pos);
             }
             for event in self.internal_get_events() {
-                match event {
-                    Event::KeyDown { key: Key::Escape } => {
-                        self.unlock_cursor();
-                    }
-                    _ => {}
+                if let Event::KeyDown { key: Key::Escape } = event {
+                    self.unlock_cursor();
                 }
                 Self::default_handler(
                     &event,

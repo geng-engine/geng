@@ -157,7 +157,7 @@ pub fn run(geng: &Geng, state: impl State) {
             state.borrow_mut().handle_event(event);
         }
     }));
-    let mut main_loop = {
+    let main_loop = {
         let geng = geng.clone();
         // TODO: remove the busy loop to not use any resources?
         move || {

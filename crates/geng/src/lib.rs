@@ -1,5 +1,5 @@
 #![recursion_limit = "256"]
-
+#![allow(clippy::needless_doctest_main)]
 //!
 //! `geng` (Game ENGine) is an engine for Rust Programming Language.
 //!

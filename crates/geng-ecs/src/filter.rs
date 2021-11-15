@@ -213,6 +213,7 @@ macro_rules! impl_for_tuple {
     ($($name:ident),*) => {
         #[allow(non_camel_case_types)]
         #[allow(unused_variables)]
+        #[allow(clippy::unused_unit)]
         impl<$($name: Filter),*> Filter for ($($name,)*) {
             type Fetch = ($($name::Fetch,)*);
             fn fetch(self) -> Self::Fetch {

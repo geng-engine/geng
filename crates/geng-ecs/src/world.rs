@@ -6,6 +6,12 @@ pub struct World {
     next_id: u32,
 }
 
+impl Default for World {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl World {
     pub fn new() -> Self {
         Self {
@@ -20,7 +26,7 @@ impl World {
         for (type_id, value) in entity.components {
             self.components
                 .entry(type_id)
-                .or_insert(storage::World::new())
+                .or_insert_with(storage::World::new)
                 .insert_any(id, value.into_inner_any());
         }
         self.ids.insert(id);
@@ -123,7 +129,7 @@ impl<'a, Q: Query, F: Filter> Iterator for WorldQueryIter<'a, Q, F> {
     type Item = QueryOutput<'a, Q>;
     fn next(&mut self) -> Option<Self::Item> {
         unsafe {
-            while let Some(&id) = self.id_iter.next() {
+            for &id in &mut self.id_iter {
                 let (querry_borrows, filter_borrows) = self.borrows?;
                 if !F::get_world(self.filter, filter_borrows, id) {
                     continue;
@@ -146,7 +152,7 @@ pub struct WorldRemove<'a, F: Filter> {
 impl<'a, F: Filter> Iterator for WorldRemove<'a, F> {
     type Item = Entity;
     fn next(&mut self) -> Option<Entity> {
-        while let Some(id) = self.id_iter.next() {
+        for id in &mut self.id_iter {
             unsafe {
                 if let Some(filter_borrows) = self.filter.borrow_world(self.world) {
                     if !F::get_world(&self.filter, &filter_borrows, id) {

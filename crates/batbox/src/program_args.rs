@@ -19,5 +19,5 @@ pub fn args() -> Vec<String> {
 }
 
 pub fn parse<T: clap::Parser>() -> T {
-    return clap::Parser::parse_from(args());
+    clap::Parser::parse_from(args())
 }

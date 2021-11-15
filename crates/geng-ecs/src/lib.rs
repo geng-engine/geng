@@ -1,3 +1,5 @@
+#![allow(clippy::missing_safety_doc)]
+
 use std::{
     any::{Any, TypeId},
     cell::{Cell, UnsafeCell},

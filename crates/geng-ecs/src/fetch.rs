@@ -115,6 +115,7 @@ macro_rules! impl_for_tuple {
     ($($name:ident),*) => {
         #[allow(non_camel_case_types)]
         #[allow(unused_variables)]
+        #[allow(clippy::unused_unit)]
         unsafe impl<'a, $($name: Fetch<'a>),*> Fetch<'a> for ($($name,)*) {
             type Output = ($($name::Output,)*);
             type WorldBorrows = ($($name::WorldBorrows,)*);

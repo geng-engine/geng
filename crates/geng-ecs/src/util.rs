@@ -21,6 +21,7 @@ pub trait ZipExt<T> {
 
 pub trait AsRefExt {
     type Output;
+    #[allow(clippy::wrong_self_convention)]
     fn as_ref(self) -> Self::Output;
 }
 
@@ -28,6 +29,7 @@ macro_rules! impl_zip_for_tuple {
     (($($a:ident),*), ($($b:ident),*)) => {
         #[allow(non_camel_case_types)]
         #[allow(unused_variables)]
+        #[allow(clippy::unused_unit)]
         impl<$($a,)* $($b),*> ZipExt<($($b,)*)> for ($($a,)*) {
             type Output = ($(($a, $b),)*);
             fn zip(self, ($($b,)*): ($($b,)*)) -> Self::Output {
@@ -63,6 +65,7 @@ macro_rules! impl_asref_for_tuple {
     ($($a:ident),*) => {
         #[allow(non_camel_case_types)]
         #[allow(unused_variables)]
+        #[allow(clippy::unused_unit)]
         impl<'a, $($a),*> AsRefExt for &'a ($($a,)*) {
             type Output = ($(&'a $a,)*);
             fn as_ref(self) -> Self::Output {

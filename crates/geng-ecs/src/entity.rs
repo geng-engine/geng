@@ -4,6 +4,12 @@ pub struct Entity {
     pub(crate) components: HashMap<TypeId, storage::Entity>,
 }
 
+impl Default for Entity {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Entity {
     pub fn new() -> Self {
         Self {

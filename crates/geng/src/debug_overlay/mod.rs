@@ -23,7 +23,7 @@ impl DebugOverlay {
 }
 
 impl State for DebugOverlay {
-    fn update(&mut self, delta_time: f64) {
+    fn update(&mut self, _delta_time: f64) {
         self.fps_counter.update();
         self.console.update();
     }
