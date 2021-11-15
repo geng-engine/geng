@@ -175,7 +175,11 @@ impl<T: Float> Vec2<T> {
     pub fn clamp_len(self, len_range: impl RangeBounds<T>) -> Self {
         let len = self.len();
         let target_len = len.clamp_range(len_range);
-        self * target_len / len
+        if len == target_len {
+            self
+        } else {
+            self * target_len / len
+        }
     }
 
     /// Clamp vector in range. Note the range must be inclusive.
@@ -219,4 +223,9 @@ impl<T: Float> Vec2<T> {
     pub fn arg(self) -> T {
         T::atan2(self.y, self.x)
     }
+}
+
+#[test]
+fn test_clamp_zero_len() {
+    Vec2::ZERO.clamp_len(..=R64::ONE);
 }
