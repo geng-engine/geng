@@ -174,7 +174,7 @@ impl<T: Float> Vec2<T> {
     /// ```
     pub fn clamp_len(self, len_range: impl RangeBounds<T>) -> Self {
         let len = self.len();
-        let target_len = len.clamp(len_range);
+        let target_len = len.clamp_range(len_range);
         self * target_len / len
     }
 
@@ -190,7 +190,7 @@ impl<T: Float> Vec2<T> {
         x_range: impl RangeBounds<T>,
         y_range: impl RangeBounds<T>,
     ) -> Self {
-        vec2(self.x.clamp(x_range), self.y.clamp(y_range))
+        vec2(self.x.clamp_range(x_range), self.y.clamp_range(y_range))
     }
 
     /// Clamp vector by `aabb` corners.
