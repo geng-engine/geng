@@ -1,7 +1,9 @@
 use super::*;
 
+mod combined;
 mod manager;
 
+pub use combined::*;
 pub use manager::*;
 
 /// Represents a transition between states.
