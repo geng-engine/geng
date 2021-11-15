@@ -97,53 +97,80 @@ impl Geng {
     }
 }
 
-fn run_impl(geng: &Geng, state: impl State) {
-    let state = Rc::new(RefCell::new(state));
-    let ui_controller = Rc::new(RefCell::new(ui::Controller::new()));
-    geng.inner.window.set_event_handler(Box::new({
-        let state = state.clone();
-        let ui_controller = ui_controller.clone();
-        move |event| {
-            if !ui_controller
-                .borrow_mut()
-                .handle_event(&mut state.borrow_mut().ui(), event.clone())
-            {
-                state.borrow_mut().handle_event(event);
-            }
-        }
+/// Run the application
+pub fn run(geng: &Geng, state: impl State) {
+    let mut state_manager = StateManager::new();
+    state_manager.push(Box::new(state));
+    let state = CombinedState(state_manager, DebugOverlay::new(geng));
+    struct RunState<T> {
+        geng: Geng,
+        state: T,
+        ui_controller: ui::Controller,
+        timer: Timer,
+        fixed_updater: FixedUpdater,
+    }
+    let state = Rc::new(RefCell::new(RunState {
+        geng: geng.clone(),
+        state,
+        ui_controller: ui::Controller::new(),
+        timer: Timer::new(),
+        fixed_updater: FixedUpdater::new(geng.inner.fixed_delta_time.get(), 0.0),
     }));
 
-    let mut timer = Timer::new();
-    let mut fixed_updater = FixedUpdater::new(geng.inner.fixed_delta_time.get(), 0.0);
+    impl<T: State> RunState<T> {
+        fn update(&mut self) {
+            let delta_time = self.timer.tick();
+            let delta_time = delta_time.min(self.geng.inner.max_delta_time.get());
+            self.state.update(delta_time);
+            self.ui_controller.update(&mut self.state.ui(), delta_time);
+            for _ in 0..self.fixed_updater.update(delta_time) {
+                self.state.fixed_update(self.fixed_updater.fixed_delta_time);
+            }
+        }
+
+        fn handle_event(&mut self, event: Event) {
+            if self
+                .ui_controller
+                .handle_event(&mut self.state.ui(), event.clone())
+            {
+                return;
+            }
+            self.state.handle_event(event);
+        }
+
+        fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
+            self.state.draw(framebuffer);
+            self.ui_controller.draw(&mut self.state.ui(), framebuffer);
+        }
+
+        fn need_to_quit(&mut self) -> bool {
+            match self.state.transition() {
+                None => false,
+                Some(Transition::Pop) => true,
+                _ => unreachable!(),
+            }
+        }
+    }
+    geng.inner.window.set_event_handler(Box::new({
+        let state = state.clone();
+        move |event| {
+            state.borrow_mut().handle_event(event);
+        }
+    }));
     let mut main_loop = {
         let geng = geng.clone();
         // TODO: remove the busy loop to not use any resources?
         move || {
-            let delta_time = timer.tick();
-            let delta_time = delta_time.min(geng.inner.max_delta_time.get());
-            state.borrow_mut().update(delta_time);
-            ui_controller
-                .borrow_mut()
-                .update(&mut state.borrow_mut().ui(), delta_time);
-
-            for _ in 0..fixed_updater.update(delta_time) {
-                state
-                    .borrow_mut()
-                    .fixed_update(fixed_updater.fixed_delta_time);
-            }
-
+            state.borrow_mut().update();
             let window_size = geng.inner.window.real_size();
             // This means window is minimized?
             if window_size.x != 0 && window_size.y != 0 {
                 let mut framebuffer = ugli::Framebuffer::default(geng.ugli());
                 state.borrow_mut().draw(&mut framebuffer);
-                ui_controller
-                    .borrow_mut()
-                    .draw(&mut state.borrow_mut().ui(), &mut framebuffer);
             }
             geng.inner.window.swap_buffers();
 
-            !matches!(state.borrow_mut().transition(), Some(Transition::Pop))
+            !state.borrow_mut().need_to_quit()
         }
     };
 
@@ -176,12 +203,4 @@ fn run_impl(geng: &Geng, state: impl State) {
             }
         }
     }
-}
-
-/// Run the application
-pub fn run(geng: &Geng, state: impl State) {
-    let mut state_manager = StateManager::new();
-    state_manager.push(Box::new(state));
-    let state = CombinedState(state_manager, DebugOverlay::new(geng));
-    run_impl(geng, state);
 }
