@@ -34,7 +34,7 @@ impl Default for ContextOptions {
             vsync: true,
             fixed_delta_time: 0.05,
             max_delta_time: 0.1,
-            antialias: false,
+            antialias: true,
         }
     }
 }
