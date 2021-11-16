@@ -151,11 +151,11 @@ pub trait PartialOrdExt: PartialOrd {
     /// # Examples
     /// ```
     /// # use batbox::*;
-    /// assert_eq!(2.0.clamp(0.0..=1.0), 1.0);
-    /// assert_eq!(2.0.clamp(3.0..), 3.0);
-    /// assert_eq!(2.0.clamp(..=0.0), 0.0);
+    /// assert_eq!(2.0.clamp_range(0.0..=1.0), 1.0);
+    /// assert_eq!(2.0.clamp_range(3.0..), 3.0);
+    /// assert_eq!(2.0.clamp_range(..=0.0), 0.0);
     /// ```
-    fn clamp(mut self, range: impl RangeBounds<Self>) -> Self
+    fn clamp_range(mut self, range: impl RangeBounds<Self>) -> Self
     where
         Self: Clone,
     {
@@ -176,7 +176,7 @@ pub trait PartialOrdExt: PartialOrd {
     where
         Self: Neg<Output = Self> + Copy,
     {
-        self.clamp(-max..=max)
+        self.clamp_range(-max..=max)
     }
 }
 

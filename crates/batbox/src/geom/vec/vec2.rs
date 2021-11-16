@@ -174,8 +174,12 @@ impl<T: Float> Vec2<T> {
     /// ```
     pub fn clamp_len(self, len_range: impl RangeBounds<T>) -> Self {
         let len = self.len();
-        let target_len = len.clamp(len_range);
-        self * target_len / len
+        let target_len = len.clamp_range(len_range);
+        if len == target_len {
+            self
+        } else {
+            self * target_len / len
+        }
     }
 
     /// Clamp vector in range. Note the range must be inclusive.
@@ -190,7 +194,7 @@ impl<T: Float> Vec2<T> {
         x_range: impl RangeBounds<T>,
         y_range: impl RangeBounds<T>,
     ) -> Self {
-        vec2(self.x.clamp(x_range), self.y.clamp(y_range))
+        vec2(self.x.clamp_range(x_range), self.y.clamp_range(y_range))
     }
 
     /// Clamp vector by `aabb` corners.
@@ -219,4 +223,9 @@ impl<T: Float> Vec2<T> {
     pub fn arg(self) -> T {
         T::atan2(self.y, self.x)
     }
+}
+
+#[test]
+fn test_clamp_zero_len() {
+    Vec2::ZERO.clamp_len(..=R64::ONE);
 }

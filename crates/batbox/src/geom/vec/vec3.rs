@@ -142,8 +142,12 @@ impl<T: Float> Vec3<T> {
     /// ```
     pub fn clamp_len(self, len_range: impl RangeBounds<T>) -> Self {
         let len = self.len();
-        let target_len = len.clamp(len_range);
-        self * target_len / len
+        let target_len = len.clamp_range(len_range);
+        if len == target_len {
+            self
+        } else {
+            self * target_len / len
+        }
     }
 
     /// Clamp vector in range. Note the range must be inclusive.
@@ -160,9 +164,9 @@ impl<T: Float> Vec3<T> {
         z_range: impl RangeBounds<T>,
     ) -> Self {
         vec3(
-            self.x.clamp(x_range),
-            self.y.clamp(y_range),
-            self.z.clamp(z_range),
+            self.x.clamp_range(x_range),
+            self.y.clamp_range(y_range),
+            self.z.clamp_range(z_range),
         )
     }
 }
