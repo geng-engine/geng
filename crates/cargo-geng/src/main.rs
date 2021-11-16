@@ -1,6 +1,6 @@
 use std::process::Command;
 
-const SERVE_PORT: u16 = 8000;
+const SERVER_PORT: u16 = 8000;
 
 fn exec<C: std::borrow::BorrowMut<Command>>(mut cmd: C) -> Result<(), anyhow::Error> {
     if cmd.borrow_mut().status()?.success() {
@@ -37,11 +37,11 @@ where
             }))
         });
 
-        let addr = ([127, 0, 0, 1], SERVE_PORT).into();
+        let addr = ([0, 0, 0, 0], SERVER_PORT).into();
         let server = hyper::server::Server::bind(&addr).serve(make_service);
         let addr = format!("http://{}/", addr);
         eprintln!("Server running on {}", addr);
-        open::that(&addr).expect("Failed to open browser");
+        open::that(format!("http://localhost:{}", SERVER_PORT)).expect("Failed to open browser");
         server.await.expect("Server failed");
     });
 }
