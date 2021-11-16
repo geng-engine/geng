@@ -242,12 +242,13 @@ impl Draw2D {
         )
     }
 
-    pub fn ellipse(
+    pub fn ellipse_with_cut(
         &self,
         framebuffer: &mut ugli::Framebuffer,
         camera: &impl AbstractCamera2d,
         position: Vec2<f32>,
         radius: Vec2<f32>,
+        inner_cut: f32,
         color: Color<f32>,
     ) {
         let framebuffer_size = framebuffer.size();
@@ -261,6 +262,7 @@ impl Draw2D {
                     u_model_matrix: Mat3::translate(position) * Mat3::scale(radius),
                     u_color: color,
                     u_framebuffer_size: framebuffer_size,
+                    u_inner_cut: inner_cut,
                 },
                 camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
             ),
@@ -269,6 +271,36 @@ impl Draw2D {
                 ..default()
             },
         )
+    }
+
+    pub fn ellipse(
+        &self,
+        framebuffer: &mut ugli::Framebuffer,
+        camera: &impl AbstractCamera2d,
+        position: Vec2<f32>,
+        radius: Vec2<f32>,
+        color: Color<f32>,
+    ) {
+        self.ellipse_with_cut(framebuffer, camera, position, radius, 0.0, color);
+    }
+
+    pub fn circle_with_cut(
+        &self,
+        framebuffer: &mut ugli::Framebuffer,
+        camera: &impl AbstractCamera2d,
+        position: Vec2<f32>,
+        inner_radius: f32,
+        outer_radius: f32,
+        color: Color<f32>,
+    ) {
+        self.ellipse_with_cut(
+            framebuffer,
+            camera,
+            position,
+            vec2(outer_radius, outer_radius),
+            inner_radius / outer_radius,
+            color,
+        );
     }
 
     pub fn circle(
