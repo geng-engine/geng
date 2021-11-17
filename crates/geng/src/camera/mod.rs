@@ -7,13 +7,13 @@ pub use camera_2d::*;
 pub use pixel_perfect::*;
 
 /// Represents any 3d camera.
-pub trait AbstractCamera3d: Sized {
+pub trait AbstractCamera3d {
     fn view_matrix(&self) -> Mat4<f32>;
     fn projection_matrix(&self, framebuffer_size: Vec2<f32>) -> Mat4<f32>;
 }
 
 /// Represents any 2d camera.
-pub trait AbstractCamera2d: Sized {
+pub trait AbstractCamera2d {
     fn view_matrix(&self) -> Mat3<f32>;
     fn projection_matrix(&self, framebuffer_size: Vec2<f32>) -> Mat3<f32>;
 }

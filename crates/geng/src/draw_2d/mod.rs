@@ -30,10 +30,10 @@ impl From<Vec2<f32>> for Vertex {
 pub struct Draw2D {
     geometry: RefCell<ugli::VertexBuffer<Vertex>>,
     textured_geometry: RefCell<ugli::VertexBuffer<TexturedVertex>>,
-    program: ugli::Program,
-    textured_program: ugli::Program,
+    pub(crate) program: ugli::Program,
+    pub(crate) textured_program: ugli::Program,
     ellipse_geometry: ugli::VertexBuffer<EllipseVertex>,
-    ellipse_program: ugli::Program,
+    pub(crate) ellipse_program: ugli::Program,
 }
 
 impl Draw2D {
