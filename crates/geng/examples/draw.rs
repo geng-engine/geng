@@ -26,13 +26,13 @@ impl geng::State for State {
         };
         self.geng.draw_with(
             framebuffer,
-            &camera as &dyn geng::AbstractCamera2d,
+            &camera,
             AABB::point(Vec2::ZERO).extend_uniform(1.0),
             Color::WHITE,
         );
         self.geng.draw_with(
             framebuffer,
-            &camera as &dyn geng::AbstractCamera2d,
+            &camera,
             AABB::point(Vec2::ZERO)
                 .extend_uniform(1.0)
                 .translate(vec2(2.0, 0.0)),

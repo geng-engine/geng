@@ -18,8 +18,7 @@ pub struct UniformsRef<'a> {
 #[derive(ugli::Vertex)]
 pub struct EmptyVertex;
 
-impl Drawable<Color<f32>> for AABB<f32> {
-    type Camera = dyn AbstractCamera2d;
+impl<Camera: AbstractCamera2d + ?Sized> Drawable<Camera, Color<f32>> for AABB<f32> {
     type Vertex = draw_2d::Vertex;
     type Instance = EmptyVertex;
     type Uniforms = Uniforms;
@@ -58,7 +57,7 @@ impl Drawable<Color<f32>> for AABB<f32> {
     fn uniforms(
         &self,
         framebuffer: &ugli::Framebuffer,
-        camera: &dyn AbstractCamera2d,
+        camera: &Camera,
         color: Color<f32>,
     ) -> Uniforms {
         Uniforms {
@@ -72,8 +71,7 @@ impl Drawable<Color<f32>> for AABB<f32> {
     }
 }
 
-impl<'a> Drawable<&'a ugli::Texture> for AABB<f32> {
-    type Camera = dyn AbstractCamera2d;
+impl<'a, Camera: AbstractCamera2d + ?Sized> Drawable<Camera, &'a ugli::Texture> for AABB<f32> {
     type Vertex = draw_2d::TexturedVertex;
     type Instance = EmptyVertex;
     type Uniforms = UniformsRef<'a>;
@@ -116,7 +114,7 @@ impl<'a> Drawable<&'a ugli::Texture> for AABB<f32> {
     fn uniforms(
         &self,
         framebuffer: &ugli::Framebuffer,
-        camera: &dyn AbstractCamera2d,
+        camera: &Camera,
         texture: &'a ugli::Texture,
     ) -> UniformsRef<'a> {
         UniformsRef {
