@@ -130,7 +130,11 @@ impl<T: Float> Vec3<T> {
 
     /// Calculate length of a vector.
     pub fn len(self) -> T {
-        T::sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
+        T::sqrt(self.len_sqr())
+    }
+
+    pub fn len_sqr(self) -> T {
+        self.x * self.x + self.y * self.y + self.z * self.z
     }
 
     /// Clamp vector's length. Note that the range must be inclusive.

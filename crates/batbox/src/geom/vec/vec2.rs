@@ -147,7 +147,11 @@ impl<T: Float> Vec2<T> {
     /// assert_eq!(v.len(), 5.0);
     /// ```
     pub fn len(self) -> T {
-        T::sqrt(self.x * self.x + self.y * self.y)
+        T::sqrt(self.len_sqr())
+    }
+
+    pub fn len_sqr(self) -> T {
+        self.x * self.x + self.y * self.y
     }
 
     /// Rotate a vector by a given angle.
