@@ -3,7 +3,14 @@ use super::*;
 #[derive(ugli::Uniforms)]
 pub struct Uniforms {
     u_color: Option<Color<f32>>,
-    u_texture: Option<&'static ugli::Texture>,
+    u_projection_matrix: Mat3<f32>,
+    u_view_matrix: Mat3<f32>,
+}
+
+#[derive(ugli::Uniforms)]
+pub struct UniformsRef<'a> {
+    u_color: Option<Color<f32>>,
+    u_texture: Option<&'a ugli::Texture>,
     u_projection_matrix: Mat3<f32>,
     u_view_matrix: Mat3<f32>,
 }
@@ -42,7 +49,7 @@ impl Drawable<Color<f32>> for AABB<f32> {
     fn draw_mode() -> ugli::DrawMode {
         ugli::DrawMode::TriangleFan
     }
-    fn draw_parameters(&self, _options: &Color<f32>) -> ugli::DrawParameters {
+    fn draw_parameters(&self, _options: Color<f32>) -> ugli::DrawParameters {
         ugli::DrawParameters {
             blend_mode: Some(default()),
             ..default()
@@ -52,13 +59,12 @@ impl Drawable<Color<f32>> for AABB<f32> {
         &self,
         framebuffer: &ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
-        &color: &Color<f32>,
+        color: Color<f32>,
     ) -> Uniforms {
         Uniforms {
             u_color: Some(color),
             u_projection_matrix: camera.projection_matrix(framebuffer.size().map(|x| x as f32)),
             u_view_matrix: camera.view_matrix(),
-            u_texture: None,
         }
     }
     fn program(geng: &Geng) -> &ugli::Program {
@@ -66,11 +72,11 @@ impl Drawable<Color<f32>> for AABB<f32> {
     }
 }
 
-impl<'a> Drawable<ugli::Texture> for AABB<f32> {
+impl<'a> Drawable<&'a ugli::Texture> for AABB<f32> {
     type Camera = dyn AbstractCamera2d;
     type Vertex = draw_2d::TexturedVertex;
     type Instance = EmptyVertex;
-    type Uniforms = Uniforms;
+    type Uniforms = UniformsRef<'a>;
     fn vertices(&self) -> Vec<Self::Vertex> {
         vec![
             draw_2d::TexturedVertex {
@@ -111,13 +117,13 @@ impl<'a> Drawable<ugli::Texture> for AABB<f32> {
         &self,
         framebuffer: &ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
-        texture: &ugli::Texture,
-    ) -> Uniforms {
-        Uniforms {
+        texture: &'a ugli::Texture,
+    ) -> UniformsRef<'a> {
+        UniformsRef {
             u_color: Some(Color::WHITE),
             u_projection_matrix: camera.projection_matrix(framebuffer.size().map(|x| x as f32)),
             u_view_matrix: camera.view_matrix(),
-            u_texture: Some(unsafe { mem::transmute(texture) }),
+            u_texture: Some(texture),
         }
     }
     fn program(geng: &Geng) -> &ugli::Program {

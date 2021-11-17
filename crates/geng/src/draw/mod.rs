@@ -2,7 +2,7 @@ use super::*;
 
 mod aabb;
 
-pub trait Drawable<Options> {
+pub trait Drawable<Options: Copy> {
     type Camera: ?Sized;
     type Vertex: ugli::Vertex;
     type Instance: ugli::Vertex;
@@ -10,12 +10,12 @@ pub trait Drawable<Options> {
     fn vertices(&self) -> Vec<Self::Vertex>;
     fn instances(&self) -> Option<Vec<Self::Instance>>;
     fn draw_mode() -> ugli::DrawMode;
-    fn draw_parameters(&self, options: &Options) -> ugli::DrawParameters;
+    fn draw_parameters(&self, options: Options) -> ugli::DrawParameters;
     fn uniforms(
         &self,
         framebuffer: &ugli::Framebuffer,
         camera: &Self::Camera,
-        options: &Options,
+        options: Options,
     ) -> Self::Uniforms;
     fn program(geng: &Geng) -> &ugli::Program;
 }
@@ -27,14 +27,14 @@ impl Geng {
         camera: &T::Camera,
         object: T,
     ) {
-        self.draw_with(framebuffer, camera, object, &());
+        self.draw_with(framebuffer, camera, object, ());
     }
-    pub fn draw_with<Options, T: Drawable<Options>>(
+    pub fn draw_with<Options: Copy, T: Drawable<Options>>(
         &self,
         framebuffer: &mut ugli::Framebuffer,
         camera: &T::Camera,
         object: T,
-        options: &Options,
+        options: Options,
     ) {
         let program = T::program(self);
         let draw_mode = T::draw_mode();

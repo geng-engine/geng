@@ -28,7 +28,7 @@ impl geng::State for State {
             framebuffer,
             &camera as &dyn geng::AbstractCamera2d,
             AABB::point(Vec2::ZERO).extend_uniform(1.0),
-            &Color::WHITE,
+            Color::WHITE,
         );
         self.geng.draw_with(
             framebuffer,
