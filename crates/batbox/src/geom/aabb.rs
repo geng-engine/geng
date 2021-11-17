@@ -234,7 +234,7 @@ impl<T: UNum> AABB<T> {
     }
 
     /// Returns an iterator over points inside the AABB.
-    pub fn points(&self) -> impl Iterator<Item = Vec2<T>> + '_
+    pub fn points(self) -> impl Iterator<Item = Vec2<T>>
     where
         Range<T>: Iterator<Item = T>,
     {
