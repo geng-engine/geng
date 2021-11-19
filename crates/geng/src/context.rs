@@ -203,4 +203,7 @@ pub fn run(geng: &Geng, state: impl State) {
             }
         }
     }
+
+    // Needed to drop state
+    geng.inner.window.clear_event_handler();
 }

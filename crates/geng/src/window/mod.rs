@@ -113,6 +113,10 @@ impl Window {
         *self.event_handler.borrow_mut() = Some(handler);
     }
 
+    pub(crate) fn clear_event_handler(&self) {
+        self.event_handler.borrow_mut().take();
+    }
+
     // #[cfg(not(target_arch = "wasm32"))]
     // pub fn show(&self) {
     //     self.glutin_window.window().set_visible(true);
