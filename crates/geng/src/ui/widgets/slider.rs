@@ -74,41 +74,48 @@ impl<'a> Widget for SliderUI<'a> {
             .clamp_abs(Self::ANIMATION_SPEED * delta_time as f32 * height);
     }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
-        let draw_2d = self.theme.geng().draw_2d();
+        let geng = self.theme.geng();
+        let draw_2d = geng.draw_2d_helper();
         let position = self.core.position().map(|x| x as f32);
         let line_width = position.height() / 3.0;
         let value_position = *self.tick_radius
             + ((self.value - *self.range.start()) / (*self.range.end() - *self.range.start()))
                 as f32
                 * (position.width() - *self.tick_radius * 2.0);
-        draw_2d.quad(
+        geng.draw_2d(
             framebuffer,
             &PixelPerfectCamera,
-            AABB::from_corners(
-                position.bottom_left()
-                    + vec2(line_width / 2.0, (position.height() - line_width) / 2.0),
-                position.bottom_left()
-                    + vec2(value_position, (position.height() + line_width) / 2.0),
+            draw_2d::ColoredQuad::new(
+                AABB::from_corners(
+                    position.bottom_left()
+                        + vec2(line_width / 2.0, (position.height() - line_width) / 2.0),
+                    position.bottom_left()
+                        + vec2(value_position, (position.height() + line_width) / 2.0),
+                ),
+                self.theme.hover_color,
             ),
-            self.theme.hover_color,
         );
-        draw_2d.quad(
+        geng.draw_2d(
             framebuffer,
             &PixelPerfectCamera,
-            AABB::from_corners(
-                position.bottom_left()
-                    + vec2(value_position, (position.height() - line_width) / 2.0),
-                position.top_right()
-                    - vec2(line_width / 2.0, (position.height() - line_width) / 2.0),
+            draw_2d::ColoredQuad::new(
+                AABB::from_corners(
+                    position.bottom_left()
+                        + vec2(value_position, (position.height() - line_width) / 2.0),
+                    position.top_right()
+                        - vec2(line_width / 2.0, (position.height() - line_width) / 2.0),
+                ),
+                self.theme.usable_color,
             ),
-            self.theme.usable_color,
         );
-        draw_2d.circle(
+        geng.draw_2d(
             framebuffer,
             &PixelPerfectCamera,
-            position.bottom_left() + vec2(line_width / 2.0, position.height() / 2.0),
-            line_width / 2.0,
-            self.theme.hover_color,
+            draw_2d::Circle::new(
+                position.bottom_left() + vec2(line_width / 2.0, position.height() / 2.0),
+                line_width / 2.0,
+                self.theme.hover_color,
+            ),
         );
         draw_2d.circle(
             framebuffer,

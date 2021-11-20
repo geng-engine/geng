@@ -6,7 +6,7 @@ pub(crate) struct GengImpl {
     #[allow(dead_code)]
     pub(crate) audio: AudioContext,
     shader_lib: ShaderLib,
-    draw_2d: Rc<Draw2D>,
+    pub(crate) draw_2d: Rc<draw_2d::Helper>,
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) asset_manager: AssetManager,
     default_font: Rc<Font>,
@@ -55,7 +55,7 @@ impl Geng {
         let window = Window::new(&options);
         let ugli = window.ugli().clone();
         let shader_lib = ShaderLib::new_impl(&ugli, &options);
-        let draw_2d = Rc::new(Draw2D::new(&shader_lib, &ugli));
+        let draw_2d = Rc::new(draw_2d::Helper::new(&shader_lib, &ugli));
         let default_font = Rc::new({
             let data = include_bytes!("font/default.ttf") as &[u8];
             Font::new_with(window.ugli(), &shader_lib, data.to_owned()).unwrap()
@@ -86,10 +86,6 @@ impl Geng {
 
     pub fn shader_lib(&self) -> &ShaderLib {
         &self.inner.shader_lib
-    }
-
-    pub fn draw_2d(&self) -> &Rc<Draw2D> {
-        &self.inner.draw_2d
     }
 
     pub fn default_font(&self) -> &Rc<Font> {

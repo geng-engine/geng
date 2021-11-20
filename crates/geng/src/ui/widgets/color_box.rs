@@ -24,11 +24,10 @@ impl Widget for ColorBox {
         &mut self.core
     }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
-        self.geng.draw_2d().quad(
+        self.geng.draw_2d(
             framebuffer,
             &PixelPerfectCamera,
-            self.core().position.map(|x| x as f32),
-            self.color,
+            draw_2d::ColoredQuad::new(self.core().position.map(|x| x as f32), self.color),
         );
     }
 }
