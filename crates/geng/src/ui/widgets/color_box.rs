@@ -27,7 +27,7 @@ impl Widget for ColorBox {
         self.geng.draw_2d(
             framebuffer,
             &PixelPerfectCamera,
-            draw_2d::ColoredQuad::new(self.core().position.map(|x| x as f32), self.color),
+            &draw_2d::Quad::new(self.core().position.map(|x| x as f32), self.color),
         );
     }
 }

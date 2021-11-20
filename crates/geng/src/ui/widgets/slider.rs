@@ -85,7 +85,7 @@ impl<'a> Widget for SliderUI<'a> {
         geng.draw_2d(
             framebuffer,
             &PixelPerfectCamera,
-            draw_2d::ColoredQuad::new(
+            &draw_2d::Quad::new(
                 AABB::from_corners(
                     position.bottom_left()
                         + vec2(line_width / 2.0, (position.height() - line_width) / 2.0),
@@ -98,7 +98,7 @@ impl<'a> Widget for SliderUI<'a> {
         geng.draw_2d(
             framebuffer,
             &PixelPerfectCamera,
-            draw_2d::ColoredQuad::new(
+            &draw_2d::Quad::new(
                 AABB::from_corners(
                     position.bottom_left()
                         + vec2(value_position, (position.height() - line_width) / 2.0),
@@ -111,7 +111,7 @@ impl<'a> Widget for SliderUI<'a> {
         geng.draw_2d(
             framebuffer,
             &PixelPerfectCamera,
-            draw_2d::Circle::new(
+            &draw_2d::Ellipse::circle(
                 position.bottom_left() + vec2(line_width / 2.0, position.height() / 2.0),
                 line_width / 2.0,
                 self.theme.hover_color,

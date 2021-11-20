@@ -97,7 +97,7 @@ pub trait Camera3dExt: AbstractCamera3d {
 
 impl<C: AbstractCamera3d> Camera3dExt for C {}
 
-pub fn camera3d_uniforms<C: AbstractCamera3d>(
+pub fn camera3d_uniforms<C: AbstractCamera3d + ?Sized>(
     camera: &C,
     framebuffer_size: Vec2<f32>,
 ) -> impl ugli::Uniforms {
@@ -107,7 +107,7 @@ pub fn camera3d_uniforms<C: AbstractCamera3d>(
     }
 }
 
-pub fn camera2d_uniforms<C: AbstractCamera2d>(
+pub fn camera2d_uniforms<C: AbstractCamera2d + ?Sized>(
     camera: &C,
     framebuffer_size: Vec2<f32>,
 ) -> impl ugli::Uniforms {

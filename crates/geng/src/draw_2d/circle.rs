@@ -1,30 +1,77 @@
 use super::*;
 
-pub struct Circle {
-    pub center: Vec2<f32>,
-    pub radius: f32,
-    pub color: Color<f32>,
+pub struct Ellipse {
+    transform: Mat3<f32>,
+    cut: f32,
+    color: Color<f32>,
 }
 
-impl Circle {
-    pub fn new(center: Vec2<f32>, radius: f32, color: Color<f32>) -> Self {
+impl Ellipse {
+    pub fn new(center: Vec2<f32>, size: Vec2<f32>, color: Color<f32>) -> Self {
+        Self::unit(color).transformed(Mat3::translate(center) * Mat3::scale(size))
+    }
+    pub fn circle(center: Vec2<f32>, radius: f32, color: Color<f32>) -> Self {
+        Self::unit(color).transformed(Mat3::translate(center) * Mat3::scale_uniform(radius))
+    }
+    pub fn circle_with_cut(
+        center: Vec2<f32>,
+        inner_radius: f32,
+        radius: f32,
+        color: Color<f32>,
+    ) -> Self {
         Self {
-            center,
-            radius,
+            cut: inner_radius / radius,
+            ..Self::unit(color).transformed(Mat3::translate(center) * Mat3::scale_uniform(radius))
+        }
+    }
+    pub fn unit(color: Color<f32>) -> Self {
+        Self {
+            transform: Mat3::identity(),
+            cut: 0.0,
+            color,
+        }
+    }
+    pub fn unit_with_cut(cut: f32, color: Color<f32>) -> Self {
+        Self {
+            transform: Mat3::identity(),
+            cut,
             color,
         }
     }
 }
 
-impl Drawable2d for Circle {
+impl Draw2d for Ellipse {
     fn draw_2d(
-        self,
+        &self,
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,
-        camera: &impl AbstractCamera2d,
+        camera: &dyn AbstractCamera2d,
     ) {
-        geng.inner
-            .draw_2d
-            .circle(framebuffer, camera, self.center, self.radius, self.color);
+        let framebuffer_size = framebuffer.size();
+        ugli::draw(
+            framebuffer,
+            &geng.inner.draw_2d.ellipse_program,
+            ugli::DrawMode::TriangleFan,
+            &geng.inner.draw_2d.unit_quad_geometry,
+            (
+                ugli::uniforms! {
+                    u_model_matrix: self.transform,
+                    u_color: self.color,
+                    u_framebuffer_size: framebuffer_size,
+                    u_inner_cut: self.cut,
+                },
+                camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
+            ),
+            ugli::DrawParameters {
+                blend_mode: Some(default()),
+                ..default()
+            },
+        );
+    }
+}
+
+impl Transform2d for Ellipse {
+    fn transform(&mut self, transform: Mat3<f32>) {
+        self.transform = transform * self.transform;
     }
 }

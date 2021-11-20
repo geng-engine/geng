@@ -1,20 +1,22 @@
 use super::*;
 
 mod circle;
+mod polygon;
 mod quad;
 
 pub use circle::*;
+pub use polygon::*;
 pub use quad::*;
 
 #[derive(ugli::Vertex, Copy, Clone, Debug)]
-pub struct Vertex {
+pub struct ColoredVertex {
     pub a_pos: Vec2<f32>,
     pub a_color: Color<f32>,
 }
 
 #[derive(ugli::Vertex, Copy, Clone, Debug)]
-struct EllipseVertex {
-    a_quad_pos: Vec2<f32>,
+pub struct Vertex {
+    a_pos: Vec2<f32>,
 }
 
 #[derive(ugli::Vertex, Copy, Clone, Debug)]
@@ -24,9 +26,9 @@ pub struct TexturedVertex {
     pub a_vt: Vec2<f32>,
 }
 
-impl From<Vec2<f32>> for Vertex {
-    fn from(v: Vec2<f32>) -> Vertex {
-        Vertex {
+impl From<Vec2<f32>> for ColoredVertex {
+    fn from(v: Vec2<f32>) -> ColoredVertex {
+        ColoredVertex {
             a_pos: v,
             a_color: Color::WHITE,
         }
@@ -34,29 +36,64 @@ impl From<Vec2<f32>> for Vertex {
 }
 
 pub struct Helper {
-    geometry: RefCell<ugli::VertexBuffer<Vertex>>,
+    geometry: RefCell<ugli::VertexBuffer<ColoredVertex>>,
     textured_geometry: RefCell<ugli::VertexBuffer<TexturedVertex>>,
-    pub(crate) program: ugli::Program,
+    pub(crate) color_program: ugli::Program,
     pub(crate) textured_program: ugli::Program,
-    ellipse_geometry: ugli::VertexBuffer<EllipseVertex>,
+    unit_quad_geometry: ugli::VertexBuffer<TexturedVertex>,
     pub(crate) ellipse_program: ugli::Program,
 }
 
-pub trait Drawable2d {
+pub trait Draw2d {
     fn draw_2d(
-        self,
+        &self,
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,
-        camera: &impl AbstractCamera2d,
+        camera: &dyn AbstractCamera2d,
     );
 }
+
+pub trait Transform2d {
+    fn transform(&mut self, transform: Mat3<f32>);
+}
+
+impl<T: Draw2d + ?Sized> Draw2d for Box<T> {
+    fn draw_2d(
+        &self,
+        geng: &Geng,
+        framebuffer: &mut ugli::Framebuffer,
+        camera: &dyn AbstractCamera2d,
+    ) {
+        (**self).draw_2d(geng, framebuffer, camera);
+    }
+}
+
+impl<T: Transform2d + ?Sized> Transform2d for Box<T> {
+    fn transform(&mut self, transform: Mat3<f32>) {
+        (**self).transform(transform);
+    }
+}
+
+pub trait Transform2dExt: Transform2d + Sized {
+    fn transformed(self, transform: Mat3<f32>) -> Self {
+        let mut result = self;
+        result.transform(transform);
+        result
+    }
+}
+
+impl<T: Transform2d> Transform2dExt for T {}
+
+pub trait DrawTransform2d: Draw2d + Transform2d {}
+
+impl<T: Draw2d + Transform2d> DrawTransform2d for T {}
 
 impl Geng {
     pub fn draw_2d(
         &self,
         framebuffer: &mut ugli::Framebuffer,
         camera: &impl AbstractCamera2d,
-        drawable: impl Drawable2d,
+        drawable: &impl Draw2d,
     ) {
         drawable.draw_2d(self, framebuffer, camera);
     }
@@ -71,26 +108,34 @@ impl Helper {
         Self {
             geometry: RefCell::new(ugli::VertexBuffer::new_dynamic(ugli, Vec::new())),
             textured_geometry: RefCell::new(ugli::VertexBuffer::new_dynamic(ugli, Vec::new())),
-            program: shader_lib
+            color_program: shader_lib
                 .compile(include_str!("shaders/color.glsl"))
                 .unwrap(),
             textured_program: shader_lib
                 .compile(include_str!("shaders/textured.glsl"))
                 .unwrap(),
-            ellipse_geometry: ugli::VertexBuffer::new_static(
+            unit_quad_geometry: ugli::VertexBuffer::new_static(
                 ugli,
                 vec![
-                    EllipseVertex {
-                        a_quad_pos: vec2(-1.0, -1.0),
+                    TexturedVertex {
+                        a_pos: vec2(-1.0, -1.0),
+                        a_color: Color::WHITE,
+                        a_vt: vec2(0.0, 0.0),
                     },
-                    EllipseVertex {
-                        a_quad_pos: vec2(1.0, -1.0),
+                    TexturedVertex {
+                        a_pos: vec2(1.0, -1.0),
+                        a_color: Color::WHITE,
+                        a_vt: vec2(1.0, 0.0),
                     },
-                    EllipseVertex {
-                        a_quad_pos: vec2(1.0, 1.0),
+                    TexturedVertex {
+                        a_pos: vec2(1.0, 1.0),
+                        a_color: Color::WHITE,
+                        a_vt: vec2(1.0, 1.0),
                     },
-                    EllipseVertex {
-                        a_quad_pos: vec2(-1.0, 1.0),
+                    TexturedVertex {
+                        a_pos: vec2(-1.0, 1.0),
+                        a_color: Color::WHITE,
+                        a_vt: vec2(0.0, 1.0),
                     },
                 ],
             ),
@@ -108,12 +153,12 @@ impl Helper {
         color: Color<f32>,
         mode: ugli::DrawMode,
     ) where
-        V: Copy + Into<Vertex>,
+        V: Copy + Into<ColoredVertex>,
     {
         let framebuffer_size = framebuffer.size();
         let mut geometry = self.geometry.borrow_mut();
         {
-            let geometry: &mut Vec<Vertex> = &mut geometry;
+            let geometry: &mut Vec<ColoredVertex> = &mut geometry;
             geometry.clear();
             for &vertex in vertices {
                 geometry.push(vertex.into());
@@ -121,13 +166,14 @@ impl Helper {
         }
         ugli::draw(
             framebuffer,
-            &self.program,
+            &self.color_program,
             mode,
             &*geometry,
             (
                 ugli::uniforms! {
                     u_color: color,
                     u_framebuffer_size: framebuffer_size,
+                    u_model_matrix: Mat3::<f32>::identity(),
                 },
                 camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
             ),
@@ -168,6 +214,7 @@ impl Helper {
                     u_color: color,
                     u_texture: texture,
                     u_framebuffer_size: framebuffer_size,
+                    u_model_matrix: Mat3::<f32>::identity(),
                 },
                 camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
             ),
@@ -199,46 +246,6 @@ impl Helper {
         );
     }
 
-    pub fn textured<V>(
-        &self,
-        framebuffer: &mut ugli::Framebuffer,
-        camera: &impl AbstractCamera2d,
-        vertices: &[V],
-        texture: &ugli::Texture,
-        color: Color<f32>,
-        mode: ugli::DrawMode,
-    ) where
-        V: Copy + Into<TexturedVertex>,
-    {
-        let framebuffer_size = framebuffer.size();
-        let mut geometry = self.textured_geometry.borrow_mut();
-        {
-            let geometry: &mut Vec<TexturedVertex> = &mut geometry;
-            geometry.clear();
-            for &vertex in vertices {
-                geometry.push(vertex.into());
-            }
-        }
-        ugli::draw(
-            framebuffer,
-            &self.textured_program,
-            mode,
-            &*geometry,
-            (
-                ugli::uniforms! {
-                    u_color: color,
-                    u_framebuffer_size: framebuffer_size,
-                    u_texture: texture,
-                },
-                camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
-            ),
-            ugli::DrawParameters {
-                blend_mode: Some(default()),
-                ..default()
-            },
-        )
-    }
-
     pub fn textured_quad(
         &self,
         framebuffer: &mut ugli::Framebuffer,
@@ -247,7 +254,7 @@ impl Helper {
         texture: &ugli::Texture,
         color: Color<f32>,
     ) {
-        self.textured(
+        self.draw_textured(
             framebuffer,
             camera,
             &[
@@ -292,7 +299,7 @@ impl Helper {
             framebuffer,
             &self.ellipse_program,
             ugli::DrawMode::TriangleFan,
-            &self.ellipse_geometry,
+            &self.unit_quad_geometry,
             (
                 ugli::uniforms! {
                     u_model_matrix: Mat3::translate(position) * Mat3::scale(radius),

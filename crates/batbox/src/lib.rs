@@ -11,7 +11,7 @@ pub use bincode;
 pub use clap;
 pub use derive_more;
 #[doc(no_inline)]
-pub use derive_more::{Deref, DerefMut};
+pub use derive_more::{Constructor, Deref, DerefMut};
 #[doc(no_inline)]
 pub use dyn_clone::{clone_box, DynClone};
 #[doc(no_inline)]
