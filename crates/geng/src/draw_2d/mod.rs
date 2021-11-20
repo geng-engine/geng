@@ -71,8 +71,12 @@ impl Helper {
         Self {
             geometry: RefCell::new(ugli::VertexBuffer::new_dynamic(ugli, Vec::new())),
             textured_geometry: RefCell::new(ugli::VertexBuffer::new_dynamic(ugli, Vec::new())),
-            program: shader_lib.compile(include_str!("color.glsl")).unwrap(),
-            textured_program: shader_lib.compile(include_str!("textured.glsl")).unwrap(),
+            program: shader_lib
+                .compile(include_str!("shaders/color.glsl"))
+                .unwrap(),
+            textured_program: shader_lib
+                .compile(include_str!("shaders/textured.glsl"))
+                .unwrap(),
             ellipse_geometry: ugli::VertexBuffer::new_static(
                 ugli,
                 vec![
@@ -90,7 +94,9 @@ impl Helper {
                     },
                 ],
             ),
-            ellipse_program: shader_lib.compile(include_str!("ellipse.glsl")).unwrap(),
+            ellipse_program: shader_lib
+                .compile(include_str!("shaders/ellipse.glsl"))
+                .unwrap(),
         }
     }
 
