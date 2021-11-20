@@ -8,10 +8,10 @@ pub struct Ellipse {
 
 impl Ellipse {
     pub fn new(center: Vec2<f32>, size: Vec2<f32>, color: Color<f32>) -> Self {
-        Self::unit(color).transformed(Mat3::translate(center) * Mat3::scale(size))
+        Self::unit(color).transform(Mat3::translate(center) * Mat3::scale(size))
     }
     pub fn circle(center: Vec2<f32>, radius: f32, color: Color<f32>) -> Self {
-        Self::unit(color).transformed(Mat3::translate(center) * Mat3::scale_uniform(radius))
+        Self::unit(color).transform(Mat3::translate(center) * Mat3::scale_uniform(radius))
     }
     pub fn circle_with_cut(
         center: Vec2<f32>,
@@ -21,7 +21,7 @@ impl Ellipse {
     ) -> Self {
         Self {
             cut: inner_radius / radius,
-            ..Self::unit(color).transformed(Mat3::translate(center) * Mat3::scale_uniform(radius))
+            ..Self::unit(color).transform(Mat3::translate(center) * Mat3::scale_uniform(radius))
         }
     }
     pub fn unit(color: Color<f32>) -> Self {
@@ -71,7 +71,7 @@ impl Draw2d for Ellipse {
 }
 
 impl Transform2d for Ellipse {
-    fn transform(&mut self, transform: Mat3<f32>) {
+    fn apply_transform(&mut self, transform: Mat3<f32>) {
         self.transform = transform * self.transform;
     }
 }

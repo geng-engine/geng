@@ -8,7 +8,7 @@ pub struct Quad {
 impl Quad {
     pub fn new(aabb: AABB<f32>, color: Color<f32>) -> Self {
         Self::unit(color)
-            .transformed(Mat3::translate(aabb.center()) * Mat3::scale(aabb.size() / 2.0))
+            .transform(Mat3::translate(aabb.center()) * Mat3::scale(aabb.size() / 2.0))
     }
     pub fn unit(color: Color<f32>) -> Self {
         Self {
@@ -48,7 +48,7 @@ impl Draw2d for Quad {
 }
 
 impl Transform2d for Quad {
-    fn transform(&mut self, transform: Mat3<f32>) {
+    fn apply_transform(&mut self, transform: Mat3<f32>) {
         self.transform = transform * self.transform;
     }
 }
@@ -65,7 +65,7 @@ impl<T: std::borrow::Borrow<ugli::Texture>> TexturedQuad<T> {
     }
     pub fn colored(aabb: AABB<f32>, texture: T, color: Color<f32>) -> Self {
         Self::unit_colored(texture, color)
-            .transformed(Mat3::translate(aabb.center()) * Mat3::scale(aabb.size() / 2.0))
+            .transform(Mat3::translate(aabb.center()) * Mat3::scale(aabb.size() / 2.0))
     }
     pub fn unit(texture: T) -> Self {
         Self::unit_colored(texture, Color::WHITE)
@@ -110,7 +110,7 @@ impl<T: std::borrow::Borrow<ugli::Texture>> Draw2d for TexturedQuad<T> {
 }
 
 impl<T: std::borrow::Borrow<ugli::Texture>> Transform2d for TexturedQuad<T> {
-    fn transform(&mut self, transform: Mat3<f32>) {
+    fn apply_transform(&mut self, transform: Mat3<f32>) {
         self.transform = transform * self.transform;
     }
 }

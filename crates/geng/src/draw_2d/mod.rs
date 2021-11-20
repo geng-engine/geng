@@ -54,7 +54,7 @@ pub trait Draw2d {
 }
 
 pub trait Transform2d {
-    fn transform(&mut self, transform: Mat3<f32>);
+    fn apply_transform(&mut self, transform: Mat3<f32>);
 }
 
 impl<T: Draw2d + ?Sized> Draw2d for Box<T> {
@@ -69,15 +69,15 @@ impl<T: Draw2d + ?Sized> Draw2d for Box<T> {
 }
 
 impl<T: Transform2d + ?Sized> Transform2d for Box<T> {
-    fn transform(&mut self, transform: Mat3<f32>) {
-        (**self).transform(transform);
+    fn apply_transform(&mut self, transform: Mat3<f32>) {
+        (**self).apply_transform(transform);
     }
 }
 
 pub trait Transform2dExt: Transform2d + Sized {
-    fn transformed(self, transform: Mat3<f32>) -> Self {
+    fn transform(self, transform: Mat3<f32>) -> Self {
         let mut result = self;
-        result.transform(transform);
+        result.apply_transform(transform);
         result
     }
 }

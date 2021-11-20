@@ -55,7 +55,7 @@ impl Draw2d for Polygon {
 }
 
 impl Transform2d for Polygon {
-    fn transform(&mut self, transform: Mat3<f32>) {
+    fn apply_transform(&mut self, transform: Mat3<f32>) {
         self.transform = transform * self.transform;
     }
 }
