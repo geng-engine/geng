@@ -60,6 +60,7 @@ impl Geng {
     ) {
         drawable.draw_2d(self, framebuffer, camera);
     }
+    #[deprecated]
     pub fn draw_2d_helper(&self) -> &Helper {
         &self.inner.draw_2d
     }
