@@ -24,19 +24,20 @@ impl geng::State for State {
             rotation: 0.0,
             fov: 10.0,
         };
-        self.geng.draw_with(
+        self.geng.draw_2d_helper().quad(
             framebuffer,
             &camera,
             AABB::point(Vec2::ZERO).extend_uniform(1.0),
             Color::WHITE,
         );
-        self.geng.draw_with(
+        self.geng.draw_2d_helper().textured_quad(
             framebuffer,
             &camera,
             AABB::point(Vec2::ZERO)
                 .extend_uniform(1.0)
                 .translate(vec2(2.0, 0.0)),
             &self.texture,
+            Color::WHITE,
         );
     }
 }

@@ -142,11 +142,15 @@ impl geng::State for Game {
         };
         let model = self.model.get();
         for player in &model.players {
-            self.geng
-                .draw_2d()
-                .circle(framebuffer, &camera, player.position, 1.0, Color::GRAY);
+            self.geng.draw_2d_helper().circle(
+                framebuffer,
+                &camera,
+                player.position,
+                1.0,
+                Color::GRAY,
+            );
         }
-        self.geng.draw_2d().circle(
+        self.geng.draw_2d_helper().circle(
             framebuffer,
             &camera,
             self.player.position,

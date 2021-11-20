@@ -202,13 +202,13 @@ impl geng::State for GameState {
         let boundary = AABB::point(self.boundary.center())
             .extend_symmetric(vec2(self.boundary.width(), BOUNDARY_WIDTH) / 2.0);
         let boundary_translate = self.boundary.height() / 2.0 + BOUNDARY_WIDTH / 2.0;
-        self.geng.draw_2d().quad(
+        self.geng.draw_2d_helper().quad(
             framebuffer,
             &self.camera,
             boundary.translate(vec2(0.0, boundary_translate)),
             BOUNDARY_COLOR,
         );
-        self.geng.draw_2d().quad(
+        self.geng.draw_2d_helper().quad(
             framebuffer,
             &self.camera,
             boundary.translate(vec2(0.0, -boundary_translate)),
@@ -218,13 +218,13 @@ impl geng::State for GameState {
         // Draw players
         for player in &self.players {
             self.geng
-                .draw_2d()
+                .draw_2d_helper()
                 .quad(framebuffer, &self.camera, player.aabb(), player.color);
         }
 
         // Draw ball
         let ball = &self.ball;
-        self.geng.draw_2d().circle(
+        self.geng.draw_2d_helper().circle(
             framebuffer,
             &self.camera,
             ball.position,

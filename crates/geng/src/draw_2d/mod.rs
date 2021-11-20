@@ -1,5 +1,11 @@
 use super::*;
 
+mod circle;
+mod quad;
+
+pub use circle::*;
+pub use quad::*;
+
 #[derive(ugli::Vertex, Copy, Clone, Debug)]
 pub struct Vertex {
     pub a_pos: Vec2<f32>,
@@ -27,7 +33,7 @@ impl From<Vec2<f32>> for Vertex {
     }
 }
 
-pub struct Draw2D {
+pub struct Helper {
     geometry: RefCell<ugli::VertexBuffer<Vertex>>,
     textured_geometry: RefCell<ugli::VertexBuffer<TexturedVertex>>,
     pub(crate) program: ugli::Program,
@@ -36,7 +42,30 @@ pub struct Draw2D {
     pub(crate) ellipse_program: ugli::Program,
 }
 
-impl Draw2D {
+pub trait Drawable2d {
+    fn draw_2d(
+        self,
+        geng: &Geng,
+        framebuffer: &mut ugli::Framebuffer,
+        camera: &impl AbstractCamera2d,
+    );
+}
+
+impl Geng {
+    pub fn draw_2d(
+        &self,
+        framebuffer: &mut ugli::Framebuffer,
+        camera: &impl AbstractCamera2d,
+        drawable: impl Drawable2d,
+    ) {
+        drawable.draw_2d(self, framebuffer, camera);
+    }
+    pub fn draw_2d_helper(&self) -> &Helper {
+        &self.inner.draw_2d
+    }
+}
+
+impl Helper {
     pub(crate) fn new(shader_lib: &ShaderLib, ugli: &Ugli) -> Self {
         Self {
             geometry: RefCell::new(ugli::VertexBuffer::new_dynamic(ugli, Vec::new())),
