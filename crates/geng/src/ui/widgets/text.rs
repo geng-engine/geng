@@ -33,7 +33,7 @@ impl<T: AsRef<str>, F: AsRef<Font>> Widget for Text<T, F> {
                 self.font
                     .as_ref()
                     .measure(self.text.as_ref(), self.size)
-                    .width() as f64,
+                    .map_or(0.0, |aabb| aabb.width() as f64),
                 self.size as f64,
             ),
             flex: vec2(0.0, 0.0),
@@ -50,7 +50,7 @@ impl<T: AsRef<str>, F: AsRef<Font>> Widget for Text<T, F> {
                     .font
                     .as_ref()
                     .measure(self.text.as_ref(), self.size)
-                    .width(),
+                    .map_or(0.0, |aabb| aabb.width()),
         );
         self.font.as_ref().draw(
             framebuffer,

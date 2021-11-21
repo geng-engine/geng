@@ -167,6 +167,10 @@ impl State {
             draw_2d::Text::unit(geng.default_font().clone(), "Hello!", Color::WHITE)
                 .transform(Mat3::rotate(f32::PI / 6.0)),
         );
+        result.add(
+            draw_2d::Text::unit(geng.default_font().clone(), "", Color::WHITE)
+                .transform(Mat3::rotate(f32::PI / 6.0)),
+        );
         result
     }
     fn add<T: draw_2d::Draw2d + 'static>(&mut self, object: T) {
