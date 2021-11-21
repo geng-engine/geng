@@ -33,7 +33,7 @@ impl<'a> Transform2d for Grid<'a> {
 }
 
 impl<'a> geng::Draw2d for Grid<'a> {
-    fn draw_2d(
+    fn draw_2d_transformed(
         &self,
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,

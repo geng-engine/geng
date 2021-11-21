@@ -37,7 +37,7 @@ impl<F: std::borrow::Borrow<Font>, T: std::borrow::Borrow<str>> Transform2d for 
 }
 
 impl<F: std::borrow::Borrow<Font>, T: std::borrow::Borrow<str>> Draw2d for Text<F, T> {
-    fn draw_2d(
+    fn draw_2d_transformed(
         &self,
         _geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,

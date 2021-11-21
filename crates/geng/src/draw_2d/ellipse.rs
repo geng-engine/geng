@@ -41,7 +41,7 @@ impl Ellipse {
 }
 
 impl Draw2d for Ellipse {
-    fn draw_2d(
+    fn draw_2d_transformed(
         &self,
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,

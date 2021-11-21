@@ -64,7 +64,7 @@ impl Polygon {
 }
 
 impl Draw2d for Polygon {
-    fn draw_2d(
+    fn draw_2d_transformed(
         &self,
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,

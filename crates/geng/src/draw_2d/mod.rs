@@ -47,29 +47,37 @@ pub struct Helper {
 }
 
 pub trait Draw2d: Transform2d {
-    fn draw_2d(
+    fn draw_2d_transformed(
         &self,
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
         transform: Mat3<f32>,
     );
+    fn draw_2d(
+        &self,
+        geng: &Geng,
+        framebuffer: &mut ugli::Framebuffer,
+        camera: &dyn AbstractCamera2d,
+    ) {
+        self.draw_2d_transformed(geng, framebuffer, camera, Mat3::identity());
+    }
 }
 
 impl<T: Draw2d + ?Sized> Draw2d for Box<T> {
-    fn draw_2d(
+    fn draw_2d_transformed(
         &self,
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
         transform: Mat3<f32>,
     ) {
-        (**self).draw_2d(geng, framebuffer, camera, transform);
+        (**self).draw_2d_transformed(geng, framebuffer, camera, transform);
     }
 }
 
 impl<'a, T: Draw2d + ?Sized> Draw2d for Transformed2d<'a, T> {
-    fn draw_2d(
+    fn draw_2d_transformed(
         &self,
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,
@@ -77,7 +85,7 @@ impl<'a, T: Draw2d + ?Sized> Draw2d for Transformed2d<'a, T> {
         transform: Mat3<f32>,
     ) {
         self.inner
-            .draw_2d(geng, framebuffer, camera, transform * self.transform);
+            .draw_2d_transformed(geng, framebuffer, camera, transform * self.transform);
     }
 }
 
@@ -97,7 +105,7 @@ impl Geng {
         drawable: &impl Draw2d,
         transform: Mat3<f32>,
     ) {
-        drawable.draw_2d(self, framebuffer, camera, transform);
+        drawable.draw_2d_transformed(self, framebuffer, camera, transform);
     }
     #[deprecated]
     pub fn draw_2d_helper(&self) -> &Helper {
