@@ -99,10 +99,11 @@ impl Font {
     pub fn measure(&self, text: &str, size: f32) -> AABB<f32> {
         self.measure_at(text, vec2(0.0, 0.0), size)
     }
-    fn draw_impl(
+    pub(crate) fn draw_impl(
         &self,
         framebuffer: &mut ugli::Framebuffer,
-        camera: &impl AbstractCamera2d,
+        camera: &(impl AbstractCamera2d + ?Sized),
+        transform: Mat3<f32>,
         text: &str,
         pos: Vec2<f32>,
         size: f32,
@@ -110,7 +111,8 @@ impl Font {
     ) {
         let pixel_size = {
             let m = camera.projection_matrix(framebuffer.size().map(|x| x as f32))
-                * camera.view_matrix();
+                * camera.view_matrix()
+                * transform;
             ((m * vec3(0.0, size, 0.0)).xy() * framebuffer.size().map(|x| x as f32))
                 .len()
                 .clamp(1.0, 256.0)
@@ -213,6 +215,7 @@ impl Font {
                     u_color: color,
                     u_cache_texture: &*cache_texture,
                     u_framebuffer_size: framebuffer_size,
+                    u_model_matrix: transform,
                 },
                 camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
             ),
@@ -239,6 +242,7 @@ impl Font {
             self.draw_impl(
                 framebuffer,
                 camera,
+                Mat3::identity(),
                 line,
                 vec2(pos.x - self.measure(line, size).width() * align.0, pos.y),
                 size,

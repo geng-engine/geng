@@ -3,10 +3,12 @@ use super::*;
 mod ellipse;
 mod polygon;
 mod quad;
+mod text;
 
 pub use ellipse::*;
 pub use polygon::*;
 pub use quad::*;
+pub use text::*;
 
 #[derive(ugli::Vertex, Copy, Clone, Debug)]
 pub struct ColoredVertex {

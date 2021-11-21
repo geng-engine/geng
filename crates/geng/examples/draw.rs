@@ -93,6 +93,10 @@ impl State {
             ],
             Color::GRAY,
         ));
+        result.add(
+            draw_2d::Text::unit(geng.default_font().clone(), "Hello!", Color::WHITE)
+                .transform(Mat3::rotate(f32::PI / 6.0)),
+        );
         result
     }
     fn add<T: draw_2d::Draw2d + 'static>(&mut self, object: T) {
@@ -110,7 +114,7 @@ impl geng::State for State {
                 framebuffer,
                 &self.camera,
                 object,
-                Mat3::translate(vec2(x, 0.0)),
+                Mat3::scale_uniform(0.5) * Mat3::translate(vec2(x, 0.0)),
             );
             x += 2.0;
         }
