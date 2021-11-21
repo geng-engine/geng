@@ -7,7 +7,7 @@ pub struct Ellipse {
 }
 
 impl Ellipse {
-    pub fn new(ellipse: batbox::Ellipse, cut: f32, color: Color<f32>) -> Self {
+    pub fn new(ellipse: batbox::Ellipse<f32>, cut: f32, color: Color<f32>) -> Self {
         Self {
             matrix: ellipse.matrix(),
             cut,

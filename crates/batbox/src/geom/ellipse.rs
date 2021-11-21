@@ -1,27 +1,31 @@
 use super::*;
 
-pub struct Ellipse {
-    matrix: Mat3<f32>,
+pub struct Ellipse<T> {
+    matrix: Mat3<T>,
 }
 
-impl Ellipse {
-    pub fn new(center: Vec2<f32>, size: Vec2<f32>) -> Self {
-        Self::unit().transform(Mat3::translate(center) * Mat3::scale(size))
+impl<T: Float> Ellipse<T> {
+    pub fn new(center: Vec2<T>, size: Vec2<T>) -> Self {
+        Self {
+            matrix: Mat3::translate(center) * Mat3::scale(size),
+        }
     }
-    pub fn circle(center: Vec2<f32>, radius: f32) -> Self {
-        Self::unit().transform(Mat3::translate(center) * Mat3::scale_uniform(radius))
+    pub fn circle(center: Vec2<T>, radius: T) -> Self {
+        Self {
+            matrix: Mat3::translate(center) * Mat3::scale_uniform(radius),
+        }
     }
     pub fn unit() -> Self {
         Self {
             matrix: Mat3::identity(),
         }
     }
-    pub fn matrix(&self) -> Mat3<f32> {
+    pub fn matrix(&self) -> Mat3<T> {
         self.matrix
     }
 }
 
-impl Transform2d for Ellipse {
+impl Transform2d for Ellipse<f32> {
     fn bounding_quad(&self) -> Quad<f32> {
         Quad::from_matrix(self.matrix)
     }
@@ -30,7 +34,7 @@ impl Transform2d for Ellipse {
     }
 }
 
-impl FitTarget2d for Ellipse {
+impl FitTarget2d for Ellipse<f32> {
     fn make_fit(&self, object: &mut impl Transform2d) {
         let inversed_matrix = self.matrix().inverse();
         let quad_in_circle = object.bounding_quad().transform(inversed_matrix);
