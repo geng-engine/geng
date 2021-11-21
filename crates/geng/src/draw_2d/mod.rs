@@ -1,10 +1,10 @@
 use super::*;
 
-mod circle;
+mod ellipse;
 mod polygon;
 mod quad;
 
-pub use circle::*;
+pub use ellipse::*;
 pub use polygon::*;
 pub use quad::*;
 
