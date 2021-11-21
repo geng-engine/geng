@@ -5,6 +5,7 @@ mod polygon;
 mod quad;
 mod text;
 
+pub use ellipse::Ellipse;
 pub use ellipse::*;
 pub use polygon::*;
 pub use quad::Quad;
