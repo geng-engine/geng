@@ -5,6 +5,70 @@ struct Assets {
     texture: ugli::Texture,
 }
 
+struct Grid<'a> {
+    table: Vec<Vec<Option<&'a dyn geng::Draw2d>>>,
+    transform: Mat3<f32>,
+}
+
+impl<'a> Grid<'a> {
+    pub fn new(size: Vec2<usize>, objects: impl IntoIterator<Item = &'a dyn geng::Draw2d>) -> Self {
+        let mut table = vec![vec![None; size.y]; size.x];
+        for (storage, object) in table.iter_mut().flat_map(|row| row.iter_mut()).zip(objects) {
+            *storage = Some(object);
+        }
+        Self {
+            table,
+            transform: Mat3::scale(size.map(|x| x as f32)),
+        }
+    }
+}
+
+impl<'a> Transform2d for Grid<'a> {
+    fn bounding_quad(&self) -> Mat3<f32> {
+        self.transform
+    }
+    fn apply_transform(&mut self, transform: Mat3<f32>) {
+        self.transform = transform * self.transform;
+    }
+}
+
+impl<'a> geng::Draw2d for Grid<'a> {
+    fn draw_2d(
+        &self,
+        geng: &Geng,
+        framebuffer: &mut ugli::Framebuffer,
+        camera: &dyn geng::AbstractCamera2d,
+        transform: Mat3<f32>,
+    ) {
+        for (x, column) in self.table.iter().enumerate() {
+            for (y, object) in column.iter().enumerate() {
+                if let Some(object) = *object {
+                    geng.draw_2d_transformed(
+                        framebuffer,
+                        camera,
+                        &object
+                            .transformed()
+                            .fit_into(AABB::point(Vec2::ZERO).extend_uniform(0.9))
+                            .transform(
+                                self.transform
+                                    * Mat3::translate(vec2(-1.0, -1.0))
+                                    * Mat3::scale_uniform(2.0)
+                                    * Mat3::scale(vec2(
+                                        1.0 / self.table.len() as f32,
+                                        1.0 / self.table[0].len() as f32,
+                                    ))
+                                    * Mat3::translate(vec2(x as f32, y as f32))
+                                    * Mat3::scale_uniform(0.5)
+                                    * Mat3::translate(vec2(1.0, 1.0)),
+                            ),
+                        transform,
+                    );
+                }
+            }
+        }
+    }
+}
+
 struct State {
     geng: Geng,
     camera: geng::Camera2d,
@@ -114,19 +178,24 @@ impl geng::State for State {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         ugli::clear(framebuffer, Some(Color::BLACK), None);
 
-        let mut x = -5.0;
-        for object in &self.objects {
-            self.geng.draw_2d_transformed(
-                framebuffer,
-                &self.camera,
-                object,
-                object
-                    .bounding_quad()
-                    .fit_into(AABB::point(vec2(x, 0.0)).extend_uniform(0.45))
-                    * object.bounding_quad().inverse(),
-            );
-            x += 1.0;
+        let mut size = 1;
+        while size * size < self.objects.len() {
+            size += 1;
         }
+        let grid = Grid::new(
+            vec2(size, size),
+            self.objects.iter().map(|object| object.deref()),
+        );
+        let framebuffer_size = framebuffer.size();
+        self.geng.draw_2d(
+            framebuffer,
+            &self.camera,
+            &grid.transformed().fit_into(
+                self.camera
+                    .view_area(framebuffer_size.map(|x| x as f32))
+                    .bounding_box(),
+            ),
+        );
     }
 }
 

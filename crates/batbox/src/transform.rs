@@ -23,11 +23,37 @@ impl Transform2d for Mat3<f32> {
     }
 }
 
-pub trait Transform2dExt: Transform2d + Sized {
-    fn transform(self, transform: Mat3<f32>) -> Self {
+pub struct Transformed2d<'a, T: Transform2d + ?Sized> {
+    pub inner: &'a T,
+    pub transform: Mat3<f32>,
+}
+
+impl<'a, T: Transform2d + ?Sized> Transformed2d<'a, T> {
+    pub fn new(inner: &'a T, transform: Mat3<f32>) -> Self {
+        Self { inner, transform }
+    }
+}
+
+impl<'a, T: Transform2d + ?Sized> Transform2d for Transformed2d<'a, T> {
+    fn bounding_quad(&self) -> Mat3<f32> {
+        self.transform * self.inner.bounding_quad()
+    }
+    fn apply_transform(&mut self, transform: Mat3<f32>) {
+        self.transform = transform * self.transform;
+    }
+}
+
+pub trait Transform2dExt: Transform2d {
+    fn transform(self, transform: Mat3<f32>) -> Self
+    where
+        Self: Sized,
+    {
         let mut result = self;
         result.apply_transform(transform);
         result
+    }
+    fn transformed(&self) -> Transformed2d<Self> {
+        Transformed2d::new(self, Mat3::identity())
     }
     fn bounding_box(&self) -> AABB<f32> {
         AABB::points_bounding_box(
@@ -41,7 +67,10 @@ pub trait Transform2dExt: Transform2d + Sized {
             .map(|p| (self.bounding_quad() * p.extend(1.0)).into_2d()),
         )
     }
-    fn fit_into(self, aabb: AABB<f32>) -> Self {
+    fn fit_into(self, aabb: AABB<f32>) -> Self
+    where
+        Self: Sized,
+    {
         let current_aabb = self.bounding_box();
         let scale = partial_min(
             aabb.height() / current_aabb.height(),
@@ -55,4 +84,4 @@ pub trait Transform2dExt: Transform2d + Sized {
     }
 }
 
-impl<T: Transform2d> Transform2dExt for T {}
+impl<T: Transform2d + ?Sized> Transform2dExt for T {}

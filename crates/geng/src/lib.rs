@@ -65,6 +65,7 @@ pub use asset::*;
 pub use camera::*;
 pub use context::*;
 pub use debug_overlay::*;
+pub use draw_2d::Draw2d;
 pub use font::*;
 pub use loading_screen::*;
 pub use shader_lib::*;

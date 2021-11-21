@@ -68,11 +68,24 @@ impl<T: Draw2d + ?Sized> Draw2d for Box<T> {
     }
 }
 
+impl<'a, T: Draw2d + ?Sized> Draw2d for Transformed2d<'a, T> {
+    fn draw_2d(
+        &self,
+        geng: &Geng,
+        framebuffer: &mut ugli::Framebuffer,
+        camera: &dyn AbstractCamera2d,
+        transform: Mat3<f32>,
+    ) {
+        self.inner
+            .draw_2d(geng, framebuffer, camera, transform * self.transform);
+    }
+}
+
 impl Geng {
     pub fn draw_2d(
         &self,
         framebuffer: &mut ugli::Framebuffer,
-        camera: &impl AbstractCamera2d,
+        camera: &dyn AbstractCamera2d,
         drawable: &impl Draw2d,
     ) {
         self.draw_2d_transformed(framebuffer, camera, drawable, Mat3::identity());
@@ -80,7 +93,7 @@ impl Geng {
     pub fn draw_2d_transformed(
         &self,
         framebuffer: &mut ugli::Framebuffer,
-        camera: &impl AbstractCamera2d,
+        camera: &dyn AbstractCamera2d,
         drawable: &impl Draw2d,
         transform: Mat3<f32>,
     ) {
