@@ -56,7 +56,7 @@ impl Font {
             descent,
         })
     }
-    pub fn measure_at(&self, text: &str, mut pos: Vec2<f32>, size: f32) -> AABB<f32> {
+    pub fn measure_at(&self, text: &str, mut pos: Vec2<f32>, size: f32) -> Option<AABB<f32>> {
         // pos.y -= self.descent * size;
         let scale = rusttype::Scale { x: size, y: size };
         let pos = rusttype::Point {
@@ -85,18 +85,13 @@ impl Font {
                 }
             }
         }
-        let mut result = result.unwrap_or(AABB {
-            x_min: 0.0,
-            x_max: 0.0,
-            y_min: 0.0,
-            y_max: 0.0,
-        });
+        let mut result = result?;
         let (bottom, top) = (-result.y_max, -result.y_min);
         result.y_min = bottom;
         result.y_max = top;
-        result
+        Some(result)
     }
-    pub fn measure(&self, text: &str, size: f32) -> AABB<f32> {
+    pub fn measure(&self, text: &str, size: f32) -> Option<AABB<f32>> {
         self.measure_at(text, vec2(0.0, 0.0), size)
     }
     pub(crate) fn draw_impl(
@@ -239,15 +234,17 @@ impl Font {
     ) {
         let mut pos = pos;
         for line in text.lines().rev() {
-            self.draw_impl(
-                framebuffer,
-                camera,
-                Mat3::identity(),
-                line,
-                vec2(pos.x - self.measure(line, size).width() * align.0, pos.y),
-                size,
-                color,
-            );
+            if let Some(aabb) = self.measure(line, size) {
+                self.draw_impl(
+                    framebuffer,
+                    camera,
+                    Mat3::identity(),
+                    line,
+                    vec2(pos.x - aabb.width() * align.0, pos.y),
+                    size,
+                    color,
+                );
+            }
             pos.y += size;
         }
     }
