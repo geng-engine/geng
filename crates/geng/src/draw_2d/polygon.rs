@@ -19,8 +19,9 @@ impl Polygon {
         )
     }
     pub fn new_gradient(vertices: Vec<ColoredVertex>) -> Self {
+        let (transform, vertices) = Self::normalize(vertices);
         Self {
-            transform: Mat3::identity(),
+            transform,
             vertices,
             draw_mode: ugli::DrawMode::TriangleFan,
         }
@@ -37,11 +38,28 @@ impl Polygon {
         )
     }
     pub fn strip_gradient(vertices: Vec<ColoredVertex>) -> Self {
+        let (transform, vertices) = Self::normalize(vertices);
         Self {
-            transform: Mat3::identity(),
+            transform,
             vertices,
             draw_mode: ugli::DrawMode::TriangleStrip,
         }
+    }
+
+    fn normalize(mut vertices: Vec<ColoredVertex>) -> (Mat3<f32>, Vec<ColoredVertex>) {
+        let mut aabb = AABB::point(vertices[0].a_pos);
+        for vertex in &vertices {
+            aabb.x_min = partial_min(aabb.x_min, vertex.a_pos.x);
+            aabb.x_max = partial_max(aabb.x_max, vertex.a_pos.x);
+            aabb.y_min = partial_min(aabb.y_min, vertex.a_pos.y);
+            aabb.y_max = partial_max(aabb.y_max, vertex.a_pos.y);
+        }
+        let transform = Mat3::translate(aabb.center()) * Mat3::scale(aabb.size() / 2.0);
+        let inverse = transform.inverse();
+        for vertex in &mut vertices {
+            vertex.a_pos = (inverse * vertex.a_pos.extend(1.0)).xy();
+        }
+        (transform, vertices)
     }
 }
 
@@ -76,6 +94,9 @@ impl Draw2d for Polygon {
 }
 
 impl Transform2d for Polygon {
+    fn bounding_quad(&self) -> Mat3<f32> {
+        self.transform
+    }
     fn apply_transform(&mut self, transform: Mat3<f32>) {
         self.transform = transform * self.transform;
     }

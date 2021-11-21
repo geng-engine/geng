@@ -48,6 +48,9 @@ impl Draw2d for Quad {
 }
 
 impl Transform2d for Quad {
+    fn bounding_quad(&self) -> Mat3<f32> {
+        self.transform
+    }
     fn apply_transform(&mut self, transform: Mat3<f32>) {
         self.transform = transform * self.transform;
     }
@@ -111,6 +114,9 @@ impl<T: std::borrow::Borrow<ugli::Texture>> Draw2d for TexturedQuad<T> {
 }
 
 impl<T: std::borrow::Borrow<ugli::Texture>> Transform2d for TexturedQuad<T> {
+    fn bounding_quad(&self) -> Mat3<f32> {
+        self.transform
+    }
     fn apply_transform(&mut self, transform: Mat3<f32>) {
         self.transform = transform * self.transform;
     }

@@ -137,6 +137,10 @@ impl<T: Float> Vec3<T> {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
+    pub fn into_2d(self) -> Vec2<T> {
+        vec2(self.x / self.z, self.y / self.z)
+    }
+
     /// Clamp vector's length. Note that the range must be inclusive.
     /// # Examples
     /// ```

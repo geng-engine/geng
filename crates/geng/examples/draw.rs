@@ -114,9 +114,12 @@ impl geng::State for State {
                 framebuffer,
                 &self.camera,
                 object,
-                Mat3::scale_uniform(0.5) * Mat3::translate(vec2(x, 0.0)),
+                object
+                    .bounding_quad()
+                    .fit_into(AABB::point(vec2(x, 0.0)).extend_uniform(0.45))
+                    * object.bounding_quad().inverse(),
             );
-            x += 2.0;
+            x += 1.0;
         }
     }
 }
