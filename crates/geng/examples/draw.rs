@@ -88,6 +88,17 @@ impl geng::State for State {
                 a_color: Color::BLUE,
             },
         ])));
+        objects.push(Box::new(draw_2d::Polygon::strip(
+            vec![
+                vec2(-1.0, -1.0),
+                vec2(0.0, -1.0),
+                vec2(-0.5, 0.0),
+                vec2(0.0, 0.0),
+                vec2(0.5, 1.0),
+                vec2(1.0, 0.5),
+            ],
+            Color::GRAY,
+        )));
 
         let mut x = -5.0;
         for drawable in objects {

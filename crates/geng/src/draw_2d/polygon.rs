@@ -2,6 +2,7 @@ use super::*;
 
 pub struct Polygon {
     transform: Mat3<f32>,
+    draw_mode: ugli::DrawMode,
     vertices: Vec<ColoredVertex>,
 }
 
@@ -21,6 +22,25 @@ impl Polygon {
         Self {
             transform: Mat3::identity(),
             vertices,
+            draw_mode: ugli::DrawMode::TriangleFan,
+        }
+    }
+    pub fn strip(vertices: Vec<Vec2<f32>>, color: Color<f32>) -> Self {
+        Self::strip_gradient(
+            vertices
+                .into_iter()
+                .map(|vertex| ColoredVertex {
+                    a_pos: vertex,
+                    a_color: color,
+                })
+                .collect(),
+        )
+    }
+    pub fn strip_gradient(vertices: Vec<ColoredVertex>) -> Self {
+        Self {
+            transform: Mat3::identity(),
+            vertices,
+            draw_mode: ugli::DrawMode::TriangleStrip,
         }
     }
 }
@@ -36,7 +56,7 @@ impl Draw2d for Polygon {
         ugli::draw(
             framebuffer,
             &geng.inner.draw_2d.color_program,
-            ugli::DrawMode::TriangleFan,
+            self.draw_mode,
             &ugli::VertexBuffer::new_dynamic(geng.ugli(), self.vertices.clone()),
             (
                 ugli::uniforms! {
