@@ -1,6 +1,6 @@
 use super::*;
 
-pub struct Text<F: std::borrow::Borrow<Font>, T: std::borrow::Borrow<str>> {
+pub struct Text<F: std::borrow::Borrow<Font>, T: AsRef<str>> {
     font: F,
     text: T,
     color: Color<f32>,
@@ -10,11 +10,11 @@ pub struct Text<F: std::borrow::Borrow<Font>, T: std::borrow::Borrow<str>> {
 
 const SIZE_HACK: f32 = 1000.0;
 
-impl<F: std::borrow::Borrow<Font>, T: std::borrow::Borrow<str>> Text<F, T> {
+impl<F: std::borrow::Borrow<Font>, T: AsRef<str>> Text<F, T> {
     pub fn unit(font: F, text: T, color: Color<f32>) -> Self {
         let aabb = font
             .borrow()
-            .measure_at(text.borrow(), vec2(0.0, 0.0), SIZE_HACK);
+            .measure_at(text.as_ref(), vec2(0.0, 0.0), SIZE_HACK);
         let aspect = aabb.width() / aabb.height();
         Self {
             font,
@@ -27,7 +27,7 @@ impl<F: std::borrow::Borrow<Font>, T: std::borrow::Borrow<str>> Text<F, T> {
     }
 }
 
-impl<F: std::borrow::Borrow<Font>, T: std::borrow::Borrow<str>> Transform2d for Text<F, T> {
+impl<F: std::borrow::Borrow<Font>, T: AsRef<str>> Transform2d for Text<F, T> {
     fn bounding_quad(&self) -> batbox::Quad<f32> {
         batbox::Quad::from_matrix(self.transform)
     }
@@ -36,7 +36,7 @@ impl<F: std::borrow::Borrow<Font>, T: std::borrow::Borrow<str>> Transform2d for 
     }
 }
 
-impl<F: std::borrow::Borrow<Font>, T: std::borrow::Borrow<str>> Draw2d for Text<F, T> {
+impl<F: std::borrow::Borrow<Font>, T: AsRef<str>> Draw2d for Text<F, T> {
     fn draw_2d_transformed(
         &self,
         _geng: &Geng,
@@ -48,7 +48,7 @@ impl<F: std::borrow::Borrow<Font>, T: std::borrow::Borrow<str>> Draw2d for Text<
             framebuffer,
             camera,
             transform * self.transform * self.into_unit_transform,
-            self.text.borrow(),
+            self.text.as_ref(),
             vec2(0.0, 0.0),
             SIZE_HACK,
             self.color,
