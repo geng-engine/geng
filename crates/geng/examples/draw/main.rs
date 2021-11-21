@@ -23,7 +23,7 @@ impl<'a> Grid<'a> {
     }
 }
 
-impl<'a> Transform2d for Grid<'a> {
+impl<'a> Transform2d<f32> for Grid<'a> {
     fn bounding_quad(&self) -> Quad<f32> {
         Quad::from_matrix(self.transform)
     }

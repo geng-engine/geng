@@ -75,7 +75,7 @@ impl Draw2d for Ellipse {
     }
 }
 
-impl Transform2d for Ellipse {
+impl Transform2d<f32> for Ellipse {
     fn bounding_quad(&self) -> batbox::Quad<f32> {
         batbox::Quad::from_matrix(self.matrix)
     }

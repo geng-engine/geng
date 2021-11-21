@@ -25,23 +25,23 @@ impl<T: Float> Ellipse<T> {
     }
 }
 
-impl Transform2d for Ellipse<f32> {
-    fn bounding_quad(&self) -> Quad<f32> {
+impl<T: Float> Transform2d<T> for Ellipse<T> {
+    fn bounding_quad(&self) -> Quad<T> {
         Quad::from_matrix(self.matrix)
     }
-    fn apply_transform(&mut self, transform: Mat3<f32>) {
+    fn apply_transform(&mut self, transform: Mat3<T>) {
         self.matrix = transform * self.matrix;
     }
 }
 
-impl FitTarget2d for Ellipse<f32> {
-    fn make_fit(&self, object: &mut impl Transform2d) {
+impl<T: Float> FitTarget2d<T> for Ellipse<T> {
+    fn make_fit(&self, object: &mut impl Transform2d<T>) {
         let inversed_matrix = self.matrix().inverse();
         let quad_in_circle = object.bounding_quad().transform(inversed_matrix);
-        let center = (quad_in_circle.matrix() * vec3(0.0, 0.0, 1.0)).into_2d();
-        let corner = (quad_in_circle.matrix() * vec3(1.0, 1.0, 1.0)).into_2d();
+        let center = (quad_in_circle.matrix() * vec3(T::ZERO, T::ZERO, T::ONE)).into_2d();
+        let corner = (quad_in_circle.matrix() * vec3(T::ONE, T::ONE, T::ONE)).into_2d();
         let local_transform =
-            Mat3::scale_uniform(1.0 / (corner - center).len()) * Mat3::translate(-center);
+            Mat3::scale_uniform(T::ONE / (corner - center).len()) * Mat3::translate(-center);
         object.apply_transform(self.matrix() * local_transform * inversed_matrix)
     }
 }

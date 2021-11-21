@@ -1,41 +1,41 @@
 use super::*;
 
-pub trait Transform2d {
-    fn bounding_quad(&self) -> Quad<f32>;
-    fn apply_transform(&mut self, transform: Mat3<f32>);
+pub trait Transform2d<F: Float> {
+    fn bounding_quad(&self) -> Quad<F>;
+    fn apply_transform(&mut self, transform: Mat3<F>);
 }
 
-impl<T: Transform2d + ?Sized> Transform2d for Box<T> {
-    fn bounding_quad(&self) -> Quad<f32> {
+impl<F: Float, T: Transform2d<F> + ?Sized> Transform2d<F> for Box<T> {
+    fn bounding_quad(&self) -> Quad<F> {
         (**self).bounding_quad()
     }
-    fn apply_transform(&mut self, transform: Mat3<f32>) {
+    fn apply_transform(&mut self, transform: Mat3<F>) {
         (**self).apply_transform(transform);
     }
 }
 
-pub struct Transformed2d<'a, T: Transform2d + ?Sized> {
+pub struct Transformed2d<'a, F: Float, T: Transform2d<F> + ?Sized> {
     pub inner: &'a T,
-    pub transform: Mat3<f32>,
+    pub transform: Mat3<F>,
 }
 
-impl<'a, T: Transform2d + ?Sized> Transformed2d<'a, T> {
-    pub fn new(inner: &'a T, transform: Mat3<f32>) -> Self {
+impl<'a, F: Float, T: Transform2d<F> + ?Sized> Transformed2d<'a, F, T> {
+    pub fn new(inner: &'a T, transform: Mat3<F>) -> Self {
         Self { inner, transform }
     }
 }
 
-impl<'a, T: Transform2d + ?Sized> Transform2d for Transformed2d<'a, T> {
-    fn bounding_quad(&self) -> Quad<f32> {
+impl<'a, F: Float, T: Transform2d<F> + ?Sized> Transform2d<F> for Transformed2d<'a, F, T> {
+    fn bounding_quad(&self) -> Quad<F> {
         self.inner.bounding_quad().transform(self.transform)
     }
-    fn apply_transform(&mut self, transform: Mat3<f32>) {
+    fn apply_transform(&mut self, transform: Mat3<F>) {
         self.transform = transform * self.transform;
     }
 }
 
-pub trait Transform2dExt: Transform2d {
-    fn transform(self, transform: Mat3<f32>) -> Self
+pub trait Transform2dExt<F: Float>: Transform2d<F> {
+    fn transform(self, transform: Mat3<F>) -> Self
     where
         Self: Sized,
     {
@@ -43,22 +43,22 @@ pub trait Transform2dExt: Transform2d {
         result.apply_transform(transform);
         result
     }
-    fn transformed(&self) -> Transformed2d<Self> {
+    fn transformed(&self) -> Transformed2d<F, Self> {
         Transformed2d::new(self, Mat3::identity())
     }
-    fn bounding_box(&self) -> AABB<f32> {
+    fn bounding_box(&self) -> AABB<F> {
         AABB::points_bounding_box(
             [
-                vec2(-1.0, -1.0),
-                vec2(1.0, -1.0),
-                vec2(1.0, 1.0),
-                vec2(-1.0, 1.0),
+                vec2(-F::ONE, -F::ONE),
+                vec2(F::ONE, -F::ONE),
+                vec2(F::ONE, F::ONE),
+                vec2(-F::ONE, F::ONE),
             ]
             .into_iter()
-            .map(|p| (self.bounding_quad().matrix() * p.extend(1.0)).into_2d()),
+            .map(|p| (self.bounding_quad().matrix() * p.extend(F::ONE)).into_2d()),
         )
     }
-    fn fit_into(self, target: impl FitTarget2d) -> Self
+    fn fit_into(self, target: impl FitTarget2d<F>) -> Self
     where
         Self: Sized,
     {
@@ -68,8 +68,8 @@ pub trait Transform2dExt: Transform2d {
     }
 }
 
-impl<T: Transform2d + ?Sized> Transform2dExt for T {}
+impl<F: Float, T: Transform2d<F> + ?Sized> Transform2dExt<F> for T {}
 
-pub trait FitTarget2d {
-    fn make_fit(&self, object: &mut impl Transform2d);
+pub trait FitTarget2d<F: Float> {
+    fn make_fit(&self, object: &mut impl Transform2d<F>);
 }
