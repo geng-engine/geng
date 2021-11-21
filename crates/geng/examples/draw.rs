@@ -24,7 +24,7 @@ impl geng::State for State {
             rotation: 0.0,
             fov: 10.0,
         };
-        let mut objects = Vec::<Box<dyn geng::draw_2d::DrawTransform2d>>::new();
+        let mut objects = Vec::<Box<dyn geng::draw_2d::Draw2d>>::new();
         objects.push(Box::new(
             draw_2d::Quad::unit(Color::WHITE)
                 .transform(Mat3::rotate(0.5) * Mat3::scale_uniform(0.5)),

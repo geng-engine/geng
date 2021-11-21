@@ -44,17 +44,13 @@ pub struct Helper {
     pub(crate) ellipse_program: ugli::Program,
 }
 
-pub trait Draw2d {
+pub trait Draw2d: Transform2d {
     fn draw_2d(
         &self,
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
     );
-}
-
-pub trait Transform2d {
-    fn apply_transform(&mut self, transform: Mat3<f32>);
 }
 
 impl<T: Draw2d + ?Sized> Draw2d for Box<T> {
@@ -67,26 +63,6 @@ impl<T: Draw2d + ?Sized> Draw2d for Box<T> {
         (**self).draw_2d(geng, framebuffer, camera);
     }
 }
-
-impl<T: Transform2d + ?Sized> Transform2d for Box<T> {
-    fn apply_transform(&mut self, transform: Mat3<f32>) {
-        (**self).apply_transform(transform);
-    }
-}
-
-pub trait Transform2dExt: Transform2d + Sized {
-    fn transform(self, transform: Mat3<f32>) -> Self {
-        let mut result = self;
-        result.apply_transform(transform);
-        result
-    }
-}
-
-impl<T: Transform2d> Transform2dExt for T {}
-
-pub trait DrawTransform2d: Draw2d + Transform2d {}
-
-impl<T: Draw2d + Transform2d> DrawTransform2d for T {}
 
 impl Geng {
     pub fn draw_2d(
