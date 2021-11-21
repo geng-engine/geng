@@ -28,8 +28,8 @@ impl<F: std::borrow::Borrow<Font>, T: std::borrow::Borrow<str>> Text<F, T> {
 }
 
 impl<F: std::borrow::Borrow<Font>, T: std::borrow::Borrow<str>> Transform2d for Text<F, T> {
-    fn bounding_quad(&self) -> Mat3<f32> {
-        self.transform
+    fn bounding_quad(&self) -> batbox::Quad<f32> {
+        batbox::Quad::from_matrix(self.transform)
     }
     fn apply_transform(&mut self, transform: Mat3<f32>) {
         self.transform = transform * self.transform;

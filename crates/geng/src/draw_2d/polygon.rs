@@ -94,8 +94,8 @@ impl Draw2d for Polygon {
 }
 
 impl Transform2d for Polygon {
-    fn bounding_quad(&self) -> Mat3<f32> {
-        self.transform
+    fn bounding_quad(&self) -> batbox::Quad<f32> {
+        batbox::Quad::from_matrix(self.transform)
     }
     fn apply_transform(&mut self, transform: Mat3<f32>) {
         self.transform = transform * self.transform;

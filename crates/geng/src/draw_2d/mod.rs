@@ -7,6 +7,7 @@ mod text;
 
 pub use ellipse::*;
 pub use polygon::*;
+pub use quad::Quad;
 pub use quad::*;
 pub use text::*;
 

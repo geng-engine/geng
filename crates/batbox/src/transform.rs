@@ -1,25 +1,16 @@
 use super::*;
 
 pub trait Transform2d {
-    fn bounding_quad(&self) -> Mat3<f32>;
+    fn bounding_quad(&self) -> Quad<f32>;
     fn apply_transform(&mut self, transform: Mat3<f32>);
 }
 
 impl<T: Transform2d + ?Sized> Transform2d for Box<T> {
-    fn bounding_quad(&self) -> Mat3<f32> {
+    fn bounding_quad(&self) -> Quad<f32> {
         (**self).bounding_quad()
     }
     fn apply_transform(&mut self, transform: Mat3<f32>) {
         (**self).apply_transform(transform);
-    }
-}
-
-impl Transform2d for Mat3<f32> {
-    fn bounding_quad(&self) -> Mat3<f32> {
-        *self
-    }
-    fn apply_transform(&mut self, transform: Mat3<f32>) {
-        *self = transform * *self;
     }
 }
 
@@ -35,8 +26,8 @@ impl<'a, T: Transform2d + ?Sized> Transformed2d<'a, T> {
 }
 
 impl<'a, T: Transform2d + ?Sized> Transform2d for Transformed2d<'a, T> {
-    fn bounding_quad(&self) -> Mat3<f32> {
-        self.transform * self.inner.bounding_quad()
+    fn bounding_quad(&self) -> Quad<f32> {
+        self.inner.bounding_quad().transform(self.transform)
     }
     fn apply_transform(&mut self, transform: Mat3<f32>) {
         self.transform = transform * self.transform;
@@ -64,7 +55,7 @@ pub trait Transform2dExt: Transform2d {
                 vec2(-1.0, 1.0),
             ]
             .into_iter()
-            .map(|p| (self.bounding_quad() * p.extend(1.0)).into_2d()),
+            .map(|p| (self.bounding_quad().matrix() * p.extend(1.0)).into_2d()),
         )
     }
     fn fit_into(self, aabb: AABB<f32>) -> Self
