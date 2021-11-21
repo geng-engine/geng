@@ -3,6 +3,12 @@ use super::*;
 pub type Texture = web_sys::WebGlTexture;
 
 impl Context {
+    pub fn pixel_store_flip_y(&self, flip: bool) {
+        self.inner.pixel_storei(
+            web_sys::WebGlRenderingContext::UNPACK_FLIP_Y_WEBGL,
+            if flip { 1 } else { 0 },
+        );
+    }
     pub fn active_texture(&self, texture: Enum) {
         self.inner.active_texture(texture);
     }

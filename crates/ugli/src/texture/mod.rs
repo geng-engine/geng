@@ -137,6 +137,7 @@ impl<P: TexturePixel> Texture2d<P> {
             data.len()
         );
         let gl = &self.ugli.inner.raw;
+        gl.pixel_store_flip_y(false);
         gl.bind_texture(raw::TEXTURE_2D, &self.handle);
         gl.tex_sub_image_2d(
             raw::TEXTURE_2D,
@@ -184,6 +185,7 @@ impl Texture {
             }
         }
         let gl = &ugli.inner.raw;
+        gl.pixel_store_flip_y(false);
         gl.tex_image_2d(
             raw::TEXTURE_2D,
             0,
@@ -199,10 +201,12 @@ impl Texture {
         texture
     }
 
-    pub fn from_image_image(ugli: &Ugli, image: image::RgbaImage) -> Self {
+    pub fn from_image_image(ugli: &Ugli, mut image: image::RgbaImage) -> Self {
         let size = vec2(image.width() as usize, image.height() as usize);
         let mut texture = Texture2d::new_raw(ugli, size);
         let gl = &ugli.inner.raw;
+        image::imageops::flip_vertical_in_place(&mut image);
+        gl.pixel_store_flip_y(false);
         gl.tex_image_2d(
             raw::TEXTURE_2D,
             0,
@@ -231,6 +235,7 @@ impl Texture {
         let mut texture =
             Texture2d::new_raw(ugli, vec2(image.width() as usize, image.height() as usize));
         let gl = &ugli.inner.raw;
+        gl.pixel_store_flip_y(true);
         gl.tex_image_2d_image(
             raw::TEXTURE_2D,
             0,

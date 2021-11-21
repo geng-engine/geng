@@ -3,6 +3,8 @@ use super::*;
 pub type Texture = gl::types::GLuint;
 
 impl Context {
+    pub fn pixel_store_flip_y(&self, _flip: bool) {}
+
     pub fn active_texture(&self, texture: Enum) {
         unsafe {
             gl::ActiveTexture(texture);

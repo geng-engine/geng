@@ -1,5 +1,10 @@
 use geng::prelude::*;
 
+#[derive(geng::Assets)]
+struct Assets {
+    texture: ugli::Texture,
+}
+
 struct State {
     geng: Geng,
     camera: geng::Camera2d,
@@ -7,7 +12,7 @@ struct State {
 }
 
 impl State {
-    fn new(geng: &Geng) -> Self {
+    fn new(geng: &Geng, assets: Assets) -> Self {
         let mut result = Self {
             geng: geng.clone(),
             camera: geng::Camera2d {
@@ -32,6 +37,7 @@ impl State {
                 _ => unreachable!(),
             },
         )));
+        result.add(draw_2d::TexturedQuad::unit(assets.texture));
         result.add(draw_2d::TexturedQuad::unit({
             const SIZE: usize = 128;
             let mut texture = ugli::Texture::new_uninitialized(geng.ugli(), vec2(SIZE, SIZE));
@@ -126,7 +132,26 @@ impl geng::State for State {
 
 fn main() {
     logger::init().unwrap();
+    // Setup working directory
+    if let Some(dir) = std::env::var_os("CARGO_MANIFEST_DIR") {
+        std::env::set_current_dir(std::path::Path::new(&dir).join("examples/draw/static")).unwrap();
+    } else {
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            if let Some(path) = std::env::current_exe().unwrap().parent() {
+                std::env::set_current_dir(path).unwrap();
+            }
+        }
+    }
     let geng = Geng::new("Let's draw!");
-    let state = State::new(&geng);
+    let state = geng::LoadingScreen::new(
+        &geng,
+        geng::EmptyLoadingScreen,
+        geng::LoadAsset::load(&geng, "."),
+        {
+            let geng = geng.clone();
+            move |assets| State::new(&geng, assets.unwrap())
+        },
+    );
     geng::run(&geng, state)
 }
