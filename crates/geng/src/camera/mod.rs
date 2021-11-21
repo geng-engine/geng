@@ -54,6 +54,10 @@ pub trait Camera2dExt: AbstractCamera2d {
             (pos.y + 1.0) / 2.0 * framebuffer_size.y,
         ))
     }
+
+    fn view_area(&self, framebuffer_size: Vec2<f32>) -> Mat3<f32> {
+        (self.projection_matrix(framebuffer_size) * self.view_matrix()).inverse()
+    }
 }
 
 impl<C: AbstractCamera2d> Camera2dExt for C {}
