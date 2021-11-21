@@ -50,6 +50,7 @@ pub trait Draw2d: Transform2d {
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
+        transform: Mat3<f32>,
     );
 }
 
@@ -59,8 +60,9 @@ impl<T: Draw2d + ?Sized> Draw2d for Box<T> {
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
+        transform: Mat3<f32>,
     ) {
-        (**self).draw_2d(geng, framebuffer, camera);
+        (**self).draw_2d(geng, framebuffer, camera, transform);
     }
 }
 
@@ -71,7 +73,16 @@ impl Geng {
         camera: &impl AbstractCamera2d,
         drawable: &impl Draw2d,
     ) {
-        drawable.draw_2d(self, framebuffer, camera);
+        self.draw_2d_transformed(framebuffer, camera, drawable, Mat3::identity());
+    }
+    pub fn draw_2d_transformed(
+        &self,
+        framebuffer: &mut ugli::Framebuffer,
+        camera: &impl AbstractCamera2d,
+        drawable: &impl Draw2d,
+        transform: Mat3<f32>,
+    ) {
+        drawable.draw_2d(self, framebuffer, camera, transform);
     }
     #[deprecated]
     pub fn draw_2d_helper(&self) -> &Helper {

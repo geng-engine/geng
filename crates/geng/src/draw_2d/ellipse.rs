@@ -46,6 +46,7 @@ impl Draw2d for Ellipse {
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
+        transform: Mat3<f32>,
     ) {
         let framebuffer_size = framebuffer.size();
         ugli::draw(
@@ -55,7 +56,7 @@ impl Draw2d for Ellipse {
             &geng.inner.draw_2d.unit_quad_geometry,
             (
                 ugli::uniforms! {
-                    u_model_matrix: self.transform,
+                    u_model_matrix: transform * self.transform,
                     u_color: self.color,
                     u_framebuffer_size: framebuffer_size,
                     u_inner_cut: self.cut,

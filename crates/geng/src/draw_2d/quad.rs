@@ -7,8 +7,7 @@ pub struct Quad {
 
 impl Quad {
     pub fn new(aabb: AABB<f32>, color: Color<f32>) -> Self {
-        Self::unit(color)
-            .transform(Mat3::translate(aabb.center()) * Mat3::scale(aabb.size() / 2.0))
+        Self::unit(color).transform(Mat3::translate(aabb.center()) * Mat3::scale(aabb.size() / 2.0))
     }
     pub fn unit(color: Color<f32>) -> Self {
         Self {
@@ -24,6 +23,7 @@ impl Draw2d for Quad {
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
+        transform: Mat3<f32>,
     ) {
         let framebuffer_size = framebuffer.size();
         ugli::draw(
@@ -35,7 +35,7 @@ impl Draw2d for Quad {
                 ugli::uniforms! {
                     u_color: self.color,
                     u_framebuffer_size: framebuffer_size,
-                    u_model_matrix: self.transform,
+                    u_model_matrix: transform * self.transform,
                 },
                 camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
             ),
@@ -85,6 +85,7 @@ impl<T: std::borrow::Borrow<ugli::Texture>> Draw2d for TexturedQuad<T> {
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
+        transform: Mat3<f32>,
     ) {
         let framebuffer_size = framebuffer.size();
         ugli::draw(
@@ -97,7 +98,7 @@ impl<T: std::borrow::Borrow<ugli::Texture>> Draw2d for TexturedQuad<T> {
                     u_color: self.color,
                     u_texture: self.texture.borrow(),
                     u_framebuffer_size: framebuffer_size,
-                    u_model_matrix: self.transform,
+                    u_model_matrix: transform * self.transform,
                 },
                 camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
             ),

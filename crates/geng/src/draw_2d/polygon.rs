@@ -51,6 +51,7 @@ impl Draw2d for Polygon {
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
+        transform: Mat3<f32>,
     ) {
         let framebuffer_size = framebuffer.size();
         ugli::draw(
@@ -62,7 +63,7 @@ impl Draw2d for Polygon {
                 ugli::uniforms! {
                     u_color: Color::WHITE,
                     u_framebuffer_size: framebuffer_size,
-                    u_model_matrix: self.transform,
+                    u_model_matrix: transform * self.transform,
                 },
                 camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
             ),
