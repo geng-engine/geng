@@ -58,21 +58,46 @@ pub trait Transform2dExt: Transform2d {
             .map(|p| (self.bounding_quad().matrix() * p.extend(1.0)).into_2d()),
         )
     }
-    fn fit_into(self, aabb: AABB<f32>) -> Self
+    fn fit_into(self, target: impl FitTarget2d) -> Self
     where
         Self: Sized,
     {
-        let current_aabb = self.bounding_box();
-        let scale = partial_min(
-            aabb.height() / current_aabb.height(),
-            aabb.width() / current_aabb.width(),
-        );
-        self.transform(
-            Mat3::translate(aabb.center())
-                * Mat3::scale_uniform(scale)
-                * Mat3::translate(-current_aabb.center()),
-        )
+        let mut result = self;
+        target.make_fit(&mut result);
+        result
     }
 }
 
 impl<T: Transform2d + ?Sized> Transform2dExt for T {}
+
+pub trait FitTarget2d {
+    fn make_fit(&self, object: &mut impl Transform2d);
+}
+
+impl FitTarget2d for AABB<f32> {
+    fn make_fit(&self, object: &mut impl Transform2d) {
+        let current_aabb = object.bounding_box();
+        let scale = partial_min(
+            self.height() / current_aabb.height(),
+            self.width() / current_aabb.width(),
+        );
+        object.apply_transform(
+            Mat3::translate(self.center())
+                * Mat3::scale_uniform(scale)
+                * Mat3::translate(-current_aabb.center()),
+        );
+    }
+}
+
+impl FitTarget2d for Quad<f32> {
+    fn make_fit(&self, object: &mut impl Transform2d) {
+        let inversed_matrix = self.matrix().inverse();
+        let local_transform = object
+            .bounding_quad()
+            .transform(inversed_matrix)
+            .transformed()
+            .fit_into(AABB::point(Vec2::ZERO).extend_uniform(1.0))
+            .transform;
+        object.apply_transform(self.matrix() * local_transform * inversed_matrix)
+    }
+}

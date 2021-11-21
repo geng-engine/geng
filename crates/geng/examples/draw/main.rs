@@ -190,11 +190,9 @@ impl geng::State for State {
         self.geng.draw_2d(
             framebuffer,
             &self.camera,
-            &grid.transformed().fit_into(
-                self.camera
-                    .view_area(framebuffer_size.map(|x| x as f32))
-                    .bounding_box(),
-            ),
+            &grid
+                .transformed()
+                .fit_into(self.camera.view_area(framebuffer_size.map(|x| x as f32))),
         );
     }
 }
