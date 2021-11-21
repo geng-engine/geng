@@ -23,7 +23,7 @@ impl<'a> Grid<'a> {
     }
 }
 
-impl<'a> Transform2d for Grid<'a> {
+impl<'a> Transform2d<f32> for Grid<'a> {
     fn bounding_quad(&self) -> Quad<f32> {
         Quad::from_matrix(self.transform)
     }
@@ -165,6 +165,10 @@ impl State {
         ));
         result.add(
             draw_2d::Text::unit(geng.default_font().clone(), "Hello!", Color::WHITE)
+                .transform(Mat3::rotate(f32::PI / 6.0)),
+        );
+        result.add(
+            draw_2d::Text::unit(geng.default_font().clone(), "", Color::WHITE)
                 .transform(Mat3::rotate(f32::PI / 6.0)),
         );
         result

@@ -93,7 +93,7 @@ impl Draw2d for Polygon {
     }
 }
 
-impl Transform2d for Polygon {
+impl Transform2d<f32> for Polygon {
     fn bounding_quad(&self) -> batbox::Quad<f32> {
         batbox::Quad::from_matrix(self.transform)
     }

@@ -5,6 +5,7 @@ mod polygon;
 mod quad;
 mod text;
 
+pub use ellipse::Ellipse;
 pub use ellipse::*;
 pub use polygon::*;
 pub use quad::Quad;
@@ -47,7 +48,7 @@ pub struct Helper {
     pub(crate) ellipse_program: ugli::Program,
 }
 
-pub trait Draw2d: Transform2d {
+pub trait Draw2d: Transform2d<f32> {
     fn draw_2d_transformed(
         &self,
         geng: &Geng,
@@ -77,7 +78,7 @@ impl<T: Draw2d + ?Sized> Draw2d for Box<T> {
     }
 }
 
-impl<'a, T: Draw2d + ?Sized> Draw2d for Transformed2d<'a, T> {
+impl<'a, T: Draw2d + ?Sized> Draw2d for Transformed2d<'a, f32, T> {
     fn draw_2d_transformed(
         &self,
         geng: &Geng,
