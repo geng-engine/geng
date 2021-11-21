@@ -11,17 +11,7 @@ impl Ellipse {
     pub fn circle(center: Vec2<f32>, radius: f32) -> Self {
         Self::unit().transform(Mat3::translate(center) * Mat3::scale_uniform(radius))
     }
-    pub fn circle_with_cut(center: Vec2<f32>, radius: f32) -> Self {
-        Self {
-            ..Self::unit().transform(Mat3::translate(center) * Mat3::scale_uniform(radius))
-        }
-    }
     pub fn unit() -> Self {
-        Self {
-            matrix: Mat3::identity(),
-        }
-    }
-    pub fn unit_with_cut() -> Self {
         Self {
             matrix: Mat3::identity(),
         }
