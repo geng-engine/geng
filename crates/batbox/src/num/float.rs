@@ -12,6 +12,7 @@ pub trait Float: Num {
     fn sin_cos(self) -> (Self, Self);
     fn atan2(y: Self, x: Self) -> Self;
     fn is_finite(self) -> bool;
+    fn from_f32(x: f32) -> Self;
     fn as_f32(self) -> f32;
 }
 
@@ -54,6 +55,9 @@ macro_rules! impl_float {
                 }
                 fn is_finite(self) -> bool {
                     self.is_finite()
+                }
+                fn from_f32(x: f32) -> Self {
+                    x as Self
                 }
                 fn as_f32(self) -> f32 {
                     self as f32
