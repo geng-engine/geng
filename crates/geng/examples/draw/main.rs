@@ -195,7 +195,7 @@ impl State {
                 vec2(5.0, 5.0),
             ]),
             0.5,
-            Color::CYAN,
+            Color::RED,
         ));
         result.add(draw_2d::Chain::new_gradient(
             vec![
@@ -217,6 +217,16 @@ impl State {
                 },
             ],
             0.5,
+        ));
+        result.add(draw_2d::Chain::new(
+            CardinalSpline::new(vec![vec2(-5.0, -5.0), vec2(5.0, -2.0), vec2(-5.0, 2.0), vec2(5.0, 5.0)], 0.5).chain(10),
+            0.5,
+            Color::RED,
+        ));
+        result.add(draw_2d::Chain::new(
+            ParabolaCurve::new([vec2(-5.0, 5.0), vec2(-5.0, 0.0), vec2(5.0, 5.0)]).chain(10),
+            0.5,
+            Color::RED,
         ));
         result
     }

@@ -2,6 +2,7 @@ use super::*;
 
 mod aabb;
 mod chain;
+mod curve;
 mod ellipse;
 mod mat;
 mod quad;
@@ -12,6 +13,7 @@ mod vec;
 
 pub use aabb::*;
 pub use chain::*;
+pub use curve::*;
 pub use ellipse::*;
 pub use mat::*;
 pub use quad::*;
