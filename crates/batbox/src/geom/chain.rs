@@ -7,6 +7,11 @@ pub struct Chain<T> {
 }
 
 impl<T: Float> Chain<T> {
+    /// Construct a new chain
+    pub fn new(vertices: Vec<Vec2<T>>) -> Self {
+        Self { vertices }
+    }
+
     /// Returns the total length of the chain
     pub fn length(&self) -> T
     where

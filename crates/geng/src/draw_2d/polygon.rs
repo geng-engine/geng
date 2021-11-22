@@ -46,14 +46,8 @@ impl Polygon {
         }
     }
 
-    fn normalize(mut vertices: Vec<ColoredVertex>) -> (Mat3<f32>, Vec<ColoredVertex>) {
-        let mut aabb = AABB::point(vertices[0].a_pos);
-        for vertex in &vertices {
-            aabb.x_min = partial_min(aabb.x_min, vertex.a_pos.x);
-            aabb.x_max = partial_max(aabb.x_max, vertex.a_pos.x);
-            aabb.y_min = partial_min(aabb.y_min, vertex.a_pos.y);
-            aabb.y_max = partial_max(aabb.y_max, vertex.a_pos.y);
-        }
+    pub(super) fn normalize(mut vertices: Vec<ColoredVertex>) -> (Mat3<f32>, Vec<ColoredVertex>) {
+        let aabb = AABB::points_bounding_box(vertices.iter().map(|vertex| vertex.a_pos));
         let transform = Mat3::translate(aabb.center()) * Mat3::scale(aabb.size() / 2.0);
         let inverse = transform.inverse();
         for vertex in &mut vertices {
