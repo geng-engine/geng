@@ -13,6 +13,7 @@ pub trait Real: Num + Copy {
         (self.sin(), self.cos())
     }
     fn atan2(y: Self, x: Self) -> Self;
+    fn from_f32(x: f32) -> Self;
     fn as_f32(self) -> f32;
 }
 
@@ -47,6 +48,9 @@ impl<T: Real> Float for T {
     }
     fn is_finite(self) -> bool {
         true
+    }
+    fn from_f32(x: f32) -> Self {
+        Real::from_f32(x)
     }
     fn as_f32(self) -> f32 {
         Real::as_f32(self)
@@ -295,6 +299,9 @@ impl<T: Float> Real for RealImpl<T> {
     }
     fn atan2(y: Self, x: Self) -> Self {
         Self::new(T::atan2(y.0, x.0))
+    }
+    fn from_f32(x: f32) -> Self {
+        Self::new(T::from_f32(x))
     }
     fn as_f32(self) -> f32 {
         self.0.as_f32()
