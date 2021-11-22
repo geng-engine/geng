@@ -219,12 +219,30 @@ impl State {
             0.5,
         ));
         result.add(draw_2d::Chain::new(
-            CardinalSpline::new(vec![vec2(-5.0, -5.0), vec2(5.0, -2.0), vec2(-5.0, 2.0), vec2(5.0, 5.0)], 0.5).chain(10),
+            CardinalSpline::new(
+                vec![
+                    vec2(-5.0, -5.0),
+                    vec2(5.0, -2.0),
+                    vec2(-5.0, 2.0),
+                    vec2(5.0, 5.0),
+                ],
+                0.5,
+            )
+            .chain(10),
             0.5,
             Color::RED,
         ));
         result.add(draw_2d::Chain::new(
-            ParabolaCurve::new([vec2(-5.0, 5.0), vec2(-5.0, 0.0), vec2(5.0, 5.0)]).chain(10),
+            Trajectory::parabola(
+                [vec2(0.0, 3.0), vec2(-5.0, -2.0), vec2(5.0, 0.0)],
+                -1.0..=1.0,
+            )
+            .chain(20),
+            0.5,
+            Color::RED,
+        ));
+        result.add(draw_2d::Chain::new(
+            Trajectory::new(Box::new(|t| vec2(t, t * t * t)), -2.0..=2.0).chain(20),
             0.5,
             Color::RED,
         ));

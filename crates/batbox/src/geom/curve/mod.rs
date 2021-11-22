@@ -1,10 +1,10 @@
 use super::*;
 
 mod cardinal;
-mod parabola;
+mod trajectory;
 
 pub use cardinal::*;
-pub use parabola::*;
+pub use trajectory::*;
 
 /// A trait representing a generic curve.
 pub trait Curve<F> {
@@ -52,7 +52,7 @@ pub struct CurveInterval<T> {
 impl<F: Float> CurveInterval<F> {
     /// Returns a point on the curve interval
     pub fn get(&self, t: F) -> Vec2<F> {
-        let p0: Vec2<F> = self.point_start;
+        let p0 = self.point_start;
         let p1 = self.point_end;
         let m0 = self.tangent_start;
         let m1 = self.tangent_end;
