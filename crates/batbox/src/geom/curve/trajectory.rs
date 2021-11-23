@@ -24,7 +24,7 @@ impl<T> Trajectory<T> {
         T: Float + 'static,
     {
         let [p0, p1, p2] = points;
-        // f(t)   = a * t^2 + b * t + c
+        // f(t)  = a * t^2 + b * t + c
         // f(-1) = p0    (start)     | a - b + c = p0
         // f(0)  = p1    (middle)    | c = p1
         // f(1)  = p2    (end)       | a + b + c = p2

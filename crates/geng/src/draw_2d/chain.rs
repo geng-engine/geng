@@ -37,13 +37,7 @@ impl Chain {
             direction: Vec2<f32>,
             width: f32,
         ) {
-            let normal = direction.rotate_90();
-            let len = normal.len();
-            let normal = if len.approx_eq(&0.0) {
-                Vec2::ZERO
-            } else {
-                normal / len
-            };
+            let normal = direction.normalize_or_zero().rotate_90();
             let shift = normal * width / 2.0;
             polygon.push(ColoredVertex {
                 a_pos: vertex.a_pos + shift,
@@ -70,7 +64,16 @@ impl Chain {
             .zip(vertices.iter().copied().skip(1))
             .zip(vertices.iter().copied().skip(2))
         {
-            add(&mut polygon, current, next.a_pos - prev.a_pos, width);
+            let forward = (current.a_pos - next.a_pos).normalize_or_zero();
+            let backward = (current.a_pos - prev.a_pos).normalize_or_zero();
+            let cos = -Vec2::dot(forward, backward);
+            let cos_half = ((cos + 1.0) / 2.0).sqrt();
+            add(
+                &mut polygon,
+                current,
+                next.a_pos - prev.a_pos,
+                width / cos_half,
+            );
         }
 
         // End
