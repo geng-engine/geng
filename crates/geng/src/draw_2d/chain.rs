@@ -6,7 +6,11 @@ pub struct Chain {
 }
 
 impl Chain {
-    pub fn new(chain: batbox::Chain<f32>, width: f32, color: Color<f32>) -> Self {
+    pub fn new(
+        chain: batbox::Chain<f32>,
+        width: f32,
+        color: Color<f32>,
+    ) -> Self {
         Self::new_gradient(
             chain
                 .vertices
@@ -29,60 +33,158 @@ impl Chain {
             };
         }
 
-        let mut polygon = Vec::with_capacity(len * 2);
-
-        fn add(
-            polygon: &mut Vec<ColoredVertex>,
-            vertex: ColoredVertex,
-            direction: Vec2<f32>,
-            width: f32,
-        ) {
-            let normal = direction.normalize_or_zero().rotate_90();
-            let shift = normal * width / 2.0;
-            polygon.push(ColoredVertex {
-                a_pos: vertex.a_pos + shift,
-                ..vertex
-            });
-            polygon.push(ColoredVertex {
-                a_pos: vertex.a_pos - shift,
-                ..vertex
-            });
-        }
+        let polygon_vertices = (len - 1) * 6; // + (len - 2) * (round_resolution + 1) * 3;
+        let mut polygon = Vec::with_capacity(polygon_vertices);
 
         // Start
-        add(
-            &mut polygon,
-            vertices[0],
-            vertices[1].a_pos - vertices[0].a_pos,
-            width,
-        );
+        {
+            let dir = (vertices[1].a_pos - vertices[0].a_pos)
+                .normalize_or_zero()
+                .rotate_90()
+                * width
+                / 2.0;
+            polygon.push(ColoredVertex {
+                a_pos: vertices[0].a_pos + dir,
+                ..vertices[0]
+            });
+            let right = ColoredVertex {
+                a_pos: vertices[0].a_pos - dir,
+                ..vertices[0]
+            };
+            polygon.push(right);
+            polygon.push(right); // Temp
+            polygon.push(right);
+        }
 
         // Middle
         for ((prev, current), next) in vertices
             .iter()
             .copied()
-            .zip(vertices.iter().copied().skip(1))
-            .zip(vertices.iter().copied().skip(2))
+            .zip(vertices.iter().skip(1).copied())
+            .zip(vertices.iter().skip(2).copied())
         {
-            let forward = (current.a_pos - next.a_pos).normalize_or_zero();
-            let backward = (current.a_pos - prev.a_pos).normalize_or_zero();
-            let cos = -Vec2::dot(forward, backward);
+            // Calculate angles
+            let backward = (prev.a_pos - current.a_pos).normalize_or_zero();
+            let forward = (next.a_pos - current.a_pos).normalize_or_zero();
+            let cos = Vec2::dot(forward, backward);
             let cos_half = ((cos + 1.0) / 2.0).sqrt();
-            add(
-                &mut polygon,
-                current,
-                next.a_pos - prev.a_pos,
-                width / cos_half,
-            );
+
+            if cos_half.approx_eq(&0.0) {
+                // Straight line -> no rounding
+                let dir =
+                    (current.a_pos - prev.a_pos).normalize_or_zero().rotate_90() * width / 2.0;
+                let left = ColoredVertex {
+                    a_pos: current.a_pos + dir,
+                    ..current
+                };
+                let right = ColoredVertex {
+                    a_pos: current.a_pos - dir,
+                    ..current
+                };
+                // Finish incoming segment
+                let temp = polygon.len() - 2;
+                polygon[temp] = left;
+                polygon.push(left);
+                polygon.push(right);
+                // Start outcoming segment
+                polygon.push(left);
+                polygon.push(right);
+                polygon.push(right); // Temp
+                polygon.push(right);
+                continue;
+            }
+
+            let d = width / cos_half;
+
+            let inside_dir = forward + backward;
+            let inside_dir = inside_dir.normalize_or_zero();
+            let inner = current.a_pos + inside_dir * d;
+
+            // Positive side -> turn left
+            // Negative side -> turn right
+            let side = Vec2::dot(
+                (next.a_pos - prev.a_pos).normalize_or_zero().rotate_90(),
+                inside_dir,
+            )
+            .signum();
+
+            let inner_vertex = ColoredVertex {
+                a_pos: inner,
+                ..current
+            };
+
+            let middle_vertex = ColoredVertex {
+                a_pos: current.a_pos - inside_dir * (width - d),
+                ..current
+            };
+
+            let backward_norm = backward.rotate_90() * side;
+            let back_vertex = ColoredVertex {
+                a_pos: inner + backward_norm * width,
+                ..current
+            };
+
+            let forward_norm = -forward.rotate_90() * side;
+            let forward_vertex = ColoredVertex {
+                a_pos: inner + forward_norm * width,
+                ..current
+            };
+
+            // Finish incoming segment
+            {
+                let (left, right) = if side.is_sign_positive() {
+                    (inner_vertex, back_vertex) // Turn left
+                } else {
+                    (back_vertex, inner_vertex) // Turn right
+                };
+                let temp = polygon.len() - 2;
+                polygon[temp] = left;
+                polygon.push(left);
+                polygon.push(right);
+            }
+
+            // Round
+            polygon.push(back_vertex);
+            polygon.push(inner_vertex);
+            polygon.push(middle_vertex);
+
+            polygon.push(forward_vertex);
+            polygon.push(inner_vertex);
+            polygon.push(middle_vertex);
+
+            // Start outcoming segment
+            {
+                let (left, right) = if side.is_sign_positive() {
+                    (inner_vertex, forward_vertex) // Turn left
+                } else {
+                    (forward_vertex, inner_vertex) // Turn right
+                };
+                polygon.push(left);
+                polygon.push(right);
+                polygon.push(right); // Temp
+                polygon.push(right);
+            }
         }
 
         // End
-        add(
-            &mut polygon,
-            vertices[len - 1],
-            vertices[len - 1].a_pos - vertices[len - 2].a_pos,
-            width,
-        );
+        {
+            let dir = (vertices[len - 1].a_pos - vertices[len - 2].a_pos)
+                .normalize_or_zero()
+                .rotate_90()
+                * width
+                / 2.0;
+            let left = ColoredVertex {
+                a_pos: vertices[len - 1].a_pos + dir,
+                ..vertices[len - 1]
+            };
+            let temp = polygon.len() - 2;
+            polygon[temp] = left; // Temp
+            polygon.push(left);
+            polygon.push(ColoredVertex {
+                a_pos: vertices[len - 1].a_pos - dir,
+                ..vertices[len - 1]
+            });
+        }
 
         let (transform, vertices) = Polygon::normalize(polygon);
         Self {
@@ -114,7 +216,7 @@ impl Draw2d for Chain {
         ugli::draw(
             framebuffer,
             &geng.inner.draw_2d.color_program,
-            ugli::DrawMode::TriangleStrip,
+            ugli::DrawMode::Triangles,
             &ugli::VertexBuffer::new_dynamic(geng.ugli(), self.vertices.clone()),
             (
                 ugli::uniforms! {
