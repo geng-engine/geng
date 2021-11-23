@@ -6,11 +6,7 @@ pub struct Chain {
 }
 
 impl Chain {
-    pub fn new(
-        chain: batbox::Chain<f32>,
-        width: f32,
-        color: Color<f32>,
-    ) -> Self {
+    pub fn new(chain: batbox::Chain<f32>, width: f32, color: Color<f32>) -> Self {
         Self::new_gradient(
             chain
                 .vertices
@@ -67,7 +63,7 @@ impl Chain {
             let backward = (prev.a_pos - current.a_pos).normalize_or_zero();
             let forward = (next.a_pos - current.a_pos).normalize_or_zero();
             let cos = Vec2::dot(forward, backward);
-            let cos_half = ((cos + 1.0) / 2.0).sqrt();
+            let cos_half = ((cos + 1.0) / 2.0).max(0.0).sqrt();
 
             if cos_half.approx_eq(&0.0) {
                 // Straight line -> no rounding
@@ -94,10 +90,9 @@ impl Chain {
                 continue;
             }
 
-            let d = width / cos_half;
+            let d = width / cos_half / 2.0;
 
-            let inside_dir = forward + backward;
-            let inside_dir = inside_dir.normalize_or_zero();
+            let inside_dir = (prev.a_pos + next.a_pos - 2.0 * current.a_pos).normalize_or_zero();
             let inner = current.a_pos + inside_dir * d;
 
             // Positive side -> turn left
