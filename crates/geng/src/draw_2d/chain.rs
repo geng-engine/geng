@@ -6,7 +6,12 @@ pub struct Chain {
 }
 
 impl Chain {
-    pub fn new(chain: batbox::Chain<f32>, width: f32, color: Color<f32>) -> Self {
+    pub fn new(
+        chain: batbox::Chain<f32>,
+        width: f32,
+        color: Color<f32>,
+        round_resolution: usize,
+    ) -> Self {
         Self::new_gradient(
             chain
                 .vertices
@@ -17,10 +22,11 @@ impl Chain {
                 })
                 .collect(),
             width,
+            round_resolution,
         )
     }
 
-    pub fn new_gradient(vertices: Vec<ColoredVertex>, width: f32) -> Self {
+    pub fn new_gradient(vertices: Vec<ColoredVertex>, width: f32, round_resolution: usize) -> Self {
         let len = vertices.len();
         if len < 2 {
             return Self {
@@ -108,10 +114,10 @@ impl Chain {
                 ..current
             };
 
-            let middle_vertex = ColoredVertex {
-                a_pos: inner - inside_dir * width,
-                ..current
-            };
+            // let middle_vertex = ColoredVertex {
+            //     a_pos: inner - inside_dir * width,
+            //     ..current
+            // };
 
             let backward_norm = backward.rotate_90() * side;
             let back_vertex = ColoredVertex {
@@ -139,13 +145,41 @@ impl Chain {
             }
 
             // Round
-            polygon.push(back_vertex);
-            polygon.push(inner_vertex);
-            polygon.push(middle_vertex);
+            {
+                let angle = Vec2::dot(forward_norm, backward_norm)
+                    .clamp(-1.0, 1.0) // Clamp for good measure (because of float inconsistency)
+                    .acos();
+                let (start, end, shift) = if side.is_sign_positive() {
+                    (back_vertex, forward_vertex, backward_norm * width)
+                } else {
+                    (forward_vertex, back_vertex, forward_norm * width)
+                };
+                let mut round = Vec::with_capacity(round_resolution + 2);
+                round.push(start);
+                for i in 1..=round_resolution {
+                    round.push(ColoredVertex {
+                        a_pos: inner
+                            + shift.rotate(angle * i as f32 / (round_resolution + 1) as f32),
+                        ..current
+                    });
+                }
+                round.push(end);
 
-            polygon.push(forward_vertex);
-            polygon.push(inner_vertex);
-            polygon.push(middle_vertex);
+                // Triangle fan
+                for i in 0..=round_resolution {
+                    polygon.push(inner_vertex);
+                    polygon.push(round[i]);
+                    polygon.push(round[i + 1]);
+                }
+            }
+
+            // polygon.push(back_vertex);
+            // polygon.push(inner_vertex);
+            // polygon.push(middle_vertex);
+
+            // polygon.push(forward_vertex);
+            // polygon.push(inner_vertex);
+            // polygon.push(middle_vertex);
 
             // Start outcoming segment
             {

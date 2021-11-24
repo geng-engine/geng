@@ -196,6 +196,7 @@ impl State {
             ]),
             0.5,
             Color::RED,
+            5,
         ));
         result.add(draw_2d::Chain::new_gradient(
             vec![
@@ -217,6 +218,7 @@ impl State {
                 },
             ],
             0.5,
+            5,
         ));
         result.add(draw_2d::Chain::new(
             CardinalSpline::new(
@@ -231,6 +233,7 @@ impl State {
             .chain(10),
             0.5,
             Color::RED,
+            1,
         ));
         result.add(draw_2d::Chain::new(
             Trajectory::parabola(
@@ -240,11 +243,13 @@ impl State {
             .chain(10),
             0.5,
             Color::RED,
+            1,
         ));
         result.add(draw_2d::Chain::new(
             Trajectory::new(Box::new(|t| vec2(t, t * t * t)), -2.0..=2.0).chain(10),
             0.5,
             Color::RED,
+            1,
         ));
         result
     }
