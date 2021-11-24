@@ -28,10 +28,8 @@ impl<T: Float> Chain<T> {
     ///
     /// # Examples
     /// ```
-    /// let chain = Chain {
-    ///     vertices: vec![vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(1.0, 1.0), vec2(0.0, 1.0)],
-    ///     width: 1.0,
-    /// };
+    /// # use batbox::*;
+    /// let chain = Chain::new(vec![vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(1.0, 1.0), vec2(0.0, 1.0)]);
     /// assert_eq!(chain.clone().take_range_ratio(0.0..=1.0).vertices, chain.vertices);
     /// ```
     pub fn take_range_ratio(self, range: RangeInclusive<T>) -> Self
@@ -47,10 +45,8 @@ impl<T: Float> Chain<T> {
     ///
     /// # Examples
     /// ```
-    /// let chain = Chain {
-    ///     vertices: vec![vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(1.0, 1.0), vec2(0.0, 1.0)],
-    ///     width: 1.0,
-    /// };
+    /// # use batbox::*;
+    /// let chain = Chain::new(vec![vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(1.0, 1.0), vec2(0.0, 1.0)]);
     /// assert_eq!(chain.clone().take_range_ratio(0.0..=chain.length()).vertices, chain.vertices);
     /// ```
     pub fn take_range_length(self, range: RangeInclusive<T>) -> Self {
