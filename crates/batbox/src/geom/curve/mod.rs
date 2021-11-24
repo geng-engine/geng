@@ -27,10 +27,21 @@ pub trait CubicHermiteCurve<T> {
     {
         let intervals = self.intervals();
         let mut vertices = Vec::with_capacity(resolution * intervals.len());
+        let mut intervals = intervals.into_iter();
 
-        for interval in intervals {
+        // First interval includes the start
+        if let Some(interval) = intervals.next() {
             let step = 1. / resolution as f32;
             for i in 0..=resolution {
+                let t = T::from_f32(step * i as f32);
+                vertices.push(interval.get(t));
+            }
+        }
+
+        // Other intervals exclude the start
+        for interval in intervals {
+            let step = 1. / resolution as f32;
+            for i in 1..=resolution {
                 let t = T::from_f32(step * i as f32);
                 vertices.push(interval.get(t));
             }

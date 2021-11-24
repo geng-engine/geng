@@ -237,12 +237,12 @@ impl State {
                 [vec2(0.0, 3.0), vec2(-5.0, -2.0), vec2(5.0, 0.0)],
                 -1.0..=1.0,
             )
-            .chain(20),
+            .chain(10),
             0.5,
             Color::RED,
         ));
         result.add(draw_2d::Chain::new(
-            Trajectory::new(Box::new(|t| vec2(t, t * t * t)), -2.0..=2.0).chain(20),
+            Trajectory::new(Box::new(|t| vec2(t, t * t * t)), -2.0..=2.0).chain(10),
             0.5,
             Color::RED,
         ));
