@@ -1,6 +1,7 @@
 pub use egui;
 
 use geng::prelude::*;
+use geng::Camera2d;
 
 mod painter;
 
@@ -20,7 +21,7 @@ impl EguiGeng {
             geng: geng.clone(),
             egui_ctx: egui::CtxRef::default(),
             egui_input: egui::RawInput::default(),
-            painter: Painter::new(),
+            painter: Painter::new(geng),
             shapes: None,
         }
     }
@@ -48,7 +49,7 @@ impl EguiGeng {
         if let Some(shapes) = self.shapes.take() {
             let paint_jobs = self.egui_ctx.tessellate(shapes);
             self.painter
-                .paint(&self.geng, paint_jobs, &self.egui_ctx.texture());
+                .paint(framebuffer, paint_jobs, &self.egui_ctx.texture());
         } else {
             eprintln!("Failed to draw egui. You need to call `end_frame` before calling `draw`");
         }
