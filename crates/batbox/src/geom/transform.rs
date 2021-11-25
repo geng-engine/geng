@@ -43,6 +43,31 @@ pub trait Transform2dExt<F: Float>: Transform2d<F> {
         result.apply_transform(transform);
         result
     }
+    fn align_bounding_box(self, alignment: Vec2<F>) -> Self
+    where
+        Self: Sized,
+    {
+        let aabb = self.bounding_box();
+        self.translate(-aabb.bottom_left() - aabb.size() * alignment)
+    }
+    fn translate(self, delta: Vec2<F>) -> Self
+    where
+        Self: Sized,
+    {
+        self.transform(Mat3::translate(delta))
+    }
+    fn scale(self, factor: Vec2<F>) -> Self
+    where
+        Self: Sized,
+    {
+        self.transform(Mat3::scale(factor))
+    }
+    fn scale_uniform(self, factor: F) -> Self
+    where
+        Self: Sized,
+    {
+        self.transform(Mat3::scale_uniform(factor))
+    }
     fn transformed(&self) -> Transformed2d<F, Self> {
         Transformed2d::new(self, Mat3::identity())
     }
