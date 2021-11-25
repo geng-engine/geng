@@ -21,22 +21,23 @@ impl Segment {
     }
 
     pub fn new_gradient(start: ColoredVertex, end: ColoredVertex, width: f32) -> Self {
+        let half_width = width / 2.0;
         let mut vertices = Vec::with_capacity(4);
         let normal = (end.a_pos - start.a_pos).normalize_or_zero().rotate_90();
         vertices.push(ColoredVertex {
-            a_pos: start.a_pos - normal * width,
+            a_pos: start.a_pos - normal * half_width,
             a_color: start.a_color,
         });
         vertices.push(ColoredVertex {
-            a_pos: start.a_pos + normal * width,
+            a_pos: start.a_pos + normal * half_width,
             a_color: start.a_color,
         });
         vertices.push(ColoredVertex {
-            a_pos: end.a_pos + normal * width,
+            a_pos: end.a_pos + normal * half_width,
             a_color: end.a_color,
         });
         vertices.push(ColoredVertex {
-            a_pos: end.a_pos - normal * width,
+            a_pos: end.a_pos - normal * half_width,
             a_color: end.a_color,
         });
         let (transform, vertices) = Polygon::normalize(vertices);
