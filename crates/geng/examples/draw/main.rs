@@ -171,6 +171,86 @@ impl State {
             draw_2d::Text::unit(geng.default_font().clone(), "", Color::WHITE)
                 .transform(Mat3::rotate(f32::PI / 6.0)),
         );
+        result.add(draw_2d::Segment::new(
+            Segment::new(vec2(-3.0, -5.0), vec2(3.0, 5.0)),
+            0.5,
+            Color::GREEN,
+        ));
+        result.add(draw_2d::Segment::new_gradient(
+            draw_2d::ColoredVertex {
+                a_pos: vec2(-5.0, 3.0),
+                a_color: Color::BLUE,
+            },
+            draw_2d::ColoredVertex {
+                a_pos: vec2(5.0, -3.0),
+                a_color: Color::RED,
+            },
+            0.5,
+        ));
+        result.add(draw_2d::Chain::new(
+            Chain::new(vec![
+                vec2(-5.0, -5.0),
+                vec2(5.0, -2.0),
+                vec2(-5.0, 2.0),
+                vec2(5.0, 5.0),
+            ]),
+            0.5,
+            Color::RED,
+            5,
+        ));
+        result.add(draw_2d::Chain::new_gradient(
+            vec![
+                draw_2d::ColoredVertex {
+                    a_pos: vec2(-5.0, -5.0),
+                    a_color: Color::RED,
+                },
+                draw_2d::ColoredVertex {
+                    a_pos: vec2(5.0, -2.0),
+                    a_color: Color::GREEN,
+                },
+                draw_2d::ColoredVertex {
+                    a_pos: vec2(-5.0, 2.0),
+                    a_color: Color::BLUE,
+                },
+                draw_2d::ColoredVertex {
+                    a_pos: vec2(5.0, 5.0),
+                    a_color: Color::BLACK,
+                },
+            ],
+            0.5,
+            5,
+        ));
+        result.add(draw_2d::Chain::new(
+            CardinalSpline::new(
+                vec![
+                    vec2(-5.0, -5.0),
+                    vec2(5.0, -2.0),
+                    vec2(-5.0, 2.0),
+                    vec2(5.0, 5.0),
+                ],
+                0.5,
+            )
+            .chain(10),
+            0.5,
+            Color::RED,
+            1,
+        ));
+        result.add(draw_2d::Chain::new(
+            Trajectory::parabola(
+                [vec2(0.0, 3.0), vec2(-5.0, -2.0), vec2(5.0, 0.0)],
+                -1.0..=1.0,
+            )
+            .chain(10),
+            0.5,
+            Color::RED,
+            1,
+        ));
+        result.add(draw_2d::Chain::new(
+            Trajectory::new(Box::new(|t| vec2(t, t * t * t)), -2.0..=2.0).chain(10),
+            0.5,
+            Color::RED,
+            1,
+        ));
         result
     }
     fn add<T: draw_2d::Draw2d + 'static>(&mut self, object: T) {
