@@ -38,7 +38,7 @@ impl EguiGeng {
     pub fn end_frame(&mut self) {
         let (output, shapes) = self.egui_ctx.end_frame();
         if self.shapes.is_some() {
-            eprintln!("Egui contents not drawn. You need to call `draw` after calling `end_frame`");
+            error!("Egui contents have not been drawn. Ensure to call `draw` after `end_frame`");
         }
         self.shapes = Some(shapes);
 
@@ -51,7 +51,7 @@ impl EguiGeng {
             self.painter
                 .paint(framebuffer, paint_jobs, &self.egui_ctx.texture());
         } else {
-            eprintln!("Failed to draw egui. You need to call `end_frame` before calling `draw`");
+            error!("Failed to draw egui. Ensure to call `draw` after `end_frame`");
         }
     }
 }
