@@ -108,17 +108,12 @@ impl Painter {
                     255,
                     255,
                     egui_texture.pixels
-                        [pixel.x + (egui_texture.height - 1 - pixel.y) * egui_texture.width], // Geng texture have origin in the bottom-left
+                        [pixel.x + (egui_texture.height - 1 - pixel.y) * egui_texture.width], // Geng textures have origin in the bottom-left
                 )
                 .convert()
             },
         );
     }
-}
-
-/// Converts [egui::Pos2] to [Vec2]. Moves the origin from top-left to bottom-left.
-fn pos_to_vec(pos: egui::Pos2, height: f32) -> Vec2<f32> {
-    vec2(pos.x, height - pos.y)
 }
 
 fn textured_vertex(egui_vertex: egui::epaint::Vertex, height: f32) -> draw_2d::TexturedVertex {

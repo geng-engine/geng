@@ -1,9 +1,7 @@
-use geng::{prelude::*, Camera2d};
+use geng::prelude::*;
 use geng_egui::*;
 
 struct State {
-    geng: Geng,
-    camera: Camera2d,
     egui: EguiGeng,
 }
 
@@ -17,7 +15,7 @@ impl State {
 }
 
 impl geng::State for State {
-    fn update(&mut self, delta_time: f64) {
+    fn update(&mut self, _: f64) {
         // Begin frame
         self.egui.begin_frame();
 
@@ -26,6 +24,10 @@ impl geng::State for State {
 
         // End frame
         self.egui.end_frame();
+    }
+
+    fn handle_event(&mut self, event: geng::Event) {
+        self.egui.handle_event(event);
     }
 
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
@@ -42,12 +44,6 @@ fn main() {
 
     let geng = Geng::new("Simple UI Example");
     let state = State {
-        geng: geng.clone(),
-        camera: Camera2d {
-            center: Vec2::ZERO,
-            rotation: 0.0,
-            fov: 100.0,
-        },
         egui: EguiGeng::new(&geng),
     };
 
