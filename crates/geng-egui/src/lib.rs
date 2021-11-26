@@ -100,11 +100,6 @@ impl EguiGeng {
                     });
                 }
             }
-            geng::Event::MouseMove { position, .. } => {
-                self.egui_input
-                    .events
-                    .push(egui::Event::PointerMoved(self.mouse_to_pos(position)));
-            }
             geng::Event::MouseDown { position, button } => {
                 let button = egui_button(button);
                 self.egui_input.events.push(egui::Event::PointerButton {
@@ -113,6 +108,11 @@ impl EguiGeng {
                     pressed: true,
                     modifiers: self.get_modifiers(),
                 });
+            }
+            geng::Event::MouseMove { position, .. } => {
+                self.egui_input
+                    .events
+                    .push(egui::Event::PointerMoved(self.mouse_to_pos(position)));
             }
             geng::Event::MouseUp { position, button } => {
                 let button = egui_button(button);

@@ -59,10 +59,12 @@ impl Painter {
         };
 
         // Convert egui vertices to geng vertices
-        let mut vertices = mesh
-            .indices
-            .into_iter()
-            .map(|i| textured_vertex(mesh.vertices[i as usize], framebuffer_size.y));
+        let vertex_shift = clip_aabb.bottom_left().map(|x| x as f32);
+        let mut vertices = mesh.indices.into_iter().map(|i| {
+            let mut vertex = textured_vertex(mesh.vertices[i as usize], framebuffer_size.y);
+            vertex.a_pos -= vertex_shift; // Because mask is applied relative to the origin
+            vertex
+        });
 
         // Render triangles
         while let Some(vertex0) = vertices.next() {
@@ -77,7 +79,7 @@ impl Painter {
                     ugli::uniforms! {
                         u_color: Color::WHITE,
                         u_texture: texture,
-                        u_framebuffer_size: framebuffer.size(),
+                        u_framebuffer_size: clip_aabb.size(),
                         u_model_matrix: Mat3::identity(),
                     },
                     geng::camera2d_uniforms(
