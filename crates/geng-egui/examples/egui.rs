@@ -3,13 +3,24 @@ use geng_egui::*;
 
 struct State {
     egui: EguiGeng,
+    name: String,
+    age: u32,
 }
 
 impl State {
     /// Here we will do ui stuff
     fn ui(&mut self) {
         egui::Window::new("Egui Window").show(self.egui.get_context(), |ui| {
-            ui.heading("Hello World!");
+            ui.heading("My egui Application");
+            ui.horizontal(|ui| {
+                ui.label("Your name: ");
+                ui.text_edit_singleline(&mut self.name);
+            });
+            ui.add(egui::Slider::new(&mut self.age, 0..=120).text("age"));
+            if ui.button("Click each year").clicked() {
+                self.age += 1;
+            }
+            ui.label(format!("Hello '{}', age {}", self.name, self.age));
         });
     }
 }
@@ -45,6 +56,8 @@ fn main() {
     let geng = Geng::new("Simple UI Example");
     let state = State {
         egui: EguiGeng::new(&geng),
+        name: "<Name>".to_owned(),
+        age: 0,
     };
 
     geng::run(&geng, state);
