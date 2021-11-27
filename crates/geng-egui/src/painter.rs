@@ -60,40 +60,40 @@ impl Painter {
 
         // Convert egui vertices to geng vertices
         let vertex_shift = clip_aabb.bottom_left().map(|x| x as f32);
-        let mut vertices = mesh.indices.into_iter().map(|i| {
-            let mut vertex = textured_vertex(mesh.vertices[i as usize], framebuffer_size.y);
-            vertex.a_pos -= vertex_shift; // Because mask is applied relative to the origin
-            vertex
-        });
+        let vertices: Vec<_> = mesh
+            .indices
+            .into_iter()
+            .map(|i| {
+                let mut vertex = textured_vertex(mesh.vertices[i as usize], framebuffer_size.y);
+                vertex.a_pos -= vertex_shift; // Because mask is applied relative to the origin
+                vertex
+            })
+            .collect();
 
         // Render triangles
-        while let Some(vertex0) = vertices.next() {
-            let triangle = vec![vertex0, vertices.next().unwrap(), vertices.next().unwrap()];
-
-            ugli::draw(
-                framebuffer,
-                &self.textured_program,
-                ugli::DrawMode::Triangles,
-                &ugli::VertexBuffer::new_dynamic(self.geng.ugli(), triangle),
-                (
-                    ugli::uniforms! {
-                        u_color: Color::WHITE,
-                        u_texture: texture,
-                        u_framebuffer_size: clip_aabb.size(),
-                        u_model_matrix: Mat3::identity(),
-                    },
-                    geng::camera2d_uniforms(
-                        &geng::PixelPerfectCamera,
-                        clip_aabb.size().map(|x| x as f32),
-                    ),
-                ),
-                ugli::DrawParameters {
-                    blend_mode: Some(default()),
-                    viewport: Some(clip_aabb),
-                    ..default()
+        ugli::draw(
+            framebuffer,
+            &self.textured_program,
+            ugli::DrawMode::Triangles,
+            &ugli::VertexBuffer::new_dynamic(self.geng.ugli(), vertices),
+            (
+                ugli::uniforms! {
+                    u_color: Color::WHITE,
+                    u_texture: texture,
+                    u_framebuffer_size: clip_aabb.size(),
+                    u_model_matrix: Mat3::identity(),
                 },
-            );
-        }
+                geng::camera2d_uniforms(
+                    &geng::PixelPerfectCamera,
+                    clip_aabb.size().map(|x| x as f32),
+                ),
+            ),
+            ugli::DrawParameters {
+                blend_mode: Some(default()),
+                viewport: Some(clip_aabb),
+                ..default()
+            },
+        );
     }
 
     fn rebuild_texture(&mut self, egui_texture: &egui::Texture) {
