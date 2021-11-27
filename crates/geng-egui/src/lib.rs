@@ -84,11 +84,20 @@ impl EguiGeng {
             }
             geng::Event::KeyDown { key } => {
                 if let Some(key) = egui_key(key) {
+                    let modifiers = self.get_modifiers();
                     self.egui_input.events.push(egui::Event::Key {
                         key,
-                        modifiers: self.get_modifiers(),
+                        modifiers,
                         pressed: true,
                     });
+                    if let Some(mut symbol) = key_char(key) {
+                        if modifiers.shift {
+                            symbol = symbol.to_uppercase().next().unwrap();
+                        }
+                        self.egui_input
+                            .events
+                            .push(egui::Event::Text(symbol.to_string()));
+                    }
                 }
             }
             geng::Event::KeyUp { key } => {
@@ -208,6 +217,48 @@ fn egui_key(geng_key: geng::Key) -> Option<egui::Key> {
         geng::Key::Down => Some(ArrowDown),
         geng::Key::PageUp => Some(PageUp),
         geng::Key::PageDown => Some(PageDown),
+        _ => None,
+    }
+}
+
+fn key_char(key: egui::Key) -> Option<char> {
+    match key {
+        egui::Key::A => Some('a'),
+        egui::Key::B => Some('b'),
+        egui::Key::C => Some('c'),
+        egui::Key::D => Some('d'),
+        egui::Key::E => Some('e'),
+        egui::Key::F => Some('f'),
+        egui::Key::G => Some('g'),
+        egui::Key::H => Some('h'),
+        egui::Key::I => Some('i'),
+        egui::Key::J => Some('j'),
+        egui::Key::K => Some('k'),
+        egui::Key::L => Some('l'),
+        egui::Key::M => Some('m'),
+        egui::Key::N => Some('n'),
+        egui::Key::O => Some('o'),
+        egui::Key::P => Some('p'),
+        egui::Key::Q => Some('q'),
+        egui::Key::R => Some('r'),
+        egui::Key::S => Some('s'),
+        egui::Key::T => Some('t'),
+        egui::Key::U => Some('u'),
+        egui::Key::V => Some('v'),
+        egui::Key::W => Some('w'),
+        egui::Key::X => Some('x'),
+        egui::Key::Y => Some('y'),
+        egui::Key::Z => Some('z'),
+        egui::Key::Num0 => Some('0'),
+        egui::Key::Num1 => Some('1'),
+        egui::Key::Num2 => Some('2'),
+        egui::Key::Num3 => Some('3'),
+        egui::Key::Num4 => Some('4'),
+        egui::Key::Num5 => Some('5'),
+        egui::Key::Num6 => Some('6'),
+        egui::Key::Num7 => Some('7'),
+        egui::Key::Num8 => Some('8'),
+        egui::Key::Num9 => Some('9'),
         _ => None,
     }
 }
