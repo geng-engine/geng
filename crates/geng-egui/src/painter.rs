@@ -55,7 +55,7 @@ impl Painter {
         // Get font texture
         let texture = match mesh.texture_id {
             egui::TextureId::Egui => &self.egui_texture,
-            egui::TextureId::User(id) => todo!(),
+            egui::TextureId::User(_id) => todo!(),
         };
 
         // Convert egui vertices to geng vertices

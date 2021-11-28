@@ -43,7 +43,7 @@ impl EguiGeng {
     /// Call at the end of the frame.
     /// Should be called after the ui logic.
     pub fn end_frame(&mut self) {
-        let (output, shapes) = self.egui_ctx.end_frame();
+        let (_output, shapes) = self.egui_ctx.end_frame();
         if self.shapes.is_some() {
             error!("Egui contents have not been drawn. Ensure to call `draw` after `end_frame`");
         }
