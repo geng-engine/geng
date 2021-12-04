@@ -64,8 +64,10 @@ pub fn draw<V, U, DP>(
 
     let mut vertex_count = None;
     let mut instance_count = None;
+    let mut attribute_locations = Vec::new();
     vertices.walk_data(Vdc {
         program,
+        attribute_locations: &mut attribute_locations,
         vertex_count: &mut vertex_count,
         instance_count: &mut instance_count,
     });
@@ -114,8 +116,8 @@ pub fn draw<V, U, DP>(
         }
     }
 
-    for attribute_info in program.attributes.values() {
-        gl.disable_vertex_attrib_array(attribute_info.location);
+    for location in attribute_locations {
+        gl.disable_vertex_attrib_array(location);
     }
 
     program.ugli.debug_check();
@@ -159,6 +161,7 @@ pub fn draw<V, U, DP>(
 
     struct Vdc<'a> {
         program: &'a Program,
+        attribute_locations: &'a mut Vec<raw::UInt>,
         vertex_count: &'a mut Option<usize>,
         instance_count: &'a mut Option<usize>,
     }
@@ -189,6 +192,7 @@ pub fn draw<V, U, DP>(
                     sample,
                     Vac {
                         sample,
+                        attribute_locations: self.attribute_locations,
                         divisor,
                         program: self.program,
                         offset: data.range.start * mem::size_of::<D>(),
@@ -196,6 +200,7 @@ pub fn draw<V, U, DP>(
                 );
             }
             struct Vac<'a, D: Vertex + 'a> {
+                attribute_locations: &'a mut Vec<raw::UInt>,
                 offset: usize,
                 sample: *const D,
                 divisor: Option<usize>,
@@ -206,19 +211,24 @@ pub fn draw<V, U, DP>(
                     let gl = &self.program.ugli.inner.raw;
                     if let Some(attribute_info) = self.program.attributes.get(name) {
                         let offset = self.offset + attribute as usize - self.sample as usize;
-                        gl.enable_vertex_attrib_array(attribute_info.location);
-                        gl.vertex_attrib_pointer(
-                            attribute_info.location,
-                            A::SIZE as raw::Int,
-                            A::TYPE as raw::Enum,
-                            raw::FALSE,
-                            mem::size_of::<D>() as raw::SizeI,
-                            offset as raw::IntPtr,
-                        );
-                        if let Some(divisor) = self.divisor {
-                            gl.vertex_attrib_divisor(attribute_info.location, divisor as raw::UInt);
-                        } else {
-                            gl.vertex_attrib_divisor(attribute_info.location, 0);
+                        for row in 0..A::ROWS {
+                            let offset = offset + mem::size_of::<A>() * row / A::ROWS;
+                            let location = attribute_info.location + row as raw::UInt;
+                            self.attribute_locations.push(location);
+                            gl.enable_vertex_attrib_array(location);
+                            gl.vertex_attrib_pointer(
+                                location,
+                                A::SIZE as raw::Int,
+                                A::TYPE as raw::Enum,
+                                raw::FALSE,
+                                mem::size_of::<D>() as raw::SizeI,
+                                offset as raw::IntPtr,
+                            );
+                            if let Some(divisor) = self.divisor {
+                                gl.vertex_attrib_divisor(location, divisor as raw::UInt);
+                            } else {
+                                gl.vertex_attrib_divisor(location, 0);
+                            }
                         }
                     }
                 }
