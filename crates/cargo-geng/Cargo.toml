@@ -15,5 +15,5 @@ hyper = { version = "0.14", features = ["server", "http1", "tcp"] }
 hyper-staticfile = "0.6"
 fs_extra = "1"
 cargo_metadata = "0.13"
-clap = "3.0.0-beta"
+clap = { version = "3.0.0-rc.5", features = ["derive"] }
 anyhow = "1"

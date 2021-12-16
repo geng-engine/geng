@@ -17,7 +17,7 @@ rand = "0.8"
 getrandom = { version = "0.2", features = ["js"] }
 log = "0.4"
 threadpool = "1"
-clap = "3.0.0-beta"
+clap = { version = "3.0.0-rc.5", features = ["derive"] }
 url = "2"
 futures = "0.3"
 pin-utils = "0.1.0"
