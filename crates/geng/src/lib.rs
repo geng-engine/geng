@@ -46,6 +46,7 @@ use log::{trace, warn};
 
 mod asset;
 mod camera;
+mod cli_args;
 mod context;
 mod debug_overlay;
 pub mod draw_2d;
@@ -63,6 +64,7 @@ mod window;
 
 pub use asset::*;
 pub use camera::*;
+pub use cli_args::*;
 pub use context::*;
 pub use debug_overlay::*;
 pub use draw_2d::Draw2d;
