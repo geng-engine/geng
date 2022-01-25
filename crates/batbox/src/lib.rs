@@ -210,7 +210,7 @@ pub fn global_threadpool() -> &'static ThreadPool {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-pub fn save_file<F: FnOnce(&mut dyn Write) -> std::io::Result<()>>(
+pub fn save_file<F: FnOnce(&mut (dyn Write + Send)) -> std::io::Result<()>>(
     title: &str,
     default_path: &str,
     f: F,
