@@ -25,7 +25,9 @@ impl<'a> Grid<'a> {
 
 impl<'a> Transform2d<f32> for Grid<'a> {
     fn bounding_quad(&self) -> Quad<f32> {
-        Quad::from_matrix(self.transform)
+        Quad {
+            transform: self.transform,
+        }
     }
     fn apply_transform(&mut self, transform: Mat3<f32>) {
         self.transform = transform * self.transform;

@@ -89,7 +89,9 @@ impl Draw2d for Polygon {
 
 impl Transform2d<f32> for Polygon {
     fn bounding_quad(&self) -> batbox::Quad<f32> {
-        batbox::Quad::from_matrix(self.transform)
+        batbox::Quad {
+            transform: self.transform,
+        }
     }
     fn apply_transform(&mut self, transform: Mat3<f32>) {
         self.transform = transform * self.transform;
@@ -167,7 +169,9 @@ impl<T: std::borrow::Borrow<ugli::Texture>> Draw2d for TexturedPolygon<T> {
 
 impl<T: std::borrow::Borrow<ugli::Texture>> Transform2d<f32> for TexturedPolygon<T> {
     fn bounding_quad(&self) -> batbox::Quad<f32> {
-        batbox::Quad::from_matrix(self.transform)
+        batbox::Quad {
+            transform: self.transform,
+        }
     }
     fn apply_transform(&mut self, transform: Mat3<f32>) {
         self.transform = transform * self.transform;

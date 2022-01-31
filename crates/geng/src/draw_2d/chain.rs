@@ -1,8 +1,8 @@
 use super::*;
 
 pub struct Chain {
-    transform: Mat3<f32>,
-    vertices: Vec<ColoredVertex>,
+    pub transform: Mat3<f32>,
+    pub vertices: Vec<ColoredVertex>,
 }
 
 impl Chain {
@@ -225,7 +225,9 @@ impl Chain {
 
 impl Transform2d<f32> for Chain {
     fn bounding_quad(&self) -> batbox::Quad<f32> {
-        batbox::Quad::from_matrix(self.transform)
+        batbox::Quad {
+            transform: self.transform,
+        }
     }
 
     fn apply_transform(&mut self, transform: Mat3<f32>) {
