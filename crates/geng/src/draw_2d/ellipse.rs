@@ -1,19 +1,13 @@
 use super::*;
 
 pub struct Ellipse {
-    matrix: Mat3<f32>,
-    cut: f32,
-    color: Color<f32>,
+    pub transform: Mat3<f32>,
+    pub cut: f32,
+    /// `cut` is relative to the radius and should be in range `0.0..=1.0`.
+    pub color: Color<f32>,
 }
 
 impl Ellipse {
-    pub fn new(ellipse: batbox::Ellipse<f32>, cut: f32, color: Color<f32>) -> Self {
-        Self {
-            matrix: ellipse.matrix(),
-            cut,
-            color,
-        }
-    }
     pub fn circle(center: Vec2<f32>, radius: f32, color: Color<f32>) -> Self {
         Self::unit(color).transform(Mat3::translate(center) * Mat3::scale_uniform(radius))
     }
@@ -30,14 +24,14 @@ impl Ellipse {
     }
     pub fn unit(color: Color<f32>) -> Self {
         Self {
-            matrix: Mat3::identity(),
+            transform: Mat3::identity(),
             cut: 0.0,
             color,
         }
     }
     pub fn unit_with_cut(cut: f32, color: Color<f32>) -> Self {
         Self {
-            matrix: Mat3::identity(),
+            transform: Mat3::identity(),
             cut,
             color,
         }
@@ -60,7 +54,7 @@ impl Draw2d for Ellipse {
             &geng.inner.draw_2d.unit_quad_geometry,
             (
                 ugli::uniforms! {
-                    u_model_matrix: transform * self.matrix,
+                    u_model_matrix: transform * self.transform,
                     u_color: self.color,
                     u_framebuffer_size: framebuffer_size,
                     u_inner_cut: self.cut,
@@ -77,9 +71,11 @@ impl Draw2d for Ellipse {
 
 impl Transform2d<f32> for Ellipse {
     fn bounding_quad(&self) -> batbox::Quad<f32> {
-        batbox::Quad::from_matrix(self.matrix)
+        batbox::Quad {
+            transform: self.transform,
+        }
     }
     fn apply_transform(&mut self, transform: Mat3<f32>) {
-        self.matrix = transform * self.matrix;
+        self.transform = transform * self.transform;
     }
 }

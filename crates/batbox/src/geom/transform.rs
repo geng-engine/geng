@@ -80,7 +80,7 @@ pub trait Transform2dExt<F: Float>: Transform2d<F> {
                 vec2(-F::ONE, F::ONE),
             ]
             .into_iter()
-            .map(|p| (self.bounding_quad().matrix() * p.extend(F::ONE)).into_2d()),
+            .map(|p| (self.bounding_quad().transform * p.extend(F::ONE)).into_2d()),
         )
     }
     fn fit_into(self, target: impl FitTarget2d<F>) -> Self

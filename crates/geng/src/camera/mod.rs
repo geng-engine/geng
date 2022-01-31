@@ -56,7 +56,9 @@ pub trait Camera2dExt: AbstractCamera2d {
     }
 
     fn view_area(&self, framebuffer_size: Vec2<f32>) -> Quad<f32> {
-        Quad::from_matrix((self.projection_matrix(framebuffer_size) * self.view_matrix()).inverse())
+        Quad {
+            transform: (self.projection_matrix(framebuffer_size) * self.view_matrix()).inverse(),
+        }
     }
 }
 
