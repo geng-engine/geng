@@ -1,9 +1,9 @@
 use super::*;
 
 pub struct Polygon {
-    transform: Mat3<f32>,
-    draw_mode: ugli::DrawMode,
-    vertices: Vec<ColoredVertex>,
+    pub transform: Mat3<f32>,
+    pub draw_mode: ugli::DrawMode,
+    pub vertices: Vec<ColoredVertex>,
 }
 
 impl Polygon {
