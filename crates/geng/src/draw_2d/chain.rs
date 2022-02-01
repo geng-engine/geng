@@ -71,7 +71,7 @@ impl Chain {
             let cos = -Vec2::dot(forward, backward);
             let cos_half = ((cos + 1.0) / 2.0).max(0.0).sqrt();
 
-            if cos_half.approx_eq(&0.0) {
+            if cos_half.approx_eq(&1.0) {
                 // Straight line -> no rounding
                 let dir =
                     (current.a_pos - prev.a_pos).normalize_or_zero().rotate_90() * width / 2.0;
@@ -115,11 +115,6 @@ impl Chain {
                 a_pos: inner,
                 ..current
             };
-
-            // let middle_vertex = ColoredVertex {
-            //     a_pos: inner - inside_dir * width,
-            //     ..current
-            // };
 
             let backward_norm = backward.rotate_90() * side;
             let back_vertex = ColoredVertex {
@@ -174,14 +169,6 @@ impl Chain {
                     polygon.push(round[i + 1]);
                 }
             }
-
-            // polygon.push(back_vertex);
-            // polygon.push(inner_vertex);
-            // polygon.push(middle_vertex);
-
-            // polygon.push(forward_vertex);
-            // polygon.push(inner_vertex);
-            // polygon.push(middle_vertex);
 
             // Start outcoming segment
             {
