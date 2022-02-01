@@ -1,8 +1,8 @@
 use super::*;
 
 pub struct Quad {
-    transform: Mat3<f32>,
-    color: Color<f32>,
+    pub transform: Mat3<f32>,
+    pub color: Color<f32>,
 }
 
 impl Quad {

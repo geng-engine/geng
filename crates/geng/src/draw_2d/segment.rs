@@ -1,8 +1,8 @@
 use super::*;
 
 pub struct Segment {
-    transform: Mat3<f32>,
-    vertices: Vec<ColoredVertex>,
+    pub transform: Mat3<f32>,
+    pub vertices: Vec<ColoredVertex>,
 }
 
 impl Segment {
