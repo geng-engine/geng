@@ -96,7 +96,9 @@ impl Chain {
                 continue;
             }
 
-            let d = width / cos_half.max(0.1) / 2.0; // Magic constant (0.1) avoids very large distance
+            // Magic constant (0.1) avoids very large distance when the angle is small
+            // (i.e. when the chain is going back at itself)
+            let d = width / cos_half.max(0.1) / 2.0;
 
             let inside_dir = (backward + forward).normalize_or_zero();
             let inner = current.a_pos + inside_dir * d;
