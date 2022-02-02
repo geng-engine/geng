@@ -1,9 +1,9 @@
 use super::*;
 
 #[derive(ugli::Vertex, Debug)]
-struct Vertex {
-    a_pos: Vec2<f32>,
-    a_vt: Vec2<f32>,
+pub struct Vertex {
+    pub a_pos: Vec2<f32>,
+    pub a_vt: Vec2<f32>,
 }
 
 pub struct Font {
@@ -94,27 +94,13 @@ impl Font {
     pub fn measure(&self, text: &str, size: f32) -> Option<AABB<f32>> {
         self.measure_at(text, vec2(0.0, 0.0), size)
     }
-    pub(crate) fn draw_impl(
-        &self,
-        framebuffer: &mut ugli::Framebuffer,
-        camera: &(impl AbstractCamera2d + ?Sized),
-        transform: Mat3<f32>,
-        text: &str,
-        pos: Vec2<f32>,
-        size: f32,
-        color: Color<f32>,
-    ) {
-        let pixel_size = {
-            let m = camera.projection_matrix(framebuffer.size().map(|x| x as f32))
-                * camera.view_matrix()
-                * transform;
-            ((m * vec3(0.0, size, 0.0)).xy() * framebuffer.size().map(|x| x as f32))
-                .len()
-                .clamp(1.0, 256.0)
-        };
+    pub fn draw_with<F>(&self, text: &str, font_size: f32, f: F)
+    where
+        F: FnOnce(&ugli::VertexBuffer<Vertex>, &ugli::Texture),
+    {
         let scale = rusttype::Scale {
-            x: pixel_size,
-            y: pixel_size,
+            x: font_size,
+            y: font_size,
         };
         // pos.y += self.descent * size;
 
@@ -162,14 +148,15 @@ impl Font {
         geometry.clear();
         for glyph in &glyphs {
             if let Some((texture_rect, rect)) = cache.rect_for(0, glyph).unwrap() {
-                let x1 = pos.x + rect.min.x as f32 * size / pixel_size;
-                let y1 = pos.y - rect.min.y as f32 * size / pixel_size;
-                let x2 = pos.x + rect.max.x as f32 * size / pixel_size;
-                let y2 = pos.y - rect.max.y as f32 * size / pixel_size;
+                let x1 = rect.min.x as f32 / font_size;
+                let y1 = -rect.min.y as f32 / font_size;
+                let x2 = rect.max.x as f32 / font_size;
+                let y2 = -rect.max.y as f32 / font_size;
                 let u1 = texture_rect.min.x;
                 let u2 = texture_rect.max.x;
                 let v1 = texture_rect.min.y;
                 let v2 = texture_rect.max.y;
+
                 geometry.push(Vertex {
                     a_pos: vec2(x1, y1),
                     a_vt: vec2(u1, v1),
@@ -198,28 +185,50 @@ impl Font {
             }
         }
 
-        let framebuffer_size = framebuffer.size();
-
-        ugli::draw(
-            framebuffer,
-            &self.program,
-            ugli::DrawMode::Triangles,
-            &*geometry,
-            (
-                ugli::uniforms! {
-                    u_color: color,
-                    u_cache_texture: &*cache_texture,
-                    u_framebuffer_size: framebuffer_size,
-                    u_model_matrix: transform,
+        f(&geometry, &*cache_texture);
+    }
+    pub(crate) fn draw_impl(
+        &self,
+        framebuffer: &mut ugli::Framebuffer,
+        camera: &(impl AbstractCamera2d + ?Sized),
+        transform: Mat3<f32>,
+        text: &str,
+        pos: Vec2<f32>,
+        size: f32,
+        color: Color<f32>,
+    ) {
+        let pixel_size = {
+            let m = camera.projection_matrix(framebuffer.size().map(|x| x as f32))
+                * camera.view_matrix()
+                * transform;
+            ((m * vec3(0.0, size, 0.0)).xy() * framebuffer.size().map(|x| x as f32))
+                .len()
+                .clamp(1.0, 256.0)
+        };
+        let transform = transform * Mat3::translate(pos) * Mat3::scale_uniform(size);
+        self.draw_with(text, pixel_size, |geometry, texture| {
+            let framebuffer_size = framebuffer.size();
+            ugli::draw(
+                framebuffer,
+                &self.program,
+                ugli::DrawMode::Triangles,
+                geometry,
+                (
+                    ugli::uniforms! {
+                        u_color: color,
+                        u_cache_texture: texture,
+                        u_framebuffer_size: framebuffer_size,
+                        u_model_matrix: transform,
+                    },
+                    camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
+                ),
+                ugli::DrawParameters {
+                    depth_func: None,
+                    blend_mode: Some(ugli::BlendMode::Alpha),
+                    ..default()
                 },
-                camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
-            ),
-            ugli::DrawParameters {
-                depth_func: None,
-                blend_mode: Some(ugli::BlendMode::Alpha),
-                ..default()
-            },
-        );
+            );
+        });
     }
     #[allow(clippy::too_many_arguments)]
     pub fn draw(
