@@ -28,7 +28,7 @@ impl<T: ToString + Clone> Config<T> for ShowValue<T> {
             self.text.as_ref().unwrap(),
             &self.theme.font,
             16.0,
-            Color::GRAY,
+            self.theme.text_color,
         ))
     }
 }
