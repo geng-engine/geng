@@ -26,7 +26,7 @@ pub struct ColoredVertex {
 
 #[derive(ugli::Vertex, Copy, Clone, Debug)]
 pub struct Vertex {
-    a_pos: Vec2<f32>,
+    pub a_pos: Vec2<f32>,
 }
 
 #[derive(ugli::Vertex, Copy, Clone, Debug)]
