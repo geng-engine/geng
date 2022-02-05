@@ -80,7 +80,19 @@ impl Button {
         } else {
             0.0
         });
-        ui::stack![button, text]
+        let hovered = button.leaf().core.hovered;
+        let mut result = ui::stack![button, text];
+        if hovered {
+            result.push(Box::new(
+                ColorBox::new(theme.geng(), theme.hover_color)
+                    .constraints_override(Constraints {
+                        min_size: vec2(0.0, 1.0),
+                        flex: vec2(1.0, 0.0),
+                    })
+                    .align(vec2(0.5, 0.0)),
+            ));
+        }
+        result.flex_align(vec2(Some(0.0), Some(0.0)), vec2(0.5, 0.5))
     }
     pub fn texture<'a, B: Widget + Container<Leaf = Button> + 'a>(
         button: B,
