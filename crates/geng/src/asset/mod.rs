@@ -27,3 +27,16 @@ where
     }
     const DEFAULT_EXT: Option<&'static str> = T::DEFAULT_EXT;
 }
+
+impl LoadAsset for ugli::Program {
+    fn load(geng: &Geng, path: &str) -> AssetFuture<Self> {
+        let glsl = <String as LoadAsset>::load(geng, path);
+        let geng = geng.clone();
+        async move {
+            let glsl = glsl.await?;
+            Ok(geng.shader_lib().compile(&glsl)?)
+        }
+        .boxed_local()
+    }
+    const DEFAULT_EXT: Option<&'static str> = Some("glsl");
+}
