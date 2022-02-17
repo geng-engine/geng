@@ -118,3 +118,22 @@ mat4 inverse(mat4 m) {
       a31 * b01 - a30 * b03 - a32 * b00,
       a20 * b03 - a21 * b01 + a22 * b00) / det;
 }
+
+const float PACK_UPSCALE = 256.0 / 255.0; // fraction -> 0..1 (including 1)
+const float UNPACK_DOWNSCALE = 255.0 / 256.0; // 0..1 -> fraction (excluding 1)
+
+const vec3 PACK_FACTORS = vec3(256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0);
+const vec4 UNPACK_FACTORS = UNPACK_DOWNSCALE / vec4(PACK_FACTORS, 1.0);
+
+const float SHIFT_RIGHT_8 = 1.0 / 256.0;
+
+float unpack4(vec4 v) {
+    return dot(v, UNPACK_FACTORS);
+}
+
+vec4 pack4(float value) {
+    float v = clamp(value, 0.0, 1.0);
+    vec4 r = vec4(fract(v * PACK_FACTORS), v);
+    r.yzw -= r.xyz * SHIFT_RIGHT_8;
+    return r * PACK_UPSCALE;
+}
