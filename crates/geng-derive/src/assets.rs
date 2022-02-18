@@ -19,6 +19,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                 .map(|field| {
                     let mut path = None;
                     let mut range = None;
+                    let mut load_with = None::<syn::Expr>;
                     for attr in &field.attrs {
                         if let Ok(syn::Meta::List(syn::MetaList {
                             path: ref meta_path,
@@ -45,6 +46,13 @@ pub fn derive(input: TokenStream) -> TokenStream {
                                                 "Multiple ranges for an asset"
                                             );
                                             range = Some(lit.clone());
+                                        } else if meta_path.is_ident("load_with") {
+                                            load_with = Some(match lit {
+                                                syn::Lit::Str(expr) => {
+                                                    syn::parse_str(&expr.value()).unwrap()
+                                                }
+                                                _ => panic!("Expected a string for load_with"),
+                                            });
                                         } else {
                                             panic!("Failed to parse asset attr");
                                         }
@@ -57,7 +65,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                             panic!("Failed to parse meta")
                         }
                     }
-                    (path, range)
+                    (path, range, load_with)
                 })
                 .collect();
             let field_placeholders: Vec<_> = fields
@@ -86,10 +94,13 @@ pub fn derive(input: TokenStream) -> TokenStream {
                 field_attrs.iter(),
                 field_placeholders.iter()
             )
-            .map(|(name, ty, (path, range), placeholder)| match placeholder {
+            .map(|(name, ty, (path, range, load_with), placeholder)| match placeholder {
                 Some(_placeholder) => panic!("Lazy assets removed"),
                 None => {
-                    if let Some(syn::Lit::Str(ref range)) = range {
+                    if let Some(expr) = load_with {
+                        quote!(#expr)
+                    }
+                    else if let Some(syn::Lit::Str(ref range)) = range {
                         let path = path.as_ref().expect("Path needs to be specified for ranged assets");
                         let range = range.parse::<syn::ExprRange>().expect("Failed to parse range");
                         quote! {
@@ -116,20 +127,44 @@ pub fn derive(input: TokenStream) -> TokenStream {
                 }
             });
 
-            quote! {
-                impl geng::LoadAsset for #input_type
-                    /* where #(#field_constraints),* */ {
-                    fn load(geng: &Geng, base_path: &str) -> geng::AssetFuture<Self> {
-                        let (#(#field_names,)*) = (#(#field_loaders,)*);
-                        Box::pin(async move {
-                            let joined_future_result: Result<_, anyhow::Error> = futures::try_join!(#(#field_names,)*);
-                            let (#(#field_names,)*) = joined_future_result?;
-                            Ok(Self {
-                                #(#field_names,)*
+            // TODO: if load_sequential
+            if true {
+                quote! {
+                    impl geng::LoadAsset for #input_type
+                        /* where #(#field_constraints),* */ {
+                        fn load(geng: &Geng, base_path: &str) -> geng::AssetFuture<Self> {
+                            let geng = geng.clone();
+                            let base_path = base_path.to_owned();
+                            Box::pin(async move {
+                                let geng = &geng;
+                                let base_path = base_path.as_str();
+                                #(
+                                    let #field_names = #field_loaders.await?;
+                                )*
+                                Ok(Self {
+                                    #(#field_names,)*
+                                })
                             })
-                        })
+                        }
+                        const DEFAULT_EXT: Option<&'static str> = None;
                     }
-                    const DEFAULT_EXT: Option<&'static str> = None;
+                }
+            } else {
+                quote! {
+                    impl geng::LoadAsset for #input_type
+                        /* where #(#field_constraints),* */ {
+                        fn load(geng: &Geng, base_path: &str) -> geng::AssetFuture<Self> {
+                            let (#(#field_names,)*) = (#(#field_loaders,)*);
+                            Box::pin(async move {
+                                let joined_future_result: Result<_, anyhow::Error> = futures::try_join!(#(#field_names,)*);
+                                let (#(#field_names,)*) = joined_future_result?;
+                                Ok(Self {
+                                    #(#field_names,)*
+                                })
+                            })
+                        }
+                        const DEFAULT_EXT: Option<&'static str> = None;
+                    }
                 }
             }
         }
