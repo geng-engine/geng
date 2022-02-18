@@ -174,6 +174,15 @@ impl<T: UNum> AABB<T> {
         )
     }
 
+    pub fn corners(&self) -> [Vec2<T>; 4] {
+        [
+            self.bottom_left(),
+            self.bottom_right(),
+            self.top_right(),
+            self.top_left(),
+        ]
+    }
+
     /// Map every value (coordinate) of the AABB.
     pub fn map<U: UNum, F: Fn(T) -> U>(self, f: F) -> AABB<U> {
         AABB {
