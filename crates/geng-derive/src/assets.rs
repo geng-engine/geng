@@ -139,7 +139,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                                 let geng = &geng;
                                 let base_path = base_path.as_str();
                                 #(
-                                    let #field_names = #field_loaders.await?;
+                                    let #field_names = anyhow::Context::context(#field_loaders.await, concat!("Failed to load ", stringify!(#field_names)))?;
                                 )*
                                 Ok(Self {
                                     #(#field_names,)*
