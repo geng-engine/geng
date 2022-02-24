@@ -227,3 +227,31 @@ pub fn save_file<F: FnOnce(&mut (dyn Write + Send)) -> std::io::Result<()>>(
 pub fn select_file(title: &str) -> Option<std::path::PathBuf> {
     tinyfiledialogs::open_file_dialog(title, "", None).map(|path| path.into())
 }
+
+pub fn static_path() -> std::path::PathBuf {
+    if let Some(dir) = std::env::var_os("CARGO_MANIFEST_DIR") {
+        let mut path = std::path::PathBuf::from(dir);
+        let current_exe = std::env::current_exe().unwrap();
+        if let Some(binary_type) = current_exe.parent() {
+            if binary_type.file_name().unwrap() == "examples" {
+                path = path.join("examples").join(current_exe.file_stem().unwrap());
+            }
+        }
+        let path = path.join("static");
+        if path.is_dir() {
+            return path;
+        }
+    } else {
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            if let Some(path) = std::env::current_exe().unwrap().parent() {
+                return path.to_owned();
+            }
+        }
+    }
+    if cfg!(target_arch = "wasm32") {
+        std::path::PathBuf::from(".")
+    } else {
+        std::env::current_dir().unwrap()
+    }
+}
