@@ -9,7 +9,8 @@ pub use consts::*;
 /// RGBA Color
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
-pub struct Color<T> {
+#[serde(try_from = "String", into = "String")]
+pub struct Color<T: ColorComponent> {
     /// Red component
     pub r: T,
     /// Green component
@@ -18,6 +19,68 @@ pub struct Color<T> {
     pub b: T,
     /// Alpha (opacity) component
     pub a: T,
+}
+
+impl<T: ColorComponent> From<Color<T>> for String {
+    fn from(color: Color<T>) -> String {
+        format!("{}", color)
+    }
+}
+
+impl<T: ColorComponent> TryFrom<String> for Color<T> {
+    type Error = anyhow::Error;
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        value.as_str().try_into()
+    }
+}
+
+impl<T: ColorComponent> TryFrom<&str> for Color<T> {
+    type Error = anyhow::Error;
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        if let Some(hex) = value.strip_prefix('#') {
+            fn d(x: u8) -> u8 {
+                x * 16 + x
+            }
+            return Ok(match hex.len() {
+                3 => Color::<u8>::rgb(
+                    d(u8::from_str_radix(&hex[0..1], 16)?),
+                    d(u8::from_str_radix(&hex[1..2], 16)?),
+                    d(u8::from_str_radix(&hex[2..3], 16)?),
+                ),
+                4 => Color::<u8>::rgba(
+                    d(u8::from_str_radix(&hex[0..1], 16)?),
+                    d(u8::from_str_radix(&hex[1..2], 16)?),
+                    d(u8::from_str_radix(&hex[2..3], 16)?),
+                    d(u8::from_str_radix(&hex[3..4], 16)?),
+                ),
+                6 => Color::<u8>::rgb(
+                    u8::from_str_radix(&hex[0..2], 16)?,
+                    u8::from_str_radix(&hex[2..4], 16)?,
+                    u8::from_str_radix(&hex[4..6], 16)?,
+                ),
+                8 => Color::<u8>::rgba(
+                    u8::from_str_radix(&hex[0..2], 16)?,
+                    u8::from_str_radix(&hex[2..4], 16)?,
+                    u8::from_str_radix(&hex[4..6], 16)?,
+                    u8::from_str_radix(&hex[6..8], 16)?,
+                ),
+                _ => anyhow::bail!("Expected 3, 4, 6 or 8 hex digits"),
+            }
+            .convert());
+        }
+        Ok(match value {
+            "white" => Self::WHITE,
+            "black" => Self::BLACK,
+            "gray" => Self::GRAY,
+            "red" => Self::RED,
+            "green" => Self::GREEN,
+            "blue" => Self::BLUE,
+            "cyan" => Self::CYAN,
+            "magenta" => Self::MAGENTA,
+            "yellow" => Self::YELLOW,
+            _ => anyhow::bail!("Incorrect color format"),
+        })
+    }
 }
 
 impl<T: ColorComponent> Display for Color<T> {
@@ -156,7 +219,7 @@ impl<T: ColorComponent> Color<T> {
     /// let f = |a: f32, b: f32| a + b;
     /// assert_eq!(a.zip_map(b, f), Color::rgba(0.7, 0.4, 0.5, 0.8));
     /// ```
-    pub fn zip_map<F: Fn(T, U) -> V, U, V: ColorComponent>(
+    pub fn zip_map<F: Fn(T, U) -> V, U: ColorComponent, V: ColorComponent>(
         self,
         other: Color<U>,
         f: F,
