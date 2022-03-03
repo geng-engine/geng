@@ -4,7 +4,39 @@ pub fn derive(input: TokenStream) -> TokenStream {
     let s = input.to_string();
     let ast: syn::DeriveInput = syn::parse_str(&s).unwrap();
     let input_type = &ast.ident;
-    // let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
+    if ast.attrs.iter().any(|attr| {
+        if let Ok(syn::Meta::List(syn::MetaList {
+            path: meta_path,
+            nested,
+            ..
+        })) = attr.parse_meta()
+        {
+            if meta_path.is_ident("asset") {
+                for inner in nested {
+                    if let syn::NestedMeta::Meta(syn::Meta::Path(meta_path)) = inner {
+                        if meta_path.is_ident("json") {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        false
+    }) {
+        return quote! {
+            impl #impl_generics geng::LoadAsset #ty_generics for #input_type #where_clause {
+                fn load(geng: &Geng, path: &str) -> geng::AssetFuture<Self> {
+                    let json = <String as geng::LoadAsset>::load(geng, path);
+                    async move {
+                        let json = json.await?;
+                        Ok(serde_json::from_str(&json)?)
+                    }.boxed_local()
+                }
+                const DEFAULT_EXT: Option<&'static str> = Some("json");
+            }
+        };
+    }
     match ast.data {
         syn::Data::Struct(syn::DataStruct { ref fields, .. }) => {
             let field_tys: Vec<_> = fields.iter().map(|field| &field.ty).collect();
