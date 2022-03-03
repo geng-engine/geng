@@ -41,6 +41,15 @@ impl<T: Copy> Mat4<T> {
             self[(row_index, 3)],
         )
     }
+
+    pub fn col(&self, col_index: usize) -> Vec4<T> {
+        vec4(
+            self[(0, col_index)],
+            self[(1, col_index)],
+            self[(2, col_index)],
+            self[(3, col_index)],
+        )
+    }
 }
 
 impl<T> Index<(usize, usize)> for Mat4<T> {
