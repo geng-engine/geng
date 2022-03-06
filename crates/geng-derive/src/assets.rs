@@ -17,10 +17,14 @@ struct Field {
     ty: syn::Type,
     #[darling(default)]
     path: Option<String>,
-    #[darling(default)]
+    #[darling(default, map = "parse_syn")]
     load_with: Option<syn::Expr>,
-    #[darling(default)]
+    #[darling(default, map = "parse_syn")]
     range: Option<syn::Expr>,
+}
+
+fn parse_syn<T: syn::parse::Parse>(value: Option<String>) -> Option<T> {
+    value.map(|s| syn::parse_str(&s).unwrap())
 }
 
 impl DeriveInput {
