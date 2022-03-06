@@ -300,7 +300,7 @@ fn main() {
     let state = geng::LoadingScreen::new(
         &geng,
         geng::EmptyLoadingScreen,
-        geng::LoadAsset::load(&geng, "."),
+        geng::LoadAsset::load(&geng, &static_path()),
         {
             let geng = geng.clone();
             move |assets| State::new(&geng, assets.unwrap())
