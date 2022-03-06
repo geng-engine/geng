@@ -12,6 +12,7 @@ batbox = { path = "../batbox", version = "0.8.0" }
 syn = { version = "1", features = ["full"] }
 quote = "1"
 proc-macro2 = "1"
+darling = "0.13"
 
 [lib]
 proc-macro = true
