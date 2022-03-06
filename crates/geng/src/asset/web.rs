@@ -1,7 +1,7 @@
 use super::*;
 
 impl LoadAsset for ugli::Texture {
-    fn load(geng: &Geng, path: &str) -> AssetFuture<Self> {
+    fn load(geng: &Geng, path: &std::path::Path) -> AssetFuture<Self> {
         let (sender, receiver) = futures::channel::oneshot::channel();
         let image = web_sys::HtmlImageElement::new().unwrap();
         let path = Rc::new(path.to_owned());
@@ -33,7 +33,7 @@ impl LoadAsset for ugli::Texture {
             &image,
             wasm_bindgen::closure::Closure::once_into_js(handler),
         );
-        image.set_src(&path);
+        image.set_src(path.to_str().unwrap());
         Box::pin(async move { receiver.await? })
     }
     const DEFAULT_EXT: Option<&'static str> = Some("png");
@@ -41,9 +41,9 @@ impl LoadAsset for ugli::Texture {
 
 #[cfg(feature = "audio")]
 impl LoadAsset for Sound {
-    fn load(_: &Geng, path: &str) -> AssetFuture<Self> {
+    fn load(_: &Geng, path: &std::path::Path) -> AssetFuture<Self> {
         let (sender, receiver) = futures::channel::oneshot::channel();
-        let audio = web_sys::HtmlAudioElement::new_with_src(path).unwrap();
+        let audio = web_sys::HtmlAudioElement::new_with_src(path.to_str().unwrap()).unwrap();
         let path = Rc::new(path.to_owned());
         let handler = {
             let audio = audio.clone();
@@ -81,10 +81,10 @@ impl LoadAsset for Sound {
 }
 
 impl LoadAsset for String {
-    fn load(_: &Geng, path: &str) -> AssetFuture<Self> {
+    fn load(_: &Geng, path: &std::path::Path) -> AssetFuture<Self> {
         let (sender, receiver) = futures::channel::oneshot::channel();
         let request = web_sys::XmlHttpRequest::new().unwrap();
-        request.open("GET", path).unwrap();
+        request.open("GET", path.to_str().unwrap()).unwrap();
         let path = Rc::new(path.to_owned());
         let handler = {
             let request = request.clone();
@@ -122,11 +122,11 @@ impl LoadAsset for String {
 }
 
 impl LoadAsset for Vec<u8> {
-    fn load(_: &Geng, path: &str) -> AssetFuture<Self> {
+    fn load(_: &Geng, path: &std::path::Path) -> AssetFuture<Self> {
         let (sender, receiver) = futures::channel::oneshot::channel();
         let request = web_sys::XmlHttpRequest::new().unwrap();
         request.set_response_type(web_sys::XmlHttpRequestResponseType::Arraybuffer);
-        request.open("GET", path).unwrap();
+        request.open("GET", path.to_str().unwrap()).unwrap();
         let path = Rc::new(path.to_owned());
         let handler = {
             let request = request.clone();

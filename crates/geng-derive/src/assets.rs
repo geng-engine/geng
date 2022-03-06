@@ -40,7 +40,7 @@ impl DeriveInput {
         if json {
             return quote! {
                 impl #impl_generics geng::LoadAsset #ty_generics for #ident #where_clause {
-                    fn load(geng: &Geng, path: &str) -> geng::AssetFuture<Self> {
+                    fn load(geng: &Geng, path: &std::path::Path) -> geng::AssetFuture<Self> {
                         let json = <String as geng::LoadAsset>::load(geng, path);
                         async move {
                             let json = json.await?;
@@ -78,7 +78,7 @@ impl DeriveInput {
                 let path = field.path.as_ref().expect("Path needs to be specified for ranged assets");
                 return quote! {
                     futures::future::try_join_all((#range).map(|i| {
-                        geng::LoadAsset::load(geng, &format!("{}/{}", base_path, #path.replace("*", &i.to_string())))
+                        geng::LoadAsset::load(geng, &base_path.join(#path.replace("*", &i.to_string())))
                     }))
                 };
             }
@@ -94,18 +94,17 @@ impl DeriveInput {
                 }},
             };
             quote! {
-                <#ty as geng::LoadAsset>::load(geng, &format!("{}/{}", base_path, #path))
+                <#ty as geng::LoadAsset>::load(geng, &base_path.join(#path))
             }
         });
         quote! {
             impl geng::LoadAsset for #ident
                 /* where #(#field_constraints),* */ {
-                fn load(geng: &geng::Geng, base_path: &str) -> geng::AssetFuture<Self> {
+                fn load(geng: &geng::Geng, base_path: &std::path::Path) -> geng::AssetFuture<Self> {
                     let geng = geng.clone();
                     let base_path = base_path.to_owned();
                     Box::pin(async move {
                         let geng = &geng;
-                        let base_path = base_path.as_str();
                         #(
                             let #field_names = anyhow::Context::context(
                                 #field_loaders.await,

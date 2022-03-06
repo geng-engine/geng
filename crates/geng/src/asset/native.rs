@@ -17,13 +17,13 @@ impl AssetManager {
 }
 
 impl LoadAsset for ugli::Texture {
-    fn load(geng: &Geng, path: &str) -> AssetFuture<Self> {
+    fn load(geng: &Geng, path: &std::path::Path) -> AssetFuture<Self> {
         let ugli = geng.ugli().clone();
         let path = path.to_owned();
         let image_future = geng.inner.asset_manager.threadpool.spawn(move || {
             debug!("Loading {:?}", path);
-            fn load(path: &str) -> Result<image::RgbaImage, anyhow::Error> {
-                let image = image::open(path).context(path.to_owned())?;
+            fn load(path: &std::path::Path) -> anyhow::Result<image::RgbaImage> {
+                let image = image::open(path).context(format!("Failed to load {:?}", path))?;
                 Ok(match image {
                     image::DynamicImage::ImageRgba8(image) => image,
                     _ => image.to_rgba8(),
@@ -38,7 +38,7 @@ impl LoadAsset for ugli::Texture {
 
 #[cfg(feature = "audio")]
 impl LoadAsset for Sound {
-    fn load(geng: &Geng, path: &str) -> AssetFuture<Self> {
+    fn load(geng: &Geng, path: &std::path::Path) -> AssetFuture<Self> {
         let geng = geng.clone();
         let path = path.to_owned();
         let data =
@@ -63,7 +63,7 @@ impl LoadAsset for Sound {
 }
 
 impl LoadAsset for String {
-    fn load(geng: &Geng, path: &str) -> AssetFuture<Self> {
+    fn load(geng: &Geng, path: &std::path::Path) -> AssetFuture<Self> {
         let geng = geng.clone();
         let path = path.to_owned();
         let future = geng.inner.asset_manager.threadpool.spawn(move || {
@@ -78,7 +78,7 @@ impl LoadAsset for String {
 }
 
 impl LoadAsset for Vec<u8> {
-    fn load(geng: &Geng, path: &str) -> AssetFuture<Self> {
+    fn load(geng: &Geng, path: &std::path::Path) -> AssetFuture<Self> {
         let geng = geng.clone();
         let path = path.to_owned();
         let future = geng.inner.asset_manager.threadpool.spawn(move || {

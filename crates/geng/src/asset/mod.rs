@@ -13,7 +13,7 @@ pub(crate) use _impl::*;
 pub type AssetFuture<T> = Pin<Box<dyn Future<Output = Result<T, anyhow::Error>>>>;
 
 pub trait LoadAsset: Sized {
-    fn load(geng: &Geng, path: &str) -> AssetFuture<Self>;
+    fn load(geng: &Geng, path: &std::path::Path) -> AssetFuture<Self>;
     const DEFAULT_EXT: Option<&'static str>;
 }
 
@@ -21,7 +21,7 @@ impl<T: 'static> LoadAsset for Rc<T>
 where
     T: LoadAsset,
 {
-    fn load(geng: &Geng, path: &str) -> AssetFuture<Self> {
+    fn load(geng: &Geng, path: &std::path::Path) -> AssetFuture<Self> {
         let future = T::load(geng, path);
         Box::pin(async move { Ok(Rc::new(future.await?)) })
     }
@@ -29,7 +29,7 @@ where
 }
 
 impl LoadAsset for ugli::Program {
-    fn load(geng: &Geng, path: &str) -> AssetFuture<Self> {
+    fn load(geng: &Geng, path: &std::path::Path) -> AssetFuture<Self> {
         let glsl = <String as LoadAsset>::load(geng, path);
         let geng = geng.clone();
         async move {
