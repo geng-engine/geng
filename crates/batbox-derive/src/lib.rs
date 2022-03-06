@@ -3,10 +3,9 @@
 
 extern crate proc_macro;
 
-#[macro_use]
-extern crate quote;
-
+use darling::{FromDeriveInput, FromField};
 use proc_macro2::TokenStream;
+use quote::quote;
 
 mod diff;
 mod has_id;
@@ -16,7 +15,11 @@ pub fn derive_diff(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     diff::derive(input.into()).into()
 }
 
-#[proc_macro_derive(HasId, attributes(id))]
+#[proc_macro_derive(HasId, attributes(has_id))]
 pub fn derive_has_id(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    has_id::derive(input.into()).into()
+    let input: syn::DeriveInput = syn::parse_macro_input!(input);
+    match has_id::DeriveInput::from_derive_input(&input) {
+        Ok(input) => input.derive().into(),
+        Err(e) => e.write_errors().into(),
+    }
 }

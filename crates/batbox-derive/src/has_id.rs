@@ -1,41 +1,65 @@
+use darling::FromDeriveInput;
+
 use super::*;
 
-pub fn derive(input: TokenStream) -> TokenStream {
-    let s = input.to_string();
-    let ast: syn::DeriveInput = syn::parse_str(&s).unwrap();
-    let input_type = &ast.ident;
-    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
-    match ast.data {
-        syn::Data::Struct(syn::DataStruct { ref fields, .. }) => {
-            let id_field = match fields.iter().find(|field| {
-                for attr in &field.attrs {
-                    if let Ok(syn::Meta::Path(path)) = attr.parse_meta() {
-                        if path.is_ident("id") {
-                            return true;
-                        }
-                    }
-                }
-                false
-            }) {
-                Some(field) => field,
-                None => fields
-                    .iter()
-                    .find(|field| field.ident.as_ref().unwrap() == "id")
-                    .expect("Expected a field with #[id] attribute or with name 'id'"),
-            };
-            let id_ty = &id_field.ty;
-            let id_field_name = id_field.ident.as_ref().unwrap();
+#[derive(FromDeriveInput)]
+#[darling(supports(struct_any))]
+pub struct DeriveInput {
+    ident: syn::Ident,
+    generics: syn::Generics,
+    data: darling::ast::Data<(), Field>,
+}
 
-            let expanded = quote! {
-                impl #impl_generics batbox::HasId for #input_type #ty_generics #where_clause {
-                    type Id = #id_ty;
-                    fn id(&self) -> &Self::Id {
-                        &self.#id_field_name
-                    }
+#[derive(FromField)]
+#[darling(attributes(has_id))]
+struct Field {
+    ident: Option<syn::Ident>,
+    ty: syn::Type,
+    #[darling(default)]
+    id: bool,
+}
+
+impl DeriveInput {
+    pub fn derive(self) -> TokenStream {
+        let Self {
+            ident,
+            generics,
+            data,
+        } = self;
+        let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+        let data = data.take_struct().unwrap();
+        fn find_field_with_id_attr(fields: &[Field]) -> Option<(usize, &Field)> {
+            let mut result = None;
+            for (index, field) in fields.iter().enumerate() {
+                if field.id {
+                    assert!(result.is_none(), "Only one field must have id attr");
+                    result = Some((index, field));
                 }
-            };
-            expanded
+            }
+            result
         }
-        _ => panic!("HasId can only be derived by structs"),
+        fn find_field_with_id_name(fields: &[Field]) -> Option<(usize, &Field)> {
+            fields
+                .iter()
+                .enumerate()
+                .find(|(_, field)| field.ident.as_ref().map_or(false, |ident| ident == "id"))
+        }
+        let (id_field_index, id_field) = find_field_with_id_attr(&data.fields)
+            .or_else(|| find_field_with_id_name(&data.fields))
+            .expect("Expected field with #[id] attr or named `id`");
+        let id_field_ty = &id_field.ty;
+        let id_field_index = syn::Index::from(id_field_index);
+        let id_field_ref = match &id_field.ident {
+            Some(ident) => quote! { #ident },
+            None => quote! { #id_field_index },
+        };
+        quote! {
+            impl #impl_generics batbox::HasId for #ident #ty_generics #where_clause {
+                type Id = #id_field_ty;
+                fn id(&self) -> &Self::Id {
+                    &self.#id_field_ref
+                }
+            }
+        }
     }
 }
