@@ -40,3 +40,15 @@ impl LoadAsset for ugli::Program {
     }
     const DEFAULT_EXT: Option<&'static str> = Some("glsl");
 }
+
+impl LoadAsset for serde_json::Value {
+    fn load(geng: &Geng, path: &std::path::Path) -> AssetFuture<Self> {
+        let string = <String as LoadAsset>::load(geng, path);
+        async move {
+            let string = string.await?;
+            Ok(serde_json::from_str(&string)?)
+        }
+        .boxed_local()
+    }
+    const DEFAULT_EXT: Option<&'static str> = Some("glsl");
+}
