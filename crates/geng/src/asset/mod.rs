@@ -50,5 +50,5 @@ impl LoadAsset for serde_json::Value {
         }
         .boxed_local()
     }
-    const DEFAULT_EXT: Option<&'static str> = Some("glsl");
+    const DEFAULT_EXT: Option<&'static str> = Some("json");
 }
