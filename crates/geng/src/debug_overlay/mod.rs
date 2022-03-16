@@ -2,23 +2,29 @@ use super::*;
 
 mod console;
 mod fps_counter;
+mod touch_simulator;
 
 use console::*;
 use fps_counter::*;
+use touch_simulator::*;
 
 pub struct DebugOverlay<T> {
+    geng: Geng,
     fps_counter: FpsCounter,
     console: Console,
     enabled: bool,
+    touch_simulator: Option<TouchSimulator>,
     inner: T,
 }
 
 impl<T> DebugOverlay<T> {
     pub fn new(geng: &Geng, inner: T) -> Self {
         Self {
+            geng: geng.clone(),
             fps_counter: FpsCounter::new(geng),
             console: Console::new(geng),
             enabled: false,
+            touch_simulator: None,
             inner,
         }
     }
@@ -32,13 +38,37 @@ impl<T: State> State for DebugOverlay<T> {
     }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         self.inner.draw(framebuffer);
+        if let Some(touch_simulator) = &self.touch_simulator {
+            touch_simulator.draw(framebuffer);
+        }
     }
     fn handle_event(&mut self, event: Event) {
-        if let Event::KeyDown { key: Key::F3 } = event {
-            self.enabled = !self.enabled;
-        } else {
-            self.inner.handle_event(event);
+        match event {
+            Event::KeyDown { key } => match key {
+                Key::F3 => {
+                    self.enabled = !self.enabled;
+                    return;
+                }
+                Key::M if self.geng.window().is_key_pressed(Key::F3) => {
+                    self.enabled = !self.enabled;
+                    self.touch_simulator = match self.touch_simulator {
+                        Some(_) => None,
+                        None => Some(TouchSimulator::new(&self.geng)),
+                    };
+                    return;
+                }
+                _ => {}
+            },
+            _ => {}
         }
+        if let Some(touch_simulator) = &mut self.touch_simulator {
+            if let Some(events) = touch_simulator.handle_event(&event) {
+                for event in events {
+                    self.inner.handle_event(event);
+                }
+            }
+        }
+        self.inner.handle_event(event);
     }
     fn ui(&mut self) -> Box<dyn ui::Widget + '_> {
         if self.enabled {
