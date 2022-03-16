@@ -10,7 +10,7 @@ fn exec<C: std::borrow::BorrowMut<Command>>(mut cmd: C) -> Result<(), anyhow::Er
     }
 }
 
-fn serve<P>(dir: P)
+fn serve<P>(dir: P, open: bool)
 where
     std::path::PathBuf: From<P>,
 {
@@ -41,7 +41,10 @@ where
         let server = hyper::server::Server::bind(&addr).serve(make_service);
         let addr = format!("http://{}/", addr);
         eprintln!("Server running on {}", addr);
-        open::that(format!("http://localhost:{}", SERVER_PORT)).expect("Failed to open browser");
+        if open {
+            open::that(format!("http://localhost:{}", SERVER_PORT))
+                .expect("Failed to open browser");
+        }
         server.await.expect("Server failed");
     });
 }
@@ -50,6 +53,7 @@ where
 enum Sub {
     Build,
     Run,
+    Serve,
     Check,
 }
 
@@ -60,6 +64,7 @@ impl std::str::FromStr for Sub {
             "build" => Self::Build,
             "run" => Self::Run,
             "check" => Self::Check,
+            "serve" => Self::Serve,
             _ => anyhow::bail!("Failed to parse subcommand"),
         })
     }
@@ -71,6 +76,7 @@ impl ToString for Sub {
             Self::Build => "build",
             Self::Run => "run",
             Self::Check => "check",
+            Self::Serve => "serve",
         }
         .to_owned()
     }
@@ -141,7 +147,7 @@ fn main() -> Result<(), anyhow::Error> {
     }
     let opt: Opt = clap::Parser::parse_from(args);
     match opt.sub {
-        Sub::Build | Sub::Run => {
+        Sub::Build | Sub::Run | Sub::Serve => {
             let metadata = cargo_metadata::MetadataCommand::new()
                 .other_options(opt.args_for_metadata().collect::<Vec<_>>())
                 .exec()?;
@@ -223,8 +229,8 @@ fn main() -> Result<(), anyhow::Error> {
                     include_str!("index.html")
                         .replace("<app-name>", executable.file_stem().unwrap()),
                 )?;
-                if opt.sub == Sub::Run {
-                    serve(&out_dir);
+                if opt.sub == Sub::Run || opt.sub == Sub::Serve {
+                    serve(&out_dir, opt.sub == Sub::Run);
                 }
             } else {
                 std::fs::copy(&executable, out_dir.join(executable.file_name().unwrap()))?;
