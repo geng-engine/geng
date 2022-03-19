@@ -48,6 +48,12 @@ mod ext {
         fn padding_left(self, padding: f64) -> Padding<Self> {
             self.padding(0.0, 0.0, 0.0, padding)
         }
+        fn padding_horizontal(self, padding: f64) -> Padding<Self> {
+            self.padding(0.0, padding, 0.0, padding)
+        }
+        fn padding_vertical(self, padding: f64) -> Padding<Self> {
+            self.padding(padding, 0.0, padding, 0.0)
+        }
     }
 
     impl<T: Widget> WidgetExt for T {}

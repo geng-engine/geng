@@ -32,10 +32,7 @@ impl geng::State for State {
             "counter example".center(),
             (
                 minus_button,
-                self.counter
-                    .to_string()
-                    .padding_left(32.0)
-                    .padding_right(32.0),
+                self.counter.to_string().padding_horizontal(32.0),
                 plus_button,
             )
                 .row()
