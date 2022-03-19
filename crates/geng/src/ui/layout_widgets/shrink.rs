@@ -1,7 +1,6 @@
 use super::*;
 
 pub struct Shrink<T> {
-    core: WidgetCore,
     ratio: f64,
     child: T,
 }
@@ -23,11 +22,7 @@ mod ext {
 
     pub trait WidgetExt: Widget + Sized {
         fn shrink(self, ratio: f64) -> Shrink<Self> {
-            Shrink {
-                core: WidgetCore::void(),
-                ratio,
-                child: self,
-            }
+            Shrink { ratio, child: self }
         }
     }
 
@@ -37,24 +32,20 @@ mod ext {
 pub use ext::WidgetExt as _;
 
 impl<T: Widget> Widget for Shrink<T> {
-    fn core(&self) -> &WidgetCore {
-        &self.core
+    fn calc_constraints(&mut self, children: &ConstraintsContext) -> Constraints {
+        children.get_constraints(&self.child)
     }
-    fn core_mut(&mut self) -> &mut WidgetCore {
-        &mut self.core
-    }
-    fn calc_constraints(&mut self) {
-        self.core_mut().constraints = self.child.core().constraints;
-    }
-    fn layout_children(&mut self) {
-        let pos = self.core().position;
+    fn layout_children(&mut self, cx: &mut LayoutContext) {
         let ratio = self.ratio / 2.0;
-        self.child.core_mut().position = AABB {
-            x_min: pos.x_min + pos.width() * ratio,
-            x_max: pos.x_max - pos.width() * ratio,
-            y_min: pos.y_min + pos.height() * ratio,
-            y_max: pos.y_max - pos.height() * ratio,
-        }
+        cx.set_position(
+            &self.child,
+            AABB {
+                x_min: cx.position.x_min + cx.position.width() * ratio,
+                x_max: cx.position.x_max - cx.position.width() * ratio,
+                y_min: cx.position.y_min + cx.position.height() * ratio,
+                y_max: cx.position.y_max - cx.position.height() * ratio,
+            },
+        );
     }
     fn walk_children_mut<'a>(&mut self, mut f: Box<dyn FnMut(&mut dyn Widget) + 'a>) {
         f(&mut self.child);

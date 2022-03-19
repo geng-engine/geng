@@ -1,7 +1,7 @@
 use super::*;
 
 pub struct ConstraintOverride<T> {
-    core: WidgetCore,
+    constraints: Constraints,
     child: T,
 }
 
@@ -18,14 +18,11 @@ impl<T, R: AsMut<T>> AsMut<T> for ConstraintOverride<R> {
 }
 
 impl<T: Widget> Widget for ConstraintOverride<T> {
-    fn core(&self) -> &WidgetCore {
-        &self.core
+    fn calc_constraints(&mut self, _children: &ConstraintsContext) -> Constraints {
+        self.constraints
     }
-    fn core_mut(&mut self) -> &mut WidgetCore {
-        &mut self.core
-    }
-    fn layout_children(&mut self) {
-        self.child.core_mut().position = self.core().position;
+    fn layout_children(&mut self, cx: &mut LayoutContext) {
+        cx.set_position(&self.child, cx.position);
     }
     fn walk_children_mut<'a>(&mut self, mut f: Box<dyn FnMut(&mut dyn Widget) + 'a>) {
         f(&mut self.child);
@@ -37,18 +34,19 @@ mod ext {
 
     pub trait WidgetExt: Widget + Sized {
         fn fixed_size(self, size: Vec2<f64>) -> ConstraintOverride<Self> {
-            let mut core = WidgetCore::void();
-            core.constraints.min_size = size;
-            core.constraints.flex = vec2(0.0, 0.0);
-            ConstraintOverride { core, child: self }
+            self.constraints_override(Constraints {
+                min_size: size,
+                flex: vec2(0.0, 0.0),
+            })
         }
         fn constraints_override(
             self,
             new_constraints: widget::Constraints,
         ) -> ConstraintOverride<Self> {
-            let mut core = WidgetCore::void();
-            core.constraints = new_constraints;
-            ConstraintOverride { core, child: self }
+            ConstraintOverride {
+                constraints: new_constraints,
+                child: self,
+            }
         }
     }
 

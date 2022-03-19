@@ -1,7 +1,6 @@
 use super::*;
 
 pub struct Text<T: AsRef<str>, F: AsRef<Font>> {
-    core: WidgetCore,
     text: T,
     font: F,
     size: f32,
@@ -11,7 +10,6 @@ pub struct Text<T: AsRef<str>, F: AsRef<Font>> {
 impl<T: AsRef<str>, F: AsRef<Font>> Text<T, F> {
     pub fn new(text: T, font: F, size: f32, color: Color<f32>) -> Self {
         Self {
-            core: WidgetCore::void(),
             text,
             font,
             size,
@@ -21,14 +19,8 @@ impl<T: AsRef<str>, F: AsRef<Font>> Text<T, F> {
 }
 
 impl<T: AsRef<str>, F: AsRef<Font>> Widget for Text<T, F> {
-    fn core(&self) -> &WidgetCore {
-        &self.core
-    }
-    fn core_mut(&mut self) -> &mut WidgetCore {
-        &mut self.core
-    }
-    fn calc_constraints(&mut self) {
-        self.core_mut().constraints = widget::Constraints {
+    fn calc_constraints(&mut self, _children: &ConstraintsContext) -> Constraints {
+        Constraints {
             min_size: vec2(
                 self.font
                     .as_ref()
@@ -37,15 +29,15 @@ impl<T: AsRef<str>, F: AsRef<Font>> Widget for Text<T, F> {
                 self.size as f64,
             ),
             flex: vec2(0.0, 0.0),
-        };
+        }
     }
-    fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
+    fn draw(&mut self, cx: &mut DrawContext) {
         if self.text.as_ref().is_empty() {
             return;
         }
         let size = partial_min(
-            self.core().position.height() as f32,
-            self.size * self.core().position.width() as f32
+            cx.position.height() as f32,
+            self.size * cx.position.width() as f32
                 / self
                     .font
                     .as_ref()
@@ -53,10 +45,10 @@ impl<T: AsRef<str>, F: AsRef<Font>> Widget for Text<T, F> {
                     .map_or(0.0, |aabb| aabb.width()),
         );
         self.font.as_ref().draw(
-            framebuffer,
+            cx.framebuffer,
             &PixelPerfectCamera,
             self.text.as_ref(),
-            self.core().position.bottom_left().map(|x| x as f32),
+            cx.position.bottom_left().map(|x| x as f32),
             TextAlign::LEFT,
             size,
             self.color,

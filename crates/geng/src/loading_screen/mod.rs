@@ -74,7 +74,7 @@ where
         }
         None
     }
-    fn ui(&mut self) -> Box<dyn ui::Widget + '_> {
-        self.state.ui()
+    fn ui<'a>(&'a mut self, cx: &'a ui::Controller) -> Box<dyn ui::Widget + 'a> {
+        self.state.ui(cx)
     }
 }

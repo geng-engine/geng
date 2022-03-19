@@ -255,3 +255,20 @@ pub fn static_path() -> std::path::PathBuf {
         std::env::current_dir().unwrap()
     }
 }
+
+#[macro_export]
+macro_rules! impl_tuples {
+    ($macro:ident) => {
+        $macro!();
+        $macro!(a0);
+        $macro!(a0, a1);
+        $macro!(a0, a1, a2);
+        $macro!(a0, a1, a2, a3);
+        $macro!(a0, a1, a2, a3, a4);
+        $macro!(a0, a1, a2, a3, a4, a5);
+        $macro!(a0, a1, a2, a3, a4, a5, a6);
+        $macro!(a0, a1, a2, a3, a4, a5, a6, a7);
+        $macro!(a0, a1, a2, a3, a4, a5, a6, a7, a8);
+        $macro!(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+    };
+}

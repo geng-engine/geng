@@ -19,28 +19,32 @@ pub enum Transition {
 /// Represents a state in the game.
 pub trait State: 'static {
     /// Called every frame.
-    #[allow(unused_variables)]
-    fn update(&mut self, delta_time: f64) {}
+    fn update(&mut self, delta_time: f64) {
+        #![allow(unused_variables)]
+    }
 
-    #[allow(unused_variables)]
     /// Called periodically every `fixed_delta_time` defined in [ContextOptions].
     /// To start the application with different `fixed_delta_time`,
     /// initialize geng with [`Geng::new_with()`].
-    fn fixed_update(&mut self, delta_time: f64) {}
+    fn fixed_update(&mut self, delta_time: f64) {
+        #![allow(unused_variables)]
+    }
 
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer);
 
     /// Called whenever an event is registered. See [Event] for a full list of possible events.
-    #[allow(unused_variables)]
-    fn handle_event(&mut self, event: Event) {}
+    fn handle_event(&mut self, event: Event) {
+        #![allow(unused_variables)]
+    }
 
     /// Called every frame. If returns `Some`, then a transition occurs.
     fn transition(&mut self) -> Option<Transition> {
         None
     }
 
-    fn ui(&mut self) -> Box<dyn ui::Widget + '_> {
-        Box::new(ui::void())
+    fn ui<'a>(&'a mut self, cx: &'a ui::Controller) -> Box<dyn ui::Widget + 'a> {
+        #![allow(unused_variables)]
+        Box::new(ui::Void)
     }
 }
 
@@ -68,7 +72,7 @@ impl<T: State + ?Sized> State for Box<T> {
     fn transition(&mut self) -> Option<Transition> {
         <T as State>::transition(self)
     }
-    fn ui(&mut self) -> Box<dyn ui::Widget + '_> {
-        <T as State>::ui(self)
+    fn ui<'a>(&'a mut self, cx: &'a ui::Controller) -> Box<dyn ui::Widget + 'a> {
+        <T as State>::ui(self, cx)
     }
 }

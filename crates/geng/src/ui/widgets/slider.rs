@@ -1,10 +1,7 @@
 use super::*;
 
-#[derive(Deref)]
 pub struct Slider {
     theme: Rc<Theme>,
-    #[deref]
-    core: WidgetCore,
     tick_radius: f32,
 }
 
@@ -12,7 +9,6 @@ impl Clone for Slider {
     fn clone(&self) -> Self {
         Self {
             theme: self.theme.clone(),
-            core: WidgetCore::new(),
             tick_radius: 0.0,
         }
     }

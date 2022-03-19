@@ -1,118 +1,65 @@
 use super::*;
 
-pub struct Button {
-    core: WidgetCore,
-    clicked: bool,
-    hover_time: f64,
-    capture_time: f64,
-    click_time: f64,
+pub struct Button<'a> {
+    sense: &'a mut Sense,
+    inner: Box<dyn Widget + 'a>,
+    f: Box<dyn FnMut() + 'a>,
 }
 
-impl Container for Button {
-    type Leaf = Self;
-    fn leaf(&self) -> &Self {
-        self
-    }
-}
-
-impl Button {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        Self {
-            core: WidgetCore::new(),
-            clicked: false,
-            hover_time: 0.0,
-            capture_time: 0.0,
-            click_time: 0.0,
-        }
-    }
-    pub fn clicked(&mut self) -> bool {
-        mem::replace(&mut self.clicked, false)
-    }
-}
-
-impl Widget for Button {
-    fn core(&self) -> &WidgetCore {
-        &self.core
-    }
-    fn core_mut(&mut self) -> &mut WidgetCore {
-        &mut self.core
-    }
-    fn update(&mut self, delta_time: f64) {
-        if self.core.hovered() {
-            self.hover_time += delta_time;
-        } else {
-            self.hover_time = 0.0;
-        }
-        if self.core.captured() {
-            self.capture_time += delta_time;
-        } else {
-            self.capture_time = 0.0;
-        }
-        self.click_time += delta_time;
-    }
-    fn handle_event(&mut self, event: &Event) {
-        if let Event::Click { .. } = event {
-            self.clicked = true;
-            self.click_time = 0.0;
-        }
-    }
-}
-
-impl Button {
-    pub fn text<'a, B: Widget + Container<Leaf = Button> + 'a, T: AsRef<str> + 'a>(
-        button: B,
-        text: T,
-        theme: &Rc<Theme>,
-    ) -> impl Widget + 'a {
+impl<'a> Button<'a> {
+    pub fn new(cx: &'a Controller, text: &str, f: impl FnMut() + 'a) -> Self {
+        let sense: &'a mut Sense = cx.get_state();
         let text = Text::new(
-            text,
-            theme.font.clone(),
-            theme.text_size,
-            if button.leaf().core.hovered {
-                theme.hover_color
+            text.to_owned(),
+            cx.theme().font.clone(),
+            cx.theme().text_size,
+            if sense.is_hovered() {
+                cx.theme().hover_color
             } else {
-                theme.usable_color
+                cx.theme().usable_color
             },
         )
-        .shrink(if button.leaf().core().captured() {
-            theme.press_ratio as f64
+        .shrink(if sense.is_captured() {
+            cx.theme().press_ratio as f64
         } else {
             0.0
         });
-        let hovered = button.leaf().core.hovered;
-        let mut result = ui::stack![button, text];
-        if hovered {
-            result.push(Box::new(
-                ColorBox::new(theme.geng(), theme.hover_color)
+        let mut ui = ui::stack![text];
+        if sense.is_hovered() {
+            ui.push(Box::new(
+                ColorBox::new(cx.theme().hover_color)
                     .constraints_override(Constraints {
                         min_size: vec2(0.0, 1.0),
                         flex: vec2(1.0, 0.0),
                     })
-                    .align(vec2(0.5, 0.0)),
+                    .flex_align(vec2(Some(0.0), Some(0.0)), vec2(0.5, 0.0)),
             ));
         }
-        result.flex_align(vec2(Some(0.0), Some(0.0)), vec2(0.5, 0.5))
+        Self {
+            sense,
+            inner: Box::new(ui),
+            f: Box::new(f),
+        }
     }
-    pub fn texture<'a, B: Widget + Container<Leaf = Button> + 'a>(
-        button: B,
-        texture: &'a ugli::Texture,
-        theme: &Rc<Theme>,
-    ) -> impl Widget + 'a {
-        let texture = Texture::colored(
-            theme.geng(),
-            texture,
-            if button.leaf().core.hovered() {
-                theme.hover_color
-            } else {
-                theme.usable_color
-            },
-        )
-        .shrink(if button.leaf().core().captured() {
-            theme.press_ratio as f64
-        } else {
-            0.0
-        });
-        ui::stack![button, texture]
+}
+
+impl Widget for Button<'_> {
+    fn sense(&mut self) -> Option<&mut Sense> {
+        Some(self.sense)
+    }
+    fn calc_constraints(&mut self, cx: &ConstraintsContext) -> Constraints {
+        cx.get_constraints(&self.inner)
+    }
+    fn walk_children_mut(&mut self, mut f: Box<dyn FnMut(&mut dyn Widget) + '_>) {
+        f(&mut self.inner);
+    }
+    fn layout_children(&mut self, cx: &mut LayoutContext) {
+        cx.set_position(&self.inner, cx.position);
+    }
+    fn handle_event(&mut self, event: &Event) {
+        #![allow(unused_variables)]
+        if self.sense.was_clicked() {
+            (self.f)();
+        }
     }
 }

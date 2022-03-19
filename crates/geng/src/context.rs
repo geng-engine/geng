@@ -108,7 +108,7 @@ pub fn run(geng: &Geng, state: impl State) {
     let state = Rc::new(RefCell::new(RunState {
         geng: geng.clone(),
         state,
-        ui_controller: ui::Controller::new(),
+        ui_controller: ui::Controller::new(geng),
         timer: Timer::new(),
         fixed_updater: FixedUpdater::new(geng.inner.fixed_delta_time.get(), 0.0),
     }));
@@ -118,17 +118,18 @@ pub fn run(geng: &Geng, state: impl State) {
             let delta_time = self.timer.tick();
             let delta_time = delta_time.min(self.geng.inner.max_delta_time.get());
             self.state.update(delta_time);
-            self.ui_controller.update(&mut self.state.ui(), delta_time);
+            self.ui_controller
+                .update(self.state.ui(&self.ui_controller).deref_mut(), delta_time);
             for _ in 0..self.fixed_updater.update(delta_time) {
                 self.state.fixed_update(self.fixed_updater.fixed_delta_time);
             }
         }
 
         fn handle_event(&mut self, event: Event) {
-            if self
-                .ui_controller
-                .handle_event(&mut self.state.ui(), event.clone())
-            {
+            if self.ui_controller.handle_event(
+                self.state.ui(&self.ui_controller).deref_mut(),
+                event.clone(),
+            ) {
                 return;
             }
             self.state.handle_event(event);
@@ -136,7 +137,8 @@ pub fn run(geng: &Geng, state: impl State) {
 
         fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
             self.state.draw(framebuffer);
-            self.ui_controller.draw(&mut self.state.ui(), framebuffer);
+            self.ui_controller
+                .draw(self.state.ui(&self.ui_controller).deref_mut(), framebuffer);
         }
 
         fn need_to_quit(&mut self) -> bool {
