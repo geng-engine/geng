@@ -2,12 +2,13 @@ use super::*;
 
 pub struct Button<'a> {
     sense: &'a mut Sense,
+    clicked: bool,
     inner: Box<dyn Widget + 'a>,
-    f: Box<dyn FnMut() + 'a>,
+    f: Option<Box<dyn FnMut() + 'a>>,
 }
 
 impl<'a> Button<'a> {
-    pub fn new(cx: &'a Controller, text: &str, f: impl FnMut() + 'a) -> Self {
+    pub fn new(cx: &'a Controller, text: &str) -> Self {
         let sense: &'a mut Sense = cx.get_state();
         let text = Text::new(
             text.to_owned(),
@@ -36,10 +37,14 @@ impl<'a> Button<'a> {
             ));
         }
         Self {
+            clicked: sense.take_clicked(),
             sense,
             inner: Box::new(ui),
-            f: Box::new(f),
+            f: None,
         }
+    }
+    pub fn was_clicked(&self) -> bool {
+        self.clicked
     }
 }
 
@@ -58,8 +63,10 @@ impl Widget for Button<'_> {
     }
     fn handle_event(&mut self, event: &Event) {
         #![allow(unused_variables)]
-        if self.sense.was_clicked() {
-            (self.f)();
+        if let Some(f) = &mut self.f {
+            if self.sense.take_clicked() {
+                f();
+            }
         }
     }
 }

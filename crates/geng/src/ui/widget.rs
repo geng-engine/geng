@@ -37,10 +37,8 @@ impl Sense {
         self.click_time = Some(0.0);
         self.clicked = true;
     }
-    pub fn was_clicked(&mut self) -> bool {
-        let result = self.clicked;
-        self.clicked = false;
-        result
+    pub fn take_clicked(&mut self) -> bool {
+        mem::replace(&mut self.clicked, false)
     }
     pub fn update(&mut self, delta_time: f64) {
         if let Some(time) = &mut self.click_time {

@@ -20,30 +20,30 @@ impl geng::State for State {
     }
     fn ui<'a>(&'a mut self, cx: &'a geng::ui::Controller) -> Box<dyn geng::ui::Widget + 'a> {
         use geng::ui::*;
-        let counter = Rc::new(RefCell::new(&mut self.counter));
-        let result = (
+        let minus_button = geng::ui::Button::new(cx, "-");
+        let plus_button = geng::ui::Button::new(cx, "+");
+        if minus_button.was_clicked() {
+            self.counter -= 1;
+        }
+        if plus_button.was_clicked() {
+            self.counter += 1;
+        }
+        (
             "counter example".center(),
             (
-                geng::ui::Button::new(cx, "-", {
-                    let counter = counter.clone();
-                    move || **counter.borrow_mut() -= 1
-                }),
-                counter
-                    .borrow()
+                minus_button,
+                self.counter
                     .to_string()
                     .padding_left(32.0)
                     .padding_right(32.0),
-                geng::ui::Button::new(cx, "+", {
-                    let counter = counter.clone();
-                    move || **counter.borrow_mut() += 1
-                }),
+                plus_button,
             )
                 .row()
                 .center(),
         )
             .column()
-            .center();
-        result.boxed()
+            .center()
+            .boxed()
     }
 }
 
