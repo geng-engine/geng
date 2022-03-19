@@ -2,11 +2,15 @@ use geng::prelude::*;
 
 struct State {
     geng: Geng,
+    counter: i32,
 }
 
 impl State {
     fn new(geng: &Geng) -> Self {
-        Self { geng: geng.clone() }
+        Self {
+            geng: geng.clone(),
+            counter: 0,
+        }
     }
 }
 
@@ -14,10 +18,32 @@ impl geng::State for State {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         ugli::clear(framebuffer, Some(Color::BLACK), None);
     }
-    fn ui(&mut self) -> Box<dyn geng::ui::Widget + '_> {
-        use geng::ui;
+    fn ui<'a>(&'a mut self, cx: &'a geng::ui::Controller) -> Box<dyn geng::ui::Widget + 'a> {
         use geng::ui::*;
-        Box::new(ui::Text::new("Hello, UI!", self.geng.default_font(), 32.0, Color::WHITE).center())
+        let counter = Rc::new(RefCell::new(&mut self.counter));
+        let result = (
+            "counter example".center(),
+            (
+                geng::ui::Button::new(cx, "-", {
+                    let counter = counter.clone();
+                    move || **counter.borrow_mut() -= 1
+                }),
+                counter
+                    .borrow()
+                    .to_string()
+                    .padding_left(32.0)
+                    .padding_right(32.0),
+                geng::ui::Button::new(cx, "+", {
+                    let counter = counter.clone();
+                    move || **counter.borrow_mut() += 1
+                }),
+            )
+                .row()
+                .center(),
+        )
+            .column()
+            .center();
+        result.boxed()
     }
 }
 

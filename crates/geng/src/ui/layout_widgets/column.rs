@@ -2,74 +2,70 @@ use super::*;
 
 #[derive(Deref, DerefMut)]
 pub struct Column<'a> {
-    core: WidgetCore,
     #[deref]
     #[deref_mut]
     children: Vec<Box<dyn Widget + 'a>>,
 }
 
 pub fn column<'a>(widgets: Vec<Box<dyn Widget + 'a>>) -> Column<'a> {
-    Column {
-        core: WidgetCore::void(),
-        children: widgets,
-    }
+    Column { children: widgets }
 }
 
 impl<'a> Widget for Column<'a> {
-    fn core(&self) -> &WidgetCore {
-        &self.core
+    fn calc_constraints(&mut self, children: &ConstraintsContext) -> Constraints {
+        Constraints {
+            min_size: vec2(
+                self.children
+                    .iter()
+                    .map(|child| children.get_constraints(child.deref()).min_size.x)
+                    .max_by(|a, b| a.partial_cmp(b).unwrap())
+                    .unwrap_or(0.0),
+                self.children
+                    .iter()
+                    .map(|child| children.get_constraints(child.deref()).min_size.y)
+                    .sum(),
+            ),
+            flex: vec2(
+                self.children
+                    .iter()
+                    .map(|child| children.get_constraints(child.deref()).flex.x)
+                    .max_by(|a, b| a.partial_cmp(b).unwrap())
+                    .unwrap_or(0.0),
+                self.children
+                    .iter()
+                    .map(|child| children.get_constraints(child.deref()).flex.y)
+                    .sum(),
+            ),
+        }
     }
-    fn core_mut(&mut self) -> &mut WidgetCore {
-        &mut self.core
-    }
-    fn calc_constraints(&mut self) {
-        self.core_mut().constraints.min_size.x = self
-            .children
-            .iter()
-            .map(|child| child.core().constraints.min_size.x)
-            .max_by(|a, b| a.partial_cmp(b).unwrap())
-            .unwrap_or(0.0);
-        self.core_mut().constraints.min_size.y = self
-            .children
-            .iter()
-            .map(|child| child.core().constraints.min_size.y)
-            .sum();
-        self.core_mut().constraints.flex.x = self
-            .children
-            .iter()
-            .map(|child| child.core().constraints.flex.x)
-            .max_by(|a, b| a.partial_cmp(b).unwrap())
-            .unwrap_or(0.0);
-        self.core_mut().constraints.flex.y = self
-            .children
-            .iter()
-            .map(|child| child.core().constraints.flex.y)
-            .sum();
-    }
-    fn layout_children(&mut self) {
+    fn layout_children(&mut self, cx: &mut LayoutContext) {
         let total_flex = self
             .children
             .iter()
-            .map(|child| child.core().constraints.flex.y)
+            .map(|child| cx.get_constraints(child.deref()).flex.y)
             .sum::<f64>();
         let size_per_flex = if total_flex == 0.0 {
             0.0
         } else {
-            (self.core().position.height()
+            (cx.position.height()
                 - self
                     .children
                     .iter()
-                    .map(|child| child.core().constraints.min_size.y)
+                    .map(|child| cx.get_constraints(child.deref()).min_size.y)
                     .sum::<f64>())
                 / total_flex
         };
-        let mut pos = self.core().position.y_max;
-        for child in &mut self.children {
-            let height = child.core().constraints.min_size.y
-                + child.core().constraints.flex.y * size_per_flex;
+        let mut pos = cx.position.y_max;
+        for child in &self.children {
+            let child = child.deref();
+            let height = cx.get_constraints(child).min_size.y
+                + cx.get_constraints(child).flex.y * size_per_flex;
             pos -= height;
-            child.core_mut().position = AABB::point(vec2(self.core.position.x_min, pos))
-                .extend_positive(vec2(self.core.position.width(), height));
+            cx.set_position(
+                child,
+                AABB::point(vec2(cx.position.x_min, pos))
+                    .extend_positive(vec2(cx.position.width(), height)),
+            );
         }
     }
     fn walk_children_mut<'b>(&mut self, mut f: Box<dyn FnMut(&mut dyn Widget) + 'b>) {
@@ -78,3 +74,25 @@ impl<'a> Widget for Column<'a> {
         }
     }
 }
+
+mod ext {
+    use super::*;
+
+    macro_rules! impl_for_tuple {
+        ($($a:ident),*) => {
+            impl<'a, $($a: Widget + 'a),*> TupleExt<'a> for ($($a,)*) {
+                fn column(self) -> Column<'a> {
+                    let ($($a,)*) = self;
+                    ui::column![$($a),*]
+                }
+            }
+        };
+    }
+    impl_tuples!(impl_for_tuple);
+
+    pub trait TupleExt<'a> {
+        fn column(self) -> Column<'a>;
+    }
+}
+
+pub use ext::TupleExt as _;

@@ -1,139 +1,139 @@
 use super::*;
 
+#[derive(Default)]
+pub struct Sense {
+    pub clicked: bool,
+    pub click_time: Option<f64>,
+    pub hovered_time: Option<f64>,
+    pub captured_time: Option<f64>,
+}
+
+impl Sense {
+    pub fn is_hovered(&self) -> bool {
+        self.hovered_time.is_some()
+    }
+    pub fn is_captured(&self) -> bool {
+        self.captured_time.is_some()
+    }
+    pub fn set_hovered(&mut self, hovered: bool) {
+        if hovered {
+            if self.hovered_time.is_none() {
+                self.hovered_time = Some(0.0);
+            }
+        } else {
+            self.hovered_time = None;
+        }
+    }
+    pub fn set_captured(&mut self, captured: bool) {
+        if captured {
+            if self.captured_time.is_none() {
+                self.captured_time = Some(0.0);
+            }
+        } else {
+            self.captured_time = None;
+        }
+    }
+    pub fn click(&mut self) {
+        self.click_time = Some(0.0);
+        self.clicked = true;
+    }
+    pub fn was_clicked(&mut self) -> bool {
+        let result = self.clicked;
+        self.clicked = false;
+        result
+    }
+    pub fn update(&mut self, delta_time: f64) {
+        if let Some(time) = &mut self.click_time {
+            *time += delta_time;
+        }
+        if let Some(time) = &mut self.hovered_time {
+            *time += delta_time;
+        }
+        if let Some(time) = &mut self.captured_time {
+            *time += delta_time;
+        }
+    }
+    pub fn handle_event(&mut self, event: &Event) {
+        // if let Event::Click { .. } = event {
+        //     self.clicked = true;
+        //     self.click_time = Some(0.0);
+        // }
+        todo!()
+    }
+}
+
 #[derive(Debug, Copy, Clone)]
 pub struct Constraints {
     pub min_size: Vec2<f64>,
     pub flex: Vec2<f64>,
 }
 
-pub struct WidgetCore {
-    #[allow(dead_code)]
-    pub(crate) id: ID,
-    pub(crate) hovered: bool,
-    pub(crate) captured: bool,
-    pub(crate) position: AABB<f64>,
-    pub(crate) constraints: Constraints,
-}
-
-impl WidgetCore {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
+impl Default for Constraints {
+    fn default() -> Self {
         Self {
-            id: ID::new(),
-            hovered: false,
-            captured: false,
-            position: AABB::from_corners(vec2(0.0, 0.0), vec2(1.0, 1.0)),
-            constraints: Constraints {
-                min_size: vec2(0.0, 0.0),
-                flex: vec2(0.0, 0.0),
-            },
+            min_size: vec2(0.0, 0.0),
+            flex: vec2(1.0, 1.0),
         }
-    }
-    pub(crate) fn void() -> Self {
-        Self {
-            id: ID::void(),
-            hovered: false,
-            captured: false,
-            position: AABB::from_corners(vec2(0.0, 0.0), vec2(1.0, 1.0)),
-            constraints: Constraints {
-                min_size: vec2(0.0, 0.0),
-                flex: vec2(0.0, 0.0),
-            },
-        }
-    }
-    pub fn hovered(&self) -> bool {
-        self.hovered
-    }
-    pub fn captured(&self) -> bool {
-        self.captured
-    }
-    pub fn position(&self) -> AABB<f64> {
-        self.position
     }
 }
 
-pub fn void() -> impl Widget {
-    WidgetCore::void()
+pub struct DrawContext<'a, 'b> {
+    pub geng: &'a Geng,
+    pub theme: &'a Theme,
+    pub position: AABB<f64>,
+    pub framebuffer: &'a mut ugli::Framebuffer<'b>,
 }
 
 pub trait Widget {
-    fn core(&self) -> &WidgetCore;
-    fn core_mut(&mut self) -> &mut WidgetCore;
-    fn calc_constraints(&mut self) {}
-    fn layout_children(&mut self) {}
+    fn sense(&mut self) -> Option<&mut Sense> {
+        None
+    }
     fn update(&mut self, delta_time: f64) {
         #![allow(unused_variables)]
     }
-    fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
+    fn draw(&mut self, cx: &mut DrawContext) {
         #![allow(unused_variables)]
     }
     fn handle_event(&mut self, event: &Event) {
         #![allow(unused_variables)]
     }
-    fn walk_children_mut<'a>(&mut self, f: Box<dyn FnMut(&mut dyn Widget) + 'a>) {
+    fn walk_children_mut(&mut self, f: Box<dyn FnMut(&mut dyn Widget) + '_>) {
         #![allow(unused_variables)]
     }
-}
-
-impl Widget for WidgetCore {
-    fn core(&self) -> &WidgetCore {
-        self
-    }
-    fn core_mut(&mut self) -> &mut WidgetCore {
-        self
+    fn calc_constraints(&mut self, children: &ConstraintsContext) -> Constraints;
+    fn layout_children(&mut self, cx: &mut LayoutContext) {
+        self.walk_children_mut(Box::new(|child| cx.set_position(child, cx.position)));
     }
 }
 
-impl<T: Widget + ?Sized> Widget for &'_ mut T {
-    fn core(&self) -> &WidgetCore {
-        (**self).core()
+impl<T: Widget> Widget for Box<T> {
+    fn calc_constraints(&mut self, children: &ConstraintsContext) -> Constraints {
+        children.get_constraints(&**self)
     }
-    fn core_mut(&mut self) -> &mut WidgetCore {
-        (**self).core_mut()
-    }
-    fn calc_constraints(&mut self) {
-        (**self).calc_constraints();
-    }
-    fn layout_children(&mut self) {
-        (**self).layout_children();
-    }
-    fn update(&mut self, delta_time: f64) {
-        (**self).update(delta_time);
-    }
-    fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
-        (**self).draw(framebuffer);
-    }
-    fn handle_event(&mut self, event: &Event) {
-        (**self).handle_event(event);
-    }
-    fn walk_children_mut<'a>(&mut self, f: Box<dyn FnMut(&mut dyn Widget) + 'a>) {
-        (**self).walk_children_mut(f);
+    fn walk_children_mut(&mut self, mut f: Box<dyn FnMut(&mut dyn Widget) + '_>) {
+        f(&mut **self);
     }
 }
 
-impl<T: Widget + ?Sized> Widget for Box<T> {
-    fn core(&self) -> &WidgetCore {
-        (**self).core()
+impl Widget for Box<dyn Widget + '_> {
+    fn calc_constraints(&mut self, cx: &ConstraintsContext) -> Constraints {
+        cx.get_constraints(&**self)
     }
-    fn core_mut(&mut self) -> &mut WidgetCore {
-        (**self).core_mut()
-    }
-    fn calc_constraints(&mut self) {
-        (**self).calc_constraints();
-    }
-    fn layout_children(&mut self) {
-        (**self).layout_children();
-    }
-    fn update(&mut self, delta_time: f64) {
-        (**self).update(delta_time);
-    }
-    fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
-        (**self).draw(framebuffer);
-    }
-    fn handle_event(&mut self, event: &Event) {
-        (**self).handle_event(event);
-    }
-    fn walk_children_mut<'a>(&mut self, f: Box<dyn FnMut(&mut dyn Widget) + 'a>) {
-        (**self).walk_children_mut(f);
+    fn walk_children_mut(&mut self, mut f: Box<dyn FnMut(&mut dyn Widget) + '_>) {
+        f(&mut **self);
     }
 }
+
+mod ext {
+    use super::*;
+
+    pub trait WidgetExt<'a>: Widget + Sized + 'a {
+        fn boxed(self) -> Box<dyn Widget + 'a> {
+            Box::new(self)
+        }
+    }
+
+    impl<'a, T: Widget + 'a> WidgetExt<'a> for T {}
+}
+
+pub use ext::WidgetExt as _;

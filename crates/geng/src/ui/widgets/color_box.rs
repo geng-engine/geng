@@ -1,33 +1,25 @@
 use super::*;
 
 pub struct ColorBox {
-    geng: Geng,
-    core: WidgetCore,
     pub color: Color<f32>,
 }
 
 impl ColorBox {
-    pub fn new(geng: &Geng, color: Color<f32>) -> Self {
-        Self {
-            geng: geng.clone(),
-            core: WidgetCore::void(),
-            color,
-        }
+    pub fn new(color: Color<f32>) -> Self {
+        Self { color }
     }
 }
 
 impl Widget for ColorBox {
-    fn core(&self) -> &WidgetCore {
-        &self.core
-    }
-    fn core_mut(&mut self) -> &mut WidgetCore {
-        &mut self.core
-    }
-    fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
-        self.geng.draw_2d(
-            framebuffer,
+    fn draw(&mut self, cx: &mut DrawContext) {
+        cx.geng.draw_2d(
+            cx.framebuffer,
             &PixelPerfectCamera,
-            &draw_2d::Quad::new(self.core().position.map(|x| x as f32), self.color),
+            &draw_2d::Quad::new(cx.position.map(|x| x as f32), self.color),
         );
+    }
+
+    fn calc_constraints(&mut self, _children: &ConstraintsContext) -> Constraints {
+        Constraints::default()
     }
 }

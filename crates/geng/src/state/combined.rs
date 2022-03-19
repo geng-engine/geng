@@ -28,8 +28,8 @@ impl<A: State, B: State> State for CombinedState<A, B> {
         None
     }
 
-    fn ui(&mut self) -> Box<dyn ui::Widget + '_> {
-        Box::new(ui::stack![self.0.ui(), self.1.ui()])
+    fn ui<'a>(&'a mut self, cx: &'a ui::Controller) -> Box<dyn ui::Widget + 'a> {
+        Box::new(ui::stack![self.0.ui(cx), self.1.ui(cx)])
     }
 
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
