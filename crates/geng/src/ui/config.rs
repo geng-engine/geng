@@ -2,7 +2,7 @@ use super::*;
 
 pub trait Config<T> {
     fn get(&self) -> T;
-    fn ui<'a>(&'a mut self) -> Box<dyn Widget + 'a>;
+    fn ui<'a>(&'a mut self, cx: &'a ui::Controller) -> Box<dyn Widget + 'a>;
 }
 
 pub trait Configurable: Sized {
@@ -20,7 +20,7 @@ impl<T: ToString + Clone> Config<T> for ShowValue<T> {
     fn get(&self) -> T {
         self.value.clone()
     }
-    fn ui<'a>(&'a mut self) -> Box<dyn Widget + 'a> {
+    fn ui<'a>(&'a mut self, cx: &'a ui::Controller) -> Box<dyn Widget + 'a> {
         if self.text.is_none() {
             self.text = Some(self.value.to_string());
         }
