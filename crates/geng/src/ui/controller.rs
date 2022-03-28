@@ -64,7 +64,7 @@ impl Controller {
     pub fn new(geng: &Geng) -> Self {
         Self {
             geng: geng.clone(),
-            theme: Theme::dark(geng),
+            theme: geng.ui_theme().clone(),
             state: RefCell::new(State {
                 size: vec2(1.0, 1.0),
                 last_touch_pos: None,

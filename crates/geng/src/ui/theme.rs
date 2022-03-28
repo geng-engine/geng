@@ -1,5 +1,6 @@
 use super::*;
 
+#[derive(Clone)]
 pub struct Theme {
     geng: Geng,
     pub background_color: Color<f32>,

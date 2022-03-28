@@ -12,6 +12,7 @@ pub(crate) struct GengImpl {
     default_font: Rc<Font>,
     fixed_delta_time: Cell<f64>,
     max_delta_time: Cell<f64>,
+    ui_theme: RefCell<Option<ui::Theme>>,
 }
 
 #[derive(Clone)]
@@ -72,6 +73,7 @@ impl Geng {
                 default_font,
                 fixed_delta_time: Cell::new(options.fixed_delta_time),
                 max_delta_time: Cell::new(options.max_delta_time),
+                ui_theme: RefCell::new(None),
             }),
         }
     }
@@ -90,6 +92,20 @@ impl Geng {
 
     pub fn default_font(&self) -> &Rc<Font> {
         &self.inner.default_font
+    }
+
+    pub fn ui_theme(&self) -> ui::Theme {
+        match &mut *self.inner.ui_theme.borrow_mut() {
+            Some(theme) => theme.clone(),
+            theme @ None => {
+                *theme = Some(ui::Theme::dark(self));
+                theme.clone().unwrap()
+            }
+        }
+    }
+
+    pub fn set_ui_theme(&self, theme: ui::Theme) {
+        *self.inner.ui_theme.borrow_mut() = Some(theme);
     }
 }
 
