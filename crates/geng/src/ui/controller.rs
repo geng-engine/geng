@@ -193,9 +193,11 @@ impl Controller {
                 }
             },
             &mut |widget| {
-                // if widget.core().id != ID::void() && widget.core().captured {
-                //     captured = true;
-                // }
+                if let Some(sense) = widget.sense() {
+                    if sense.is_captured() {
+                        captured = true;
+                    }
+                }
             },
         );
         captured
