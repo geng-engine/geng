@@ -48,10 +48,14 @@ impl<'a> Widget for Slider<'a> {
         let draw_2d = geng.draw_2d_helper();
         let position = cx.position.map(|x| x as f32);
         let line_width = position.height() / 3.0;
-        let value_position = *self.tick_radius
-            + ((self.value - *self.range.start()) / (*self.range.end() - *self.range.start()))
-                as f32
-                * (position.width() - *self.tick_radius * 2.0);
+        let value_position = if self.range.end() == self.range.start() {
+            *self.tick_radius
+        } else {
+            *self.tick_radius
+                + ((self.value - *self.range.start()) / (*self.range.end() - *self.range.start()))
+                    as f32
+                    * (position.width() - *self.tick_radius * 2.0)
+        };
         geng.draw_2d(
             cx.framebuffer,
             &PixelPerfectCamera,
