@@ -113,6 +113,9 @@ impl<T: HasId> Collection<T> {
     pub fn is_empty(&self) -> bool {
         self.by_id.is_empty()
     }
+    pub fn clear(&mut self) {
+        self.by_id.clear();
+    }
 }
 
 impl<T: HasId> Default for Collection<T> {
