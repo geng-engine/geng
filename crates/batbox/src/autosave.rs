@@ -50,7 +50,7 @@ impl<T: Serialize> Drop for AutoSave<T> {
     }
 }
 
-fn save<T: Serialize>(path: &str, value: &T) {
+pub fn save<T: Serialize>(path: &str, value: &T) {
     #[cfg(target_arch = "wasm32")]
     {
         if let Ok(Some(storage)) = web_sys::window().unwrap().local_storage() {
@@ -77,7 +77,7 @@ fn save<T: Serialize>(path: &str, value: &T) {
     }
 }
 
-fn load<T: for<'de> Deserialize<'de>>(path: &str) -> Option<T> {
+pub fn load<T: for<'de> Deserialize<'de>>(path: &str) -> Option<T> {
     #[cfg(target_arch = "wasm32")]
     {
         if let Ok(Some(storage)) = web_sys::window().unwrap().local_storage() {

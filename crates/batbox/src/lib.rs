@@ -65,7 +65,7 @@ pub use web_sys;
 pub use batbox_derive::*;
 
 mod approx;
-mod autosave;
+pub mod autosave;
 mod collection;
 mod color;
 mod diff;
@@ -81,7 +81,7 @@ mod timer;
 mod updater;
 
 pub use approx::*;
-pub use autosave::*;
+pub use autosave::AutoSave;
 pub use collection::*;
 pub use color::*;
 pub use diff::*;
