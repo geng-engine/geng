@@ -115,6 +115,15 @@ impl<T: std::borrow::Borrow<ugli::Texture>> TexturedPolygon<T> {
             draw_mode: ugli::DrawMode::TriangleFan,
         }
     }
+    pub fn with_mode(vertices: Vec<TexturedVertex>, texture: T, draw_mode: ugli::DrawMode) -> Self {
+        let (transform, vertices) = Self::normalize(vertices);
+        Self {
+            transform,
+            texture,
+            vertices,
+            draw_mode,
+        }
+    }
     pub fn strip(vertices: Vec<TexturedVertex>, texture: T) -> Self {
         let (transform, vertices) = Self::normalize(vertices);
         Self {

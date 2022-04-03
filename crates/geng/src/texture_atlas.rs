@@ -6,7 +6,7 @@ pub struct TextureAtlas {
 }
 
 impl TextureAtlas {
-    pub fn new(ugli: &Ugli, textures: &[&ugli::Texture]) -> Self {
+    pub fn new(ugli: &Ugli, textures: &[&ugli::Texture], filter: ugli::Filter) -> Self {
         let mut width = 0;
         let mut height = 0;
         for texture in textures {
@@ -35,6 +35,7 @@ impl TextureAtlas {
             );
             x += texture.size().x;
         }
+        atlas_texture.set_filter(filter);
         Self {
             texture: atlas_texture,
             uvs,
