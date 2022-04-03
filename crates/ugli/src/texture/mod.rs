@@ -107,6 +107,7 @@ impl<P: TexturePixel> Texture2d<P> {
         let gl = &self.ugli.inner.raw;
         gl.bind_texture(raw::TEXTURE_2D, &self.handle);
         gl.tex_parameteri(raw::TEXTURE_2D, raw::TEXTURE_MAG_FILTER, filter as raw::Int);
+        gl.tex_parameteri(raw::TEXTURE_2D, raw::TEXTURE_MIN_FILTER, filter as raw::Int);
         self.ugli.debug_check();
     }
 
