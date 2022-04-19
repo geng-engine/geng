@@ -24,7 +24,7 @@ pub fn run<T: Model, G: State>(
     #[cfg_attr(target_arch = "wasm32", allow(unused_variables))] model_constructor: impl FnOnce() -> T,
     game_constructor: impl FnOnce(&Geng, T::PlayerId, Remote<T>) -> G + 'static,
 ) {
-    let opt: Opt = clap::Parser::parse();
+    let opt: Opt = program_args::parse();
     if opt.server {
         #[cfg(not(target_arch = "wasm32"))]
         Server::new(opt.addr(), model_constructor()).run();
