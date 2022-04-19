@@ -178,7 +178,7 @@ impl Convert<web_sys::TouchEvent> for Event {
         Some(match event.type_().as_str() {
             "touchstart" => Event::TouchStart { touches },
             "touchmove" => Event::TouchMove { touches },
-            "touchcancel" | "touchend" => Event::TouchEnd,
+            "touchcancel" | "touchend" => Event::TouchEnd { touches },
             _ => return None,
         })
     }

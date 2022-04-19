@@ -49,7 +49,13 @@ impl TouchSimulator {
                     .position(|&touch| (touch - position).len() < RADIUS)
                 {
                     self.touches.remove(index);
-                    return Some(vec![Event::TouchEnd]);
+                    return Some(vec![Event::TouchEnd {
+                        touches: self
+                            .touches
+                            .iter()
+                            .map(|&position| TouchPoint { position })
+                            .collect(),
+                    }]);
                 } else {
                     return Some(vec![]);
                 }

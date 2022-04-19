@@ -43,7 +43,9 @@ pub enum Event {
     TouchMove {
         touches: Vec<TouchPoint>,
     },
-    TouchEnd,
+    TouchEnd {
+        touches: Vec<TouchPoint>,
+    },
     KeyDown {
         key: Key,
     },
