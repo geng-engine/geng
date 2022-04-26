@@ -9,7 +9,11 @@ pub fn args() -> Vec<String> {
         for (key, value) in url.query_pairs() {
             let key: &str = &key;
             let value: &str = &value;
-            args.push("--".to_owned() + key + "=" + value);
+            if value.is_empty() {
+                args.push("--".to_owned() + key);
+            } else {
+                args.push("--".to_owned() + key + "=" + value);
+            }
         }
         trace!("href => args: {:?}", args);
         args
