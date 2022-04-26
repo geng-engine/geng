@@ -8,6 +8,8 @@ pub struct DeriveInput {
     data: darling::ast::Data<(), Field>,
     #[darling(default)]
     json: bool,
+    #[darling(default)]
+    sequential: bool,
 }
 
 #[derive(FromField)]
@@ -34,6 +36,7 @@ impl DeriveInput {
             generics,
             data,
             json,
+            sequential,
         } = self;
         let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
@@ -97,6 +100,26 @@ impl DeriveInput {
                 <#ty as geng::LoadAsset>::load(geng, &base_path.join(#path))
             }
         });
+        let load_fields = if sequential {
+            quote! {
+                #(
+                    let #field_names = anyhow::Context::context(
+                        #field_loaders.await,
+                        concat!("Failed to load ", stringify!(#field_names)),
+                    )?;
+                )*
+            }
+        } else {
+            quote! {
+                let (#(#field_names),*) = futures::join!(#(#field_loaders),*);
+                #(
+                    let #field_names = anyhow::Context::context(
+                        #field_names,
+                        concat!("Failed to load ", stringify!(#field_names)),
+                    )?;
+                )*
+            }
+        };
         quote! {
             impl geng::LoadAsset for #ident
                 /* where #(#field_constraints),* */ {
@@ -105,12 +128,7 @@ impl DeriveInput {
                     let base_path = base_path.to_owned();
                     Box::pin(async move {
                         let geng = &geng;
-                        #(
-                            let #field_names = anyhow::Context::context(
-                                #field_loaders.await,
-                                concat!("Failed to load ", stringify!(#field_names)),
-                            )?;
-                        )*
+                        #load_fields
                         Ok(Self {
                             #(#field_names,)*
                         })
