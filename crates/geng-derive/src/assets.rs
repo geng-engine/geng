@@ -1,7 +1,7 @@
 use super::*;
 
 #[derive(FromDeriveInput)]
-#[darling(attributes(asset), supports(struct_named))]
+#[darling(attributes(asset))]
 pub struct DeriveInput {
     ident: syn::Ident,
     generics: syn::Generics,
