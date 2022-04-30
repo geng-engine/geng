@@ -26,6 +26,7 @@ pub struct ContextOptions {
     pub fixed_delta_time: f64,
     pub max_delta_time: f64,
     pub antialias: bool,
+    pub shader_prefix: Option<String>,
 }
 
 impl Default for ContextOptions {
@@ -36,6 +37,9 @@ impl Default for ContextOptions {
             fixed_delta_time: 0.05,
             max_delta_time: 0.1,
             antialias: true,
+            shader_prefix: Some(
+                "#version 100\nprecision highp int;\nprecision highp float;\n".to_owned(),
+            ),
         }
     }
 }

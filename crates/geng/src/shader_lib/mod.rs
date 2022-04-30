@@ -3,6 +3,7 @@ use super::*;
 pub struct ShaderLib {
     ugli: Ugli,
     files: RefCell<HashMap<String, String>>,
+    shader_prefix: RefCell<Option<String>>,
 }
 
 impl ShaderLib {
@@ -10,6 +11,7 @@ impl ShaderLib {
         let lib = Self {
             ugli: ugli.clone(),
             files: RefCell::new(HashMap::new()),
+            shader_prefix: RefCell::new(options.shader_prefix.clone()),
         };
         let mut prelude = include_str!("include/prelude.glsl").to_owned();
         if options.antialias {
@@ -57,8 +59,10 @@ impl ShaderLib {
     ) -> Result<String, anyhow::Error> {
         let mut result = String::new();
         #[cfg(not(target_arch = "wasm32"))]
-        result.push_str("#version 100\n");
-        result.push_str("precision highp int;\nprecision highp float;\n");
+        if let Some(prefix) = &*self.shader_prefix.borrow() {
+            result.push_str(prefix);
+            result.push('\n');
+        }
         result.push_str(match shader_type {
             ugli::ShaderType::Vertex => "#define VERTEX_SHADER\n",
             ugli::ShaderType::Fragment => "#define FRAGMENT_SHADER\n",
