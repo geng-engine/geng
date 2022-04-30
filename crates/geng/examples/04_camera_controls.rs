@@ -138,7 +138,7 @@ impl geng::State for State {
                     }
                 }
             }
-            geng::Event::TouchEnd => {
+            geng::Event::TouchEnd { .. } => {
                 self.drag_start = None;
             }
             _ => {}
