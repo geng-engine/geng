@@ -15,9 +15,14 @@ pub trait Model: Diff + Message {
     type Message: Message;
     type Event: Message + Clone;
     const TICKS_PER_SECOND: f32;
-    fn new_player(&mut self) -> Self::PlayerId;
-    fn drop_player(&mut self, player_id: &Self::PlayerId);
-    fn handle_message(&mut self, player_id: &Self::PlayerId, message: Self::Message);
+    fn new_player(&mut self, events: &mut Vec<Self::Event>) -> Self::PlayerId;
+    fn drop_player(&mut self, events: &mut Vec<Self::Event>, player_id: &Self::PlayerId);
+    fn handle_message(
+        &mut self,
+        events: &mut Vec<Self::Event>,
+        player_id: &Self::PlayerId,
+        message: Self::Message,
+    );
     fn tick(&mut self, events: &mut Vec<Self::Event>);
 }
 

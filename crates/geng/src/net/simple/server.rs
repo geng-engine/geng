@@ -7,17 +7,24 @@ struct ClientState<T: Model> {
 struct ServerState<T: Model> {
     current: T,
     previous: T,
+    events: Vec<T::Event>,
     next_client_id: usize,
     clients: HashMap<usize, ClientState<T>>,
 }
 
 impl<T: Model> ServerState<T> {
-    fn update(&mut self) {
+    fn send_updates(&mut self) {
         if self.current != self.previous {
             let delta = self.previous.diff(&self.current);
             self.previous = self.current.clone();
             for client in self.clients.values_mut() {
                 client.sender.send(ServerMessage::Delta(delta.clone()));
+            }
+        }
+        let events = mem::replace(&mut self.events, Vec::new());
+        if !events.is_empty() {
+            for client in self.clients.values_mut() {
+                client.sender.send(ServerMessage::Events(events.clone()));
             }
         }
     }
@@ -31,18 +38,21 @@ struct Client<T: Model> {
 
 impl<T: Model> Receiver<T::Message> for Client<T> {
     fn handle(&mut self, message: T::Message) {
-        self.server_state
-            .lock()
-            .unwrap()
+        let mut state = self.server_state.lock().unwrap();
+        let state: &mut ServerState<T> = &mut state;
+        state
             .current
-            .handle_message(&self.player_id, message);
+            .handle_message(&mut state.events, &self.player_id, message);
     }
 }
 
 impl<T: Model> Drop for Client<T> {
     fn drop(&mut self) {
         let mut state = self.server_state.lock().unwrap();
-        state.current.drop_player(&self.player_id);
+        let state: &mut ServerState<T> = &mut state;
+        state
+            .current
+            .drop_player(&mut state.events, &self.player_id);
         state.clients.remove(&self.client_id);
     }
 }
@@ -61,6 +71,7 @@ impl<T: Model> Server<T> {
         let state = Arc::new(Mutex::new(ServerState {
             current: model.clone(),
             previous: model,
+            events: Vec::new(),
             next_client_id: 0,
             clients: HashMap::new(),
         }));
@@ -84,18 +95,13 @@ impl<T: Model> Server<T> {
                     unprocessed_time += timer.tick() as f32;
                     unprocessed_time = unprocessed_time.min(1.0);
                     {
-                        let mut events = Vec::new();
                         let mut state = state.lock().unwrap();
+                        let state: &mut ServerState<T> = &mut state;
                         while unprocessed_time > 1.0 / T::TICKS_PER_SECOND {
                             unprocessed_time -= 1.0 / T::TICKS_PER_SECOND;
-                            state.current.tick(&mut events);
+                            state.current.tick(&mut state.events);
                         }
-                        state.update();
-                        if !events.is_empty() {
-                            for client in state.clients.values_mut() {
-                                client.sender.send(ServerMessage::Events(events.clone()));
-                            }
-                        }
+                        state.send_updates();
                     }
                     std::thread::sleep(std::time::Duration::from_secs_f32(
                         1.0 / T::TICKS_PER_SECOND - unprocessed_time,
@@ -115,10 +121,9 @@ impl<T: Model> net::server::App for ServerApp<T> {
     type ClientMessage = T::Message;
     fn connect(&mut self, mut sender: Box<dyn Sender<ServerMessage<T>>>) -> Client<T> {
         let mut state = self.state.lock().unwrap();
-        let state = &mut *state;
-        let player_id = state.current.new_player();
+        let state: &mut ServerState<T> = &mut state;
+        let player_id = state.current.new_player(&mut state.events);
         sender.send(ServerMessage::PlayerId(player_id.clone()));
-        state.update();
         sender.send(ServerMessage::Full(state.current.clone()));
         let client_id = state.next_client_id;
         state.clients.insert(client_id, ClientState { sender });
