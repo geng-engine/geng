@@ -37,6 +37,9 @@ impl Default for ContextOptions {
             fixed_delta_time: 0.05,
             max_delta_time: 0.1,
             antialias: true,
+            #[cfg(target_arch = "wasm32")]
+            shader_prefix: Some("precision highp int;\nprecision highp float;\n".to_owned()),
+            #[cfg(not(target_arch = "wasm32"))]
             shader_prefix: Some(
                 "#version 100\nprecision highp int;\nprecision highp float;\n".to_owned(),
             ),

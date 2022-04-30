@@ -58,7 +58,6 @@ impl ShaderLib {
         source: &str,
     ) -> Result<String, anyhow::Error> {
         let mut result = String::new();
-        #[cfg(not(target_arch = "wasm32"))]
         if let Some(prefix) = &*self.shader_prefix.borrow() {
             result.push_str(prefix);
             result.push('\n');
