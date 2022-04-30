@@ -111,7 +111,7 @@ impl DeriveInput {
             }
         } else {
             quote! {
-                let (#(#field_names),*) = futures::join!(#(#field_loaders),*);
+                let (#(#field_names,)*) = futures::join!(#(#field_loaders,)*);
                 #(
                     let #field_names = anyhow::Context::context(
                         #field_names,
