@@ -3,7 +3,7 @@ use super::*;
 pub struct ShaderLib {
     ugli: Ugli,
     files: RefCell<HashMap<String, String>>,
-    shader_prefix: RefCell<Option<String>>,
+    shader_prefix: RefCell<Option<(String, String)>>,
 }
 
 impl ShaderLib {
@@ -58,8 +58,11 @@ impl ShaderLib {
         source: &str,
     ) -> Result<String, anyhow::Error> {
         let mut result = String::new();
-        if let Some(prefix) = &*self.shader_prefix.borrow() {
-            result.push_str(prefix);
+        if let Some((vertex_prefix, fragment_prefix)) = &*self.shader_prefix.borrow() {
+            result.push_str(match shader_type {
+                ugli::ShaderType::Vertex => vertex_prefix,
+                ugli::ShaderType::Fragment => fragment_prefix,
+            });
             result.push('\n');
         }
         result.push_str(match shader_type {

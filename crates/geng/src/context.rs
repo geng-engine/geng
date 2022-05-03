@@ -26,7 +26,7 @@ pub struct ContextOptions {
     pub fixed_delta_time: f64,
     pub max_delta_time: f64,
     pub antialias: bool,
-    pub shader_prefix: Option<String>,
+    pub shader_prefix: Option<(String, String)>,
 }
 
 impl Default for ContextOptions {
@@ -40,9 +40,10 @@ impl Default for ContextOptions {
             #[cfg(target_arch = "wasm32")]
             shader_prefix: Some("precision highp int;\nprecision highp float;\n".to_owned()),
             #[cfg(not(target_arch = "wasm32"))]
-            shader_prefix: Some(
-                "#version 100\nprecision highp int;\nprecision highp float;\n".to_owned(),
-            ),
+            shader_prefix: Some((
+                "#version 100\nprecision highp int;\nprecision highp float;\n#define VERTEX_SHADER\n".to_owned(),
+                "#version 100\nprecision highp int;\nprecision highp float;\n#define FRAGMENT_SHADER\n".to_owned(),
+            )),
         }
     }
 }
