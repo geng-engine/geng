@@ -38,7 +38,10 @@ impl Default for ContextOptions {
             max_delta_time: 0.1,
             antialias: true,
             #[cfg(target_arch = "wasm32")]
-            shader_prefix: Some("precision highp int;\nprecision highp float;\n".to_owned()),
+            shader_prefix: Some((
+                "precision highp int;\nprecision highp float;\n#define VERTEX_SHADER\n".to_owned(),
+                "precision highp int;\nprecision highp float;\n#define FRAGMENT_SHADER\n".to_owned(),
+            )),
             #[cfg(not(target_arch = "wasm32"))]
             shader_prefix: Some((
                 "#version 100\nprecision highp int;\nprecision highp float;\n#define VERTEX_SHADER\n".to_owned(),
