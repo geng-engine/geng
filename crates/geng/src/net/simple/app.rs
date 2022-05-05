@@ -14,7 +14,7 @@ impl Opt {
     pub fn addr(&self) -> &str {
         match &self.addr {
             Some(addr) => addr,
-            None => option_env!("SERVER_ADDR").unwrap_or("127.0.0.1:1155"),
+            None => "127.0.0.1:1155",
         }
     }
 }
