@@ -43,7 +43,7 @@ impl simple_net::Model for Model {
     type Message = Message;
     type Event = ();
     const TICKS_PER_SECOND: f32 = 20.0;
-    fn new_player(&mut self) -> Self::PlayerId {
+    fn new_player(&mut self, _events: &mut Vec<()>) -> Self::PlayerId {
         let player_id = self.next_player_id;
         self.next_player_id += 1;
         self.players.insert(Player {
@@ -55,10 +55,15 @@ impl simple_net::Model for Model {
         });
         player_id
     }
-    fn drop_player(&mut self, player_id: &PlayerId) {
+    fn drop_player(&mut self, _events: &mut Vec<()>, player_id: &PlayerId) {
         self.players.remove(player_id);
     }
-    fn handle_message(&mut self, player_id: &PlayerId, message: Self::Message) {
+    fn handle_message(
+        &mut self,
+        _events: &mut Vec<()>,
+        player_id: &PlayerId,
+        message: Self::Message,
+    ) {
         match message {
             Message::UpdatePosition(position) => {
                 self.players.get_mut(player_id).unwrap().position = position;
