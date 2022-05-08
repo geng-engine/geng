@@ -9,6 +9,8 @@ pub use async_trait::*;
 pub use bincode;
 #[doc(no_inline)]
 pub use clap;
+#[doc(no_inline)]
+pub use derivative::Derivative;
 pub use derive_more;
 #[doc(no_inline)]
 pub use derive_more::{Constructor, Deref, DerefMut};
