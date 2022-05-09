@@ -53,9 +53,9 @@ float G(vec2 pos, float s)
     return exp(-dot(pos, pos) / sq2) / (PI * sq2);
 }
 
-float inverse(float m) {
-  return 1.0 / m;
-}
+// float inverse(float m) {
+//   return 1.0 / m;
+// }
 
 #if __VERSION__ < 140
 mat2 inverse(mat2 m) {
