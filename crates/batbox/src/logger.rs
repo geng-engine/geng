@@ -9,20 +9,20 @@ static LOGGERS: once_cell::sync::Lazy<Mutex<Vec<Box<dyn log::Log>>>> =
 
 impl log::Log for Logger {
     fn enabled(&self, metadata: &log::Metadata) -> bool {
-        self.inner.enabled(metadata)
+        if !self.inner.enabled(metadata) {
+            return false;
+        }
+        match metadata.target().split_terminator(':').next().unwrap() {
+            "ws" => metadata.level() <= log::Level::Error,
+            "mio" => false,
+            _ => true,
+        }
     }
-    // fn foo() {
-    //     if metadata.level() > log::max_level() {
-    //         return false;
-    //     }
-    //     match metadata.target().split_terminator(':').next().unwrap() {
-    //         "ws" => metadata.level() <= log::Level::Error,
-    //         "mio" => false,
-    //         _ => true,
-    //     }
-    // }
 
     fn log(&self, record: &log::Record) {
+        if !self.enabled(record.metadata()) {
+            return;
+        }
         self.inner.log(record);
         if self.inner.matches(record) {
             for logger in LOGGERS.lock().unwrap().iter_mut() {
@@ -74,7 +74,7 @@ pub fn builder() -> env_logger::Builder {
             log::LevelFilter::Info
         })
         .format_timestamp(None)
-        .format_module_path(false)
+        .format_module_path(true)
         .format_target(false)
         .parse_env("LOG");
     builder

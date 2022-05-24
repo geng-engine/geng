@@ -24,7 +24,7 @@ impl log::Log for Logger {
         if self.enabled(record.metadata()) {
             let message = format!("{} - {}", record.level(), record.args());
             if let Err(e) = self.sender.lock().unwrap().send(Record { message }) {
-                warn!("{}", e);
+                // TODO: this is infinite recursion: warn!("{}", e);
             }
         }
     }
