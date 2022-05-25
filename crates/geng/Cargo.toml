@@ -28,4 +28,5 @@ threadpool = "1"
 num_cpus = "1"
 notify = "4"
 rodio = { version = "0.13", optional = true }
+flate2 = "1"
 ws = { version = "0.9" }

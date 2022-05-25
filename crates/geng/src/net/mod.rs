@@ -15,11 +15,15 @@ pub trait Message: Debug + Serialize + for<'de> Deserialize<'de> + Send + 'stati
 impl<T: Debug + Serialize + for<'de> Deserialize<'de> + Send + 'static + Unpin> Message for T {}
 
 fn serialize_message<T: Message>(message: T) -> Vec<u8> {
-    bincode::serialize(&message).unwrap()
+    let mut buf = Vec::new();
+    let writer = flate2::write::GzEncoder::new(&mut buf, flate2::Compression::best());
+    bincode::serialize_into(writer, &message).unwrap();
+    buf
 }
 
 fn deserialize_message<T: Message>(data: &[u8]) -> T {
-    bincode::deserialize(data).expect("Failed to deserialize message")
+    let reader = flate2::read::GzDecoder::new(data);
+    bincode::deserialize_from(reader).expect("Failed to deserialize message")
 }
 
 #[cfg(target_arch = "wasm32")]
