@@ -1,9 +1,11 @@
 use super::*;
 
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum CursorType {
     Default,
     Pointer,
     Drag,
+    None,
 }
 
 impl Window {
@@ -14,6 +16,7 @@ impl Window {
                 CursorType::Default => "initial",
                 CursorType::Pointer => "pointer",
                 CursorType::Drag => "all-scroll",
+                CursorType::None => "none",
             };
             // TODO: only canvas
             web_sys::window()
@@ -35,7 +38,11 @@ impl Window {
                     CursorType::Default => GC::Default,
                     CursorType::Pointer => GC::Hand,
                     CursorType::Drag => GC::AllScroll,
+                    CursorType::None => GC::Default,
                 });
+            self.glutin_window
+                .window()
+                .set_cursor_visible(cursor_type != CursorType::None);
         };
     }
 
