@@ -20,6 +20,7 @@ ugli = { path = "../ugli", version = "0.8.0" }
 rusttype = { version = "0.9", features = [ "gpu_cache" ] }
 serde = "1"
 lazy_static = "1"
+flate2 = "1"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 image = "0.23"
@@ -28,5 +29,4 @@ threadpool = "1"
 num_cpus = "1"
 notify = "4"
 rodio = { version = "0.13", optional = true }
-flate2 = "1"
 ws = { version = "0.9" }
