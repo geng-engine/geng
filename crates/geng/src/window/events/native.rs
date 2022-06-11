@@ -113,6 +113,7 @@ fn from_glutin_key(key: glutin::event::VirtualKeyCode) -> Key {
         GKey::Space => Key::Space,
         GKey::Return => Key::Enter,
         GKey::Back => Key::Backspace,
+        GKey::Tab => Key::Tab,
 
         GKey::LShift => Key::LShift,
         GKey::RShift => Key::RShift,

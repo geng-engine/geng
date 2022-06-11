@@ -50,6 +50,7 @@ impl Convert<String> for Key {
             "Space" => Space,
             "Enter" => Enter,
             "Backspace" => Backspace,
+            "Tab" => Tab,
 
             "ShiftLeft" => LShift,
             "ShiftRight" => RShift,

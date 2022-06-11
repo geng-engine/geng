@@ -123,6 +123,7 @@ pub enum Key {
     Space,
     Enter,
     Backspace,
+    Tab,
 
     LShift,
     RShift,
