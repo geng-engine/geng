@@ -13,13 +13,21 @@ pub enum Error {
     Unknown,
 }
 
+impl Error {
+    fn from_raw(raw: raw::Enum) -> Option<Self> {
+        if raw == raw::NO_ERROR {
+            return None;
+        }
+        Some(raw.try_into().unwrap_or(Self::Unknown))
+    }
+}
+
 impl Ugli {
     pub fn try_check(&self) -> Result<(), Error> {
-        let error = self.inner.raw.get_error();
-        if error == raw::NO_ERROR {
-            return Ok(());
+        match Error::from_raw(self.inner.raw.get_error()) {
+            Some(error) => Err(error),
+            None => Ok(()),
         }
-        Err(error.try_into().unwrap_or(Error::Unknown))
     }
     pub fn check(&self) {
         self.try_check().expect("GL error");

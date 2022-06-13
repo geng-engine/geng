@@ -39,7 +39,7 @@ impl Shader {
                     ShaderType::Vertex => raw::VERTEX_SHADER,
                     ShaderType::Fragment => raw::FRAGMENT_SHADER,
                 })
-                .unwrap(),
+                .expect("Failed to create shader"),
             phantom_data: PhantomData,
         };
         gl.shader_source(&shader.handle, source);

@@ -33,20 +33,24 @@ pub struct ProgramLinkError {
 }
 
 impl Program {
-    pub fn new(ugli: &Ugli, shaders: &[&Shader]) -> Result<Self, ProgramLinkError> {
+    pub fn new<'a>(
+        ugli: &Ugli,
+        shaders: impl IntoIterator<Item = &'a Shader>,
+    ) -> Result<Self, ProgramLinkError> {
+        let shaders: Vec<&Shader> = shaders.into_iter().collect();
         let gl = &ugli.inner.raw;
         let mut program = Program {
             ugli: ugli.clone(),
-            handle: gl.create_program().unwrap(),
+            handle: gl.create_program().expect("Failed to create program"),
             uniforms: HashMap::new(),
             attributes: HashMap::new(),
             phantom_data: PhantomData,
         };
-        for shader in shaders {
+        for shader in &shaders {
             gl.attach_shader(&program.handle, &shader.handle);
         }
         gl.link_program(&program.handle);
-        for shader in shaders {
+        for shader in &shaders {
             gl.detach_shader(&program.handle, &shader.handle);
         }
 
@@ -81,7 +85,9 @@ impl Program {
         for index in 0..uniform_count {
             let info = gl.get_active_uniform(&program.handle, index as raw::UInt);
             let name = info.name.clone();
-            let location = gl.get_uniform_location(&program.handle, &name).unwrap();
+            let location = gl
+                .get_uniform_location(&program.handle, &name)
+                .expect("Failed to get uniform location");
             program
                 .uniforms
                 .insert(name, UniformInfo { location, info });

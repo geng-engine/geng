@@ -5,68 +5,102 @@ pub enum AttributeType {
     Float = raw::FLOAT as _,
 }
 
-pub unsafe trait VertexAttribute {
+pub unsafe trait VertexAttributePrimitive {
     const SIZE: usize;
     const ROWS: usize;
     const TYPE: AttributeType;
 }
 
-unsafe impl VertexAttribute for f32 {
+pub trait VertexAttribute {
+    type Primitive: VertexAttributePrimitive;
+    fn as_primitive(ptr: *const Self) -> *const Self::Primitive;
+}
+
+impl<T: VertexAttributePrimitive> VertexAttribute for T {
+    type Primitive = Self;
+    fn as_primitive(ptr: *const Self) -> *const Self {
+        ptr
+    }
+}
+
+unsafe impl VertexAttributePrimitive for f32 {
     const SIZE: usize = 1;
     const ROWS: usize = 1;
     const TYPE: AttributeType = AttributeType::Float;
 }
 
-unsafe impl VertexAttribute for [f32; 2] {
+unsafe impl VertexAttributePrimitive for [f32; 2] {
     const SIZE: usize = 2;
     const ROWS: usize = 1;
     const TYPE: AttributeType = AttributeType::Float;
 }
 
-unsafe impl VertexAttribute for Vec2<f32> {
-    const SIZE: usize = 2;
-    const ROWS: usize = 1;
-    const TYPE: AttributeType = AttributeType::Float;
-}
-
-unsafe impl VertexAttribute for [f32; 3] {
+unsafe impl VertexAttributePrimitive for [f32; 3] {
     const SIZE: usize = 3;
     const ROWS: usize = 1;
     const TYPE: AttributeType = AttributeType::Float;
 }
 
-unsafe impl VertexAttribute for Vec3<f32> {
-    const SIZE: usize = 3;
-    const ROWS: usize = 1;
-    const TYPE: AttributeType = AttributeType::Float;
-}
-
-unsafe impl VertexAttribute for [f32; 4] {
+unsafe impl VertexAttributePrimitive for [f32; 4] {
     const SIZE: usize = 4;
     const ROWS: usize = 1;
     const TYPE: AttributeType = AttributeType::Float;
 }
 
-unsafe impl VertexAttribute for Vec4<f32> {
-    const SIZE: usize = 4;
-    const ROWS: usize = 1;
-    const TYPE: AttributeType = AttributeType::Float;
-}
-
-unsafe impl VertexAttribute for Color<f32> {
-    const SIZE: usize = 4;
-    const ROWS: usize = 1;
-    const TYPE: AttributeType = AttributeType::Float;
-}
-
-unsafe impl VertexAttribute for Mat3<f32> {
+unsafe impl VertexAttributePrimitive for [[f32; 3]; 3] {
     const SIZE: usize = 3;
     const ROWS: usize = 3;
     const TYPE: AttributeType = AttributeType::Float;
 }
 
-unsafe impl VertexAttribute for Mat4<f32> {
+unsafe impl VertexAttributePrimitive for [[f32; 4]; 4] {
     const SIZE: usize = 4;
     const ROWS: usize = 4;
     const TYPE: AttributeType = AttributeType::Float;
+}
+
+mod batbox {
+    use super::*;
+
+    impl VertexAttribute for Vec2<f32> {
+        type Primitive = [f32; 2];
+        fn as_primitive(ptr: *const Self) -> *const [f32; 2] {
+            ptr as _
+        }
+    }
+
+    impl VertexAttribute for Vec3<f32> {
+        type Primitive = [f32; 3];
+        fn as_primitive(ptr: *const Self) -> *const [f32; 3] {
+            ptr as _
+        }
+    }
+
+    impl VertexAttribute for Vec4<f32> {
+        type Primitive = [f32; 4];
+        fn as_primitive(ptr: *const Self) -> *const [f32; 4] {
+            ptr as _
+        }
+    }
+
+    impl VertexAttribute for Color<f32> {
+        type Primitive = [f32; 4];
+        fn as_primitive(ptr: *const Self) -> *const [f32; 4] {
+            ptr as _
+        }
+    }
+
+    impl VertexAttribute for Mat3<f32> {
+        type Primitive = [[f32; 3]; 3];
+        fn as_primitive(ptr: *const Self) -> *const [[f32; 3]; 3] {
+            ptr as _
+        }
+    }
+
+    impl VertexAttribute for Mat4<f32> {
+        type Primitive = [[f32; 4]; 4];
+        fn as_primitive(ptr: *const Self) -> *const [[f32; 4]; 4] {
+            ptr as _
+        }
+    }
 }

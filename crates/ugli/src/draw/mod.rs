@@ -210,16 +210,17 @@ pub fn draw<V, U, DP>(
                 unsafe fn visit<A: VertexAttribute>(&mut self, name: &str, attribute: *const A) {
                     let gl = &self.program.ugli.inner.raw;
                     if let Some(attribute_info) = self.program.attributes.get(name) {
-                        let offset = self.offset + attribute as usize - self.sample as usize;
-                        for row in 0..A::ROWS {
-                            let offset = offset + mem::size_of::<A>() * row / A::ROWS;
+                        let offset = self.offset + A::as_primitive(attribute) as usize
+                            - self.sample as usize;
+                        for row in 0..A::Primitive::ROWS {
+                            let offset = offset + mem::size_of::<A>() * row / A::Primitive::ROWS;
                             let location = attribute_info.location + row as raw::UInt;
                             self.attribute_locations.push(location);
                             gl.enable_vertex_attrib_array(location);
                             gl.vertex_attrib_pointer(
                                 location,
-                                A::SIZE as raw::Int,
-                                A::TYPE as raw::Enum,
+                                A::Primitive::SIZE as raw::Int,
+                                A::Primitive::TYPE as raw::Enum,
                                 raw::FALSE,
                                 mem::size_of::<D>() as raw::SizeI,
                                 offset as raw::IntPtr,

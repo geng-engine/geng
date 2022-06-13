@@ -76,7 +76,7 @@ impl ShaderLib {
     pub fn compile(&self, source: &str) -> Result<ugli::Program, anyhow::Error> {
         Ok(ugli::Program::new(
             &self.ugli,
-            &[
+            [
                 &ugli::Shader::new(
                     &self.ugli,
                     ugli::ShaderType::Vertex,
