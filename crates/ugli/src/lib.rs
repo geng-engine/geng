@@ -25,6 +25,8 @@ pub use texture::*;
 pub use uniform::*;
 pub use vertex::*;
 
+pub use raw;
+
 #[derive(Debug, Copy, Clone, PartialOrd, PartialEq)]
 pub struct DepthComponent(raw::Float);
 
