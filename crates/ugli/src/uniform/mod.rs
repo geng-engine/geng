@@ -88,70 +88,53 @@ impl<P: TexturePixel> Uniform for Texture2d<P> {
 
 impl<U: Uniform> Uniform for Option<U> {
     fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
-        if let Some(ref value) = *self {
-            value.apply(gl, info);
+        if let Some(uniform) = self {
+            uniform.apply(gl, info);
         }
     }
 }
 
-pub trait AsUniform {
-    type Uniform: Uniform;
-    fn as_uniform(&self) -> &Self::Uniform;
-}
-
-impl<T: AsUniform> Uniform for T {
+impl<'a, U: Uniform> Uniform for &'a U {
     fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
-        self.as_uniform().apply(gl, info);
+        U::apply(self, gl, info)
     }
 }
 
-impl<'a, U: Uniform> AsUniform for &'a U {
-    type Uniform = U;
-    fn as_uniform(&self) -> &U {
-        self
+impl<'a, U: Uniform> Uniform for Ref<'a, U> {
+    fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
+        U::apply(self, gl, info)
     }
 }
 
-impl<'a, U: Uniform> AsUniform for Ref<'a, U> {
-    type Uniform = U;
-    fn as_uniform(&self) -> &U {
-        self.deref()
-    }
-}
-
-impl<U> AsUniform for Vec2<U>
+impl<U> Uniform for Vec2<U>
 where
     [U; 2]: Uniform,
 {
-    type Uniform = [U; 2];
-    fn as_uniform(&self) -> &[U; 2] {
-        self.deref()
+    fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
+        <[U; 2]>::apply(self, gl, info)
     }
 }
 
-impl<U> AsUniform for Vec3<U>
+impl<U> Uniform for Vec3<U>
 where
     [U; 3]: Uniform,
 {
-    type Uniform = [U; 3];
-    fn as_uniform(&self) -> &[U; 3] {
-        self.deref()
+    fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
+        <[U; 3]>::apply(self, gl, info)
     }
 }
 
-impl<U> AsUniform for Vec4<U>
+impl<U> Uniform for Vec4<U>
 where
     [U; 4]: Uniform,
 {
-    type Uniform = [U; 4];
-    fn as_uniform(&self) -> &[U; 4] {
-        self.deref()
+    fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
+        <[U; 4]>::apply(self, gl, info)
     }
 }
 
-impl AsUniform for Color<f32> {
-    type Uniform = [f32; 4];
-    fn as_uniform(&self) -> &[f32; 4] {
-        self.deref()
+impl Uniform for Color<f32> {
+    fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
+        <[f32; 4]>::apply(self, gl, info)
     }
 }
