@@ -3,10 +3,10 @@ use super::*;
 #[derive(Debug, Clone, Serialize, Deserialize, clap::Args, Default)]
 pub struct CliArgs {
     /// Turn vertical synchronization on/off
-    #[clap(long, name = "BOOL")]
+    #[clap(long, value_name = "BOOL")]
     pub vsync: Option<bool>,
     /// Turn antialiasing on/off
-    #[clap(long, name = "BOOL")]
+    #[clap(long, value_name = "BOOL")]
     pub antialias: Option<bool>,
 }
 
