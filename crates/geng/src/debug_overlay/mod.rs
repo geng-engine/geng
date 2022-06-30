@@ -75,7 +75,7 @@ impl<T: State> State for DebugOverlay<T> {
             use ui::*;
             let ui = ui::column![
                 self.fps_counter.ui().align(vec2(0.0, 1.0)),
-                self.console.ui(),
+                // self.console.ui(),
             ];
             Box::new(ui::stack![ui, self.inner.ui(cx)])
         } else {

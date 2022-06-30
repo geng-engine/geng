@@ -36,6 +36,14 @@ impl FpsCounter {
     }
 
     pub fn ui(&mut self) -> impl ui::Widget + '_ {
-        ui::Text::new(&mut self.text, self.geng.default_font(), 16.0, Color::WHITE)
+        use ui::*;
+        ui::stack![
+            ui::ColorBox::new(Color::BLACK).constraints_override(Constraints {
+                min_size: Vec2::ZERO,
+                flex: Vec2::ZERO
+            }),
+            ui::Text::new(&mut self.text, self.geng.default_font(), 16.0, Color::WHITE)
+                .uniform_padding(2.0),
+        ]
     }
 }
