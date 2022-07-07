@@ -85,12 +85,11 @@ impl Program {
         for index in 0..uniform_count {
             let info = gl.get_active_uniform(&program.handle, index as raw::UInt);
             let name = info.name.clone();
-            let location = gl
-                .get_uniform_location(&program.handle, &name)
-                .expect("Failed to get uniform location");
-            program
-                .uniforms
-                .insert(name, UniformInfo { location, info });
+            if let Some(location) = gl.get_uniform_location(&program.handle, &name) {
+                program
+                    .uniforms
+                    .insert(name, UniformInfo { location, info });
+            }
         }
 
         ugli.debug_check();
