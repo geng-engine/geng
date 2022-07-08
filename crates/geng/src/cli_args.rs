@@ -8,6 +8,15 @@ pub struct CliArgs {
     /// Turn antialiasing on/off
     #[clap(long, value_name = "BOOL")]
     pub antialias: Option<bool>,
+    /// Start with given window width (also requires window-height)
+    #[clap(long, value_name = "PIXELS")]
+    pub window_width: Option<usize>,
+    /// Start with given window height (also requires window-width)
+    #[clap(long, value_name = "PIXELS")]
+    pub window_height: Option<usize>,
+    /// Start in fullscreen
+    #[clap(long, value_name = "BOOL")]
+    pub fullscreen: Option<bool>,
 }
 
 impl ContextOptions {
@@ -18,6 +27,12 @@ impl ContextOptions {
         }
         if let Some(antialias) = args.antialias {
             options.antialias = antialias;
+        }
+        if let (Some(window_width), Some(window_height)) = (args.window_width, args.window_height) {
+            options.window_size = Some(vec2(window_width, window_height));
+        }
+        if let Some(fullscreen) = args.fullscreen {
+            options.fullscreen = fullscreen;
         }
         options
     }

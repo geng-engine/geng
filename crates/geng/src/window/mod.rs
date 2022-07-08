@@ -87,7 +87,19 @@ impl Window {
                 .with_vsync(options.vsync)
                 .with_multisampling(if options.antialias { 8 } else { 0 })
                 .build_windowed(
-                    glutin::window::WindowBuilder::new().with_title(&options.title), //.with_visibility(false)
+                    {
+                        let mut window_builder = glutin::window::WindowBuilder::new();
+                        if let Some(size) = options.window_size {
+                            window_builder.window.inner_size = Some(
+                                glutin::dpi::PhysicalSize {
+                                    width: size.x as u32,
+                                    height: size.y as u32,
+                                }
+                                .into(),
+                            );
+                        }
+                        window_builder.with_title(&options.title)
+                    },
                     &glutin_event_loop,
                 )
                 .unwrap();
@@ -106,6 +118,9 @@ impl Window {
                 is_fullscreen: Cell::new(false),
             }
         };
+        if options.fullscreen {
+            window.set_fullscreen(true);
+        }
         window
     }
 

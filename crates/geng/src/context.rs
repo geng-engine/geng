@@ -27,6 +27,8 @@ pub struct ContextOptions {
     pub max_delta_time: f64,
     pub antialias: bool,
     pub shader_prefix: Option<(String, String)>,
+    pub window_size: Option<Vec2<usize>>,
+    pub fullscreen: bool,
 }
 
 impl Default for ContextOptions {
@@ -47,6 +49,8 @@ impl Default for ContextOptions {
                 "#version 100\nprecision highp int;\nprecision highp float;\n#define VERTEX_SHADER\n".to_owned(),
                 "#version 100\nprecision highp int;\nprecision highp float;\n#define FRAGMENT_SHADER\n".to_owned(),
             )),
+            window_size: None,
+            fullscreen: false,
         }
     }
 }
