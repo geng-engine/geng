@@ -26,7 +26,7 @@ impl<F: std::borrow::Borrow<Font>, T: AsRef<str>> Text<F, T> {
                     * Mat3::scale(aabb.size() / 2.0))
                 .inverse(),
                 transform: Mat3::scale(vec2(aspect, 1.0)),
-                true_transform: Mat3::identity(),
+                true_transform: Mat3::translate(vec2(-aspect, -1.0)) * Mat3::scale_uniform(4.0),
             }
         } else {
             Self {
