@@ -36,7 +36,7 @@ impl Default for ContextOptions {
             vsync: true,
             fixed_delta_time: 0.05,
             max_delta_time: 0.1,
-            antialias: true,
+            antialias: false,
             #[cfg(target_arch = "wasm32")]
             shader_prefix: Some((
                 "precision highp int;\nprecision highp float;\n#define VERTEX_SHADER\n".to_owned(),
