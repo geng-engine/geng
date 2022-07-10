@@ -54,8 +54,28 @@ impl<'a> Widget for Slider<'a> {
             *self.tick_radius
                 + ((self.value - *self.range.start()) / (*self.range.end() - *self.range.start()))
                     as f32
-                    * (position.width() - *self.tick_radius * 2.0)
+                    * (position.width() - line_width)
         };
+        geng.draw_2d(
+            cx.framebuffer,
+            &PixelPerfectCamera,
+            &draw_2d::Quad::new(
+                AABB::from_corners(
+                    position.bottom_left()
+                        + vec2(value_position, (position.height() - line_width) / 2.0),
+                    position.top_right()
+                        - vec2(line_width / 2.0, (position.height() - line_width) / 2.0),
+                ),
+                cx.theme.usable_color,
+            ),
+        );
+        draw_2d.circle(
+            cx.framebuffer,
+            &PixelPerfectCamera,
+            position.top_right() - vec2(line_width / 2.0, position.height() / 2.0),
+            line_width / 2.0,
+            cx.theme.usable_color,
+        );
         geng.draw_2d(
             cx.framebuffer,
             &PixelPerfectCamera,
@@ -72,31 +92,11 @@ impl<'a> Widget for Slider<'a> {
         geng.draw_2d(
             cx.framebuffer,
             &PixelPerfectCamera,
-            &draw_2d::Quad::new(
-                AABB::from_corners(
-                    position.bottom_left()
-                        + vec2(value_position, (position.height() - line_width) / 2.0),
-                    position.top_right()
-                        - vec2(line_width / 2.0, (position.height() - line_width) / 2.0),
-                ),
-                cx.theme.usable_color,
-            ),
-        );
-        geng.draw_2d(
-            cx.framebuffer,
-            &PixelPerfectCamera,
             &draw_2d::Ellipse::circle(
                 position.bottom_left() + vec2(line_width / 2.0, position.height() / 2.0),
                 line_width / 2.0,
                 cx.theme.hover_color,
             ),
-        );
-        draw_2d.circle(
-            cx.framebuffer,
-            &PixelPerfectCamera,
-            position.top_right() - vec2(line_width / 2.0, position.height() / 2.0),
-            line_width / 2.0,
-            cx.theme.usable_color,
         );
         draw_2d.circle(
             cx.framebuffer,
@@ -115,7 +115,7 @@ impl<'a> Widget for Slider<'a> {
             if let Event::MouseDown { position, .. } | Event::MouseMove { position, .. } = &event {
                 let position = position.x - aabb.x_min;
                 let new_value = *self.range.start()
-                    + ((position - aabb.height() / 2.0) / (aabb.width() - aabb.height()))
+                    + ((position - aabb.height() / 6.0) / (aabb.width() - aabb.height() / 3.0))
                         .clamp(0.0, 1.0)
                         * (*self.range.end() - *self.range.start());
                 (self.f)(new_value);
