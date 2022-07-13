@@ -58,6 +58,7 @@ float G(vec2 pos, float s)
 // }
 
 #if __VERSION__ < 140
+#define inverse inverseImpl
 mat2 inverse(mat2 m) {
   return mat2(m[1][1],-m[0][1],
              -m[1][0], m[0][0]) / (m[0][0]*m[1][1] - m[0][1]*m[1][0]);
