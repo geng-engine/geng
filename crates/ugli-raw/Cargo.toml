@@ -1,6 +1,6 @@
 [package]
 name = "ugli-raw"
-version = "0.8.0"
+version = "0.9.0"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Universal OpenGL Interface (Raw)"
 license = "MIT"
@@ -8,7 +8,7 @@ homepage = "https://github.com/kuviman/ugli"
 edition = "2021"
 
 [dependencies]
-batbox = { path = "../batbox", version = "0.8.0" }
+batbox = { path = "../batbox", version = "0.9.0" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 gl = "0.14"

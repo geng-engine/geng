@@ -1,6 +1,6 @@
 [package]
 name = "ugli-derive"
-version = "0.8.0"
+version = "0.9.0"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Universal OpenGL Interface (derive macros)"
 license = "MIT"
