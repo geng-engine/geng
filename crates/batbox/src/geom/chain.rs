@@ -28,7 +28,7 @@ impl<T: Float> Chain<T> {
     ///
     /// # Examples
     /// ```
-    /// # use batbox::*;
+    /// # use batbox::prelude::*;
     /// let chain = Chain::new(vec![vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(1.0, 1.0), vec2(0.0, 1.0)]);
     /// assert_eq!(chain.clone().take_range_ratio(0.0..=1.0).vertices, chain.vertices);
     /// ```
@@ -45,7 +45,7 @@ impl<T: Float> Chain<T> {
     ///
     /// # Examples
     /// ```
-    /// # use batbox::*;
+    /// # use batbox::prelude::*;
     /// let chain = Chain::new(vec![vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(1.0, 1.0), vec2(0.0, 1.0)]);
     /// assert_eq!(chain.clone().take_range_ratio(0.0..=chain.length()).vertices, chain.vertices);
     /// ```

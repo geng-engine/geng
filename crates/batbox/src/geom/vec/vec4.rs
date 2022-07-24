@@ -24,7 +24,7 @@ impl<T: Display> Display for Vec4<T> {
 ///
 /// # Example
 /// ```
-/// use batbox::*;
+/// use batbox::prelude::*;
 /// let v = vec4(1, 2, 3, 4);
 /// ```
 pub const fn vec4<T>(x: T, y: T, z: T, w: T) -> Vec4<T> {
@@ -74,7 +74,7 @@ impl<T: Copy + Num> Vec4<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// assert_eq!(Vec4::dot(vec4(1, 2, 3, 4), vec4(3, 4, 5, 6)), 50);
     /// ```
     pub fn dot(a: Self, b: Self) -> T {

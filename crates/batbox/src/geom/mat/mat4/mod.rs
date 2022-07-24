@@ -21,7 +21,7 @@ impl<T: Copy> Mat4<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let matrix = Mat4::new([
     ///     [1, 2, 3, 4],
     ///     [3, 4, 5, 6],
@@ -79,7 +79,7 @@ impl<T: Num + Copy> Mat4<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let matrix = Mat4::<i32>::zero();
     /// for i in 0..4 {
     ///     for j in 0..4 {
@@ -95,7 +95,7 @@ impl<T: Num + Copy> Mat4<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let matrix = Mat4::<i32>::identity();
     /// for i in 0..4 {
     ///     for j in 0..4 {

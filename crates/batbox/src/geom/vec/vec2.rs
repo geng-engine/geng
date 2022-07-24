@@ -20,7 +20,7 @@ impl<T: Display> Display for Vec2<T> {
 ///
 /// # Example
 /// ```
-/// use batbox::*;
+/// use batbox::prelude::*;
 /// let v = vec2(1, 2);
 /// ```
 pub const fn vec2<T>(x: T, y: T) -> Vec2<T> {
@@ -52,7 +52,7 @@ impl<T> Vec2<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// assert_eq!(vec2(1, 2).extend(3), vec3(1, 2, 3));
     /// ```
     pub fn extend(self, z: T) -> Vec3<T> {
@@ -74,7 +74,7 @@ impl<T: Num + Copy> Vec2<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// assert_eq!(Vec2::dot(vec2(1, 2), vec2(3, 4)), 11);
     /// ```
     pub fn dot(a: Self, b: Self) -> T {
@@ -85,7 +85,7 @@ impl<T: Num + Copy> Vec2<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// assert_eq!(Vec2::skew(vec2(1, 2), vec2(3, 4)), -2);
     /// ```
     pub fn skew(a: Self, b: Self) -> T {
@@ -97,7 +97,7 @@ impl<T: Neg<Output = T>> Vec2<T> {
     /// Rotate a vector by 90 degrees counter clockwise.
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let v = vec2(3.0, 4.0);
     /// assert_eq!(v.rotate_90(), vec2(-4.0, 3.0));
     /// ```
@@ -111,7 +111,7 @@ impl<T: Float> Vec2<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let v: Vec2<f64> = vec2(1.0, 2.0);
     /// assert!((v.normalize().len() - 1.0).abs() < 1e-5);
     /// ```
@@ -124,7 +124,7 @@ impl<T: Float> Vec2<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let v = vec2(1.0, 2.0);
     /// assert_eq!(v.normalize_or_zero(), v.normalize());
     /// let v = vec2(1e-10, 1e-10);
@@ -142,7 +142,7 @@ impl<T: Float> Vec2<T> {
     /// Calculate length of a vector.
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let v = vec2(3.0, 4.0);
     /// assert_eq!(v.len(), 5.0);
     /// ```
@@ -157,7 +157,7 @@ impl<T: Float> Vec2<T> {
     /// Rotate a vector by a given angle.
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let v = vec2(1.0, 2.0);
     /// assert!((v.rotate(std::f32::consts::FRAC_PI_2) - vec2(-2.0, 1.0)).len() < 1e-5);
     /// ```
@@ -172,7 +172,7 @@ impl<T: Float> Vec2<T> {
     /// Clamp vector's length. Note that the range must be inclusive.
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let v = vec2(1.0, 2.0);
     /// assert_eq!(v.clamp_len(..=1.0), v.normalize());
     /// ```
@@ -189,7 +189,7 @@ impl<T: Float> Vec2<T> {
     /// Clamp vector in range. Note the range must be inclusive.
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let v = vec2(1.0, 2.0);
     /// assert_eq!(v.clamp_coordinates(.., 0.0..=1.0), vec2(1.0, 1.0));
     /// ```
@@ -204,7 +204,7 @@ impl<T: Float> Vec2<T> {
     /// Clamp vector by `aabb` corners.
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let v = vec2(0.5, 2.0);
     /// let min = vec2(0.0, 0.0);
     /// let max = vec2(1.0, 1.0);
@@ -220,7 +220,7 @@ impl<T: Float> Vec2<T> {
     /// Get an angle between the positive direction of the x-axis.
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let v = vec2(0.0, 1.0);
     /// assert_eq!(v.arg(), std::f32::consts::FRAC_PI_2);
     /// ```

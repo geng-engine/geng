@@ -6,7 +6,7 @@ extern crate proc_macro;
 #[macro_use]
 extern crate quote;
 
-use batbox::*;
+use batbox::prelude::*;
 use darling::{FromDeriveInput, FromField, FromMeta};
 use proc_macro2::TokenStream;
 

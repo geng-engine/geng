@@ -179,7 +179,7 @@ impl<T: ColorComponent> Color<T> {
     /// The resulting alpha is calculated by applying ColorComponent::convert() method.
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let initial = Color::rgba(0.7, 0.4, 1.0, 1.0);
     /// let f = |component: f32| component / 2.0;
     /// assert_eq!(initial.map_color(f), Color::rgba(0.35, 0.2, 0.5, 1.0));
@@ -196,7 +196,7 @@ impl<T: ColorComponent> Color<T> {
     /// Convert `Color<T>` to `Color<U>` by applying a function to every color component.
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let initial = Color::rgba(0.7, 0.4, 1.0, 1.0);
     /// let f = |component: f32| component / 2.0;
     /// assert_eq!(initial.map(f), Color::rgba(0.35, 0.2, 0.5, 0.5));
@@ -213,7 +213,7 @@ impl<T: ColorComponent> Color<T> {
     /// Applies a function to every component of two colors and produces a new color.
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let a = Color::rgba(0.2, 0.1, 0.3, 0.6);
     /// let b = Color::rgba(0.5, 0.3, 0.2, 0.2);
     /// let f = |a: f32, b: f32| a + b;
@@ -235,7 +235,7 @@ impl<T: ColorComponent> Color<T> {
     /// Convert `Color<T>` to `Color<U>` by applying `ColorComponent::convert()` method.
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// assert_eq!(Color::rgb(0, 255, 0).convert(), Color::rgb(0.0, 1.0, 0.0));
     /// ```
     pub fn convert<U: ColorComponent>(self) -> Color<U> {
@@ -245,7 +245,7 @@ impl<T: ColorComponent> Color<T> {
     /// Linearly interpolate between `start` and `end` values.
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let start = Color::rgb(0.0, 0.0, 0.0);
     /// let end = Color::rgb(1.0, 1.0, 1.0);
     /// let interpolated = Color::lerp(start, end, 0.3);

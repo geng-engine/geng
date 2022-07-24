@@ -48,7 +48,7 @@ impl<T: UNum> Rect<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let rect = Rect::from_corners(vec2(1, 2), vec2(3, 4));
     /// assert!(rect.contains(vec2(2, 3)));
     /// assert!(!rect.contains(vec2(5, 5)));

@@ -21,7 +21,7 @@ impl<T: UNum> AABB<T> {
     /// Construct an AABB from two opposite corners. The two corners can be given in any order.
     /// # Examples
     /// ```
-    /// # use batbox::*;
+    /// # use batbox::prelude::*;
     /// let aabb = AABB::from_corners(vec2(-5.0, -5.0), vec2(5.0, 5.0));
     /// let same = AABB::from_corners(vec2(5.0, -5.0), vec2(-5.0, 5.0));
     /// assert_eq!(aabb, same);
@@ -40,7 +40,7 @@ impl<T: UNum> AABB<T> {
     /// Create an AABB at given position of size (0, 0).
     /// # Examples
     /// ```
-    /// # use batbox::*;
+    /// # use batbox::prelude::*;
     /// assert_eq!(AABB::<f32>::ZERO, AABB::point(Vec2::ZERO));
     /// ```
     pub fn point(point: Vec2<T>) -> Self {
@@ -55,7 +55,7 @@ impl<T: UNum> AABB<T> {
     /// Extend boundaries of the AABB by a given value in each direction.
     /// # Examples
     /// ```
-    /// # use batbox::*;
+    /// # use batbox::prelude::*;
     /// let aabb = AABB::point(vec2(5.0, 5.0)).extend_uniform(10.0);
     /// assert_eq!(aabb, AABB::from_corners(vec2(-5.0, -5.0), vec2(15.0, 15.0)));
     /// ```
@@ -71,7 +71,7 @@ impl<T: UNum> AABB<T> {
     /// Extend the boundaries equally right and left and equally up and down
     /// # Examples
     /// ```
-    /// # use batbox::*;
+    /// # use batbox::prelude::*;
     /// let aabb = AABB::ZERO.extend_symmetric(vec2(10.0, 5.0));
     /// let same = AABB::from_corners(vec2(-10.0, -5.0), vec2(10.0, 5.0));
     /// assert_eq!(aabb, same);
@@ -88,7 +88,7 @@ impl<T: UNum> AABB<T> {
     /// Extend the boundaries to the right and up by the given values
     /// # Examples
     /// ```
-    /// # use batbox::*;
+    /// # use batbox::prelude::*;
     /// let aabb = AABB::point(vec2(-10.0, -5.0)).extend_positive(vec2(20.0, 10.0));
     /// let same = AABB::ZERO.extend_symmetric(vec2(10.0, 5.0));
     /// assert_eq!(aabb, same);
@@ -136,7 +136,7 @@ impl<T: UNum> AABB<T> {
     /// Ensure that the AABB has positive size
     /// # Examples
     /// ```
-    /// # use batbox::*;
+    /// # use batbox::prelude::*;
     /// let original = AABB::point(vec2(10.0, 5.0)).extend_positive(vec2(-20.0, -10.0));
     /// let normalized = AABB::ZERO.extend_symmetric(vec2(10.0, 5.0));
     /// assert_eq!(original.normalized(), normalized);
@@ -212,7 +212,7 @@ impl<T: UNum> AABB<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let rect = AABB::from_corners(vec2(1, 2), vec2(3, 4));
     /// assert!(rect.contains(vec2(2, 3)));
     /// assert!(!rect.contains(vec2(5, 5)));

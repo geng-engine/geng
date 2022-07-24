@@ -21,7 +21,7 @@ impl<T: Copy> Mat3<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let matrix = Mat3::new([
     ///     [1, 2, 3],
     ///     [4, 5, 6],
@@ -68,7 +68,7 @@ impl<T: Num + Copy> Mat3<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let matrix = Mat3::<i32>::zero();
     /// for i in 0..3 {
     ///     for j in 0..3 {
@@ -84,7 +84,7 @@ impl<T: Num + Copy> Mat3<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let matrix = Mat3::<i32>::identity();
     /// for i in 0..3 {
     ///     for j in 0..3 {

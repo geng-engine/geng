@@ -5,7 +5,7 @@ impl<T: Copy> Mat4<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let matrix = Mat4::translate(vec3(1, 2, 3));
     /// let matrix_transposed = matrix.transpose();
     /// for i in 0..4 {
@@ -41,7 +41,7 @@ impl<T: Float> Mat4<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::*;
+    /// use batbox::prelude::*;
     /// let matrix = Mat4::<f64>::rotate_x(0.123);
     /// let matrix_inv = matrix.inverse();
     /// let mult = matrix * matrix_inv;

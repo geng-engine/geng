@@ -42,8 +42,8 @@ impl<F: std::borrow::Borrow<Font>, T: AsRef<str>> Text<F, T> {
 }
 
 impl<F: std::borrow::Borrow<Font>, T: AsRef<str>> Transform2d<f32> for Text<F, T> {
-    fn bounding_quad(&self) -> batbox::Quad<f32> {
-        batbox::Quad {
+    fn bounding_quad(&self) -> batbox::geom::Quad<f32> {
+        batbox::geom::Quad {
             transform: self.transform,
         }
     }

@@ -1,6 +1,6 @@
 #![recursion_limit = "128"]
 
-use batbox::*;
+use batbox::prelude::*;
 pub use ugli_derive::*;
 
 mod context;

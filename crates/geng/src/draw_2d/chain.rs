@@ -7,7 +7,7 @@ pub struct Chain {
 
 impl Chain {
     pub fn new(
-        chain: batbox::Chain<f32>,
+        chain: batbox::geom::Chain<f32>,
         width: f32,
         color: Color<f32>,
         round_resolution: usize,
@@ -217,8 +217,8 @@ impl Chain {
 }
 
 impl Transform2d<f32> for Chain {
-    fn bounding_quad(&self) -> batbox::Quad<f32> {
-        batbox::Quad {
+    fn bounding_quad(&self) -> batbox::geom::Quad<f32> {
+        batbox::geom::Quad {
             transform: self.transform,
         }
     }

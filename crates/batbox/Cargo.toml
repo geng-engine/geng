@@ -8,6 +8,7 @@ homepage = "https://github.com/kuviman/batbox"
 edition = "2021"
 
 [dependencies]
+batbox-macros = { path = "../batbox-macros", version = "0.9.0" }
 batbox-derive = { path = "../batbox-derive", version = "0.9.0" }
 
 serde = { version = "1", features = ["derive"] }
