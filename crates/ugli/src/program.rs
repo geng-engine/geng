@@ -69,14 +69,16 @@ impl Program {
             let info = gl.get_active_attrib(&program.handle, index as raw::UInt);
             let name = info.name.clone();
             let location = gl.get_attrib_location(&program.handle, &name);
-            assert!(location >= 0);
-            program.attributes.insert(
-                name,
-                AttributeInfo {
-                    location: location as raw::UInt,
-                    info,
-                },
-            );
+            // TODO: why can't this be an assert?
+            if location >= 0 {
+                program.attributes.insert(
+                    name,
+                    AttributeInfo {
+                        location: location as raw::UInt,
+                        info,
+                    },
+                );
+            }
         }
 
         // Get uniforms
