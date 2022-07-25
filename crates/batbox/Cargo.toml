@@ -1,6 +1,6 @@
 [package]
 name = "batbox"
-version = "0.10.0"
+version = "0.11.0"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Batteries useful for projects"
 license = "MIT"
@@ -8,8 +8,8 @@ homepage = "https://github.com/kuviman/batbox"
 edition = "2021"
 
 [dependencies]
-batbox-macros = { path = "../batbox-macros", version = "0.10.0" }
-batbox-derive = { path = "../batbox-derive", version = "0.9.0" }
+batbox-macros = { path = "../batbox-macros", version = "0.11.0" }
+batbox-derive = { path = "../batbox-derive", version = "0.11.0" }
 
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

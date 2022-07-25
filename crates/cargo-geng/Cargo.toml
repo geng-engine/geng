@@ -1,6 +1,6 @@
 [package]
 name = "cargo-geng"
-version = "0.9.0"
+version = "0.11.0"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Game Engine (cargo helper)"
 license = "MIT"

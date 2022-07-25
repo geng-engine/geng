@@ -1,6 +1,6 @@
 [package]
 name = "ugli"
-version = "0.10.0"
+version = "0.11.0"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Universal OpenGL Interface"
 license = "MIT"
@@ -8,9 +8,9 @@ homepage = "https://github.com/kuviman/ugli"
 edition = "2021"
 
 [dependencies]
-batbox = { path = "../batbox", version = "0.10.0" }
-raw = { package = "ugli-raw", path = "../ugli-raw", version = "0.10.0" }
-ugli-derive = { path = "../ugli-derive", version = "0.9.0" }
+batbox = { path = "../batbox", version = "0.11.0" }
+raw = { package = "ugli-raw", path = "../ugli-raw", version = "0.11.0" }
+ugli-derive = { path = "../ugli-derive", version = "0.11.0" }
 num_enum = "0.5"
 serde = "1"
 image = "0.23"
