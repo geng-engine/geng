@@ -54,7 +54,7 @@ impl DeriveInput {
             None => quote! { #id_field_index },
         };
         quote! {
-            impl #impl_generics batbox::HasId for #ident #ty_generics #where_clause {
+            impl #impl_generics batbox::collection::HasId for #ident #ty_generics #where_clause {
                 type Id = #id_field_ty;
                 fn id(&self) -> &Self::Id {
                     &self.#id_field_ref
