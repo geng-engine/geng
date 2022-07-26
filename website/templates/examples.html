@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ config.title }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@2.1.0/build/pure-min.css"
+        integrity="sha384-yHIFVG6ClnONEA5yB5DJXfW2/KC173DIQrYoZMEtBvGzmf0PKiGyNEqe9N6BNDBH" crossorigin="anonymous">
+    <link rel="stylesheet" href="/sus.css" />
+    <link rel="stylesheet" href="/examples.css" />
+</head>
+
+<body>
+    <select class="pure-button pure-button-primary" id="example-select">
+        <option value="" disabled selected hidden>Select an example</option>
+        {% for value in page.extra.examples %}
+        <option>{{ value }}</option>
+        {% endfor %}
+    </select>
+    <div id="example-iframe-container">
+        <iframe id="example-iframe" src="example-placeholder.html" allowfullscreen="true"></iframe>
+    </div>
+    <script type="module">
+        let iframe = document.getElementById("example-iframe");
+        let placeholderSrc = iframe.src;
+        let select = document.getElementById("example-select");
+        select.onchange = function () {
+            if (select.value == "") {
+                iframe.src = placeholderSrc;
+            } else {
+                iframe.src = "examples/" + select.value;
+            }
+        };
+    </script>
+</body>
+
+</html>

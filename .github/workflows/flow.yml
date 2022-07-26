@@ -78,23 +78,24 @@ jobs:
 
       - name: Build examples
         run: |
-          mkdir -p pages/examples
-          example_options_html=""
+          mkdir -p website/static/examples
+          examples_list="["
           for example in crates/geng/examples/*; do
             example=$(basename $example)
             example=${example%.rs}
             cargo geng build --release --target wasm32-unknown-unknown -p geng --example $example
-            mv target/geng pages/examples/$example
-            example_options_html="$example_options_html<option>$example</option>"
+            mv target/geng website/static/examples/$example
+            examples_list="$examples_list\"$example\","
           done
-          sed -i "s|<option>EXAMPLE</option>|$example_options_html|g" pages/index.html
+          examples_list="$examples_list]"
+          echo "$examples_list"
+          sed -i "s|\\[\"this-will-be-populated-in-ci\"\\]|$examples_list|g" website/content/examples.md
 
       - name: Deploy GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: pages
-          cname: geng.kuviman.com
+        uses: shalzz/zola-deploy-action@v0.16.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILD_DIR: website
 
   docker:
     needs:

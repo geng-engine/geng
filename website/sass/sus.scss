@@ -1,0 +1,44 @@
+$layout-breakpoint: 48em;
+
+.pure-g>div {
+    box-sizing: border-box;
+}
+
+.button-demo {
+    border-radius: 30px;
+    text-shadow: 0 2px 3px #0003;
+    border: 3px solid #0003;
+}
+
+.splash {
+    width: 80%;
+    height: 80%;
+    margin: 200px auto;
+    text-align: center;
+
+    @media screen and (min-width:$layout-breakpoint) {
+        width: 50%;
+    }
+
+    h1 {
+        text-transform: uppercase;
+        font-size: 300%;
+        padding: 1em 2em;
+        border-radius: 30px;
+        border: 10px solid;
+    }
+
+    .subhead {
+        opacity: 50%;
+    }
+}
+
+.features-grid {
+    text-align: center;
+    margin: auto;
+    width: 80%;
+
+    .features-grid-unit {
+        padding: 1em;
+    }
+}

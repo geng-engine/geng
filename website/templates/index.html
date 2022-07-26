@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div>
+    <div class="splash">
+        <h1>Geng</h1>
+        <p class="subhead">
+            Game engine
+        </p>
+        <p>
+            <a class="pure-button button-demo" href="examples">
+                🚀 See examples
+            </a>
+        </p>
+    </div>
+
+    <div class="pure-g features-grid">
+        <div class="pure-u-1 pure-u-md-1-3 features-grid-unit">
+            <h2>🌐 Works in browser</h2>
+            <p>
+                Compiles to WebAssembly via <a href="https://github.com/rustwasm/wasm-bindgen">wasm-bindgen</a>
+            </p>
+        </div>
+        <div class="pure-u-1 pure-u-md-1-3 features-grid-unit">
+            <h2>
+                Open Source
+            </h2>
+            <p>
+                Give it a ⭐ on <a href="https://github.com/kuviman/geng">GitHub</a>
+            </p>
+        </div>
+        <div class="pure-u-1 pure-u-md-1-3 features-grid-unit">
+            <h2>🦀 Rust</h2>
+            <p>
+                is the best programming language ❤️
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock content %}
