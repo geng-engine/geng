@@ -19,7 +19,7 @@
         {% endfor %}
     </select>
     <div id="example-iframe-container">
-        <iframe id="example-iframe" src="example-placeholder.html" allowfullscreen="true"></iframe>
+        <iframe id="example-iframe" src="/example-placeholder.html" allowfullscreen="true"></iframe>
     </div>
     <script type="module">
         let iframe = document.getElementById("example-iframe");
@@ -29,7 +29,7 @@
             if (select.value == "") {
                 iframe.src = placeholderSrc;
             } else {
-                iframe.src = "examples/" + select.value;
+                iframe.src = "/examples/" + select.value;
             }
         };
     </script>
