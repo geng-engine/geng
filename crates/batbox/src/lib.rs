@@ -5,7 +5,8 @@ pub use batbox_derive::*;
 #[doc(no_inline)]
 pub use batbox_macros::*;
 
-use prelude::*;
+#[doc(no_inline)]
+pub use prelude::*;
 
 pub mod approx;
 pub mod autosave;
