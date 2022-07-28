@@ -1,6 +1,6 @@
 [package]
 name = "geng-egui"
-version = "0.11.0"
+version = "0.12.0"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "geng egui integration"
 license = "MIT"
@@ -10,5 +10,5 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-geng = { version = "0.11.0", path = "../geng" }
+geng = { version = "0.12.0", path = "../geng" }
 egui = "0.15.0"
