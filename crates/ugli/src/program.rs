@@ -18,6 +18,7 @@ pub struct AttributeInfo {
 pub struct UniformInfo {
     pub(crate) location: raw::UniformLocation,
     pub(crate) info: raw::ActiveInfo,
+    pub(crate) default: Option<UniformValue>,
 }
 
 impl Drop for Program {
@@ -88,9 +89,15 @@ impl Program {
             let info = gl.get_active_uniform(&program.handle, index as raw::UInt);
             let name = info.name.clone();
             if let Some(location) = gl.get_uniform_location(&program.handle, &name) {
-                program
-                    .uniforms
-                    .insert(name, UniformInfo { location, info });
+                let default = UniformValue::get_value(gl, &program.handle, &location, &info);
+                program.uniforms.insert(
+                    name,
+                    UniformInfo {
+                        location,
+                        info,
+                        default,
+                    },
+                );
             }
         }
 

@@ -4,7 +4,7 @@ mod storage;
 
 pub use storage::*;
 
-pub(crate) static mut UNIFORM_TEXTURE_COUNT: usize = 0;
+pub(crate) static mut UNIFORM_TEXTURE_COUNT: usize = 0; // TODO: multiple contexts, threads?
 
 pub trait Uniform {
     fn apply(&self, gl: &raw::Context, info: &UniformInfo);
@@ -63,6 +63,30 @@ impl_primitive_uniform!(u32 as raw::Int: [uniform_1i, uniform_2i, uniform_3i, un
 impl_primitive_uniform!(u64 as raw::Int: [uniform_1i, uniform_2i, uniform_3i, uniform_4i]);
 impl_primitive_uniform!(usize as raw::Int: [uniform_1i, uniform_2i, uniform_3i, uniform_4i]);
 
+impl Uniform for [[f32; 2]; 2] {
+    fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
+        gl.uniform_matrix2fv(&info.location, 1, raw::FALSE, unsafe {
+            mem::transmute::<&Self, &[f32; 2 * 2]>(self)
+        });
+    }
+}
+
+impl Uniform for [[f32; 3]; 3] {
+    fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
+        gl.uniform_matrix3fv(&info.location, 1, raw::FALSE, unsafe {
+            mem::transmute::<&Self, &[f32; 3 * 3]>(self)
+        });
+    }
+}
+
+impl Uniform for [[f32; 4]; 4] {
+    fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
+        gl.uniform_matrix4fv(&info.location, 1, raw::FALSE, unsafe {
+            mem::transmute::<&Self, &[f32; 4 * 4]>(self)
+        });
+    }
+}
+
 impl Uniform for Mat3<f32> {
     fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
         gl.uniform_matrix3fv(&info.location, 1, raw::FALSE, self.as_flat_array());
@@ -90,6 +114,10 @@ impl<U: Uniform> Uniform for Option<U> {
     fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
         if let Some(uniform) = self {
             uniform.apply(gl, info);
+        } else if let Some(default) = &info.default {
+            default.apply(gl, info);
+        } else {
+            panic!("Optional uniform with unknown default");
         }
     }
 }
@@ -136,5 +164,118 @@ where
 impl Uniform for Color<f32> {
     fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
         <[f32; 4]>::apply(self, gl, info)
+    }
+}
+
+#[derive(Debug)]
+pub enum UniformValue {
+    Float(f32),
+    Vec2([f32; 2]),
+    Vec3([f32; 3]),
+    Vec4([f32; 4]),
+    Int(i32),
+    IVec2([i32; 2]),
+    IVec3([i32; 3]),
+    IVec4([i32; 4]),
+    // TODO: Bool(bool),
+    // TODO: BVec2([bool; 2]),
+    // TODO: BVec3([bool; 3]),
+    // TODO: BVec4([bool; 4]),
+    Mat2([[f32; 2]; 2]),
+    Mat3([[f32; 3]; 3]),
+    Mat4([[f32; 4]; 4]),
+    // TODO: Sampler2d,
+    // TODO: SamplerCube
+}
+
+impl Uniform for UniformValue {
+    fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
+        match self {
+            UniformValue::Float(value) => value.apply(gl, info),
+            UniformValue::Vec2(value) => value.apply(gl, info),
+            UniformValue::Vec3(value) => value.apply(gl, info),
+            UniformValue::Vec4(value) => value.apply(gl, info),
+            UniformValue::Int(value) => value.apply(gl, info),
+            UniformValue::IVec2(value) => value.apply(gl, info),
+            UniformValue::IVec3(value) => value.apply(gl, info),
+            UniformValue::IVec4(value) => value.apply(gl, info),
+            UniformValue::Mat2(value) => value.apply(gl, info),
+            UniformValue::Mat3(value) => value.apply(gl, info),
+            UniformValue::Mat4(value) => value.apply(gl, info),
+        }
+    }
+}
+
+impl UniformValue {
+    pub(crate) fn get_value(
+        gl: &raw::Context,
+        program: &raw::Program,
+        location: &raw::UniformLocation,
+        info: &raw::ActiveInfo,
+    ) -> Option<Self> {
+        Some(match info.typ {
+            raw::FLOAT => Self::Float({
+                let mut values = [0.0];
+                gl.get_uniform_float(program, location, &mut values);
+                values[0]
+            }),
+            raw::FLOAT_VEC2 => Self::Vec2({
+                let mut values = [0.0; 2];
+                gl.get_uniform_float(program, location, &mut values);
+                values
+            }),
+            raw::FLOAT_VEC3 => Self::Vec3({
+                let mut values = [0.0; 3];
+                gl.get_uniform_float(program, location, &mut values);
+                values
+            }),
+            raw::FLOAT_VEC4 => Self::Vec4({
+                let mut values = [0.0; 4];
+                gl.get_uniform_float(program, location, &mut values);
+                values
+            }),
+            raw::INT => Self::Int({
+                let mut values = [0];
+                gl.get_uniform_int(program, location, &mut values);
+                values[0]
+            }),
+            raw::INT_VEC2 => Self::IVec2({
+                let mut values = [0; 2];
+                gl.get_uniform_int(program, location, &mut values);
+                values
+            }),
+            raw::INT_VEC3 => Self::IVec3({
+                let mut values = [0; 3];
+                gl.get_uniform_int(program, location, &mut values);
+                values
+            }),
+            raw::INT_VEC4 => Self::IVec4({
+                let mut values = [0; 4];
+                gl.get_uniform_int(program, location, &mut values);
+                values
+            }),
+            raw::FLOAT_MAT2 => Self::Mat2({
+                let mut values = [[0.0f32; 2]; 2];
+                gl.get_uniform_float(program, location, unsafe {
+                    mem::transmute::<&mut [[f32; 2]; 2], &mut [f32; 2 * 2]>(&mut values)
+                });
+                values
+            }),
+            raw::FLOAT_MAT3 => Self::Mat3({
+                let mut values = [[0.0f32; 3]; 3];
+                gl.get_uniform_float(program, location, unsafe {
+                    mem::transmute::<&mut [[f32; 3]; 3], &mut [f32; 3 * 3]>(&mut values)
+                });
+                values
+            }),
+            raw::FLOAT_MAT4 => Self::Mat4({
+                let mut values = [[0.0f32; 4]; 4];
+                gl.get_uniform_float(program, location, unsafe {
+                    mem::transmute::<&mut [[f32; 4]; 4], &mut [f32; 4 * 4]>(&mut values)
+                });
+                values
+            }),
+            _ => return None,
+        })
     }
 }

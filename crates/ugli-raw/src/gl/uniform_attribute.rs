@@ -101,6 +101,28 @@ impl Context {
         unsafe { gl::GetAttribLocation(*program, name.as_ptr()) }
     }
 
+    pub fn get_uniform_int(
+        &self,
+        program: &Program,
+        location: &UniformLocation,
+        params: &mut [Int],
+    ) {
+        unsafe {
+            gl::GetUniformiv(*program, *location, params.as_mut_ptr());
+        }
+    }
+
+    pub fn get_uniform_float(
+        &self,
+        program: &Program,
+        location: &UniformLocation,
+        params: &mut [Float],
+    ) {
+        unsafe {
+            gl::GetUniformfv(*program, *location, params.as_mut_ptr());
+        }
+    }
+
     pub fn get_uniform_location(&self, program: &Program, name: &str) -> Option<UniformLocation> {
         let name = std::ffi::CString::new(name).unwrap();
         unsafe {
@@ -165,6 +187,19 @@ impl Context {
     ) {
         unsafe {
             gl::Uniform4f(*location, v0, v1, v2, v3);
+        }
+    }
+
+    pub fn uniform_matrix2fv(
+        &self,
+        location: &UniformLocation,
+        count: SizeI,
+        transpose: Bool,
+        v: &[Float],
+    ) {
+        debug_assert_eq!(v.len(), count as usize * 2 * 2);
+        unsafe {
+            gl::UniformMatrix2fv(*location, count, transpose, v.as_ptr());
         }
     }
 

@@ -40,6 +40,40 @@ impl Context {
         self.inner.get_attrib_location(program, name)
     }
 
+    pub fn get_uniform_int(
+        &self,
+        program: &Program,
+        location: &UniformLocation,
+        params: &mut [Int],
+    ) {
+        use wasm_bindgen::JsCast;
+        let value = self.inner.get_uniform(program, location);
+        if let Some(value) = value.as_f64() {
+            params[0] = value as Int;
+        } else if let Some(values) = value.dyn_ref::<js_sys::Int32Array>() {
+            values.copy_to(params)
+        } else {
+            panic!("Unexpected uniform value {:?}", value);
+        }
+    }
+
+    pub fn get_uniform_float(
+        &self,
+        program: &Program,
+        location: &UniformLocation,
+        params: &mut [Float],
+    ) {
+        use wasm_bindgen::JsCast;
+        let value = self.inner.get_uniform(program, location);
+        if let Some(value) = value.as_f64() {
+            params[0] = value as Float;
+        } else if let Some(values) = value.dyn_ref::<js_sys::Float32Array>() {
+            values.copy_to(params)
+        } else {
+            panic!("Unexpected uniform value {:?}", value);
+        }
+    }
+
     pub fn get_uniform_location(&self, program: &Program, name: &str) -> Option<UniformLocation> {
         self.inner.get_uniform_location(program, name)
     }
@@ -81,6 +115,18 @@ impl Context {
         v3: Float,
     ) {
         self.inner.uniform4f(Some(location), v0, v1, v2, v3);
+    }
+
+    pub fn uniform_matrix2fv(
+        &self,
+        location: &UniformLocation,
+        count: SizeI,
+        transpose: Bool,
+        v: &[Float],
+    ) {
+        debug_assert_eq!(v.len(), count as usize * 2 * 2);
+        self.inner
+            .uniform_matrix2fv_with_f32_array(Some(location), transpose, v);
     }
 
     pub fn uniform_matrix3fv(
