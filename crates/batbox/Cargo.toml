@@ -1,6 +1,6 @@
 [package]
 name = "batbox"
-version = "0.11.0"
+version = "0.11.1"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Batteries useful for projects"
 license = "MIT"
