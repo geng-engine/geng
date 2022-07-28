@@ -49,11 +49,18 @@ pub fn draw<V, U, DP>(
     let gl = &program.ugli.inner.raw;
 
     framebuffer.fbo.bind();
-    let draw_parameters = draw_parameters.borrow();
+    let draw_parameters: &DrawParameters = draw_parameters.borrow();
     draw_parameters.apply(gl, framebuffer.size());
     program.bind();
     unsafe {
         UNIFORM_TEXTURE_COUNT = 0;
+    }
+    if draw_parameters.reset_uniforms {
+        for uniform in program.uniforms.values() {
+            if let Some(default) = &uniform.default {
+                default.apply(gl, uniform);
+            }
+        }
     }
     uniforms.walk_uniforms(&mut UC { program });
 

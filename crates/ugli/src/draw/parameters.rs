@@ -37,6 +37,7 @@ pub struct DrawParameters {
     pub cull_face: Option<CullFace>,
     pub viewport: Option<AABB<usize>>,
     pub write_depth: bool,
+    pub reset_uniforms: bool,
 }
 
 impl Default for DrawParameters {
@@ -46,6 +47,7 @@ impl Default for DrawParameters {
             blend_mode: None,
             cull_face: None,
             viewport: None,
+            reset_uniforms: true,
             write_depth: true,
         }
     }
