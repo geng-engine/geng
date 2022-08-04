@@ -34,13 +34,11 @@ pub mod prelude {
     pub use crate::{Camera2dExt as _, Camera3dExt as _};
     pub use ::batbox;
     pub use ::batbox::prelude::*;
-    pub use ::geng_ecs as ecs;
     pub use ugli::{self, Ugli};
 }
 
 use crate as geng;
 use crate::prelude::*;
-pub use ::geng_ecs as ecs;
 #[allow(unused_imports)]
 use log::{trace, warn};
 
