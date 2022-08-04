@@ -1,4 +1,3 @@
-pub use :: thiserror;
 pub use ::anyhow;
 #[doc(no_inline)]
 pub use ::anyhow::{anyhow, Context as _};
@@ -52,6 +51,7 @@ pub use ::std::{
     rc::Rc,
     sync::{Arc, Mutex},
 };
+pub use ::thiserror;
 #[doc(no_inline)]
 pub use ::threadpool::ThreadPool;
 
