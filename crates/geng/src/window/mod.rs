@@ -90,13 +90,11 @@ impl Window {
                     {
                         let mut window_builder = glutin::window::WindowBuilder::new();
                         if let Some(size) = options.window_size {
-                            window_builder.window.inner_size = Some(
-                                glutin::dpi::PhysicalSize {
+                            window_builder =
+                                window_builder.with_inner_size(glutin::dpi::PhysicalSize {
                                     width: size.x as u32,
                                     height: size.y as u32,
-                                }
-                                .into(),
-                            );
+                                });
                         }
                         window_builder.with_title(&options.title)
                     },
