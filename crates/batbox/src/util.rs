@@ -105,17 +105,6 @@ where
     }
 }
 
-pub fn global_threadpool() -> &'static ThreadPool {
-    static mut INSTANCE: Option<ThreadPool> = None;
-    static mut INIT: std::sync::Once = std::sync::Once::new();
-    unsafe {
-        INIT.call_once(|| {
-            mem::forget(mem::replace(&mut INSTANCE, Some(default())));
-        });
-        INSTANCE.as_ref().unwrap()
-    }
-}
-
 pub fn static_path() -> std::path::PathBuf {
     if let Some(dir) = std::env::var_os("CARGO_MANIFEST_DIR") {
         let mut path = std::path::PathBuf::from(dir);
