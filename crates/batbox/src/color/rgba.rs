@@ -125,50 +125,6 @@ impl<T: ColorComponent> Rgba<T> {
         Self { r, g, b, a }
     }
 
-    pub fn from_hsv(h: T, s: T, v: T) -> Self {
-        Self::from_hsva(h, s, v, T::MAX)
-    }
-    pub fn from_hsva(h: T, s: T, v: T, a: T) -> Self {
-        let h = h.as_f32();
-        let s = s.as_f32();
-        let v = v.as_f32();
-        let a = a.as_f32();
-        let h = h - h.floor();
-        let r;
-        let g;
-        let b;
-        let f = h * 6.0 - (h * 6.0).floor();
-        let p = v * (1.0 - s);
-        let q = v * (1.0 - f * s);
-        let t = v * (1.0 - (1.0 - f) * s);
-        if h * 6.0 < 1.0 {
-            r = v;
-            g = t;
-            b = p;
-        } else if h * 6.0 < 2.0 {
-            r = q;
-            g = v;
-            b = p;
-        } else if h * 6.0 < 3.0 {
-            r = p;
-            g = v;
-            b = t;
-        } else if h * 6.0 < 4.0 {
-            r = p;
-            g = q;
-            b = v;
-        } else if h * 6.0 < 5.0 {
-            r = t;
-            g = p;
-            b = v;
-        } else {
-            r = v;
-            g = p;
-            b = q;
-        }
-        Rgba::new(r, g, b, a).convert()
-    }
-
     /// Convert `Rgba<T>` to `Rgba<U>` by applying a function to every color component excluding alpha.
     /// The resulting alpha is calculated by applying ColorComponent::convert() method.
     /// # Examples
