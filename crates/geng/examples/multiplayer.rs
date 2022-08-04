@@ -139,7 +139,7 @@ impl geng::State for Game {
         }
     }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
-        ugli::clear(framebuffer, Some(Color::BLACK), None);
+        ugli::clear(framebuffer, Some(Rgba::BLACK), None);
         let camera = geng::Camera2d {
             center: vec2(0.0, 0.0),
             rotation: 0.0,
@@ -152,7 +152,7 @@ impl geng::State for Game {
                 &camera,
                 player.position,
                 1.0,
-                Color::GRAY,
+                Rgba::GRAY,
             );
         }
         self.geng.draw_2d_helper().circle(
@@ -160,7 +160,7 @@ impl geng::State for Game {
             &camera,
             self.player.position,
             1.0,
-            Color::WHITE,
+            Rgba::WHITE,
         );
         self.geng.default_font().draw(
             framebuffer,
@@ -169,7 +169,7 @@ impl geng::State for Game {
             vec2(0.0, 0.0),
             TextAlign::LEFT,
             32.0,
-            Color::WHITE,
+            Rgba::WHITE,
         );
         self.geng.default_font().draw(
             framebuffer,
@@ -178,7 +178,7 @@ impl geng::State for Game {
             vec2(0.0, 32.0),
             TextAlign::LEFT,
             32.0,
-            Color::WHITE,
+            Rgba::WHITE,
         );
         self.geng.default_font().draw(
             framebuffer,
@@ -187,7 +187,7 @@ impl geng::State for Game {
             vec2(0.0, 32.0 * 2.0),
             TextAlign::LEFT,
             32.0,
-            Color::WHITE,
+            Rgba::WHITE,
         );
     }
 }

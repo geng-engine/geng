@@ -9,7 +9,7 @@ impl Chain {
     pub fn new(
         chain: batbox::geom::Chain<f32>,
         width: f32,
-        color: Color<f32>,
+        color: Rgba<f32>,
         round_resolution: usize,
     ) -> Self {
         Self::new_gradient(
@@ -244,7 +244,7 @@ impl Draw2d for Chain {
             &ugli::VertexBuffer::new_dynamic(geng.ugli(), self.vertices.clone()),
             (
                 ugli::uniforms! {
-                    u_color: Color::WHITE,
+                    u_color: Rgba::WHITE,
                     u_framebuffer_size: framebuffer_size,
                     u_model_matrix: transform * self.transform,
                 },

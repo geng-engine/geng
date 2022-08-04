@@ -78,7 +78,7 @@ impl Painter {
             &ugli::VertexBuffer::new_dynamic(self.geng.ugli(), vertices),
             (
                 ugli::uniforms! {
-                    u_color: Color::WHITE,
+                    u_color: Rgba::WHITE,
                     u_texture: texture,
                     u_framebuffer_size: clip_aabb.size(),
                     u_model_matrix: Mat3::identity(),
@@ -105,7 +105,7 @@ impl Painter {
             self.geng.ugli(),
             vec2(egui_texture.width, egui_texture.height),
             |pixel| {
-                Color::rgba(
+                Rgba::new(
                     255,
                     255,
                     255,
@@ -122,7 +122,7 @@ fn textured_vertex(egui_vertex: egui::epaint::Vertex, height: f32) -> draw_2d::T
     draw_2d::TexturedVertex {
         a_pos: pos_to_vec(egui_vertex.pos, height),
         a_vt: pos_to_vec(egui_vertex.uv, 1.0),
-        a_color: Color::rgba(
+        a_color: Rgba::new(
             egui_vertex.color.r(),
             egui_vertex.color.g(),
             egui_vertex.color.b(),

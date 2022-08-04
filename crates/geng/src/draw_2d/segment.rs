@@ -6,7 +6,7 @@ pub struct Segment {
 }
 
 impl Segment {
-    pub fn new(segment: batbox::geom::Segment<f32>, width: f32, color: Color<f32>) -> Self {
+    pub fn new(segment: batbox::geom::Segment<f32>, width: f32, color: Rgba<f32>) -> Self {
         Self::new_gradient(
             ColoredVertex {
                 a_pos: segment.start,
@@ -76,7 +76,7 @@ impl Draw2d for Segment {
             &ugli::VertexBuffer::new_dynamic(geng.ugli(), self.vertices.clone()),
             (
                 ugli::uniforms! {
-                    u_color: Color::WHITE,
+                    u_color: Rgba::WHITE,
                     u_framebuffer_size: framebuffer_size,
                     u_model_matrix: transform * self.transform,
                 },

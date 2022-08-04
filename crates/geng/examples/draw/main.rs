@@ -89,17 +89,17 @@ impl State {
             objects: vec![],
         };
         result.add(
-            draw_2d::Quad::unit(Color::WHITE)
+            draw_2d::Quad::unit(Rgba::WHITE)
                 .transform(Mat3::rotate(0.5) * Mat3::scale_uniform(0.5)),
         );
         result.add(draw_2d::TexturedQuad::unit(ugli::Texture::new_with(
             geng.ugli(),
             vec2(2, 2),
             |pos| match (pos.x, pos.y) {
-                (0, 0) => Color::BLACK,
-                (1, 0) => Color::RED,
-                (1, 1) => Color::GREEN,
-                (0, 1) => Color::BLUE,
+                (0, 0) => Rgba::BLACK,
+                (1, 0) => Rgba::RED,
+                (1, 1) => Rgba::GREEN,
+                (0, 1) => Rgba::BLUE,
                 _ => unreachable!(),
             },
         )));
@@ -117,41 +117,41 @@ impl State {
                 &draw_2d::Polygon::new_gradient(vec![
                     draw_2d::ColoredVertex {
                         a_pos: vec2(0.0, 0.0),
-                        a_color: Color::BLACK,
+                        a_color: Rgba::BLACK,
                     },
                     draw_2d::ColoredVertex {
                         a_pos: vec2(SIZE as f32, 0.0),
-                        a_color: Color::RED,
+                        a_color: Rgba::RED,
                     },
                     draw_2d::ColoredVertex {
                         a_pos: vec2(SIZE as f32, SIZE as f32),
-                        a_color: Color::GREEN,
+                        a_color: Rgba::GREEN,
                     },
                     draw_2d::ColoredVertex {
                         a_pos: vec2(0.0, SIZE as f32),
-                        a_color: Color::BLUE,
+                        a_color: Rgba::BLUE,
                     },
                 ]),
             );
             texture
         }));
-        result.add(draw_2d::Ellipse::unit(Color::RED));
+        result.add(draw_2d::Ellipse::unit(Rgba::RED));
         result.add(
-            draw_2d::Ellipse::unit_with_cut(0.5, Color::RED)
+            draw_2d::Ellipse::unit_with_cut(0.5, Rgba::RED)
                 .transform(Mat3::rotate(f32::PI / 4.0) * Mat3::scale(vec2(1.0, 0.5))),
         );
         result.add(draw_2d::Polygon::new_gradient(vec![
             draw_2d::ColoredVertex {
                 a_pos: vec2(-1.0, -1.0),
-                a_color: Color::RED,
+                a_color: Rgba::RED,
             },
             draw_2d::ColoredVertex {
                 a_pos: vec2(1.0, -1.0),
-                a_color: Color::GREEN,
+                a_color: Rgba::GREEN,
             },
             draw_2d::ColoredVertex {
                 a_pos: vec2(0.0, 1.0),
-                a_color: Color::BLUE,
+                a_color: Rgba::BLUE,
             },
         ]));
         result.add(draw_2d::Polygon::strip(
@@ -163,29 +163,29 @@ impl State {
                 vec2(0.5, 1.0),
                 vec2(1.0, 0.5),
             ],
-            Color::GRAY,
+            Rgba::GRAY,
         ));
         result.add(
-            draw_2d::Text::unit(geng.default_font().clone(), "Hello!", Color::WHITE)
+            draw_2d::Text::unit(geng.default_font().clone(), "Hello!", Rgba::WHITE)
                 .transform(Mat3::rotate(f32::PI / 6.0)),
         );
         result.add(
-            draw_2d::Text::unit(geng.default_font().clone(), "", Color::WHITE)
+            draw_2d::Text::unit(geng.default_font().clone(), "", Rgba::WHITE)
                 .transform(Mat3::rotate(f32::PI / 6.0)),
         );
         result.add(draw_2d::Segment::new(
             Segment::new(vec2(-3.0, -5.0), vec2(3.0, 5.0)),
             0.5,
-            Color::GREEN,
+            Rgba::GREEN,
         ));
         result.add(draw_2d::Segment::new_gradient(
             draw_2d::ColoredVertex {
                 a_pos: vec2(-5.0, 3.0),
-                a_color: Color::BLUE,
+                a_color: Rgba::BLUE,
             },
             draw_2d::ColoredVertex {
                 a_pos: vec2(5.0, -3.0),
-                a_color: Color::RED,
+                a_color: Rgba::RED,
             },
             0.5,
         ));
@@ -197,26 +197,26 @@ impl State {
                 vec2(5.0, 5.0),
             ]),
             0.5,
-            Color::RED,
+            Rgba::RED,
             5,
         ));
         result.add(draw_2d::Chain::new_gradient(
             vec![
                 draw_2d::ColoredVertex {
                     a_pos: vec2(-5.0, -5.0),
-                    a_color: Color::RED,
+                    a_color: Rgba::RED,
                 },
                 draw_2d::ColoredVertex {
                     a_pos: vec2(5.0, -2.0),
-                    a_color: Color::GREEN,
+                    a_color: Rgba::GREEN,
                 },
                 draw_2d::ColoredVertex {
                     a_pos: vec2(-5.0, 2.0),
-                    a_color: Color::BLUE,
+                    a_color: Rgba::BLUE,
                 },
                 draw_2d::ColoredVertex {
                     a_pos: vec2(5.0, 5.0),
-                    a_color: Color::BLACK,
+                    a_color: Rgba::BLACK,
                 },
             ],
             0.5,
@@ -234,7 +234,7 @@ impl State {
             )
             .chain(10),
             0.5,
-            Color::RED,
+            Rgba::RED,
             1,
         ));
         result.add(draw_2d::Chain::new(
@@ -244,13 +244,13 @@ impl State {
             )
             .chain(10),
             0.5,
-            Color::RED,
+            Rgba::RED,
             1,
         ));
         result.add(draw_2d::Chain::new(
             Trajectory::new(Box::new(|t| vec2(t, t * t * t)), -2.0..=2.0).chain(10),
             0.5,
-            Color::RED,
+            Rgba::RED,
             1,
         ));
         result
@@ -262,7 +262,7 @@ impl State {
 
 impl geng::State for State {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
-        ugli::clear(framebuffer, Some(Color::BLACK), None);
+        ugli::clear(framebuffer, Some(Rgba::BLACK), None);
 
         let mut size = 1;
         while size * size < self.objects.len() {

@@ -15,7 +15,7 @@ pub enum DrawMode {
     TriangleFan,
 }
 
-pub fn clear(framebuffer: &mut Framebuffer, color: Option<Color<f32>>, depth: Option<f32>) {
+pub fn clear(framebuffer: &mut Framebuffer, color: Option<Rgba<f32>>, depth: Option<f32>) {
     let gl = &framebuffer.fbo.ugli.inner.raw;
     framebuffer.fbo.bind();
     let mut flags = 0;

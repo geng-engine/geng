@@ -21,7 +21,7 @@ pub use text::*;
 #[derive(ugli::Vertex, Copy, Clone, Debug)]
 pub struct ColoredVertex {
     pub a_pos: Vec2<f32>,
-    pub a_color: Color<f32>,
+    pub a_color: Rgba<f32>,
 }
 
 #[derive(ugli::Vertex, Copy, Clone, Debug)]
@@ -32,7 +32,7 @@ pub struct Vertex {
 #[derive(ugli::Vertex, Copy, Clone, Debug)]
 pub struct TexturedVertex {
     pub a_pos: Vec2<f32>,
-    pub a_color: Color<f32>,
+    pub a_color: Rgba<f32>,
     pub a_vt: Vec2<f32>,
 }
 
@@ -40,7 +40,7 @@ impl From<Vec2<f32>> for ColoredVertex {
     fn from(v: Vec2<f32>) -> ColoredVertex {
         ColoredVertex {
             a_pos: v,
-            a_color: Color::WHITE,
+            a_color: Rgba::WHITE,
         }
     }
 }
@@ -137,22 +137,22 @@ impl Helper {
                 vec![
                     TexturedVertex {
                         a_pos: vec2(-1.0, -1.0),
-                        a_color: Color::WHITE,
+                        a_color: Rgba::WHITE,
                         a_vt: vec2(0.0, 0.0),
                     },
                     TexturedVertex {
                         a_pos: vec2(1.0, -1.0),
-                        a_color: Color::WHITE,
+                        a_color: Rgba::WHITE,
                         a_vt: vec2(1.0, 0.0),
                     },
                     TexturedVertex {
                         a_pos: vec2(1.0, 1.0),
-                        a_color: Color::WHITE,
+                        a_color: Rgba::WHITE,
                         a_vt: vec2(1.0, 1.0),
                     },
                     TexturedVertex {
                         a_pos: vec2(-1.0, 1.0),
-                        a_color: Color::WHITE,
+                        a_color: Rgba::WHITE,
                         a_vt: vec2(0.0, 1.0),
                     },
                 ],
@@ -168,7 +168,7 @@ impl Helper {
         framebuffer: &mut ugli::Framebuffer,
         camera: &impl AbstractCamera2d,
         vertices: &[V],
-        color: Color<f32>,
+        color: Rgba<f32>,
         mode: ugli::DrawMode,
     ) where
         V: Copy + Into<ColoredVertex>,
@@ -208,7 +208,7 @@ impl Helper {
         camera: &impl AbstractCamera2d,
         vertices: &[V],
         texture: &ugli::Texture,
-        color: Color<f32>,
+        color: Rgba<f32>,
         mode: ugli::DrawMode,
     ) where
         V: Copy + Into<TexturedVertex>,
@@ -248,7 +248,7 @@ impl Helper {
         framebuffer: &mut ugli::Framebuffer,
         camera: &impl AbstractCamera2d,
         position: AABB<f32>,
-        color: Color<f32>,
+        color: Rgba<f32>,
     ) {
         self.draw(
             framebuffer,
@@ -270,7 +270,7 @@ impl Helper {
         camera: &impl AbstractCamera2d,
         position: AABB<f32>,
         texture: &ugli::Texture,
-        color: Color<f32>,
+        color: Rgba<f32>,
     ) {
         self.draw_textured(
             framebuffer,
@@ -279,22 +279,22 @@ impl Helper {
                 TexturedVertex {
                     a_pos: position.bottom_left(),
                     a_vt: vec2(0.0, 0.0),
-                    a_color: Color::WHITE,
+                    a_color: Rgba::WHITE,
                 },
                 TexturedVertex {
                     a_pos: position.bottom_right(),
                     a_vt: vec2(1.0, 0.0),
-                    a_color: Color::WHITE,
+                    a_color: Rgba::WHITE,
                 },
                 TexturedVertex {
                     a_pos: position.top_right(),
                     a_vt: vec2(1.0, 1.0),
-                    a_color: Color::WHITE,
+                    a_color: Rgba::WHITE,
                 },
                 TexturedVertex {
                     a_pos: position.top_left(),
                     a_vt: vec2(0.0, 1.0),
-                    a_color: Color::WHITE,
+                    a_color: Rgba::WHITE,
                 },
             ],
             texture,
@@ -310,7 +310,7 @@ impl Helper {
         position: Vec2<f32>,
         radius: Vec2<f32>,
         inner_cut: f32,
-        color: Color<f32>,
+        color: Rgba<f32>,
     ) {
         let framebuffer_size = framebuffer.size();
         ugli::draw(
@@ -340,7 +340,7 @@ impl Helper {
         camera: &impl AbstractCamera2d,
         position: Vec2<f32>,
         radius: Vec2<f32>,
-        color: Color<f32>,
+        color: Rgba<f32>,
     ) {
         self.ellipse_with_cut(framebuffer, camera, position, radius, 0.0, color);
     }
@@ -352,7 +352,7 @@ impl Helper {
         position: Vec2<f32>,
         inner_radius: f32,
         outer_radius: f32,
-        color: Color<f32>,
+        color: Rgba<f32>,
     ) {
         self.ellipse_with_cut(
             framebuffer,
@@ -370,7 +370,7 @@ impl Helper {
         camera: &impl AbstractCamera2d,
         position: Vec2<f32>,
         radius: f32,
-        color: Color<f32>,
+        color: Rgba<f32>,
     ) {
         self.ellipse(framebuffer, camera, position, vec2(radius, radius), color);
     }

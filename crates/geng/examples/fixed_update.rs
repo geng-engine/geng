@@ -13,7 +13,7 @@ struct State {
 
 impl geng::State for State {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
-        ugli::clear(framebuffer, Some(Color::BLACK), None);
+        ugli::clear(framebuffer, Some(Rgba::BLACK), None);
 
         // Draw current time to screen
         self.geng.default_font().draw(
@@ -24,7 +24,7 @@ impl geng::State for State {
             Vec2::ZERO,
             geng::TextAlign::CENTER,
             5.0,
-            Color::WHITE,
+            Rgba::WHITE,
         );
     }
 

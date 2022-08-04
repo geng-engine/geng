@@ -3,7 +3,7 @@ use super::*;
 pub struct Text<F: std::borrow::Borrow<Font>, T: AsRef<str>> {
     pub font: F,
     pub text: T,
-    pub color: Color<f32>,
+    pub color: Rgba<f32>,
     pub into_unit_transform: Mat3<f32>,
     pub transform: Mat3<f32>,
     pub true_transform: Mat3<f32>, // TODO: only have this
@@ -12,7 +12,7 @@ pub struct Text<F: std::borrow::Borrow<Font>, T: AsRef<str>> {
 const SIZE_HACK: f32 = 1000.0;
 
 impl<F: std::borrow::Borrow<Font>, T: AsRef<str>> Text<F, T> {
-    pub fn unit(font: F, text: T, color: Color<f32>) -> Self {
+    pub fn unit(font: F, text: T, color: Rgba<f32>) -> Self {
         if let Some(aabb) = font
             .borrow()
             .measure_at(text.as_ref(), vec2(0.0, 0.0), SIZE_HACK)

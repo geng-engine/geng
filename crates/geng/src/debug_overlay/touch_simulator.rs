@@ -99,7 +99,7 @@ impl TouchSimulator {
                     touch.map(|x| x as f32),
                     RADIUS as f32 - 2.0,
                     RADIUS as f32 + 2.0,
-                    Color::rgba(0.5, 0.5, 0.5, 0.5),
+                    Rgba::new(0.5, 0.5, 0.5, 0.5),
                 ),
             );
         }

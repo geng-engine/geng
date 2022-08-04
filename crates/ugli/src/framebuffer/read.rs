@@ -8,10 +8,10 @@ pub struct ColorData<'a> {
 }
 
 impl<'a> ColorData<'a> {
-    pub fn get(&self, x: usize, y: usize) -> Color<u8> {
+    pub fn get(&self, x: usize, y: usize) -> Rgba<u8> {
         assert!(x < self.width);
         assert!(y < self.height);
-        Color::rgba(
+        Rgba::new(
             self.buffer[(y * self.width + x) * 4],
             self.buffer[(y * self.width + x) * 4 + 1],
             self.buffer[(y * self.width + x) * 4 + 2],

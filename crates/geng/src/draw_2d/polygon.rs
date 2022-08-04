@@ -7,7 +7,7 @@ pub struct Polygon {
 }
 
 impl Polygon {
-    pub fn new(vertices: Vec<Vec2<f32>>, color: Color<f32>) -> Self {
+    pub fn new(vertices: Vec<Vec2<f32>>, color: Rgba<f32>) -> Self {
         Self::new_gradient(
             vertices
                 .into_iter()
@@ -26,7 +26,7 @@ impl Polygon {
             draw_mode: ugli::DrawMode::TriangleFan,
         }
     }
-    pub fn strip(vertices: Vec<Vec2<f32>>, color: Color<f32>) -> Self {
+    pub fn strip(vertices: Vec<Vec2<f32>>, color: Rgba<f32>) -> Self {
         Self::strip_gradient(
             vertices
                 .into_iter()
@@ -73,7 +73,7 @@ impl Draw2d for Polygon {
             &ugli::VertexBuffer::new_dynamic(geng.ugli(), self.vertices.clone()),
             (
                 ugli::uniforms! {
-                    u_color: Color::WHITE,
+                    u_color: Rgba::WHITE,
                     u_framebuffer_size: framebuffer_size,
                     u_model_matrix: transform * self.transform,
                 },
@@ -161,7 +161,7 @@ impl<T: std::borrow::Borrow<ugli::Texture>> Draw2d for TexturedPolygon<T> {
             &ugli::VertexBuffer::new_dynamic(geng.ugli(), self.vertices.clone()),
             (
                 ugli::uniforms! {
-                    u_color: Color::WHITE,
+                    u_color: Rgba::WHITE,
                     u_texture: self.texture.borrow(),
                     u_framebuffer_size: framebuffer_size,
                     u_model_matrix: transform * self.transform,

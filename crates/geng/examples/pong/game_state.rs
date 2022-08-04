@@ -3,12 +3,12 @@ use geng::prelude::*;
 use crate::{ball::Ball, collision::collide, player::Player};
 
 // Render constants
-const BOUNDARY_COLOR: Color<f32> = Color::GRAY;
+const BOUNDARY_COLOR: Rgba<f32> = Rgba::GRAY;
 
-const PLAYER_LEFT_COLOR: Color<f32> = Color::GREEN;
-const PLAYER_RIGHT_COLOR: Color<f32> = Color::BLUE;
+const PLAYER_LEFT_COLOR: Rgba<f32> = Rgba::GREEN;
+const PLAYER_RIGHT_COLOR: Rgba<f32> = Rgba::BLUE;
 
-const BALL_COLOR: Color<f32> = Color::RED;
+const BALL_COLOR: Rgba<f32> = Rgba::RED;
 
 // Game constants
 const ARENA_SIZE_X: f32 = 450.0;
@@ -196,7 +196,7 @@ impl geng::State for GameState {
 
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         // Clear background
-        ugli::clear(framebuffer, Some(Color::BLACK), None);
+        ugli::clear(framebuffer, Some(Rgba::BLACK), None);
 
         // Draw boundaries
         let boundary = AABB::point(self.boundary.center())
@@ -241,7 +241,7 @@ impl geng::State for GameState {
             vec2(0.0, self.boundary.y_max + 10.0), // Just above the top boundary
             geng::TextAlign::CENTER,
             32.0,
-            Color::WHITE,
+            Rgba::WHITE,
         );
     }
 }

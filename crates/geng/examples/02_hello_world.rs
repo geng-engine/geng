@@ -15,7 +15,7 @@ impl State {
 
 impl geng::State for State {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
-        ugli::clear(framebuffer, Some(Color::BLACK), None);
+        ugli::clear(framebuffer, Some(Rgba::BLACK), None);
 
         // Draw text using default font
         self.geng.default_font().draw(
@@ -25,7 +25,7 @@ impl geng::State for State {
             framebuffer.size().map(|x| x as f32 / 2.0), // in the middle of the screen
             geng::TextAlign::CENTER,                    // center-aligned
             32.0,                                       // 32 pixels high
-            Color::WHITE,
+            Rgba::WHITE,
         );
     }
 }

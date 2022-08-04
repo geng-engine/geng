@@ -4,7 +4,7 @@ pub unsafe trait RenderbufferPixel {
     const GL_FORMAT: raw::Enum;
 }
 
-unsafe impl RenderbufferPixel for Color<f32> {
+unsafe impl RenderbufferPixel for Rgba<f32> {
     const GL_FORMAT: raw::Enum = raw::RGBA;
 }
 
@@ -12,7 +12,7 @@ unsafe impl RenderbufferPixel for DepthComponent {
     const GL_FORMAT: raw::Enum = raw::DEPTH_COMPONENT;
 }
 
-pub struct Renderbuffer<T: RenderbufferPixel = Color<f32>> {
+pub struct Renderbuffer<T: RenderbufferPixel = Rgba<f32>> {
     pub(crate) ugli: Ugli,
     pub(crate) handle: raw::Renderbuffer,
     phantom_data: PhantomData<*mut T>,

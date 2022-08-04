@@ -1,11 +1,11 @@
 use super::*;
 
 pub struct ColorBox {
-    pub color: Color<f32>,
+    pub color: Rgba<f32>,
 }
 
 impl ColorBox {
-    pub fn new(color: Color<f32>) -> Self {
+    pub fn new(color: Rgba<f32>) -> Self {
         Self { color }
     }
 }

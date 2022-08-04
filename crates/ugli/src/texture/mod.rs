@@ -6,7 +6,7 @@ pub unsafe trait TexturePixel {
     const TYPE: raw::Enum;
 }
 
-unsafe impl TexturePixel for Color<f32> {
+unsafe impl TexturePixel for Rgba<f32> {
     const INTERNAL_FORMAT: raw::Enum = raw::RGBA;
     const FORMAT: raw::Enum = raw::RGBA;
     const TYPE: raw::Enum = raw::UNSIGNED_BYTE;
@@ -47,7 +47,7 @@ impl<P: TexturePixel> Drop for Texture2d<P> {
     }
 }
 
-pub type Texture = Texture2d<Color<f32>>;
+pub type Texture = Texture2d<Rgba<f32>>;
 
 impl<P: TexturePixel> Texture2d<P> {
     fn new_raw(ugli: &Ugli, size: Vec2<usize>) -> Self {
@@ -169,7 +169,7 @@ impl Texture {
         self.ugli.debug_check();
     }
 
-    pub fn new_with<F: FnMut(Vec2<usize>) -> Color<f32>>(
+    pub fn new_with<F: FnMut(Vec2<usize>) -> Rgba<f32>>(
         ugli: &Ugli,
         size: Vec2<usize>,
         mut f: F,

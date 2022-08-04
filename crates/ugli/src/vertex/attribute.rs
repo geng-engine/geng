@@ -83,7 +83,7 @@ mod batbox {
         }
     }
 
-    impl VertexAttribute for Color<f32> {
+    impl VertexAttribute for Rgba<f32> {
         type Primitive = [f32; 4];
         fn as_primitive(ptr: *const Self) -> *const [f32; 4] {
             ptr as _

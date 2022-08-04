@@ -195,7 +195,7 @@ impl Font {
         text: &str,
         pos: Vec2<f32>,
         size: f32,
-        color: Color<f32>,
+        color: Rgba<f32>,
     ) {
         let pixel_size = {
             let m = camera.projection_matrix(framebuffer.size().map(|x| x as f32))
@@ -239,7 +239,7 @@ impl Font {
         pos: Vec2<f32>,
         align: TextAlign,
         size: f32,
-        color: Color<f32>,
+        color: Rgba<f32>,
     ) {
         let mut pos = pos;
         for line in text.lines().rev() {

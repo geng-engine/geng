@@ -13,8 +13,8 @@ impl geng::State for State {
         // Clear the whole framebuffer
         ugli::clear(
             framebuffer,
-            Some(Color::BLACK), // using black color
-            None,               // without clearing depth buffer
+            Some(Rgba::BLACK), // using black color
+            None,              // without clearing depth buffer
         );
     }
 }

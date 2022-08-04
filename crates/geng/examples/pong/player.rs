@@ -10,7 +10,7 @@ pub struct Player {
     pub size: Vec2<f32>,
     velocity: Vec2<f32>,
     speed: f32,
-    pub color: Color<f32>,
+    pub color: Rgba<f32>,
 }
 
 impl Player {
@@ -19,7 +19,7 @@ impl Player {
         position: Vec2<f32>,
         size: Vec2<f32>,
         speed: f32,
-        color: Color<f32>,
+        color: Rgba<f32>,
         key_up: geng::Key,
         key_down: geng::Key,
     ) -> Self {

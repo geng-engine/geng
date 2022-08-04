@@ -4,32 +4,32 @@ pub struct Ellipse {
     pub transform: Mat3<f32>,
     pub cut: f32,
     /// `cut` is relative to the radius and should be in range `0.0..=1.0`.
-    pub color: Color<f32>,
+    pub color: Rgba<f32>,
 }
 
 impl Ellipse {
-    pub fn circle(center: Vec2<f32>, radius: f32, color: Color<f32>) -> Self {
+    pub fn circle(center: Vec2<f32>, radius: f32, color: Rgba<f32>) -> Self {
         Self::unit(color).transform(Mat3::translate(center) * Mat3::scale_uniform(radius))
     }
     pub fn circle_with_cut(
         center: Vec2<f32>,
         inner_radius: f32,
         radius: f32,
-        color: Color<f32>,
+        color: Rgba<f32>,
     ) -> Self {
         Self {
             cut: inner_radius / radius,
             ..Self::unit(color).transform(Mat3::translate(center) * Mat3::scale_uniform(radius))
         }
     }
-    pub fn unit(color: Color<f32>) -> Self {
+    pub fn unit(color: Rgba<f32>) -> Self {
         Self {
             transform: Mat3::identity(),
             cut: 0.0,
             color,
         }
     }
-    pub fn unit_with_cut(cut: f32, color: Color<f32>) -> Self {
+    pub fn unit_with_cut(cut: f32, color: Rgba<f32>) -> Self {
         Self {
             transform: Mat3::identity(),
             cut,

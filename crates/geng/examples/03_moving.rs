@@ -37,7 +37,7 @@ impl geng::State for State {
         }
     }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
-        ugli::clear(framebuffer, Some(Color::BLACK), None);
+        ugli::clear(framebuffer, Some(Rgba::BLACK), None);
         self.geng.default_font().draw(
             framebuffer,
             &geng::Camera2d {
@@ -49,7 +49,7 @@ impl geng::State for State {
             self.position,
             geng::TextAlign::CENTER,
             1.0,
-            Color::WHITE,
+            Rgba::WHITE,
         );
     }
     // We can handle events like KeyDown by implementing this method

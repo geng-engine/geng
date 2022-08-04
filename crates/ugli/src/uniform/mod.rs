@@ -162,7 +162,7 @@ where
     }
 }
 
-impl Uniform for Color<f32> {
+impl Uniform for Rgba<f32> {
     fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
         <[f32; 4]>::apply(self, gl, info)
     }

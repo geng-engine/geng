@@ -42,7 +42,7 @@ impl geng::State for State {
     }
 
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
-        ugli::clear(framebuffer, Some(Color::GRAY), None);
+        ugli::clear(framebuffer, Some(Rgba::GRAY), None);
 
         // Render GUI
         self.egui.draw(framebuffer);

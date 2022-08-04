@@ -1,6 +1,6 @@
 use super::*;
 
-impl<T: ColorComponent> Color<T> {
+impl<T: ColorComponent> Rgba<T> {
     pub const WHITE: Self = Self {
         r: T::MAX,
         g: T::MAX,
@@ -74,12 +74,12 @@ fn test_consts_stable() {
     macro_rules! test_stable {
         ($($name:ident,)*) => {
             $(
-                assert_eq!(Color::<f32>::$name.convert::<u8>(), Color::<u8>::$name);
-                assert!(Color::<f32>::$name.convert::<f64>().approx_eq(&Color::<f64>::$name));
-                assert_eq!(Color::<f64>::$name.convert::<u8>(), Color::<u8>::$name);
-                assert!(Color::<f64>::$name.convert::<f32>().approx_eq(&Color::<f32>::$name));
-                assert!(Color::<u8>::$name.convert::<f32>().approx_eq_eps(&Color::<f32>::$name, 1.0 / 255.0));
-                assert!(Color::<u8>::$name.convert::<f64>().approx_eq_eps(&Color::<f64>::$name, 1.0 / 255.0));
+                assert_eq!(Rgba::<f32>::$name.convert::<u8>(), Rgba::<u8>::$name);
+                assert!(Rgba::<f32>::$name.convert::<f64>().approx_eq(&Rgba::<f64>::$name));
+                assert_eq!(Rgba::<f64>::$name.convert::<u8>(), Rgba::<u8>::$name);
+                assert!(Rgba::<f64>::$name.convert::<f32>().approx_eq(&Rgba::<f32>::$name));
+                assert!(Rgba::<u8>::$name.convert::<f32>().approx_eq_eps(&Rgba::<f32>::$name, 1.0 / 255.0));
+                assert!(Rgba::<u8>::$name.convert::<f64>().approx_eq_eps(&Rgba::<f64>::$name, 1.0 / 255.0));
             )*
         };
     }
