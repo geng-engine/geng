@@ -12,6 +12,7 @@ pub mod approx;
 pub mod autosave;
 pub mod collection;
 pub mod color;
+pub mod dialog;
 pub mod diff;
 pub mod future_ext;
 pub mod geom;
