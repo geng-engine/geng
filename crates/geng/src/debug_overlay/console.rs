@@ -23,7 +23,7 @@ impl log::Log for Logger {
     fn log(&self, record: &log::Record) {
         if self.enabled(record.metadata()) {
             let message = format!("{} - {}", record.level(), record.args());
-            if let Err(e) = self.sender.lock().unwrap().send(Record { message }) {
+            if let Err(_e) = self.sender.lock().unwrap().send(Record { message }) {
                 // TODO: this is infinite recursion: warn!("{}", e);
             }
         }
@@ -74,6 +74,7 @@ impl Console {
             self.records.pop_front();
         }
     }
+    #[allow(dead_code)]
     pub fn ui(&mut self) -> impl ui::Widget + '_ {
         use ui::*;
         let font = self.geng.default_font();

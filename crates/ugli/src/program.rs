@@ -11,6 +11,7 @@ pub struct Program {
 #[derive(Debug)]
 pub struct AttributeInfo {
     pub(crate) location: raw::UInt,
+    #[allow(dead_code)]
     pub(crate) info: raw::ActiveInfo,
 }
 

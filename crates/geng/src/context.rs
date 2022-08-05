@@ -128,7 +128,7 @@ impl Geng {
 pub fn run(geng: &Geng, state: impl State) {
     let mut state_manager = StateManager::new();
     state_manager.push(Box::new(state));
-    let mut state = DebugOverlay::new(geng, state_manager);
+    let state = DebugOverlay::new(geng, state_manager);
     struct RunState<T> {
         geng: Geng,
         state: T,

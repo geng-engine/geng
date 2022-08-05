@@ -51,7 +51,7 @@ impl Sense {
             *time += delta_time;
         }
     }
-    pub fn handle_event(&mut self, event: &Event) {
+    pub fn handle_event(&mut self, _event: &Event) {
         // if let Event::Click { .. } = event {
         //     self.clicked = true;
         //     self.click_time = Some(0.0);

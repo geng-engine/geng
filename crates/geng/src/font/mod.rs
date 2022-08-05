@@ -12,6 +12,7 @@ pub struct Font {
     cache_texture: RefCell<ugli::Texture>,
     geometry: RefCell<ugli::VertexBuffer<Vertex>>,
     program: ugli::Program,
+    #[allow(dead_code)]
     descent: f32,
 }
 
@@ -56,7 +57,7 @@ impl Font {
             descent,
         })
     }
-    pub fn measure_at(&self, text: &str, mut pos: Vec2<f32>, size: f32) -> Option<AABB<f32>> {
+    pub fn measure_at(&self, text: &str, pos: Vec2<f32>, size: f32) -> Option<AABB<f32>> {
         // pos.y -= self.descent * size;
         let scale = rusttype::Scale { x: size, y: size };
         let pos = rusttype::Point {

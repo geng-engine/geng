@@ -2,7 +2,6 @@ use super::*;
 
 struct State {
     size: Vec2<f64>,
-    last_touch_pos: Option<Vec2<f64>>,
     constraints: HashMap<*const c_void, Constraints>,
     positions: HashMap<*const c_void, AABB<f64>>,
     states: Vec<std::cell::UnsafeCell<Box<dyn std::any::Any>>>,
@@ -67,7 +66,6 @@ impl Controller {
             theme: geng.ui_theme().clone(),
             state: RefCell::new(State {
                 size: vec2(1.0, 1.0),
-                last_touch_pos: None,
                 constraints: default(),
                 positions: default(),
                 states: Vec::new(),

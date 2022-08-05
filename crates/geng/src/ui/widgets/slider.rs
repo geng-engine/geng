@@ -123,7 +123,7 @@ impl<'a> Widget for Slider<'a> {
         }
     }
 
-    fn calc_constraints(&mut self, children: &ConstraintsContext) -> Constraints {
+    fn calc_constraints(&mut self, _children: &ConstraintsContext) -> Constraints {
         Constraints::default()
     }
 }
