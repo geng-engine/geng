@@ -1,8 +1,23 @@
 use super::*;
 
 impl Context {
-    pub fn blend_func(&self, sfactor: Enum, dfactor: Enum) {
-        self.inner.blend_func(sfactor, dfactor);
+    pub fn blend_func(&self, src_factor: Enum, dst_factor: Enum) {
+        self.inner.blend_func(src_factor, dst_factor);
+    }
+
+    pub fn blend_func_separate(
+        &self,
+        src_factor_rgb: Enum,
+        dst_factor_rgb: Enum,
+        src_factor_alpha: Enum,
+        dst_factor_alpha: Enum,
+    ) {
+        self.inner.blend_func_separate(
+            src_factor_rgb,
+            dst_factor_rgb,
+            src_factor_alpha,
+            dst_factor_alpha,
+        );
     }
 
     pub fn clear_color(

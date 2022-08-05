@@ -13,14 +13,81 @@ impl Default for DepthFunc {
     }
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
-pub enum BlendMode {
-    Alpha,
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum BlendFactor {
+    Zero,
+    One,
+    SrcColor,
+    OneMinusSrcColor,
+    DstColor,
+    OneMinusDstColor,
+    SrcAlpha,
+    OneMinusSrcAlpha,
+    DstAlpha,
+    OneMinusDstAlpha,
+    ConstantColor(Rgba<f32>),
+    OneMinusConstantColor(Rgba<f32>),
+    ConstantAlpha(f32),
+    OneMinusConstantAlpha(f32),
+    SrcAlphaSaturate,
 }
 
-impl Default for BlendMode {
-    fn default() -> BlendMode {
-        BlendMode::Alpha
+#[derive(Debug, Clone, PartialEq)]
+pub struct ChannelBlendMode {
+    pub src_factor: BlendFactor,
+    pub dst_factor: BlendFactor,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct BlendMode {
+    pub rgb: ChannelBlendMode,
+    pub alpha: ChannelBlendMode,
+}
+
+impl BlendMode {
+    pub fn combined(mode: ChannelBlendMode) -> Self {
+        Self {
+            rgb: mode.clone(),
+            alpha: mode.clone(),
+        }
+    }
+    pub fn default() -> Self {
+        Self::combined(ChannelBlendMode {
+            src_factor: BlendFactor::SrcAlpha,
+            dst_factor: BlendFactor::OneMinusSrcAlpha,
+        })
+    }
+    pub(crate) fn apply(mode: Option<&Self>, gl: &raw::Context) {
+        if let Some(mode) = mode {
+            gl.enable(raw::BLEND);
+            let raw = |factor: BlendFactor| -> raw::Enum {
+                match factor {
+                    BlendFactor::Zero => raw::ZERO,
+                    BlendFactor::One => raw::ONE,
+                    BlendFactor::SrcColor => raw::SRC_COLOR,
+                    BlendFactor::OneMinusSrcColor => raw::ONE_MINUS_SRC_COLOR,
+                    BlendFactor::DstColor => raw::DST_COLOR,
+                    BlendFactor::OneMinusDstColor => raw::ONE_MINUS_DST_ALPHA,
+                    BlendFactor::SrcAlpha => raw::SRC_ALPHA,
+                    BlendFactor::OneMinusSrcAlpha => raw::ONE_MINUS_SRC_ALPHA,
+                    BlendFactor::DstAlpha => raw::DST_ALPHA,
+                    BlendFactor::OneMinusDstAlpha => raw::ONE_MINUS_DST_ALPHA,
+                    BlendFactor::ConstantColor(_) => todo!(),
+                    BlendFactor::OneMinusConstantColor(_) => todo!(),
+                    BlendFactor::ConstantAlpha(_) => todo!(),
+                    BlendFactor::OneMinusConstantAlpha(_) => todo!(),
+                    BlendFactor::SrcAlphaSaturate => raw::SRC_ALPHA_SATURATE,
+                }
+            };
+            gl.blend_func_separate(
+                raw(mode.rgb.src_factor),
+                raw(mode.rgb.dst_factor),
+                raw(mode.alpha.src_factor),
+                raw(mode.alpha.dst_factor),
+            );
+        } else {
+            gl.disable(raw::BLEND);
+        }
     }
 }
 
@@ -130,7 +197,7 @@ impl StencilMode {
     }
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct DrawParameters {
     pub depth_func: Option<DepthFunc>,
     pub blend_mode: Option<BlendMode>,
@@ -163,15 +230,7 @@ impl DrawParameters {
             Some(depth_test) => gl.depth_func(depth_test as _),
             None => gl.depth_func(raw::ALWAYS),
         }
-        match self.blend_mode {
-            Some(blend_mode) => {
-                gl.enable(raw::BLEND);
-                match blend_mode {
-                    BlendMode::Alpha => gl.blend_func(raw::SRC_ALPHA, raw::ONE_MINUS_SRC_ALPHA),
-                }
-            }
-            None => gl.disable(raw::BLEND),
-        }
+        BlendMode::apply(self.blend_mode.as_ref(), gl);
         StencilMode::apply(self.stencil_mode.as_ref(), gl);
         match self.cull_face {
             Some(cull_face) => {

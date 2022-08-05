@@ -225,7 +225,7 @@ impl Font {
                 ),
                 ugli::DrawParameters {
                     depth_func: None,
-                    blend_mode: Some(ugli::BlendMode::Alpha),
+                    blend_mode: Some(ugli::BlendMode::default()),
                     ..default()
                 },
             );
