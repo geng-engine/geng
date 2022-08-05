@@ -1,58 +1,34 @@
+use std::path::PathBuf;
+
 use super::*;
 
-pub struct AutoSave<T: Serialize> {
-    value: T,
-    path: String,
-    changed: Cell<bool>,
-}
-
-impl<T: Serialize + for<'de> Deserialize<'de> + Default> AutoSave<T> {
-    pub fn load(path: &str) -> Self {
-        Self {
-            value: load(path).unwrap_or_else(|| {
-                let value = default();
-                save(path, &value);
-                value
-            }),
-            path: path.to_owned(),
-            changed: Cell::new(false),
+pub fn base_path() -> PathBuf {
+    #[cfg(target_arch = "wasm32")]
+    {
+        PathBuf::from(".") // TODO: detect app name by url?
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let exe = std::env::current_exe().expect("Failed to find current exe");
+        let app_name = exe.file_stem().unwrap();
+        if let Some(dirs) =
+            directories::ProjectDirs::from("", "", app_name.to_str().expect("Exe name is invalid"))
+        {
+            return dirs.preference_dir().to_path_buf();
         }
-    }
-}
-
-impl<T: Serialize> AutoSave<T> {
-    pub fn save(&self) {
-        save(&self.path, &self.value);
-    }
-}
-
-impl<T: Serialize> Deref for AutoSave<T> {
-    type Target = T;
-    fn deref(&self) -> &T {
-        if self.changed.get() {
-            self.changed.set(false);
-            self.save();
+        if let Some(dir) = exe.parent() {
+            return dir.to_path_buf();
         }
-        &self.value
-    }
-}
-
-impl<T: Serialize> DerefMut for AutoSave<T> {
-    fn deref_mut(&mut self) -> &mut T {
-        self.changed.set(true);
-        &mut self.value
-    }
-}
-
-impl<T: Serialize> Drop for AutoSave<T> {
-    fn drop(&mut self) {
-        self.save();
+        std::env::current_dir().unwrap()
     }
 }
 
 pub fn save<T: Serialize>(path: &str, value: &T) {
+    let base_path = base_path();
+    let path = base_path.join(path);
     #[cfg(target_arch = "wasm32")]
     {
+        let path = path.to_str().unwrap();
         if let Ok(Some(storage)) = web_sys::window().unwrap().local_storage() {
             if let Err(e) = storage.set_item(
                 path,
@@ -64,6 +40,11 @@ pub fn save<T: Serialize>(path: &str, value: &T) {
     }
     #[cfg(not(target_arch = "wasm32"))]
     {
+        if let Err(e) = std::fs::create_dir_all(&base_path) {
+            error!("Failed to create preferences base path: {}", e);
+            return;
+        }
+        let path = &path;
         let mut file = match std::fs::File::create(path) {
             Ok(file) => file,
             Err(e) => {
@@ -78,8 +59,11 @@ pub fn save<T: Serialize>(path: &str, value: &T) {
 }
 
 pub fn load<T: for<'de> Deserialize<'de>>(path: &str) -> Option<T> {
+    let base_path = base_path();
+    let path = base_path.join(path);
     #[cfg(target_arch = "wasm32")]
     {
+        let path = path.to_str().unwrap();
         if let Ok(Some(storage)) = web_sys::window().unwrap().local_storage() {
             match storage
                 .get_item(path)
@@ -100,6 +84,7 @@ pub fn load<T: for<'de> Deserialize<'de>>(path: &str) -> Option<T> {
     }
     #[cfg(not(target_arch = "wasm32"))]
     {
+        let path = &path;
         let file = match std::fs::File::open(path) {
             Ok(file) => file,
             Err(e) => {

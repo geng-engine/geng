@@ -9,7 +9,6 @@ pub use batbox_macros::*;
 pub use prelude::*;
 
 pub mod approx;
-pub mod autosave;
 pub mod collection;
 pub mod color;
 pub mod dialog;
@@ -19,6 +18,7 @@ pub mod geom;
 pub mod localization;
 pub mod logger;
 pub mod num;
+pub mod preferences;
 pub mod program_args;
 pub mod result_ext;
 pub mod rng;

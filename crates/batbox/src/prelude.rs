@@ -68,7 +68,6 @@ pub use ::batbox_derive::*;
 pub use ::batbox_macros::*;
 
 pub use crate::approx::*;
-pub use crate::autosave::AutoSave;
 pub use crate::collection::*;
 pub use crate::color::*;
 pub use crate::diff::*;
