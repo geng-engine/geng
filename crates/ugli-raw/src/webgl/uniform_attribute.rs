@@ -46,6 +46,7 @@ impl Context {
         location: &UniformLocation,
         params: &mut [Int],
     ) {
+        self.use_program(program); // This needs to happen but couldn't find docs
         use wasm_bindgen::JsCast;
         let value = self.inner.get_uniform(program, location);
         if let Some(value) = value.as_f64() {
@@ -63,6 +64,7 @@ impl Context {
         location: &UniformLocation,
         params: &mut [Float],
     ) {
+        self.use_program(program); // This needs to happen but couldn't find docs
         use wasm_bindgen::JsCast;
         let value = self.inner.get_uniform(program, location);
         if let Some(value) = value.as_f64() {
