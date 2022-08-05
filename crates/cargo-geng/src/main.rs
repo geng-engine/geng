@@ -90,6 +90,8 @@ struct Opt {
     #[clap(long)]
     target: Option<String>,
     #[clap(long)]
+    web: bool,
+    #[clap(long)]
     release: bool,
     #[clap(long)]
     all_features: bool,
@@ -145,7 +147,14 @@ fn main() -> Result<(), anyhow::Error> {
     if args.is_empty() {
         todo!("Help");
     }
-    let opt: Opt = clap::Parser::parse_from(args);
+    let mut opt: Opt = clap::Parser::parse_from(args);
+    if opt.web {
+        anyhow::ensure!(
+            opt.target.is_none(),
+            "--web and --target can't be specified at the same time",
+        );
+        opt.target = Some("wasm32-unknown-unknown".to_owned());
+    }
     match opt.sub {
         Sub::Build | Sub::Run | Sub::Serve => {
             let metadata = cargo_metadata::MetadataCommand::new()
