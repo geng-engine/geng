@@ -77,4 +77,16 @@ impl Context {
     pub fn pixel_store(&self, pname: Enum, param: Int) {
         self.inner.pixel_storei(pname, param);
     }
+
+    pub fn stencil_func_separate(&self, face: Enum, func: Enum, r#ref: Int, mask: UInt) {
+        self.inner.stencil_func_separate(face, func, r#ref, mask);
+    }
+
+    pub fn stencil_mask_separate(&self, face: Enum, mask: UInt) {
+        self.inner.stencil_mask_separate(face, mask);
+    }
+
+    pub fn stencil_op_separate(&self, face: Enum, fail: Enum, zfail: Enum, pass: Enum) {
+        self.inner.stencil_op_separate(face, fail, zfail, pass);
+    }
 }
