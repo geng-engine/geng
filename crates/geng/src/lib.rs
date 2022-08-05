@@ -48,7 +48,7 @@ mod cli_args;
 mod context;
 mod debug_overlay;
 pub mod draw_2d;
-mod font;
+pub mod font;
 mod loading_screen;
 pub mod net;
 pub mod obj;

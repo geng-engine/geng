@@ -1,5 +1,9 @@
 use super::*;
 
+pub mod ttf;
+
+pub use ttf::Ttf;
+
 #[derive(ugli::Vertex, Debug)]
 pub struct Vertex {
     pub a_pos: Vec2<f32>,

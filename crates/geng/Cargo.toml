@@ -17,6 +17,7 @@ geng-derive = { path = "../geng-derive", version = "0.12.0" }
 geng-ui-macros = { path = "../geng-ui-macros", version = "0.11.0" }
 ugli = { path = "../ugli", version = "0.12.0" }
 rusttype = { version = "0.9", features = [ "gpu_cache" ] }
+ttf-parser = "0.15"
 serde = "1"
 lazy_static = "1"
 flate2 = "1"
