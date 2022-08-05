@@ -12,6 +12,12 @@ unsafe impl RenderbufferPixel for DepthComponent {
     const GL_FORMAT: raw::Enum = raw::DEPTH_COMPONENT;
 }
 
+pub struct DepthStencilValue;
+
+unsafe impl RenderbufferPixel for DepthStencilValue {
+    const GL_FORMAT: raw::Enum = raw::DEPTH_STENCIL;
+}
+
 pub struct Renderbuffer<T: RenderbufferPixel = Rgba<f32>> {
     pub(crate) ugli: Ugli,
     pub(crate) handle: raw::Renderbuffer,

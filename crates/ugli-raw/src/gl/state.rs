@@ -85,4 +85,22 @@ impl Context {
             gl::PixelStorei(pname, param);
         }
     }
+
+    pub fn stencil_func_separate(&self, face: Enum, func: Enum, r#ref: Int, mask: UInt) {
+        unsafe {
+            gl::StencilFuncSeparate(face, func, r#ref, mask);
+        }
+    }
+
+    pub fn stencil_mask_separate(&self, face: Enum, mask: UInt) {
+        unsafe {
+            gl::StencilMaskSeparate(face, mask);
+        }
+    }
+
+    pub fn stencil_op_separate(&self, face: Enum, fail: Enum, zfail: Enum, pass: Enum) {
+        unsafe {
+            gl::StencilOpSeparate(face, fail, zfail, pass);
+        }
+    }
 }

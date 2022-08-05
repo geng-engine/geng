@@ -14,6 +14,7 @@ pub enum ColorAttachmentRead<'a> {
 pub enum DepthAttachmentRead<'a> {
     None,
     Renderbuffer(&'a Renderbuffer<DepthComponent>),
+    RenderbufferWithStencil(&'a Renderbuffer<DepthStencilValue>),
 }
 
 pub struct FramebufferRead<'a> {
@@ -57,6 +58,14 @@ impl<'a> FramebufferRead<'a> {
                 );
                 // TODO: update/check size
             }
+            DepthAttachmentRead::RenderbufferWithStencil(renderbuffer) => {
+                gl.framebuffer_renderbuffer(
+                    raw::FRAMEBUFFER,
+                    raw::DEPTH_STENCIL_ATTACHMENT,
+                    raw::RENDERBUFFER,
+                    Some(&renderbuffer.handle),
+                );
+            }
         }
         fbo.check();
         ugli.debug_check();
@@ -93,6 +102,7 @@ pub enum ColorAttachment<'a> {
 pub enum DepthAttachment<'a> {
     None,
     Renderbuffer(&'a mut Renderbuffer<DepthComponent>),
+    RenderbufferWithStencil(&'a mut Renderbuffer<DepthStencilValue>),
 }
 
 #[derive(Deref)]
@@ -114,6 +124,9 @@ impl<'a> Framebuffer<'a> {
                     DepthAttachment::None => DepthAttachmentRead::None,
                     DepthAttachment::Renderbuffer(renderbuffer) => {
                         DepthAttachmentRead::Renderbuffer(renderbuffer)
+                    }
+                    DepthAttachment::RenderbufferWithStencil(renderbuffer) => {
+                        DepthAttachmentRead::RenderbufferWithStencil(renderbuffer)
                     }
                 },
             ),
