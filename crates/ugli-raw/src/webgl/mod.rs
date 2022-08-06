@@ -15,6 +15,7 @@ pub type SizeIPtr = i32;
 pub struct Context {
     inner: web_sys::WebGlRenderingContext,
     angle_instanced_arrays: web_sys::AngleInstancedArrays,
+    oes_standard_derivatives: web_sys::OesStandardDerivatives,
 }
 
 impl Context {
@@ -24,12 +25,19 @@ impl Context {
             .get_extension("ANGLE_instanced_arrays")
             .unwrap()
             .expect("ANGLE_instanced_arrays not supported?");
-        // Unchecked cast here because the type is different in different browsers
+        let oes_standard_derivatives = webgl_rendering_context
+            .get_extension("OES_standard_derivatives")
+            .unwrap()
+            .expect("OES_standard_derivatives not supported?");
+        // Unchecked casts here because the type is different in different browsers
         let angle_instanced_arrays =
             angle_instanced_arrays.unchecked_into::<web_sys::AngleInstancedArrays>();
+        let oes_standard_derivatives =
+            oes_standard_derivatives.unchecked_into::<web_sys::OesStandardDerivatives>();
         Self {
             inner: webgl_rendering_context,
             angle_instanced_arrays,
+            oes_standard_derivatives,
         }
     }
 }
