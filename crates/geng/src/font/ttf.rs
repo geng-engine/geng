@@ -16,14 +16,30 @@ impl Default for Options {
     }
 }
 
+#[derive(Debug, Clone, ugli::Vertex)]
+pub struct GlyphInstance {
+    pub i_pos: Vec2<f32>,
+    pub i_size: Vec2<f32>,
+    pub i_uv_pos: Vec2<f32>,
+    pub i_uv_size: Vec2<f32>,
+}
+
+#[derive(Debug)]
+struct GlyphMetrics {
+    uv: AABB<f32>,
+    pos: AABB<f32>,
+}
+
 #[derive(Debug)]
 struct Glyph {
-    bounding_box: Option<AABB<usize>>,
+    metrics: Option<GlyphMetrics>,
+    advance_x: f32,
 }
 
 pub struct Ttf {
     glyphs: HashMap<char, Glyph>,
     pub atlas: ugli::Texture,
+    options: Options,
 }
 
 impl Ttf {
@@ -34,7 +50,8 @@ impl Ttf {
             code_point: char,
             bounding_box: Option<AABB<f32>>,
         }
-        let scale = options.size / (face.ascender() - face.descender()) as f32;
+        let unit_scale = 1.0 / (face.ascender() - face.descender()) as f32;
+        let scale = options.size * unit_scale;
         let mut raw_glyphs = Vec::new();
         let mut found = HashSet::new();
         for subtable in face.tables().cmap.unwrap().subtables {
@@ -84,12 +101,24 @@ impl Ttf {
             .iter()
             .filter(|g| g.bounding_box.is_some())
             .collect();
+        for glyph in &raw_glyphs {
+            if glyph.bounding_box.is_none() {
+                glyphs.insert(
+                    glyph.code_point,
+                    Glyph {
+                        metrics: None,
+                        advance_x: face.glyph_hor_advance(glyph.id).unwrap_or(0) as f32
+                            * unit_scale,
+                    },
+                );
+            }
+        }
         for (i, glyph) in renderable_glyphs.iter().enumerate() {
-            let glyph_size = glyph
+            let glyph_pos = glyph
                 .bounding_box
                 .unwrap()
-                .size()
-                .map(|x| (x + 2.0 * options.max_distance).ceil() as usize);
+                .extend_uniform(options.max_distance);
+            let glyph_size = glyph_pos.size().map(|x| x.ceil() as usize);
             if (y == 0 && i * i >= renderable_glyphs.len())
                 || (y > 0 && x > 0 && x + glyph_size.x > width)
             {
@@ -97,21 +126,34 @@ impl Ttf {
                 y += row_height;
                 row_height = 0;
             }
-            let bounding_box = AABB::point(vec2(x, y)).extend_positive(glyph_size);
-            x = bounding_box.x_max;
-            row_height = row_height.max(bounding_box.height());
+            let uv = AABB::point(vec2(x, y)).extend_positive(glyph_size);
+            x = uv.x_max;
+            row_height = row_height.max(uv.height());
             width = width.max(x);
             glyphs.insert(
                 glyph.code_point,
                 Glyph {
-                    bounding_box: Some(bounding_box),
+                    metrics: Some(GlyphMetrics {
+                        uv: uv.map(|x| x as f32),
+                        pos: glyph_pos.map(|x| x / options.size),
+                    }),
+                    advance_x: face.glyph_hor_advance(glyph.id).unwrap_or(0) as f32 * unit_scale,
                 },
             );
         }
         let height = y + row_height;
-        let mut atlas = ugli::Texture::new_uninitialized(geng.ugli(), vec2(width, height));
+        let atlas_size = vec2(width, height);
+        for glyph in glyphs.values_mut() {
+            if let Some(metrics) = &mut glyph.metrics {
+                metrics.uv.x_min /= atlas_size.x as f32;
+                metrics.uv.x_max /= atlas_size.x as f32;
+                metrics.uv.y_min /= atlas_size.y as f32;
+                metrics.uv.y_max /= atlas_size.y as f32;
+            }
+        }
+        let mut atlas = ugli::Texture::new_uninitialized(geng.ugli(), atlas_size);
         {
-            let mut depth_buffer = ugli::Renderbuffer::new(geng.ugli(), atlas.size());
+            let mut depth_buffer = ugli::Renderbuffer::new(geng.ugli(), atlas_size);
             let mut framebuffer = ugli::Framebuffer::new(
                 geng.ugli(),
                 ugli::ColorAttachment::Texture(&mut atlas),
@@ -217,11 +259,14 @@ impl Ttf {
                     continue;
                 }
                 builder.new_glyph_at(
-                    glyphs[&glyph.code_point]
-                        .bounding_box
+                    (glyphs[&glyph.code_point]
+                        .metrics
+                        .as_ref()
                         .unwrap()
+                        .uv
                         .bottom_left()
-                        .map(|x| x as f32 + options.max_distance)
+                        * atlas_size.map(|x| x as f32))
+                    .map(|x| x + options.max_distance)
                         - glyph.bounding_box.unwrap().bottom_left(),
                 );
                 face.outline_glyph(glyph.id, &mut builder);
@@ -308,6 +353,32 @@ impl Ttf {
                 },
             );
         }
-        Ok(Self { glyphs, atlas })
+        Ok(Self {
+            glyphs,
+            atlas,
+            options,
+        })
+    }
+
+    fn glyphs_for<'a>(&'a self, text: &'a str) -> impl Iterator<Item = &'a Glyph> + 'a {
+        text.chars().filter_map(move |c| self.glyphs.get(&c))
+    }
+
+    pub fn draw_with(&self, text: &str, f: impl FnOnce(&[GlyphInstance], &ugli::Texture)) {
+        let mut vs = Vec::new();
+        let mut x = 0.0;
+        for glyph in self.glyphs_for(text) {
+            // TODO: kerning
+            if let Some(metrics) = &glyph.metrics {
+                vs.push(GlyphInstance {
+                    i_pos: vec2(x, 0.0) + metrics.pos.bottom_left(),
+                    i_size: metrics.pos.size(),
+                    i_uv_pos: metrics.uv.bottom_left(),
+                    i_uv_size: metrics.uv.size(),
+                });
+            }
+            x += glyph.advance_x;
+        }
+        f(&vs, &self.atlas);
     }
 }

@@ -33,6 +33,7 @@ pub struct ContextOptions {
 
 impl Default for ContextOptions {
     fn default() -> Self {
+        let common_glsl = "#extension GL_OES_standard_derivatives : enable\nprecision highp int;\nprecision highp float;\n";
         Self {
             title: "Geng Application".to_string(),
             vsync: true,
@@ -41,13 +42,13 @@ impl Default for ContextOptions {
             antialias: false,
             #[cfg(target_arch = "wasm32")]
             shader_prefix: Some((
-                "precision highp int;\nprecision highp float;\n#define VERTEX_SHADER\n".to_owned(),
-                "precision highp int;\nprecision highp float;\n#define FRAGMENT_SHADER\n".to_owned(),
+                format!("{common_glsl}#define VERTEX_SHADER\n"),
+                format!("{common_glsl}#define FRAGMENT_SHADER\n"),
             )),
             #[cfg(not(target_arch = "wasm32"))]
             shader_prefix: Some((
-                "#version 100\nprecision highp int;\nprecision highp float;\n#define VERTEX_SHADER\n".to_owned(),
-                "#version 100\nprecision highp int;\nprecision highp float;\n#define FRAGMENT_SHADER\n".to_owned(),
+                format!("#version 100\n{common_glsl}#define VERTEX_SHADER\n"),
+                format!("#version 100\n{common_glsl}#define FRAGMENT_SHADER\n"),
             )),
             window_size: None,
             fullscreen: false,
