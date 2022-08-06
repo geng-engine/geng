@@ -28,8 +28,7 @@ float aa(float edge, float x) {
 }
 
 void main() {
-    vec4 sample = texture2D(u_texture, v_uv);
-    float dist = (sample.x - 0.5) * 2.0;
+    float dist = (texture2D(u_texture, v_uv).x - 0.5) * 2.0;
     float w = length(vec2(dFdx(dist), dFdy(dist)));
     float inside = aa(0.0, dist);
     float inside_border = aa(-0.15, dist);
