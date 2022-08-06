@@ -41,7 +41,7 @@ void main() {
     float dist = (sample.x - 0.5) * 2.0;
     float w = length(vec2(dFdx(dist), dFdy(dist)));
     float inside = aa(0.0, dist, w);
-    float inside_border = aa(-0.25, dist, w);
+    float inside_border = aa(-0.15, dist, w);
     vec4 color = vec4(1.0, 0.0, 0.0, 1.0);
     vec4 border_color = vec4(1.0, 1.0, 1.0, 1.0);
     gl_FragColor = color * inside + (1.0 - inside) * (border_color * inside_border + vec4(border_color.xyz, 0.0) * (1.0 - inside_border));

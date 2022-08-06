@@ -12,8 +12,8 @@ impl State {
             geng,
             include_bytes!("../src/font/default.ttf"),
             geng::font::ttf::Options {
-                size: 64.0,
-                max_distance: 16.0,
+                pixel_size: 64.0,
+                max_distance: 0.25,
             },
         )
         .unwrap();
@@ -31,7 +31,12 @@ impl State {
 impl geng::State for State {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         ugli::clear(framebuffer, Some(Rgba::BLACK), None);
-        self.font.draw_with("О, аутлайн!", |glyphs, atlas| {
+        let camera = geng::Camera2d {
+            center: vec2(2.5, 0.0),
+            rotation: 0.0,
+            fov: 4.0,
+        };
+        self.font.draw_with("� О, аутлайн!", |glyphs, atlas| {
             ugli::draw(
                 framebuffer,
                 &self.program,
@@ -52,14 +57,7 @@ impl geng::State for State {
                     ugli::uniforms! {
                         u_texture: atlas,
                     },
-                    geng::camera2d_uniforms(
-                        &geng::Camera2d {
-                            center: vec2(2.0, 0.0),
-                            rotation: 0.0,
-                            fov: 3.0,
-                        },
-                        framebuffer.size().map(|x| x as f32),
-                    ),
+                    geng::camera2d_uniforms(&camera, framebuffer.size().map(|x| x as f32)),
                 ),
                 ugli::DrawParameters {
                     blend_mode: Some(ugli::BlendMode::default()),
@@ -67,6 +65,42 @@ impl geng::State for State {
                 },
             );
         });
+        let start = -100.0;
+        let end = 100.0;
+        let line_width = 0.02;
+        self.geng.draw_2d(
+            framebuffer,
+            &camera,
+            &draw_2d::Segment::new(
+                Segment::new(vec2(start, 0.0), vec2(end, 0.0)),
+                line_width,
+                Rgba::new(1.0, 0.0, 0.0, 0.5),
+            ),
+        );
+        self.geng.draw_2d(
+            framebuffer,
+            &camera,
+            &draw_2d::Segment::new(
+                Segment::new(
+                    vec2(start, self.font.ascender()),
+                    vec2(end, self.font.ascender()),
+                ),
+                line_width,
+                Rgba::new(0.0, 1.0, 0.0, 0.5),
+            ),
+        );
+        self.geng.draw_2d(
+            framebuffer,
+            &camera,
+            &draw_2d::Segment::new(
+                Segment::new(
+                    vec2(start, self.font.descender()),
+                    vec2(end, self.font.descender()),
+                ),
+                line_width,
+                Rgba::new(0.0, 0.0, 1.0, 0.5),
+            ),
+        );
     }
 }
 

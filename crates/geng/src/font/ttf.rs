@@ -2,7 +2,7 @@ use super::*;
 
 #[derive(Clone)]
 pub struct Options {
-    pub size: f32,
+    pub pixel_size: f32,
     pub max_distance: f32,
     // TODO: not all glyphs
 }
@@ -10,7 +10,7 @@ pub struct Options {
 impl Default for Options {
     fn default() -> Self {
         Self {
-            size: 32.0,
+            pixel_size: 32.0,
             max_distance: 8.0,
         }
     }
@@ -38,8 +38,11 @@ struct Glyph {
 
 pub struct Ttf {
     glyphs: HashMap<char, Glyph>,
-    pub atlas: ugli::Texture,
-    options: Options,
+    atlas: ugli::Texture,
+    max_distance: f32,
+    ascender: f32,
+    descender: f32,
+    line_gap: f32,
 }
 
 impl Ttf {
@@ -51,7 +54,7 @@ impl Ttf {
             bounding_box: Option<AABB<f32>>,
         }
         let unit_scale = 1.0 / (face.ascender() - face.descender()) as f32;
-        let scale = options.size * unit_scale;
+        let scale = options.pixel_size * unit_scale;
         let mut raw_glyphs = Vec::new();
         let mut found = HashSet::new();
         for subtable in face.tables().cmap.unwrap().subtables {
@@ -117,7 +120,7 @@ impl Ttf {
             let glyph_pos = glyph
                 .bounding_box
                 .unwrap()
-                .extend_uniform(options.max_distance);
+                .extend_uniform(options.max_distance * options.pixel_size);
             let glyph_size = glyph_pos.size().map(|x| x.ceil() as usize);
             if (y == 0 && i * i >= renderable_glyphs.len())
                 || (y > 0 && x > 0 && x + glyph_size.x > width)
@@ -135,7 +138,7 @@ impl Ttf {
                 Glyph {
                     metrics: Some(GlyphMetrics {
                         uv: uv.map(|x| x as f32),
-                        pos: glyph_pos.map(|x| x / options.size),
+                        pos: glyph_pos.map(|x| x / options.pixel_size),
                     }),
                     advance_x: face.glyph_hor_advance(glyph.id).unwrap_or(0) as f32 * unit_scale,
                 },
@@ -202,8 +205,10 @@ impl Ttf {
                     self.stencil_mesh.push(v(self.offset.extend(0.0)));
                     self.stencil_mesh.push(v(a.extend(0.0)));
                     self.stencil_mesh.push(v(b.extend(0.0)));
-                    let a_quad = AABB::point(a).extend_uniform(self.options.max_distance);
-                    let b_quad = AABB::point(b).extend_uniform(self.options.max_distance);
+                    let a_quad = AABB::point(a)
+                        .extend_uniform(self.options.max_distance * self.options.pixel_size);
+                    let b_quad = AABB::point(b)
+                        .extend_uniform(self.options.max_distance * self.options.pixel_size);
                     self.add_triangle_fan_loop(
                         v(a.extend(0.0)),
                         a_quad.corners().map(|p| v(p.extend(1.0))),
@@ -266,7 +271,7 @@ impl Ttf {
                         .uv
                         .bottom_left()
                         * atlas_size.map(|x| x as f32))
-                    .map(|x| x + options.max_distance)
+                    .map(|x| x + options.max_distance * options.pixel_size)
                         - glyph.bounding_box.unwrap().bottom_left(),
                 );
                 face.outline_glyph(glyph.id, &mut builder);
@@ -356,8 +361,27 @@ impl Ttf {
         Ok(Self {
             glyphs,
             atlas,
-            options,
+            max_distance: options.max_distance,
+            ascender: face.ascender() as f32 * unit_scale,
+            descender: face.descender() as f32 * unit_scale,
+            line_gap: face.line_gap() as f32 * unit_scale,
         })
+    }
+
+    pub fn max_distance(&self) -> f32 {
+        self.max_distance
+    }
+
+    pub fn ascender(&self) -> f32 {
+        self.ascender
+    }
+
+    pub fn descender(&self) -> f32 {
+        self.descender
+    }
+
+    pub fn line_gap(&self) -> f32 {
+        self.line_gap
     }
 
     fn glyphs_for<'a>(&'a self, text: &'a str) -> impl Iterator<Item = &'a Glyph> + 'a {
