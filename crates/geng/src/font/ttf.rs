@@ -384,14 +384,28 @@ impl Ttf {
         self.line_gap
     }
 
-    fn glyphs_for<'a>(&'a self, text: &'a str) -> impl Iterator<Item = &'a Glyph> + 'a {
-        text.chars().filter_map(move |c| self.glyphs.get(&c))
+    pub fn measure(&self, text: &str) -> Option<AABB<f32>> {
+        self.draw_with(text, |glyphs, _| {
+            if glyphs.is_empty() {
+                return None;
+            }
+            Some(AABB::points_bounding_box(glyphs.iter().flat_map(|glyph| {
+                [
+                    glyph.i_pos + vec2(self.max_distance, self.max_distance),
+                    glyph.i_pos + glyph.i_size - vec2(self.max_distance, self.max_distance),
+                ]
+            })))
+        })
     }
 
-    pub fn draw_with(&self, text: &str, f: impl FnOnce(&[GlyphInstance], &ugli::Texture)) {
+    pub fn draw_with<R>(
+        &self,
+        text: &str,
+        f: impl FnOnce(&[GlyphInstance], &ugli::Texture) -> R,
+    ) -> R {
         let mut vs = Vec::new();
         let mut x = 0.0;
-        for glyph in self.glyphs_for(text) {
+        for glyph in text.chars().filter_map(move |c| self.glyphs.get(&c)) {
             // TODO: kerning
             if let Some(metrics) = &glyph.metrics {
                 vs.push(GlyphInstance {
@@ -403,6 +417,6 @@ impl Ttf {
             }
             x += glyph.advance_x;
         }
-        f(&vs, &self.atlas);
+        f(&vs, &self.atlas)
     }
 }
