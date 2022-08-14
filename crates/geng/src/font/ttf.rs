@@ -4,14 +4,14 @@ use super::*;
 pub struct Options {
     pub pixel_size: f32,
     pub max_distance: f32,
-    // TODO: not all glyphs
+    // TODO: specify a set of glyphs
 }
 
 impl Default for Options {
     fn default() -> Self {
         Self {
-            pixel_size: 32.0,
-            max_distance: 8.0,
+            pixel_size: 64.0,
+            max_distance: 0.25,
         }
     }
 }
@@ -37,6 +37,8 @@ struct Glyph {
 }
 
 pub struct Ttf {
+    ugli: Ugli,
+    program: ugli::Program, // TODO: don't need to compile for each font?
     glyphs: HashMap<char, Glyph>,
     atlas: ugli::Texture,
     max_distance: f32,
@@ -47,6 +49,14 @@ pub struct Ttf {
 
 impl Ttf {
     pub fn new(geng: &Geng, data: &[u8], options: Options) -> anyhow::Result<Self> {
+        Self::new_with(geng.ugli(), geng.shader_lib(), data, options)
+    }
+    pub(crate) fn new_with(
+        ugli: &Ugli,
+        shader_lib: &ShaderLib,
+        data: &[u8],
+        options: Options,
+    ) -> anyhow::Result<Self> {
         let face = ttf_parser::Face::from_slice(data, 0)?;
         struct RawGlyph {
             id: ttf_parser::GlyphId,
@@ -154,11 +164,11 @@ impl Ttf {
                 metrics.uv.y_max /= atlas_size.y as f32;
             }
         }
-        let mut atlas = ugli::Texture::new_uninitialized(geng.ugli(), atlas_size);
+        let mut atlas = ugli::Texture::new_uninitialized(ugli, atlas_size);
         {
-            let mut depth_buffer = ugli::Renderbuffer::new(geng.ugli(), atlas_size);
+            let mut depth_buffer = ugli::Renderbuffer::new(ugli, atlas_size);
             let mut framebuffer = ugli::Framebuffer::new(
-                geng.ugli(),
+                ugli,
                 ugli::ColorAttachment::Texture(&mut atlas),
                 ugli::DepthAttachment::RenderbufferWithStencil(&mut depth_buffer),
             );
@@ -241,15 +251,19 @@ impl Ttf {
                     self.add_line(a, b);
                 }
                 fn quad_to(&mut self, x1: f32, y1: f32, x: f32, y: f32) {
+                    // TODO
                     self.line_to(x1, y1);
                     self.line_to(x, y)
                 }
                 fn curve_to(&mut self, x1: f32, y1: f32, x2: f32, y2: f32, x: f32, y: f32) {
+                    // TODO
                     self.line_to(x1, y1);
                     self.line_to(x2, y2);
                     self.line_to(x, y);
                 }
-                fn close(&mut self) {}
+                fn close(&mut self) {
+                    // TODO: hm?
+                }
             }
             let mut builder = Builder {
                 distance_mesh: vec![],
@@ -276,15 +290,12 @@ impl Ttf {
                 );
                 face.outline_glyph(glyph.id, &mut builder);
             }
-            let line_shader = geng
-                .shader_lib()
-                .compile(include_str!("ttf_line.glsl"))
-                .unwrap();
+            let line_shader = shader_lib.compile(include_str!("ttf_line.glsl")).unwrap();
             ugli::draw(
                 framebuffer,
                 &line_shader,
                 ugli::DrawMode::Triangles,
-                &ugli::VertexBuffer::new_static(geng.ugli(), builder.stencil_mesh),
+                &ugli::VertexBuffer::new_static(ugli, builder.stencil_mesh),
                 ugli::uniforms! {
                     u_framebuffer_size: framebuffer.size(),
                 },
@@ -316,7 +327,7 @@ impl Ttf {
                 framebuffer,
                 &line_shader,
                 ugli::DrawMode::Triangles,
-                &ugli::VertexBuffer::new_static(geng.ugli(), builder.distance_mesh),
+                &ugli::VertexBuffer::new_static(ugli, builder.distance_mesh),
                 ugli::uniforms! {
                     u_framebuffer_size: framebuffer.size(),
                 },
@@ -330,7 +341,7 @@ impl Ttf {
                 &line_shader,
                 ugli::DrawMode::TriangleFan,
                 &ugli::VertexBuffer::new_static(
-                    geng.ugli(),
+                    ugli,
                     AABB::point(vec2(0, 0))
                         .extend_positive(framebuffer.size())
                         .corners()
@@ -359,6 +370,8 @@ impl Ttf {
             );
         }
         Ok(Self {
+            ugli: ugli.clone(),
+            program: shader_lib.compile(include_str!("shader.glsl")).unwrap(),
             glyphs,
             atlas,
             max_distance: options.max_distance,
@@ -384,7 +397,7 @@ impl Ttf {
         self.line_gap
     }
 
-    pub fn measure(&self, text: &str) -> Option<AABB<f32>> {
+    pub fn measure_bounding_box(&self, text: &str) -> Option<AABB<f32>> {
         self.draw_with(text, |glyphs, _| {
             if glyphs.is_empty() {
                 return None;
@@ -396,6 +409,15 @@ impl Ttf {
                 ]
             })))
         })
+    }
+
+    pub fn advance(&self, text: &str) -> f32 {
+        let mut x = 0.0;
+        for glyph in text.chars().filter_map(move |c| self.glyphs.get(&c)) {
+            // TODO: kerning
+            x += glyph.advance_x;
+        }
+        x
     }
 
     pub fn draw_with<R>(
@@ -418,5 +440,87 @@ impl Ttf {
             x += glyph.advance_x;
         }
         f(&vs, &self.atlas)
+    }
+
+    #[deprecated]
+    pub fn measure(&self, text: &str, size: f32) -> Option<AABB<f32>> {
+        self.measure_bounding_box(text)
+            .map(|aabb| aabb.map(|x| x * size))
+    }
+
+    #[deprecated]
+    pub(crate) fn draw_impl(
+        &self,
+        framebuffer: &mut ugli::Framebuffer,
+        camera: &(impl AbstractCamera2d + ?Sized),
+        transform: Mat3<f32>,
+        text: &str,
+        pos: Vec2<f32>,
+        size: f32,
+        color: Rgba<f32>,
+    ) {
+        let transform = transform * Mat3::translate(pos) * Mat3::scale_uniform(size);
+        self.draw_with(text, |glyphs, texture| {
+            let framebuffer_size = framebuffer.size();
+            ugli::draw(
+                framebuffer,
+                &self.program,
+                ugli::DrawMode::TriangleFan,
+                // TODO: don't create VBs each time
+                ugli::instanced(
+                    &ugli::VertexBuffer::new_dynamic(
+                        &self.ugli,
+                        AABB::point(Vec2::ZERO)
+                            .extend_positive(vec2(1.0, 1.0))
+                            .corners()
+                            .into_iter()
+                            .map(|v| draw_2d::Vertex { a_pos: v })
+                            .collect(),
+                    ),
+                    &ugli::VertexBuffer::new_dynamic(&self.ugli, glyphs.to_vec()),
+                ),
+                (
+                    ugli::uniforms! {
+                        u_texture: texture,
+                        u_model_matrix: transform,
+                        u_color: color,
+                    },
+                    camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
+                ),
+                ugli::DrawParameters {
+                    depth_func: None,
+                    blend_mode: Some(ugli::BlendMode::default()),
+                    ..default()
+                },
+            );
+        });
+    }
+
+    #[deprecated]
+    pub fn draw(
+        &self,
+        framebuffer: &mut ugli::Framebuffer,
+        camera: &impl AbstractCamera2d,
+        text: &str,
+        pos: Vec2<f32>,
+        align: TextAlign,
+        size: f32,
+        color: Rgba<f32>,
+    ) {
+        let mut pos = pos;
+        for line in text.lines().rev() {
+            if let Some(aabb) = self.measure(line, size) {
+                self.draw_impl(
+                    framebuffer,
+                    camera,
+                    Mat3::identity(),
+                    line,
+                    vec2(pos.x - aabb.width() * align.0, pos.y),
+                    size,
+                    color,
+                );
+            }
+            pos.y += size;
+        }
     }
 }

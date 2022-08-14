@@ -75,7 +75,7 @@ impl Geng {
         let draw_2d = Rc::new(draw_2d::Helper::new(&shader_lib, &ugli));
         let default_font = Rc::new({
             let data = include_bytes!("font/default.ttf") as &[u8];
-            Font::new_with(window.ugli(), &shader_lib, data.to_owned()).unwrap()
+            Font::new_with(window.ugli(), &shader_lib, data, default()).unwrap()
         });
         Self {
             inner: Rc::new(GengImpl {
