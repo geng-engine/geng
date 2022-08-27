@@ -66,7 +66,7 @@ impl State {
 
 impl geng::State for State {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
-        ugli::clear(framebuffer, Some(Rgba::BLACK), None);
+        ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
         let text = "� О, аутлайн!";
         let bb = self.font.measure_bounding_box(text).unwrap();
         let camera = geng::Camera2d {

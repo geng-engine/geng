@@ -37,7 +37,7 @@ impl geng::State for State {
         }
     }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
-        ugli::clear(framebuffer, Some(Rgba::BLACK), None);
+        ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
         self.geng.default_font().draw(
             framebuffer,
             &geng::Camera2d {

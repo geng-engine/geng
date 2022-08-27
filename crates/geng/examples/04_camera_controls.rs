@@ -40,7 +40,7 @@ impl geng::State for State {
     }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         self.framebuffer_size = framebuffer.size().map(|x| x as f32); // Save framebuffer size
-        ugli::clear(framebuffer, Some(Rgba::BLACK), None);
+        ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
         self.geng.default_font().draw(
             framebuffer,
             &self.camera,

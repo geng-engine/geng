@@ -43,7 +43,7 @@ impl<T: Model, G: State> ConnectingState<T, G> {
 impl<T: Model, G: State> State for ConnectingState<T, G> {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         let framebuffer_size = framebuffer.size();
-        ugli::clear(framebuffer, Some(Rgba::WHITE), None);
+        ugli::clear(framebuffer, Some(Rgba::WHITE), None, None);
         self.geng.default_font().draw(
             framebuffer,
             &PixelPerfectCamera,

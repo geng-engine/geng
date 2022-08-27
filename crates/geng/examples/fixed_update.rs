@@ -13,7 +13,7 @@ struct State {
 
 impl geng::State for State {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
-        ugli::clear(framebuffer, Some(Rgba::BLACK), None);
+        ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
 
         // Draw current time to screen
         self.geng.default_font().draw(

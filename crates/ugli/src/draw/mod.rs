@@ -15,7 +15,12 @@ pub enum DrawMode {
     TriangleFan,
 }
 
-pub fn clear(framebuffer: &mut Framebuffer, color: Option<Rgba<f32>>, depth: Option<f32>) {
+pub fn clear(
+    framebuffer: &mut Framebuffer,
+    color: Option<Rgba<f32>>,
+    depth: Option<f32>,
+    stencil: Option<StencilValue>,
+) {
     let gl = &framebuffer.fbo.ugli.inner.raw;
     framebuffer.fbo.bind();
     let mut flags = 0;
@@ -28,6 +33,10 @@ pub fn clear(framebuffer: &mut Framebuffer, color: Option<Rgba<f32>>, depth: Opt
         flags |= raw::DEPTH_BUFFER_BIT;
         gl.clear_depth(depth as _);
         gl.depth_mask(raw::TRUE);
+    }
+    if let Some(stencil) = stencil {
+        flags |= raw::STENCIL_BUFFER_BIT;
+        gl.clear_stencil(stencil as _);
     }
     gl.clear(flags);
     framebuffer.fbo.ugli.debug_check();

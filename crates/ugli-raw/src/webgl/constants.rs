@@ -96,3 +96,4 @@ pub const DST_COLOR: Enum = web_sys::WebGlRenderingContext::DST_COLOR;
 pub const ONE_MINUS_DST_ALPHA: Enum = web_sys::WebGlRenderingContext::ONE_MINUS_DST_ALPHA;
 pub const DST_ALPHA: Enum = web_sys::WebGlRenderingContext::DST_ALPHA;
 pub const SRC_ALPHA_SATURATE: Enum = web_sys::WebGlRenderingContext::SRC_ALPHA_SATURATE;
+pub const STENCIL_BUFFER_BIT: Enum = web_sys::WebGlRenderingContext::STENCIL_BUFFER_BIT;

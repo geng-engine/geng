@@ -15,6 +15,7 @@ impl geng::State for State {
             framebuffer,
             Some(Rgba::BLACK), // using black color
             None,              // without clearing depth buffer
+            None,              // or stencil
         );
     }
 }

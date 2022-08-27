@@ -42,6 +42,12 @@ impl Context {
         }
     }
 
+    pub fn clear_stencil(&self, stencil: Int) {
+        unsafe {
+            gl::ClearStencil(stencil);
+        }
+    }
+
     pub fn color_mask(&self, red: Bool, green: Bool, blue: Bool, alpha: Bool) {
         unsafe {
             gl::ColorMask(red, green, blue, alpha);

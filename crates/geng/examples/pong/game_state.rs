@@ -196,7 +196,7 @@ impl geng::State for GameState {
 
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         // Clear background
-        ugli::clear(framebuffer, Some(Rgba::BLACK), None);
+        ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
 
         // Draw boundaries
         let boundary = AABB::point(self.boundary.center())

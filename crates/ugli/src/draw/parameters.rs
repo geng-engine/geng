@@ -109,7 +109,7 @@ pub enum Condition {
     Always = raw::ALWAYS as _,
 }
 
-type StencilValue = u8;
+pub type StencilValue = u8;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct StencilTest {

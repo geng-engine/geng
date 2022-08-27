@@ -173,7 +173,12 @@ impl Ttf {
                 ugli::DepthAttachment::RenderbufferWithStencil(&mut depth_buffer),
             );
             let framebuffer = &mut framebuffer;
-            ugli::clear(framebuffer, Some(Rgba::TRANSPARENT_BLACK), Some(1.0));
+            ugli::clear(
+                framebuffer,
+                Some(Rgba::TRANSPARENT_BLACK),
+                Some(1.0),
+                Some(0),
+            );
 
             #[derive(ugli::Vertex, Copy, Clone)]
             struct Vertex {

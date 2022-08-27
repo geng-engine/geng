@@ -34,6 +34,10 @@ impl Context {
         self.inner.clear_depth(depth);
     }
 
+    pub fn clear_stencil(&self, stencil: Int) {
+        self.inner.clear_stencil(stencil);
+    }
+
     pub fn color_mask(&self, red: Bool, green: Bool, blue: Bool, alpha: Bool) {
         self.inner.color_mask(red, green, blue, alpha);
     }
