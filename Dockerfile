@@ -15,6 +15,7 @@ RUN set -eux; \
         pkg-config \
         libssl-dev \
         gcc \
+        g++ \
         make \
         cmake \
         libasound2-dev \
@@ -23,7 +24,7 @@ RUN set -eux; \
         mingw-w64 \
         libxml2-dev \
         gcc-arm-linux-gnueabihf \
-        libc6-dev-armhf-cross \
+        libc6-dev-armhf-cross
     ; \
     rm -rf /var/lib/apt/lists/*
 
