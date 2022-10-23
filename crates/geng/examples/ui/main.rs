@@ -1,5 +1,7 @@
 use geng::prelude::*;
 
+mod slider;
+
 struct State {
     geng: Geng,
     counter: i32,
@@ -28,6 +30,10 @@ impl geng::State for State {
         if plus_button.was_clicked() {
             self.counter += 1;
         }
+        let slider = slider::Slider::new(cx, (self.counter as f64).clamp(0.0, 100.0), 0.0..=100.0);
+        if let Some(change) = slider.get_change() {
+            self.counter = change as _;
+        }
         (
             "counter example".center(),
             (
@@ -36,6 +42,9 @@ impl geng::State for State {
                 plus_button,
             )
                 .row()
+                .center(),
+            slider
+                .fixed_size(vec2(100.0, cx.theme().text_size as f64))
                 .center(),
         )
             .column()
