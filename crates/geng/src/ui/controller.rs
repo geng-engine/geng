@@ -81,16 +81,20 @@ impl Controller {
         &self.theme
     }
     pub fn get_state<T: Default + 'static>(&self) -> &mut T {
+        self.get_state_with(default)
+    }
+    pub fn get_state_with<T: 'static>(&self, f: impl FnOnce() -> T) -> &mut T {
+        let mut f = Some(f);
         let mut state = self.state.borrow_mut();
         if state.next_state >= state.states.len() {
             state
                 .states
-                .push(std::cell::UnsafeCell::new(Box::new(T::default())));
+                .push(std::cell::UnsafeCell::new(Box::new(f.take().unwrap()())));
         }
         let current: &mut Box<dyn std::any::Any> =
             unsafe { &mut *state.states[state.next_state].get() };
         if !current.is::<T>() {
-            *current = Box::new(T::default());
+            *current = Box::new(f.take().unwrap()());
         }
         state.next_state += 1;
         current.downcast_mut().unwrap()

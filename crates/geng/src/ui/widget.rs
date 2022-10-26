@@ -66,6 +66,15 @@ pub struct Constraints {
     pub flex: Vec2<f64>,
 }
 
+impl Constraints {
+    pub fn zero() -> Self {
+        Self {
+            min_size: Vec2::ZERO,
+            flex: Vec2::ZERO,
+        }
+    }
+}
+
 impl Default for Constraints {
     fn default() -> Self {
         Self {

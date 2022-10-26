@@ -60,8 +60,11 @@ mod ext {
     use super::*;
 
     pub trait WidgetExt<'a>: Widget + Sized + 'a {
+        fn background_color(self, color: Rgba<f32>) -> Stack<'a> {
+            self.background(ColorBox::new(color))
+        }
         fn background(self, other: impl Widget + 'a) -> Stack<'a> {
-            stack![self, other]
+            stack![other, self]
         }
     }
 

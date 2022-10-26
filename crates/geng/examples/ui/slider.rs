@@ -3,6 +3,7 @@ use super::*;
 use geng::ui::*;
 
 pub struct Slider<'a> {
+    cx: &'a Controller,
     sense: &'a mut Sense,
     pos: &'a mut Option<AABB<f64>>,
     tick_radius: &'a mut f32,
@@ -16,6 +17,7 @@ impl<'a> Slider<'a> {
 
     pub fn new(cx: &'a Controller, value: f64, range: RangeInclusive<f64>) -> Self {
         Slider {
+            cx,
             sense: cx.get_state(),
             tick_radius: cx.get_state(),
             pos: cx.get_state(),
@@ -127,6 +129,9 @@ impl<'a> Widget for Slider<'a> {
     }
 
     fn calc_constraints(&mut self, _children: &ConstraintsContext) -> Constraints {
-        Constraints::default()
+        Constraints {
+            min_size: vec2(1.0, 1.0) * self.cx.theme().text_size as f64,
+            flex: vec2(1.0, 0.0),
+        }
     }
 }
