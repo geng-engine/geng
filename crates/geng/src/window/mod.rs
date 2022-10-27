@@ -54,6 +54,7 @@ impl Window {
                 &canvas,
                 ugli::WebGLContextOptions {
                     antialias: options.antialias,
+                    alpha: options.transparency,
                     ..default()
                 },
             );

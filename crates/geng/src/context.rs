@@ -26,6 +26,7 @@ pub struct ContextOptions {
     pub fixed_delta_time: f64,
     pub max_delta_time: f64,
     pub antialias: bool,
+    pub transparency: bool,
     pub shader_prefix: Option<(String, String)>,
     pub window_size: Option<Vec2<usize>>,
     pub fullscreen: bool,
@@ -40,6 +41,7 @@ impl Default for ContextOptions {
             fixed_delta_time: 0.05,
             max_delta_time: 0.1,
             antialias: false,
+            transparency: false,
             #[cfg(target_arch = "wasm32")]
             shader_prefix: Some((
                 format!("{common_glsl}#define VERTEX_SHADER\n"),
