@@ -99,6 +99,10 @@ impl SoundEffect {
         #[cfg(not(target_arch = "wasm32"))]
         self.sink().play();
     }
+    pub fn stop(mut self) {
+        #[cfg(not(target_arch = "wasm32"))]
+        self.sink().stop();
+    }
     pub fn pause(&mut self) {
         #[cfg(target_arch = "wasm32")]
         self.inner.pause().unwrap();
@@ -114,6 +118,12 @@ impl SoundEffect {
 impl Drop for SoundEffect {
     fn drop(&mut self) {
         #[cfg(not(target_arch = "wasm32"))]
-        self.sink.take().unwrap().detach();
+        {
+            let sink = self.sink.take().unwrap();
+            if sink.volume() == 0.0 || sink.is_paused() {
+                sink.stop();
+            }
+            sink.detach();
+        }
     }
 }
