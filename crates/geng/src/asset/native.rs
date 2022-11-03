@@ -54,6 +54,7 @@ impl LoadAsset for Sound {
         Box::pin(async move {
             Ok(Sound {
                 output_stream_handle: geng.inner.audio.output_stream_handle.clone(),
+                geng,
                 data: data.await??.into(),
                 looped: false,
             })

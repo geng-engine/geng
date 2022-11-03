@@ -41,16 +41,18 @@ impl LoadAsset for ugli::Texture {
 
 #[cfg(feature = "audio")]
 impl LoadAsset for Sound {
-    fn load(_: &Geng, path: &std::path::Path) -> AssetFuture<Self> {
+    fn load(geng: &Geng, path: &std::path::Path) -> AssetFuture<Self> {
         let (sender, receiver) = futures::channel::oneshot::channel();
         let audio = web_sys::HtmlAudioElement::new_with_src(path.to_str().unwrap()).unwrap();
         let path = Rc::new(path.to_owned());
+        let geng = geng.clone();
         let handler = {
             let audio = audio.clone();
             move |success: bool| {
                 sender
                     .send(if success {
                         Ok(Sound {
+                            geng,
                             inner: audio,
                             looped: false,
                         })

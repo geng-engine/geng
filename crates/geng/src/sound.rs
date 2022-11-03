@@ -1,16 +1,20 @@
 use super::*;
 
-pub(crate) struct AudioContext {
+pub struct AudioContext {
     // #[cfg(not(target_arch = "wasm32"))]
     // pub(crate) output_stream: rodio::OutputStream,
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) output_stream_handle: Arc<rodio::OutputStreamHandle>,
+    #[cfg(target_arch = "wasm32")]
+    pub(crate) context: web_sys::AudioContext,
 }
 
 impl AudioContext {
     #[cfg(target_arch = "wasm32")]
     pub(crate) fn new() -> Self {
-        Self {}
+        Self {
+            context: web_sys::AudioContext::new().expect("Failed to initialize audio context"),
+        }
     }
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -29,9 +33,26 @@ impl AudioContext {
             }
         }
     }
+
+    pub fn set_listener_position(&self, pos: Vec3<f64>) {
+        #[cfg(target_arch = "wasm32")]
+        {
+            self.context.listener().set_position(pos.x, pos.y, pos.z);
+        }
+    }
+
+    pub fn set_listener_orientation(&self, forward: Vec3<f64>, up: Vec3<f64>) {
+        #[cfg(target_arch = "wasm32")]
+        {
+            self.context
+                .listener()
+                .set_orientation(forward.x, forward.y, forward.z, up.x, up.y, up.z);
+        }
+    }
 }
 
 pub struct Sound {
+    pub(crate) geng: Geng,
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) output_stream_handle: Arc<rodio::OutputStreamHandle>,
     #[cfg(target_arch = "wasm32")]
@@ -44,6 +65,7 @@ pub struct Sound {
 impl Sound {
     pub fn effect(&self) -> SoundEffect {
         SoundEffect {
+            geng: self.geng.clone(),
             #[cfg(target_arch = "wasm32")]
             inner: {
                 let effect = self
@@ -51,6 +73,18 @@ impl Sound {
                     .clone_node()
                     .unwrap()
                     .dyn_into::<web_sys::HtmlAudioElement>()
+                    .unwrap();
+                let panner_node = web_sys::PannerNode::new(&self.geng.inner.audio.context).unwrap();
+                // panner_node.set_position(10.0, 0.0, 0.0);
+                self.geng
+                    .inner
+                    .audio
+                    .context
+                    .create_media_element_source(&effect)
+                    .unwrap()
+                    .connect_with_audio_node(&panner_node)
+                    .unwrap()
+                    .connect_with_audio_node(&self.geng.inner.audio.context.destination())
                     .unwrap();
                 effect.set_loop(self.looped);
                 effect
@@ -80,6 +114,7 @@ impl Sound {
 }
 
 pub struct SoundEffect {
+    geng: Geng,
     #[cfg(target_arch = "wasm32")]
     inner: web_sys::HtmlAudioElement,
     #[cfg(not(target_arch = "wasm32"))]

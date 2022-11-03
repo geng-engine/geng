@@ -100,6 +100,10 @@ impl Geng {
         &self.inner.window
     }
 
+    pub fn audio(&self) -> &AudioContext {
+        &self.inner.audio
+    }
+
     pub fn ugli(&self) -> &Ugli {
         self.inner.window.ugli()
     }
