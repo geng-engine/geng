@@ -19,6 +19,8 @@ struct Field {
     ty: syn::Type,
     #[darling(default)]
     path: Option<String>,
+    #[darling(default)]
+    postprocess: Option<syn::Path>,
     #[darling(default, map = "parse_syn")]
     load_with: Option<syn::Expr>,
     #[darling(default, map = "parse_syn")]
@@ -96,9 +98,20 @@ impl DeriveInput {
                     path
                 }},
             };
-            quote! {
+            let mut loader = quote! {
                 <#ty as geng::LoadAsset>::load(geng, &base_path.join(#path))
+            };
+            if let Some(postprocess) = &field.postprocess {
+                loader = quote! {
+                    #loader.map(|result| {
+                        result.map(|mut asset| {
+                            #postprocess(&mut asset);
+                            asset
+                        })
+                    })
+                };
             }
+            loader
         });
         let load_fields = if sequential {
             quote! {
