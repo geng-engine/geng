@@ -64,31 +64,35 @@ pub struct Sound {
 
 impl Sound {
     pub fn effect(&self) -> SoundEffect {
+        #[cfg(target_arch = "wasm32")]
+        let (panner_node, effect) = {
+            let effect = self
+                .inner
+                .clone_node()
+                .unwrap()
+                .dyn_into::<web_sys::HtmlAudioElement>()
+                .unwrap();
+            let panner_node = web_sys::PannerNode::new(&self.geng.inner.audio.context).unwrap();
+            panner_node.set_distance_model(web_sys::DistanceModelType::Linear);
+            self.geng
+                .inner
+                .audio
+                .context
+                .create_media_element_source(&effect)
+                .unwrap()
+                .connect_with_audio_node(&panner_node)
+                .unwrap()
+                .connect_with_audio_node(&self.geng.inner.audio.context.destination())
+                .unwrap();
+            effect.set_loop(self.looped);
+            (panner_node, effect)
+        };
         SoundEffect {
             geng: self.geng.clone(),
             #[cfg(target_arch = "wasm32")]
-            inner: {
-                let effect = self
-                    .inner
-                    .clone_node()
-                    .unwrap()
-                    .dyn_into::<web_sys::HtmlAudioElement>()
-                    .unwrap();
-                let panner_node = web_sys::PannerNode::new(&self.geng.inner.audio.context).unwrap();
-                // panner_node.set_position(10.0, 0.0, 0.0);
-                self.geng
-                    .inner
-                    .audio
-                    .context
-                    .create_media_element_source(&effect)
-                    .unwrap()
-                    .connect_with_audio_node(&panner_node)
-                    .unwrap()
-                    .connect_with_audio_node(&self.geng.inner.audio.context.destination())
-                    .unwrap();
-                effect.set_loop(self.looped);
-                effect
-            },
+            inner: effect,
+            #[cfg(target_arch = "wasm32")]
+            panner_node,
             #[cfg(not(target_arch = "wasm32"))]
             sink: Some({
                 let sink = rodio::Sink::try_new(&self.output_stream_handle).unwrap();
@@ -117,6 +121,8 @@ pub struct SoundEffect {
     geng: Geng,
     #[cfg(target_arch = "wasm32")]
     inner: web_sys::HtmlAudioElement,
+    #[cfg(target_arch = "wasm32")]
+    pub(crate) panner_node: web_sys::PannerNode,
     #[cfg(not(target_arch = "wasm32"))]
     sink: Option<rodio::Sink>,
 }
@@ -147,6 +153,15 @@ impl SoundEffect {
     #[cfg(not(target_arch = "wasm32"))]
     fn sink(&mut self) -> &mut rodio::Sink {
         self.sink.as_mut().unwrap()
+    }
+    pub fn set_position(&mut self, position: Vec3<f64>) {
+        #[cfg(target_arch = "wasm32")]
+        self.panner_node
+            .set_position(position.x, position.y, position.z);
+    }
+    pub fn set_max_distance(&mut self, max_distance: f64) {
+        #[cfg(target_arch = "wasm32")]
+        self.panner_node.set_max_distance(max_distance);
     }
 }
 
