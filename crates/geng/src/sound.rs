@@ -51,6 +51,12 @@ impl AudioContext {
     }
 }
 
+#[cfg(target_arch = "wasm32")]
+enum SpatialState {
+    NotSpatial(web_sys::MediaElementAudioSourceNode),
+    Spatial(web_sys::PannerNode),
+}
+
 pub struct Sound {
     pub(crate) geng: Geng,
     #[cfg(not(target_arch = "wasm32"))]
@@ -65,34 +71,32 @@ pub struct Sound {
 impl Sound {
     pub fn effect(&self) -> SoundEffect {
         #[cfg(target_arch = "wasm32")]
-        let (panner_node, effect) = {
+        let (audio_node, effect) = {
             let effect = self
                 .inner
                 .clone_node()
                 .unwrap()
                 .dyn_into::<web_sys::HtmlAudioElement>()
                 .unwrap();
-            let panner_node = web_sys::PannerNode::new(&self.geng.inner.audio.context).unwrap();
-            panner_node.set_distance_model(web_sys::DistanceModelType::Linear);
-            self.geng
+            let audio_node = self
+                .geng
                 .inner
                 .audio
                 .context
                 .create_media_element_source(&effect)
-                .unwrap()
-                .connect_with_audio_node(&panner_node)
-                .unwrap()
+                .unwrap();
+            audio_node
                 .connect_with_audio_node(&self.geng.inner.audio.context.destination())
                 .unwrap();
             effect.set_loop(self.looped);
-            (panner_node, effect)
+            (audio_node, effect)
         };
         SoundEffect {
             geng: self.geng.clone(),
             #[cfg(target_arch = "wasm32")]
             inner: effect,
             #[cfg(target_arch = "wasm32")]
-            panner_node,
+            spatial_state: SpatialState::NotSpatial(audio_node),
             #[cfg(not(target_arch = "wasm32"))]
             sink: Some({
                 let sink = rodio::Sink::try_new(&self.output_stream_handle).unwrap();
@@ -122,7 +126,7 @@ pub struct SoundEffect {
     #[cfg(target_arch = "wasm32")]
     inner: web_sys::HtmlAudioElement,
     #[cfg(target_arch = "wasm32")]
-    pub(crate) panner_node: web_sys::PannerNode,
+    spatial_state: SpatialState,
     #[cfg(not(target_arch = "wasm32"))]
     sink: Option<rodio::Sink>,
 }
@@ -156,12 +160,37 @@ impl SoundEffect {
     }
     pub fn set_position(&mut self, position: Vec3<f64>) {
         #[cfg(target_arch = "wasm32")]
-        self.panner_node
-            .set_position(position.x, position.y, position.z);
+        {
+            let panner_node = self.make_spatial();
+            panner_node.set_position(position.x, position.y, position.z);
+        }
     }
     pub fn set_max_distance(&mut self, max_distance: f64) {
         #[cfg(target_arch = "wasm32")]
-        self.panner_node.set_max_distance(max_distance);
+        {
+            let panner_node = self.make_spatial();
+            panner_node.set_max_distance(max_distance);
+        }
+    }
+    #[cfg(target_arch = "wasm32")]
+    fn make_spatial(&mut self) -> &web_sys::PannerNode {
+        {
+            if let SpatialState::NotSpatial(audio_node) = &self.spatial_state {
+                let panner_node = web_sys::PannerNode::new(&self.geng.inner.audio.context).unwrap();
+                panner_node.set_distance_model(web_sys::DistanceModelType::Linear);
+                audio_node.disconnect().unwrap();
+                audio_node
+                    .connect_with_audio_node(&panner_node)
+                    .unwrap()
+                    .connect_with_audio_node(&self.geng.inner.audio.context.destination())
+                    .unwrap();
+                self.spatial_state = SpatialState::Spatial(panner_node);
+            }
+            let SpatialState::Spatial(panner_node) = &self.spatial_state else {
+                unreachable!()
+            };
+            panner_node
+        }
     }
 }
 
