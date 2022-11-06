@@ -55,7 +55,9 @@ impl LoadAsset for Sound {
             Ok(Sound {
                 output_stream_handle: geng.inner.audio.output_stream_handle.clone(),
                 geng,
-                data: data.await??.into(),
+                source: rodio::Source::buffered(rodio::Decoder::new(std::io::Cursor::new(
+                    data.await??,
+                ))?),
                 looped: false,
             })
         })

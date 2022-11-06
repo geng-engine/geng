@@ -64,7 +64,7 @@ pub struct Sound {
     #[cfg(target_arch = "wasm32")]
     pub(crate) inner: web_sys::HtmlAudioElement,
     #[cfg(not(target_arch = "wasm32"))]
-    pub(crate) data: Arc<[u8]>,
+    pub(crate) source: rodio::source::Buffered<rodio::Decoder<std::io::Cursor<Vec<u8>>>>,
     pub looped: bool,
 }
 
@@ -102,13 +102,9 @@ impl Sound {
                 let sink = rodio::Sink::try_new(&self.output_stream_handle).unwrap();
                 sink.pause();
                 if self.looped {
-                    sink.append(rodio::Source::repeat_infinite(
-                        rodio::Decoder::new(std::io::Cursor::new(self.data.clone())).unwrap(),
-                    ));
+                    sink.append(rodio::Source::repeat_infinite(self.source.clone()));
                 } else {
-                    sink.append(
-                        rodio::Decoder::new(std::io::Cursor::new(self.data.clone())).unwrap(),
-                    );
+                    sink.append(self.source.clone());
                 }
                 sink
             }),
