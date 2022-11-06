@@ -5,6 +5,7 @@ impl Window {
         let mut events = Vec::new();
         {
             let mut handle_event = |e: glutin::event::WindowEvent| match e {
+                glutin::event::WindowEvent::Focused(focus) => self.focused.set(focus),
                 glutin::event::WindowEvent::CloseRequested => self.should_close.set(true),
                 glutin::event::WindowEvent::MouseWheel { delta, .. } => {
                     events.push(Event::Wheel {

@@ -35,6 +35,8 @@ pub struct Window {
     ugli: Ugli,
     #[cfg(not(target_arch = "wasm32"))]
     is_fullscreen: Cell<bool>,
+    #[cfg(not(target_arch = "wasm32"))]
+    focused: Cell<bool>,
 }
 
 impl Window {
@@ -115,6 +117,7 @@ impl Window {
                 pressed_keys: Rc::new(RefCell::new(HashSet::new())),
                 pressed_buttons: Rc::new(RefCell::new(HashSet::new())),
                 is_fullscreen: Cell::new(false),
+                focused: Cell::new(false),
             }
         };
         if options.fullscreen {
@@ -144,7 +147,7 @@ impl Window {
         }
         #[cfg(not(target_arch = "wasm32"))]
         {
-            if self.lock_cursor.get() {
+            if self.lock_cursor.get() && self.focused.get() {
                 let pos = self.size().map(|x| x as f64) / 2.0;
                 self.set_cursor_position(pos);
             }
