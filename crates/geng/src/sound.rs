@@ -174,23 +174,21 @@ impl SoundEffect {
     }
     #[cfg(target_arch = "wasm32")]
     fn make_spatial(&mut self) -> &web_sys::PannerNode {
-        {
-            if let SpatialState::NotSpatial(audio_node) = &self.spatial_state {
-                let panner_node = web_sys::PannerNode::new(&self.geng.inner.audio.context).unwrap();
-                panner_node.set_distance_model(web_sys::DistanceModelType::Linear);
-                audio_node.disconnect().unwrap();
-                audio_node
-                    .connect_with_audio_node(&panner_node)
-                    .unwrap()
-                    .connect_with_audio_node(&self.geng.inner.audio.context.destination())
-                    .unwrap();
-                self.spatial_state = SpatialState::Spatial(panner_node);
-            }
-            let SpatialState::Spatial(panner_node) = &self.spatial_state else {
-                unreachable!()
-            };
-            panner_node
+        if let SpatialState::NotSpatial(audio_node) = &self.spatial_state {
+            let panner_node = web_sys::PannerNode::new(&self.geng.inner.audio.context).unwrap();
+            panner_node.set_distance_model(web_sys::DistanceModelType::Linear);
+            audio_node.disconnect().unwrap();
+            audio_node
+                .connect_with_audio_node(&panner_node)
+                .unwrap()
+                .connect_with_audio_node(&self.geng.inner.audio.context.destination())
+                .unwrap();
+            self.spatial_state = SpatialState::Spatial(panner_node);
         }
+        let SpatialState::Spatial(panner_node) = &self.spatial_state else {
+            unreachable!()
+        };
+        panner_node
     }
 }
 
