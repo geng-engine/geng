@@ -31,7 +31,6 @@ impl AudioContext {
 
 pub struct Sound {
     geng: Geng,
-    output_stream_handle: Arc<rodio::OutputStreamHandle>,
     source: rodio::source::Buffered<rodio::Decoder<std::io::Cursor<Vec<u8>>>>,
     pub looped: bool,
 }
@@ -39,7 +38,6 @@ pub struct Sound {
 impl Sound {
     pub(crate) fn new(geng: &Geng, data: Vec<u8>) -> Self {
         Self {
-            output_stream_handle: geng.inner.audio.output_stream_handle.clone(),
             geng: geng.clone(),
             source: rodio::Source::buffered(
                 rodio::Decoder::new(std::io::Cursor::new(data)).expect("Failed to decode audio"),
@@ -51,7 +49,7 @@ impl Sound {
         SoundEffect {
             geng: self.geng.clone(),
             sink: Some({
-                let sink = rodio::Sink::try_new(&self.output_stream_handle).unwrap();
+                let sink = rodio::Sink::try_new(&self.geng.audio().output_stream_handle).unwrap();
                 sink.pause();
                 if self.looped {
                     sink.append(rodio::Source::repeat_infinite(self.source.clone()));
