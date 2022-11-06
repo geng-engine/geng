@@ -51,16 +51,7 @@ impl LoadAsset for Sound {
                     std::fs::File::open(path)?.read_to_end(&mut data)?;
                     Ok(data)
                 });
-        Box::pin(async move {
-            Ok(Sound {
-                output_stream_handle: geng.inner.audio.output_stream_handle.clone(),
-                geng,
-                source: rodio::Source::buffered(rodio::Decoder::new(std::io::Cursor::new(
-                    data.await??,
-                ))?),
-                looped: false,
-            })
-        })
+        Box::pin(async move { Ok(Sound::new(&geng, data.await??)) })
     }
     const DEFAULT_EXT: Option<&'static str> = Some("wav");
 }

@@ -51,11 +51,7 @@ impl LoadAsset for Sound {
             move |success: bool| {
                 sender
                     .send(if success {
-                        Ok(Sound {
-                            geng,
-                            inner: audio,
-                            looped: false,
-                        })
+                        Ok(Sound::new(&geng, audio))
                     } else {
                         Err(anyhow!("Failed to load sound from {:?}", path))
                     })
