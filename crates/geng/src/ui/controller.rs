@@ -2,6 +2,7 @@ use super::*;
 
 struct State {
     size: Vec2<f64>,
+    scale: f64,
     constraints: HashMap<*const c_void, Constraints>,
     positions: HashMap<*const c_void, AABB<f64>>,
     states: Vec<std::cell::UnsafeCell<Box<dyn std::any::Any>>>,
@@ -66,6 +67,7 @@ impl Controller {
             theme: geng.ui_theme().clone(),
             state: RefCell::new(State {
                 size: vec2(1.0, 1.0),
+                scale: 1.0,
                 constraints: default(),
                 positions: default(),
                 states: Vec::new(),
@@ -108,6 +110,7 @@ impl Controller {
     }
     fn layout(&self, root: &mut dyn Widget) {
         let mut state = self.state.borrow_mut();
+        let state = state.deref_mut();
         traverse_mut(root, &mut |_| {}, &mut |widget| {
             let constraints = widget.calc_constraints(&ConstraintsContext {
                 theme: &self.theme,
@@ -123,11 +126,14 @@ impl Controller {
                 widget.layout_children(&mut LayoutContext {
                     theme: &self.theme,
                     position: state.get_position(widget),
-                    state: &mut state,
+                    state,
                 });
             },
             &mut |_| {},
         );
+        for position in state.positions.values_mut() {
+            *position = position.map(|x| x * state.scale);
+        }
 
         while state.states.len() > state.next_state {
             state.states.pop();
@@ -135,7 +141,17 @@ impl Controller {
         state.next_state = 0;
     }
     pub fn draw(&self, root: &mut dyn Widget, framebuffer: &mut ugli::Framebuffer) {
-        self.state.borrow_mut().size = framebuffer.size().map(|x| x as f64);
+        {
+            let mut state = self.state.borrow_mut();
+            let framebuffer_size = framebuffer.size().map(|x| x as f64);
+            state.scale = match self.geng.inner.options.target_ui_resolution {
+                Some(target_size) => {
+                    (framebuffer_size.x / target_size.x).max(framebuffer_size.y / target_size.y)
+                }
+                None => 1.0,
+            };
+            state.size = framebuffer_size / state.scale;
+        }
         self.layout(root);
         let state = self.state.borrow();
         traverse_mut(

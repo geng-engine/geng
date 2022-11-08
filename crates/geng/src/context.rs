@@ -13,6 +13,7 @@ pub(crate) struct GengImpl {
     fixed_delta_time: Cell<f64>,
     max_delta_time: Cell<f64>,
     ui_theme: RefCell<Option<ui::Theme>>,
+    pub(crate) options: ContextOptions,
 }
 
 #[derive(Clone)]
@@ -20,6 +21,7 @@ pub struct Geng {
     pub(crate) inner: Rc<GengImpl>,
 }
 
+#[derive(Debug, Clone)]
 pub struct ContextOptions {
     pub title: String,
     pub vsync: bool,
@@ -30,6 +32,7 @@ pub struct ContextOptions {
     pub shader_prefix: Option<(String, String)>,
     pub window_size: Option<Vec2<usize>>,
     pub fullscreen: bool,
+    pub target_ui_resolution: Option<Vec2<f64>>,
 }
 
 impl Default for ContextOptions {
@@ -54,6 +57,7 @@ impl Default for ContextOptions {
             )),
             window_size: None,
             fullscreen: false,
+            target_ui_resolution: None,
         }
     }
 }
@@ -92,6 +96,7 @@ impl Geng {
                 fixed_delta_time: Cell::new(options.fixed_delta_time),
                 max_delta_time: Cell::new(options.max_delta_time),
                 ui_theme: RefCell::new(None),
+                options,
             }),
         }
     }
