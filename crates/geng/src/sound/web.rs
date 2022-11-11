@@ -95,6 +95,10 @@ impl SoundEffect {
         let panner_node = self.make_spatial();
         panner_node.set_position(position.x, position.y, position.z);
     }
+    pub fn set_ref_distance(&mut self, distance: f64) {
+        let panner_node = self.make_spatial();
+        panner_node.set_ref_distance(distance);
+    }
     pub fn set_max_distance(&mut self, max_distance: f64) {
         let panner_node = self.make_spatial();
         panner_node.set_max_distance(max_distance);

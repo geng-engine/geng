@@ -292,6 +292,9 @@ impl SoundEffect {
     pub fn set_position(&mut self, position: Vec3<f64>) {
         self.make_spatial(|spatial| spatial.pos = position.map(|x| x as f32));
     }
+    pub fn set_ref_distance(&mut self, distance: f64) {
+        self.make_spatial(|spatial| spatial.ref_dist = distance as f32);
+    }
     pub fn set_max_distance(&mut self, max_distance: f64) {
         self.make_spatial(|spatial| spatial.max_dist = max_distance as f32);
     }
