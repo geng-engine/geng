@@ -179,7 +179,8 @@ where
             let gain_left = (1.0 - gain_right.sqr()).sqrt();
 
             let distance_gain = (1.0
-                - (delta_pos.len() - spatial_params.ref_dist) / spatial_params.max_dist)
+                - (delta_pos.len() - spatial_params.ref_dist)
+                    / (spatial_params.max_dist - spatial_params.ref_dist))
                 .clamp(0.0, 1.0);
 
             self.spatial.set_volume(0, gain_left * distance_gain);
