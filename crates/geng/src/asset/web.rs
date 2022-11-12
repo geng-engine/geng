@@ -42,38 +42,64 @@ impl LoadAsset for ugli::Texture {
 #[cfg(feature = "audio")]
 impl LoadAsset for Sound {
     fn load(geng: &Geng, path: &std::path::Path) -> AssetFuture<Self> {
-        let (sender, receiver) = futures::channel::oneshot::channel();
-        let audio = web_sys::HtmlAudioElement::new_with_src(path.to_str().unwrap()).unwrap();
-        let path = Rc::new(path.to_owned());
-        let geng = geng.clone();
-        let handler = {
-            let audio = audio.clone();
-            move |success: bool| {
-                sender
-                    .send(if success {
-                        Ok(Sound::new(&geng, audio))
-                    } else {
-                        Err(anyhow!("Failed to load sound from {:?}", path))
-                    })
-                    .map_err(|_| ())
-                    .unwrap();
+        // TODO: batbox::load_file
+        fn load_arraybuffer(
+            path: &std::path::Path,
+        ) -> impl Future<Output = anyhow::Result<js_sys::ArrayBuffer>> {
+            let (sender, receiver) = futures::channel::oneshot::channel();
+            let request = web_sys::XmlHttpRequest::new().unwrap();
+            request.open("GET", path.to_str().unwrap()).unwrap();
+            request.set_response_type(web_sys::XmlHttpRequestResponseType::Arraybuffer);
+            let path = Rc::new(path.to_owned());
+            let handler = {
+                let request = request.clone();
+                move |success: bool| {
+                    sender
+                        .send(if success {
+                            Ok(request.response().expect("1").into())
+                        } else {
+                            Err(anyhow!("Failed to load {:?}", path))
+                        })
+                        .map_err(|_| ());
+                    // TODO this can be Err if other asset was not loaded, so the future for this one was dropped
+                    // .expect(&format!("{path:?}"));
+                }
+            };
+            #[wasm_bindgen(inline_js = r#"
+            export function setup(request, handler) {
+                request.onreadystatechange = function () {
+                    if (request.readyState == 4) {
+                        handler(request.status == 200 || request.status == 206); // TODO why is there 206?
+                    }
+                };
             }
-        };
-        #[wasm_bindgen(inline_js = r#"
-        export function setup_audio(audio, handler) {
-            audio.oncanplaythrough = function() { handler(true); };
-            audio.onerror = function() { handler(false); };
-            audio.load();
+            "#)]
+            extern "C" {
+                fn setup(request: &web_sys::XmlHttpRequest, handler: wasm_bindgen::JsValue);
+            }
+            setup(
+                &request,
+                wasm_bindgen::closure::Closure::once_into_js(handler),
+            );
+            request.send().unwrap();
+            return async move { receiver.await.unwrap() };
         }
-        "#)]
-        extern "C" {
-            fn setup_audio(audio: &web_sys::HtmlAudioElement, handler: wasm_bindgen::JsValue);
+
+        let geng = geng.clone();
+        let data = load_arraybuffer(path);
+        let path = path.to_owned();
+        async move {
+            let data = data.await?;
+            let Ok(promise) = geng.audio().context.decode_audio_data(&data) else {
+                anyhow::bail!("whoops"); // TODO
+            };
+            let Ok(buffer) = wasm_bindgen_futures::JsFuture::from(promise).await else {
+                anyhow::bail!("whoops"); // TODO
+            };
+            let sound = Sound::new(&geng, buffer.into());
+            Ok(sound)
         }
-        setup_audio(
-            &audio,
-            wasm_bindgen::closure::Closure::once_into_js(handler),
-        );
-        Box::pin(async move { receiver.await? })
+        .boxed_local()
     }
     const DEFAULT_EXT: Option<&'static str> = Some("wav");
 }

@@ -1,7 +1,7 @@
 use super::*;
 
 pub struct AudioContext {
-    context: web_sys::AudioContext,
+    pub(crate) context: web_sys::AudioContext,
 }
 
 impl AudioContext {
@@ -23,45 +23,39 @@ impl AudioContext {
 }
 
 enum SpatialState {
-    NotSpatial(web_sys::MediaElementAudioSourceNode),
+    NotSpatial(web_sys::AudioNode),
     Spatial(web_sys::PannerNode),
 }
 
 pub struct Sound {
     geng: Geng,
-    inner: web_sys::HtmlAudioElement,
+    inner: web_sys::AudioBuffer,
     pub looped: bool,
 }
 
 impl Sound {
-    pub(crate) fn new(geng: &Geng, audio: web_sys::HtmlAudioElement) -> Self {
+    pub(crate) fn new(geng: &Geng, buffer: web_sys::AudioBuffer) -> Self {
         Self {
             geng: geng.clone(),
-            inner: audio,
+            inner: buffer,
             looped: false,
         }
     }
     pub fn effect(&self) -> SoundEffect {
-        let effect = self
-            .inner
-            .clone_node()
-            .unwrap()
-            .dyn_into::<web_sys::HtmlAudioElement>()
-            .unwrap();
-        let audio_node = self
-            .geng
-            .inner
-            .audio
-            .context
-            .create_media_element_source(&effect)
-            .unwrap();
+        let buffer_node =
+            web_sys::AudioBufferSourceNode::new(&self.geng.inner.audio.context).unwrap();
+        buffer_node.set_buffer(Some(&self.inner));
+        buffer_node.set_loop(self.looped);
+        let gain_node = web_sys::GainNode::new(&self.geng.inner.audio.context).unwrap();
+        buffer_node.connect_with_audio_node(&gain_node).unwrap();
+        let audio_node: web_sys::AudioNode = gain_node.clone().into();
         audio_node
             .connect_with_audio_node(&self.geng.inner.audio.context.destination())
             .unwrap();
-        effect.set_loop(self.looped);
         SoundEffect {
             geng: self.geng.clone(),
-            inner: effect,
+            inner: buffer_node,
+            gain_node,
             spatial_state: SpatialState::NotSpatial(audio_node),
         }
     }
@@ -74,23 +68,25 @@ impl Sound {
 
 pub struct SoundEffect {
     geng: Geng,
-    inner: web_sys::HtmlAudioElement,
+    inner: web_sys::AudioBufferSourceNode,
+    gain_node: web_sys::GainNode,
     spatial_state: SpatialState,
 }
 
 impl SoundEffect {
     pub fn set_volume(&mut self, volume: f64) {
-        self.inner.set_volume(volume);
+        self.gain_node.gain().set_value(volume as f32);
     }
     pub fn play(&mut self) {
-        let _ = self.inner.play().unwrap();
+        let _ = self.inner.start().unwrap();
     }
-    pub fn stop(mut self) {
-        self.pause();
+    pub fn stop(&mut self) {
+        self.inner.stop().unwrap();
     }
-    pub fn pause(&mut self) {
-        self.inner.pause().unwrap();
-    }
+    // TODO
+    // pub fn pause(&mut self) {
+    //     self.inner.pause().unwrap();
+    // }
     pub fn set_position(&mut self, position: Vec3<f64>) {
         let panner_node = self.make_spatial();
         panner_node.set_position(position.x, position.y, position.z);

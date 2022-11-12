@@ -37,6 +37,7 @@ derivative = "2"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = { version = "0.2", features = [ "serde-serialize" ] }
+wasm-bindgen-futures = "0.4"
 js-sys = "0.3"
 web-sys = { version = "0.3", features = [
     "Window",
@@ -50,6 +51,7 @@ web-sys = { version = "0.3", features = [
     "CssStyleDeclaration",
     "HtmlAudioElement",
     "XmlHttpRequest",
+    "XmlHttpRequestResponseType",
     "KeyboardEvent",
     "MouseEvent",
     "WheelEvent",
@@ -80,6 +82,10 @@ web-sys = { version = "0.3", features = [
     "BaseAudioContext",
     "AudioContext",
     "AudioDestinationNode",
+    "AudioBuffer",
+    "AudioBufferSourceNode",
+    "AudioParam",
+    "GainNode",
 ] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]

@@ -15,6 +15,7 @@ pub mod dialog;
 pub mod diff;
 pub mod future_ext;
 pub mod geom;
+pub mod load_file;
 pub mod localization;
 pub mod logger;
 pub mod num;

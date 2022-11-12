@@ -93,6 +93,7 @@ pub fn setup_panic_handler() {
         fn show_error(s: &str);
     }
     fn panic_hook(info: &std::panic::PanicInfo) {
+        console_error_panic_hook::hook(info);
         static ALREADY_PANICKED: std::sync::atomic::AtomicBool =
             std::sync::atomic::AtomicBool::new(false);
         if ALREADY_PANICKED.swap(true, std::sync::atomic::Ordering::Relaxed) {

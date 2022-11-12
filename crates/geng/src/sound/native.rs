@@ -280,12 +280,13 @@ impl SoundEffect {
     pub fn play(&mut self) {
         self.sink().play();
     }
-    pub fn stop(mut self) {
+    pub fn stop(&mut self) {
         self.sink().stop();
     }
-    pub fn pause(&mut self) {
-        self.sink().pause();
-    }
+    // TODO web
+    // pub fn pause(&mut self) {
+    //     self.sink().pause();
+    // }
     fn sink(&mut self) -> &mut rodio::Sink {
         self.sink.as_mut().unwrap()
     }

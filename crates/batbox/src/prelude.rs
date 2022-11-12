@@ -54,6 +54,9 @@ pub use ::std::{
 pub use ::thiserror;
 #[doc(no_inline)]
 pub use ::threadpool::ThreadPool;
+#[cfg(target_arch = "wasm32")]
+#[doc(no_inline)]
+pub use ::wasm_bindgen_futures;
 
 #[cfg(target_arch = "wasm32")]
 pub use ::js_sys;
@@ -73,6 +76,7 @@ pub use crate::color::*;
 pub use crate::diff::*;
 pub use crate::future_ext::ext::*;
 pub use crate::geom::*;
+pub use crate::load_file::*;
 pub use crate::localization::*;
 pub use crate::logger;
 pub use crate::num::*;
