@@ -52,10 +52,13 @@ impl Window {
         #[cfg(target_arch = "wasm32")]
         unimplemented!();
         #[cfg(not(target_arch = "wasm32"))]
-        self.glutin_window
+        if let Err(e) = self
+            .glutin_window
             .window()
             .set_cursor_position(glutin::dpi::PhysicalPosition::new(position.x, position.y))
-            .expect("Failed to set cursor position");
+        {
+            error!("Failed to set cursor position: {:?}", e);
+        }
     }
 
     pub fn cursor_position(&self) -> Vec2<f64> {
