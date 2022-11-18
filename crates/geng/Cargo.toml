@@ -31,5 +31,5 @@ glutin = "0.29"
 threadpool = "1"
 num_cpus = "1"
 notify = "4"
-rodio = { version = "0.15", optional = true }
+rodio = { git = "https://github.com/kuviman/rodio", optional = true }
 ws = { version = "0.9" }
