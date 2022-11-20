@@ -2,12 +2,19 @@ use super::*;
 
 pub struct AudioContext {
     pub(crate) context: web_sys::AudioContext,
+    master_gain_node: web_sys::GainNode,
 }
 
 impl AudioContext {
     pub(crate) fn new() -> Self {
+        let context = web_sys::AudioContext::new().expect("Failed to initialize audio context");
+        let master_gain_node = web_sys::GainNode::new(&context).unwrap();
+        master_gain_node
+            .connect_with_audio_node(&context.destination())
+            .unwrap();
         Self {
-            context: web_sys::AudioContext::new().expect("Failed to initialize audio context"),
+            context,
+            master_gain_node,
         }
     }
 
@@ -19,6 +26,10 @@ impl AudioContext {
         self.context
             .listener()
             .set_orientation(forward.x, forward.y, forward.z, up.x, up.y, up.z);
+    }
+
+    pub fn set_volume(&self, volume: f64) {
+        self.master_gain_node.gain().set_value(volume as f32);
     }
 }
 
@@ -50,7 +61,7 @@ impl Sound {
         buffer_node.connect_with_audio_node(&gain_node).unwrap();
         let audio_node: web_sys::AudioNode = gain_node.clone().into();
         audio_node
-            .connect_with_audio_node(&self.geng.inner.audio.context.destination())
+            .connect_with_audio_node(&self.geng.inner.audio.master_gain_node)
             .unwrap();
         SoundEffect {
             geng: self.geng.clone(),
@@ -107,7 +118,7 @@ impl SoundEffect {
             audio_node
                 .connect_with_audio_node(&panner_node)
                 .unwrap()
-                .connect_with_audio_node(&self.geng.inner.audio.context.destination())
+                .connect_with_audio_node(&self.geng.inner.audio.master_gain_node)
                 .unwrap();
             self.spatial_state = SpatialState::Spatial(panner_node);
         }

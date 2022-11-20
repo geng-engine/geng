@@ -22,6 +22,7 @@ pub struct AudioContext {
     // output_stream: rodio::OutputStream,
     output_stream_handle: Arc<rodio::OutputStreamHandle>,
     listener: Arc<Mutex<Listener>>,
+    volume: Arc<atomic_float::AtomicF32>,
 }
 
 impl AudioContext {
@@ -47,7 +48,13 @@ impl AudioContext {
                 listener.update_ears();
                 listener
             })),
+            volume: Arc::new(atomic_float::AtomicF32::new(1.0)),
         }
+    }
+
+    pub fn set_volume(&self, volume: f64) {
+        self.volume
+            .store(volume as f32, std::sync::atomic::Ordering::SeqCst);
     }
 
     pub fn set_listener_position(&self, pos: Vec3<f64>) {
@@ -89,14 +96,14 @@ impl Sound {
                 sink.pause();
                 if self.looped {
                     sink.append(Source::new(
+                        self.geng.audio(),
                         spatial_params.clone(),
-                        self.geng.audio().listener.clone(),
                         &rodio::Source::repeat_infinite(self.source.clone()),
                     ));
                 } else {
                     sink.append(Source::new(
+                        self.geng.audio(),
                         spatial_params.clone(),
-                        self.geng.audio().listener.clone(),
                         &self.source,
                     ));
                 }
@@ -138,6 +145,7 @@ where
     is_spatial: bool,
     spatial_params: Arc<Mutex<Option<SpatialParams>>>,
     listener: Arc<Mutex<Listener>>,
+    volume: Arc<atomic_float::AtomicF32>,
 }
 
 impl<I> Source<I>
@@ -146,8 +154,8 @@ where
     I::Item: rodio::Sample,
 {
     fn new(
+        context: &AudioContext,
         spatial_params: Arc<Mutex<Option<SpatialParams>>>,
-        listener: Arc<Mutex<Listener>>,
         source: &I,
     ) -> Self
     where
@@ -158,7 +166,8 @@ where
             regular: source.clone(),
             is_spatial: false,
             spatial_params,
-            listener,
+            listener: context.listener.clone(),
+            volume: context.volume.clone(),
         }
     }
     fn update_volume(&mut self) {
@@ -206,6 +215,12 @@ where
         } else {
             self.regular.next()
         }
+        .map(|sample| {
+            rodio::Sample::amplify(
+                sample,
+                self.volume.load(std::sync::atomic::Ordering::SeqCst),
+            )
+        })
     }
 
     #[inline]

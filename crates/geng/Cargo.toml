@@ -21,6 +21,7 @@ ttf-parser = "0.15"
 serde = "1"
 lazy_static = "1"
 flate2 = "1"
+atomic_float = "0.1"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 console_error_panic_hook = "0.1"
