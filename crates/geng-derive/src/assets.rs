@@ -79,27 +79,28 @@ impl DeriveInput {
             }
             let ident = field.ident.as_ref().unwrap();
             let ty = &field.ty;
-            if let Some(range) = &field.range {
+            let mut loader =  if let Some(range) = &field.range {
                 let path = field.path.as_ref().expect("Path needs to be specified for ranged assets");
-                return quote! {
+                quote! {
                     futures::future::try_join_all((#range).map(|i| {
                         geng::LoadAsset::load(geng, &base_path.join(#path.replace("*", &i.to_string())))
                     }))
+                }
+            } else {
+                let path = match &field.path {
+                    Some(path) => quote! { #path },
+                    None => quote! {{
+                        let mut path = stringify!(#ident).to_owned();
+                        if let Some(ext) = <#ty as geng::LoadAsset>::DEFAULT_EXT {
+                            path.push('.');
+                            path.push_str(ext);
+                        }
+                        path
+                    }},
                 };
-            }
-            let path = match &field.path {
-                Some(path) => quote! { #path },
-                None => quote! {{
-                    let mut path = stringify!(#ident).to_owned();
-                    if let Some(ext) = <#ty as geng::LoadAsset>::DEFAULT_EXT {
-                        path.push('.');
-                        path.push_str(ext);
-                    }
-                    path
-                }},
-            };
-            let mut loader = quote! {
-                <#ty as geng::LoadAsset>::load(geng, &base_path.join(#path))
+                quote! {
+                    <#ty as geng::LoadAsset>::load(geng, &base_path.join(#path))
+                }
             };
             if let Some(postprocess) = &field.postprocess {
                 loader = quote! {
