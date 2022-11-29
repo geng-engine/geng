@@ -81,9 +81,7 @@ impl Window {
         self.lock_cursor.set(true);
         #[cfg(target_arch = "wasm32")]
         self.canvas.request_pointer_lock();
-        #[cfg(not(target_arch = "wasm32"))]
-        self.glutin_window.window().set_cursor_visible(false);
-        // let _ = self.glutin_window.window().set_cursor_grab(true);
+        // TODO let _ = self.glutin_window.window().set_cursor_grab(true);
     }
 
     pub fn unlock_cursor(&self) {
@@ -94,7 +92,5 @@ impl Window {
             .document()
             .unwrap()
             .exit_pointer_lock();
-        #[cfg(not(target_arch = "wasm32"))]
-        self.glutin_window.window().set_cursor_visible(true);
     }
 }
