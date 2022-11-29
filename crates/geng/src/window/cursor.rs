@@ -88,6 +88,12 @@ impl Window {
 
     pub fn unlock_cursor(&self) {
         self.lock_cursor.set(false);
+        #[cfg(target_arch = "wasm32")]
+        web_sys::window()
+            .unwrap()
+            .document()
+            .unwrap()
+            .exit_pointer_lock();
         #[cfg(not(target_arch = "wasm32"))]
         self.glutin_window.window().set_cursor_visible(true);
     }
