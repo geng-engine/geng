@@ -196,8 +196,8 @@ where
 
             let gain_left = gain_left * distance_gain;
             let gain_right = gain_right * distance_gain;
-            self.spatial.set_volume(0, dbg!(gain_left));
-            self.spatial.set_volume(1, dbg!(gain_right));
+            self.spatial.set_volume(0, gain_left);
+            self.spatial.set_volume(1, gain_right);
         } else {
             self.is_spatial = false;
         }
