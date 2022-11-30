@@ -32,5 +32,5 @@ glutin = "0.29"
 threadpool = "1"
 num_cpus = "1"
 notify = "4"
-rodio = { git = "https://github.com/kuviman/rodio", optional = true }
+rodio = { git = "https://github.com/RustAudio/rodio", optional = true }
 ws = { version = "0.9" }

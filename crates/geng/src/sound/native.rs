@@ -143,6 +143,7 @@ where
     spatial: rodio::source::ChannelVolume<I>,
     regular: I,
     is_spatial: bool,
+    next_update_volume: usize,
     spatial_params: Arc<Mutex<Option<SpatialParams>>>,
     listener: Arc<Mutex<Listener>>,
     volume: Arc<atomic_float::AtomicF32>,
@@ -162,6 +163,7 @@ where
         I: Clone,
     {
         Self {
+            next_update_volume: 0,
             spatial: rodio::source::ChannelVolume::new(source.clone(), vec![0.0, 0.0]),
             regular: source.clone(),
             is_spatial: false,
@@ -192,8 +194,10 @@ where
                     / (spatial_params.max_dist - spatial_params.ref_dist))
                 .clamp(0.0, 1.0);
 
-            self.spatial.set_volume(0, gain_left * distance_gain);
-            self.spatial.set_volume(1, gain_right * distance_gain);
+            let gain_left = gain_left * distance_gain;
+            let gain_right = gain_right * distance_gain;
+            self.spatial.set_volume(0, dbg!(gain_left));
+            self.spatial.set_volume(1, dbg!(gain_right));
         } else {
             self.is_spatial = false;
         }
@@ -209,7 +213,12 @@ where
 
     #[inline]
     fn next(&mut self) -> Option<I::Item> {
-        self.update_volume(); // TODO: not every time?
+        if self.next_update_volume == 0 {
+            self.update_volume();
+            self.next_update_volume = 100;
+        } else {
+            self.next_update_volume -= 1;
+        }
         if self.is_spatial {
             self.spatial.next()
         } else {
