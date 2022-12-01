@@ -19,6 +19,7 @@ impl Listener {
 }
 
 pub struct AudioContext {
+    config: rodio::SupportedStreamConfig,
     // output_stream: rodio::OutputStream,
     output_stream_handle: Arc<rodio::OutputStreamHandle>,
     listener: Arc<Mutex<Listener>>,
@@ -27,15 +28,60 @@ pub struct AudioContext {
 
 impl AudioContext {
     pub(crate) fn new() -> Self {
+        fn create_rodio_output_stream() -> Result<
+            (
+                rodio::SupportedStreamConfig,
+                rodio::OutputStream,
+                rodio::OutputStreamHandle,
+            ),
+            rodio::StreamError,
+        > {
+            fn try_from_device(
+                device: &rodio::Device,
+            ) -> Result<
+                (
+                    rodio::SupportedStreamConfig,
+                    rodio::OutputStream,
+                    rodio::OutputStreamHandle,
+                ),
+                rodio::StreamError,
+            > {
+                use rodio::cpal::traits::DeviceTrait;
+                let default_config = device.default_output_config()?;
+                rodio::OutputStream::try_from_device_config(device, default_config.clone())
+                    .map(move |(stream, handle)| (default_config, stream, handle))
+            }
+
+            use rodio::cpal::traits::HostTrait;
+            let default_device = rodio::cpal::default_host()
+                .default_output_device()
+                .ok_or(rodio::StreamError::NoDevice)?;
+
+            let default_stream = try_from_device(&default_device);
+
+            default_stream.or_else(|original_err| {
+                // default device didn't work, try other ones
+                let mut devices = match rodio::cpal::default_host().output_devices() {
+                    Ok(d) => d,
+                    Err(_) => return Err(original_err),
+                };
+
+                devices
+                    .find_map(|d| try_from_device(&d).ok())
+                    .ok_or(original_err)
+            })
+        }
+
         // https://github.com/RustAudio/rodio/issues/214
-        let stream_handle = std::thread::spawn(|| {
-            let (stream, handle) = rodio::OutputStream::try_default().unwrap();
+        let (config, stream_handle) = std::thread::spawn(|| {
+            let (config, stream, handle) = create_rodio_output_stream().unwrap();
             mem::forget(stream);
-            handle
+            (config, handle)
         })
         .join()
         .unwrap();
         Self {
+            config,
             output_stream_handle: Arc::new(stream_handle),
             listener: Arc::new(Mutex::new({
                 let mut listener = Listener {
@@ -73,7 +119,9 @@ impl AudioContext {
 
 pub struct Sound {
     geng: Geng,
-    source: rodio::source::Buffered<rodio::Decoder<std::io::Cursor<Vec<u8>>>>,
+    source: rodio::source::Buffered<
+        rodio::source::UniformSourceIterator<rodio::Decoder<std::io::Cursor<Vec<u8>>>, i16>,
+    >,
     pub looped: bool,
 }
 
@@ -81,9 +129,11 @@ impl Sound {
     pub(crate) fn new(geng: &Geng, data: Vec<u8>) -> Self {
         Self {
             geng: geng.clone(),
-            source: rodio::Source::buffered(
+            source: rodio::Source::buffered(rodio::source::UniformSourceIterator::new(
                 rodio::Decoder::new(std::io::Cursor::new(data)).expect("Failed to decode audio"),
-            ),
+                geng.audio().config.channels(), // TODO: what if more than 2 channels? we are screwed? LUL
+                geng.audio().config.sample_rate().0,
+            )),
             looped: false,
         }
     }
