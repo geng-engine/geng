@@ -4,6 +4,7 @@ impl Window {
     pub(crate) fn internal_get_events(&self) -> Vec<Event> {
         let mut events = Vec::new();
         {
+            let mut mouse_move = None;
             let mut handle_event = |e: glutin::event::WindowEvent| match e {
                 glutin::event::WindowEvent::Focused(focus) => self.focused.set(focus),
                 glutin::event::WindowEvent::CloseRequested => self.should_close.set(true),
@@ -17,10 +18,7 @@ impl Window {
                 }
                 glutin::event::WindowEvent::CursorMoved { position, .. } => {
                     let position = vec2(position.x, self.size().y as f64 - 1.0 - position.y);
-                    events.push(Event::MouseMove {
-                        position,
-                        delta: position - self.mouse_pos.get(),
-                    });
+                    mouse_move = Some(position);
                 }
                 glutin::event::WindowEvent::MouseInput { state, button, .. } => {
                     let button = match button {
@@ -64,6 +62,14 @@ impl Window {
                     }
                     *flow = glutin::event_loop::ControlFlow::Exit;
                 });
+            if let Some(position) = mouse_move {
+                // This is here because of weird delta
+                events.push(Event::MouseMove {
+                    position,
+                    delta: position - self.mouse_pos.get(),
+                });
+                self.mouse_pos.set(position);
+            }
         }
         events
     }

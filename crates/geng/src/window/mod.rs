@@ -147,10 +147,6 @@ impl Window {
         }
         #[cfg(not(target_arch = "wasm32"))]
         {
-            if self.lock_cursor.get() && self.focused.get() {
-                let pos = self.size().map(|x| x as f64) / 2.0;
-                self.set_cursor_position(pos);
-            }
             for event in self.internal_get_events() {
                 if let Event::KeyDown { key: Key::Escape } = event {
                     self.unlock_cursor();
@@ -164,6 +160,10 @@ impl Window {
                 if let Some(ref mut handler) = *self.event_handler.borrow_mut() {
                     handler(event);
                 }
+            }
+            if self.lock_cursor.get() && self.focused.get() {
+                let pos = (self.size() / 2).map(|x| x as f64);
+                self.set_cursor_position(pos);
             }
         }
     }
