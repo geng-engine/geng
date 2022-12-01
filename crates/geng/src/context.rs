@@ -134,6 +134,11 @@ impl Geng {
     pub fn set_ui_theme(&self, theme: ui::Theme) {
         *self.inner.ui_theme.borrow_mut() = Some(theme);
     }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn set_icon(&self, path: &std::path::Path) -> anyhow::Result<()> {
+        self.window().set_icon(path)
+    }
 }
 
 /// Run the application
