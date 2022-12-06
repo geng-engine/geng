@@ -22,7 +22,7 @@ pub trait Model: Diff + Message {
         events: &mut Vec<Self::Event>,
         player_id: &Self::PlayerId,
         message: Self::Message,
-    );
+    ) -> Vec<Self::Event>;
     fn tick(&mut self, events: &mut Vec<Self::Event>);
 }
 

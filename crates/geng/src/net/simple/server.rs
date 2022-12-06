@@ -40,9 +40,17 @@ impl<T: Model> Receiver<T::Message> for Client<T> {
     fn handle(&mut self, message: T::Message) {
         let mut state = self.server_state.lock().unwrap();
         let state: &mut ServerState<T> = &mut state;
-        state
+        let replies = state
             .current
             .handle_message(&mut state.events, &self.player_id, message);
+        if !replies.is_empty() {
+            state
+                .clients
+                .get_mut(&self.client_id)
+                .unwrap()
+                .sender
+                .send(ServerMessage::Events(replies));
+        }
     }
 }
 
