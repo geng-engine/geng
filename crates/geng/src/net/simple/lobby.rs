@@ -17,7 +17,6 @@ impl<T: Model, G: State> ConnectingState<T, G> {
         addr: &str,
         f: impl FnOnce(T::PlayerId, Remote<T>) -> G + 'static,
     ) -> Self {
-        let addr = format!("{}://{}", option_env!("WSS").unwrap_or("ws"), addr);
         let connection = Box::pin(net::client::connect(&addr).then(|connection| async move {
             let (message, connection) = connection.into_future().await;
             let player_id = match message {

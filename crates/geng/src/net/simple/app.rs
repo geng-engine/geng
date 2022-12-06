@@ -3,20 +3,9 @@ use super::*;
 #[derive(clap::Parser)]
 struct Opt {
     #[clap(long)]
-    addr: Option<String>,
+    pub server: Option<String>,
     #[clap(long)]
-    server: bool,
-    #[clap(long)]
-    with_server: bool,
-}
-
-impl Opt {
-    pub fn addr(&self) -> &str {
-        match &self.addr {
-            Some(addr) => addr,
-            None => "127.0.0.1:1155",
-        }
-    }
+    pub connect: Option<String>,
 }
 
 pub fn run<T: Model, G: State>(
@@ -24,14 +13,28 @@ pub fn run<T: Model, G: State>(
     #[cfg_attr(target_arch = "wasm32", allow(unused_variables))] model_constructor: impl FnOnce() -> T,
     game_constructor: impl FnOnce(&Geng, T::PlayerId, Remote<T>) -> G + 'static,
 ) {
-    let opt: Opt = program_args::parse();
-    if opt.server {
+    let mut opt: Opt = program_args::parse();
+
+    if opt.connect.is_none() && opt.server.is_none() {
+        if cfg!(target_arch = "wasm32") {
+            opt.connect = Some(
+                option_env!("CONNECT")
+                    .expect("Set CONNECT compile time env var")
+                    .to_owned(),
+            );
+        } else {
+            opt.server = Some("127.0.0.1:1155".to_owned());
+            opt.connect = Some("ws://127.0.0.1:1155".to_owned());
+        }
+    }
+
+    if opt.server.is_some() && opt.connect.is_none() {
         #[cfg(not(target_arch = "wasm32"))]
-        Server::new(opt.addr(), model_constructor()).run();
+        Server::new(opt.server.as_deref().unwrap(), model_constructor()).run();
     } else {
         #[cfg(not(target_arch = "wasm32"))]
-        let server = if opt.with_server {
-            let server = Server::new(opt.addr(), model_constructor());
+        let server = if let Some(addr) = &opt.server {
+            let server = Server::new(addr, model_constructor());
             let server_handle = server.handle();
             let server_thread = std::thread::spawn(move || {
                 server.run();
@@ -42,7 +45,7 @@ pub fn run<T: Model, G: State>(
         };
 
         let geng = Geng::new(game_name);
-        let state = ConnectingState::new(&geng, opt.addr(), {
+        let state = ConnectingState::new(&geng, opt.connect.as_deref().unwrap(), {
             let geng = geng.clone();
             move |player_id, model| game_constructor(&geng, player_id, model)
         });
