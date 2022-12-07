@@ -32,6 +32,7 @@ pub struct Window {
     pressed_buttons: Rc<RefCell<HashSet<MouseButton>>>,
     should_close: Cell<bool>,
     mouse_pos: Rc<Cell<Vec2<f64>>>,
+    mouse_wheel_pos: Rc<Cell<f64>>,
     ugli: Ugli,
     #[cfg(not(target_arch = "wasm32"))]
     is_fullscreen: Cell<bool>,
@@ -67,6 +68,7 @@ impl Window {
                 ugli,
                 should_close: Cell::new(false),
                 mouse_pos: Rc::new(Cell::new(vec2(0.0, 0.0))),
+                mouse_wheel_pos: Rc::new(Cell::new(0.0)),
                 pressed_keys: Rc::new(RefCell::new(HashSet::new())),
                 pressed_buttons: Rc::new(RefCell::new(HashSet::new())),
             };
@@ -74,8 +76,9 @@ impl Window {
             let pressed_keys = window.pressed_keys.clone();
             let pressed_buttons = window.pressed_buttons.clone();
             let mouse_pos = window.mouse_pos.clone();
+            let mouse_wheel_pos = window.mouse_wheel_pos.clone();
             window.subscribe_events(move |event| {
-                Self::default_handler(&event, &pressed_keys, &pressed_buttons, &mouse_pos);
+                Self::default_handler(&event, &pressed_keys, &pressed_buttons, &mouse_pos, &mouse_wheel_pos);
                 if let Some(ref mut handler) = *event_handler.borrow_mut() {
                     handler(event);
                 }
@@ -114,6 +117,7 @@ impl Window {
                 ugli,
                 should_close: Cell::new(false),
                 mouse_pos: Rc::new(Cell::new(vec2(0.0, 0.0))),
+                mouse_wheel_pos: Rc::new(Cell::new(0.0)),
                 pressed_keys: Rc::new(RefCell::new(HashSet::new())),
                 pressed_buttons: Rc::new(RefCell::new(HashSet::new())),
                 is_fullscreen: Cell::new(false),
@@ -156,6 +160,7 @@ impl Window {
                     &self.pressed_keys,
                     &self.pressed_buttons,
                     &self.mouse_pos,
+                    &self.mouse_wheel_pos,
                 );
                 if let Some(ref mut handler) = *self.event_handler.borrow_mut() {
                     handler(event);
@@ -173,6 +178,7 @@ impl Window {
         pressed_keys: &RefCell<HashSet<Key>>,
         pressed_buttons: &RefCell<HashSet<MouseButton>>,
         mouse_pos: &Cell<Vec2<f64>>,
+        mouse_wheel_pos: &Cell<f64>,
     ) {
         match *event {
             Event::KeyDown { key } => {
@@ -183,6 +189,9 @@ impl Window {
             }
             Event::MouseMove { position, .. } => {
                 mouse_pos.set(position);
+            }
+            Event::Wheel { delta } => {
+                mouse_wheel_pos.set(mouse_wheel_pos.get() + delta);
             }
             Event::MouseDown { button, .. } => {
                 pressed_buttons.borrow_mut().insert(button);
@@ -239,6 +248,10 @@ impl Window {
 
     pub fn mouse_pos(&self) -> Vec2<f64> {
         self.mouse_pos.get()
+    }
+
+    pub fn mouse_wheel_pos(&self) -> f64 {
+        self.mouse_wheel_pos.get()
     }
 
     pub fn set_fullscreen(&self, fullscreen: bool) {
