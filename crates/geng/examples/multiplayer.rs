@@ -63,12 +63,13 @@ impl simple_net::Model for Model {
         _events: &mut Vec<()>,
         player_id: &PlayerId,
         message: Self::Message,
-    ) {
+    ) -> Vec<Self::Event> {
         match message {
             Message::UpdatePosition(position) => {
                 self.players.get_mut(player_id).unwrap().position = position;
             }
         }
+        vec![]
     }
     fn tick(&mut self, _events: &mut Vec<()>) {
         self.current_time += 1.0 / Self::TICKS_PER_SECOND;
