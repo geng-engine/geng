@@ -30,6 +30,7 @@ impl<'a> FramebufferRead<'a> {
         //     }
         // }
         self.fbo.bind();
+        #[warn(clippy::uninit_vec)]
         let result = unsafe {
             let buffer_len = self.size.x * self.size.y * 4;
             let mut buffer = Vec::with_capacity(buffer_len);

@@ -85,6 +85,7 @@ impl Controller {
     pub fn get_state<T: Default + 'static>(&self) -> &mut T {
         self.get_state_with(default)
     }
+    #[allow(clippy::mut_from_ref)]
     pub fn get_state_with<T: 'static>(&self, f: impl FnOnce() -> T) -> &mut T {
         let mut f = Some(f);
         let mut state = self.state.borrow_mut();
