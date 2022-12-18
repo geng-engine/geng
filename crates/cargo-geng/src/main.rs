@@ -85,6 +85,8 @@ impl ToString for Sub {
 #[derive(clap::Parser)]
 struct Opt {
     sub: Sub,
+    #[clap(long)]
+    out_dir: Option<std::path::PathBuf>,
     #[clap(long, short = 'p')]
     package: Option<String>,
     #[clap(long)]
@@ -179,7 +181,10 @@ fn main() -> Result<(), anyhow::Error> {
                 })
                 .unwrap();
             exec(Command::new("cargo").arg("build").args(opt.all_args()))?;
-            let out_dir = metadata.target_directory.join("geng");
+            let out_dir = opt
+                .out_dir
+                .clone()
+                .unwrap_or(metadata.target_directory.join("geng").into());
             if out_dir.exists() {
                 std::fs::remove_dir_all(&out_dir)?;
             }
