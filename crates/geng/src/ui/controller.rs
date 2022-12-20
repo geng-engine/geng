@@ -112,6 +112,8 @@ impl Controller {
     fn layout(&self, root: &mut dyn Widget) {
         let mut state = self.state.borrow_mut();
         let state = state.deref_mut();
+        state.constraints.clear();
+        state.positions.clear();
         traverse_mut(root, &mut |_| {}, &mut |widget| {
             let constraints = widget.calc_constraints(&ConstraintsContext {
                 theme: &self.theme,
