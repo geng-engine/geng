@@ -21,6 +21,8 @@ void main() {
 #ifdef FRAGMENT_SHADER
 uniform sampler2D u_texture;
 uniform vec4 u_color;
+uniform vec4 u_outline_color;
+uniform float u_outline_dist;
 
 float aa(float edge, float x) {
     float w = length(vec2(dFdx(x), dFdy(x)));
@@ -29,8 +31,9 @@ float aa(float edge, float x) {
 
 void main() {
     float dist = (texture2D(u_texture, v_uv).x - 0.5) * 2.0;
+    float w = length(vec2(dFdx(dist), dFdy(dist)));
     float inside = aa(0.0, dist);
-    gl_FragColor = u_color;
-    gl_FragColor.w *= inside;
+    float inside_border = aa(-u_outline_dist, dist);
+    gl_FragColor = u_color * inside + (1.0 - inside) * (u_outline_color * inside_border + vec4(u_outline_color.xyz, 0.0) * (1.0 - inside_border));
 }
 #endif

@@ -66,6 +66,11 @@ impl<F: std::borrow::Borrow<Font>, T: AsRef<str>> Draw2d for Text<F, T> {
             vec2(0.0, 0.0),
             SIZE_HACK,
             self.color,
+            0.0,
+            Rgba {
+                a: 0.0,
+                ..self.color
+            },
         );
     }
 }

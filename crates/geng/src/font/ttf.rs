@@ -463,6 +463,8 @@ impl Ttf {
         pos: Vec2<f32>,
         size: f32,
         color: Rgba<f32>,
+        outline_size: f32,
+        outline_color: Rgba<f32>,
     ) {
         let transform = transform * Mat3::translate(pos) * Mat3::scale_uniform(size);
         self.draw_with(text, |glyphs, texture| {
@@ -489,6 +491,8 @@ impl Ttf {
                         u_texture: texture,
                         u_model_matrix: transform,
                         u_color: color,
+                        u_outline_dist: outline_size / size / self.max_distance,
+                        u_outline_color: outline_color,
                     },
                     camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
                 ),
@@ -501,7 +505,6 @@ impl Ttf {
         });
     }
 
-    #[deprecated]
     pub fn draw(
         &self,
         framebuffer: &mut ugli::Framebuffer,
@@ -523,6 +526,39 @@ impl Ttf {
                     vec2(pos.x - aabb.width() * align.0, pos.y),
                     size,
                     color,
+                    0.0,
+                    Rgba { a: 0.0, ..color },
+                );
+            }
+            pos.y += size;
+        }
+    }
+
+    pub fn draw_with_outline(
+        &self,
+        framebuffer: &mut ugli::Framebuffer,
+        camera: &impl AbstractCamera2d,
+        text: &str,
+        pos: Vec2<f32>,
+        align: TextAlign,
+        size: f32,
+        color: Rgba<f32>,
+        outline_size: f32,
+        outline_color: Rgba<f32>,
+    ) {
+        let mut pos = pos;
+        for line in text.lines().rev() {
+            if let Some(aabb) = self.measure(line, size) {
+                self.draw_impl(
+                    framebuffer,
+                    camera,
+                    Mat3::identity(),
+                    line,
+                    vec2(pos.x - aabb.width() * align.0, pos.y),
+                    size,
+                    color,
+                    outline_size,
+                    outline_color,
                 );
             }
             pos.y += size;
