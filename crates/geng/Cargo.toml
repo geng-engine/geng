@@ -11,6 +11,9 @@ edition = "2021"
 default = ["audio"]
 audio = ["rodio"]
 
+[dev-dependencies]
+gltf = "1"
+
 [dependencies]
 batbox = { path = "../batbox", version = "0.14.0" }
 geng-derive = { path = "../geng-derive", version = "0.14.0" }
