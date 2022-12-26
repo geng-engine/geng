@@ -1,6 +1,6 @@
 use geng::prelude::*;
 
-const SHADER_SOURCE: &'static str = "
+const SHADER_SOURCE: &str = "
 varying vec2 v_uv;
 
 #ifdef VERTEX_SHADER

@@ -21,7 +21,7 @@ impl<T: Model> ServerState<T> {
                 client.sender.send(ServerMessage::Delta(delta.clone()));
             }
         }
-        let events = mem::replace(&mut self.events, Vec::new());
+        let events = std::mem::take(&mut self.events);
         if !events.is_empty() {
             for client in self.clients.values_mut() {
                 client.sender.send(ServerMessage::Events(events.clone()));

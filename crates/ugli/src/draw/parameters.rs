@@ -48,7 +48,7 @@ impl BlendMode {
     pub fn combined(mode: ChannelBlendMode) -> Self {
         Self {
             rgb: mode.clone(),
-            alpha: mode.clone(),
+            alpha: mode,
         }
     }
     pub fn default() -> Self {
@@ -171,7 +171,7 @@ impl StencilMode {
     pub fn always(mode: FaceStencilMode) -> Self {
         Self {
             back_face: mode.clone(),
-            front_face: mode.clone(),
+            front_face: mode,
         }
     }
     pub(crate) fn apply(mode: Option<&Self>, gl: &raw::Context) {

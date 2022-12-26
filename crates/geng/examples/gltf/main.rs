@@ -85,7 +85,7 @@ struct Example {
 
 impl Example {
     fn new(geng: Geng, assets: Assets) -> Self {
-        let (document, buffers, images) = gltf::import_slice(include_bytes!("crab.glb")).unwrap();
+        let (document, buffers, _images) = gltf::import_slice(include_bytes!("crab.glb")).unwrap();
         let mut meshes = Vec::new();
         for mesh in document.meshes() {
             info!("{:?}", mesh.name());
@@ -162,7 +162,7 @@ impl Example {
 
 impl geng::State for Example {
     fn update(&mut self, delta_time: f64) {
-        let delta_time = delta_time as f32;
+        let _delta_time = delta_time as f32;
         // self.time += delta_time;
     }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {

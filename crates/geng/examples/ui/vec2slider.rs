@@ -27,7 +27,7 @@ impl<'a> Vec2Slider<'a> {
 impl geng::ui::Widget for Vec2Slider<'_> {
     fn calc_constraints(
         &mut self,
-        children: &geng::ui::ConstraintsContext,
+        _children: &geng::ui::ConstraintsContext,
     ) -> geng::ui::Constraints {
         geng::ui::Constraints {
             min_size: vec2(100.0, 100.0),
