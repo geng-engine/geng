@@ -1,19 +1,24 @@
 [package]
 name = "ugli"
-version = "0.14.0"
-authors = ["kuviman <kuviman@gmail.com>"]
-description = "Universal OpenGL Interface"
-license = "MIT"
-homepage = "https://github.com/kuviman/ugli"
-edition = "2021"
+authors.workspace = true
+categories.workspace = true
+description.workspace = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
 
 [dependencies]
-batbox = { path = "../batbox", version = "0.14.0" }
-raw = { package = "ugli-raw", path = "../ugli-raw", version = "0.14.0" }
-ugli-derive = { path = "../ugli-derive", version = "0.13.0" }
-num_enum = "0.5"
-serde = "1"
-image = "0.24"
+batbox.workspace = true
+ugli-raw.workspace = true
+ugli-derive.workspace = true
+
+num_enum.workspace = true # TODO: should be in batbox?
+serde.workspace = true
+image.workspace = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-glutin = "0.29"
+glutin.workspace = true

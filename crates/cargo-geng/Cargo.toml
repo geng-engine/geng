@@ -1,19 +1,23 @@
 [package]
 name = "cargo-geng"
-version = "0.13.0"
-authors = ["kuviman <kuviman@gmail.com>"]
-description = "Game Engine (cargo helper)"
-license = "MIT"
-homepage = "https://github.com/kuviman/geng"
-edition = "2021"
+authors.workspace = true
+categories.workspace = true
+description.workspace = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
 
 [dependencies]
-open = "3"
-tokio = { version = "1", features = ["rt-multi-thread", "full"] }
-futures = "0.3"
-hyper = { version = "0.14", features = ["server", "http1", "tcp"] }
-hyper-staticfile = "0.9"
-fs_extra = "1"
-cargo_metadata = "0.15"
-clap = { version = "3.0.0-rc.5", features = ["derive"] }
-anyhow = "1"
+open.workspace = true
+tokio.workspace = true
+futures.workspace = true
+hyper.workspace = true
+hyper-staticfile.workspace = true
+fs_extra.workspace = true
+cargo_metadata.workspace = true
+clap.workspace = true
+anyhow.workspace = true

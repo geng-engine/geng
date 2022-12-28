@@ -49,7 +49,7 @@ where
     });
 }
 
-#[derive(clap::Subcommand, PartialEq, Eq)]
+#[derive(clap::Subcommand, PartialEq, Eq, Clone)]
 enum Sub {
     Build,
     Run,

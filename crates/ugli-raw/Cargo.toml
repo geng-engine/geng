@@ -1,17 +1,21 @@
 [package]
 name = "ugli-raw"
-version = "0.14.0"
-authors = ["kuviman <kuviman@gmail.com>"]
-description = "Universal OpenGL Interface (Raw)"
-license = "MIT"
-homepage = "https://github.com/kuviman/ugli"
-edition = "2021"
+authors.workspace = true
+categories.workspace = true
+description.workspace = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
 
 [dependencies]
-batbox = { path = "../batbox", version = "0.14.0" }
+batbox.workspace = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-gl = "0.14"
+gl.workspace = true
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen = "0.2"
+wasm-bindgen.workspace = true
