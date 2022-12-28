@@ -44,11 +44,11 @@ pub fn load_file(path: &std::path::Path) -> impl Future<Output = anyhow::Result<
     #[cfg(not(target_arch = "wasm32"))]
     {
         let file = std::fs::File::open(path);
-        return async move {
+        async move {
             let mut file = file?;
             let mut buf = Vec::new();
             file.read_to_end(&mut buf)?;
             Ok(buf)
-        };
+        }
     }
 }

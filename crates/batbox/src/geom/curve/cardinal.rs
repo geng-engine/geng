@@ -51,7 +51,7 @@ impl<F: Float> CubicHermiteCurve<F> for CardinalSpline<F> {
         };
 
         let mut intervals = Vec::with_capacity(len - 1);
-        while let Some((index, next)) = m.next() {
+        for (index, next) in m {
             intervals.push(CurveInterval {
                 point_start: self.points[index - 1],
                 point_end: self.points[index],

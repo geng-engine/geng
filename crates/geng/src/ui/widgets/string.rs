@@ -4,7 +4,7 @@ pub(crate) fn calc_text_constraints(
     text: &str,
     font: &Font,
     size: f32,
-    cx: &ConstraintsContext,
+    _cx: &ConstraintsContext,
 ) -> Constraints {
     Constraints {
         min_size: vec2(
@@ -26,7 +26,7 @@ pub(crate) fn draw_text(
     if text.is_empty() {
         return;
     }
-    let size = partial_min(
+    let _size = partial_min(
         cx.position.height() as f32,
         size * cx.position.width() as f32
             / font.measure(text, size).map_or(0.0, |aabb| aabb.width()),

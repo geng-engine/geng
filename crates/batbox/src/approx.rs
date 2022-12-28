@@ -22,7 +22,7 @@ impl<T: Float> ApproxEq for T {
 #[test]
 fn test_approx_eq_f32() {
     assert!(1.0_f32.approx_eq_eps(&1.1_f32, 0.15_f32));
-    assert!(23424.2143_f32.approx_eq(&23424.2143_f32));
+    assert!(23_424.215_f32.approx_eq(&23_424.215_f32));
     assert!(!1.0_f32.approx_eq(&1.1_f32));
     assert!(!24352.64_f32.approx_eq(&-54.0_f32));
     assert!(!1.0_f32.approx_eq_eps(&2.0_f32, 0.5_f32));

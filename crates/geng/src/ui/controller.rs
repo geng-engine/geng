@@ -64,7 +64,7 @@ impl Controller {
     pub fn new(geng: &Geng) -> Self {
         Self {
             geng: geng.clone(),
-            theme: geng.ui_theme().clone(),
+            theme: geng.ui_theme(),
             state: RefCell::new(State {
                 size: vec2(1.0, 1.0),
                 scale: 1.0,
@@ -117,7 +117,7 @@ impl Controller {
         traverse_mut(root, &mut |_| {}, &mut |widget| {
             let constraints = widget.calc_constraints(&ConstraintsContext {
                 theme: &self.theme,
-                state: &state,
+                state,
             });
             state.set_constraints(widget, constraints);
         });
@@ -164,7 +164,7 @@ impl Controller {
                     geng: &self.geng,
                     theme: &self.theme,
                     position: state.get_position(widget),
-                    framebuffer: framebuffer,
+                    framebuffer,
                 });
             },
             &mut |_| {},

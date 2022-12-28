@@ -104,10 +104,10 @@ impl<T: Float> Display for RealImpl<T> {
 impl<T: Float> RealImpl<T> {
     pub fn new(value: T) -> Self {
         assert!(value.is_finite());
-        Self { 0: value }
+        Self(value)
     }
     pub fn new_unchecked(value: T) -> Self {
-        Self { 0: value }
+        Self(value)
     }
     pub fn raw(self) -> T {
         self.0
@@ -174,8 +174,8 @@ impl<T: Float> Neg for RealImpl<T> {
 }
 
 impl<T: Float> UNum for RealImpl<T> {
-    const ZERO: Self = Self { 0: T::ZERO };
-    const ONE: Self = Self { 0: T::ONE };
+    const ZERO: Self = Self(T::ZERO);
+    const ONE: Self = Self(T::ONE);
 }
 
 impl<T: Float> RealImpl<T> {

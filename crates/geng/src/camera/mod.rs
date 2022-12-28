@@ -85,8 +85,8 @@ pub trait Camera3dExt: AbstractCamera3d {
     }
     fn pixel_ray(&self, framebuffer_size: Vec2<f32>, pos: Vec2<f32>) -> CameraRay {
         let pos = vec2(
-            pos.x / framebuffer_size.x as f32 * 2.0 - 1.0,
-            pos.y / framebuffer_size.y as f32 * 2.0 - 1.0,
+            pos.x / framebuffer_size.x * 2.0 - 1.0,
+            pos.y / framebuffer_size.y * 2.0 - 1.0,
         );
         // proj * view * (rx, ry, 0, 1 / w) = (px, py, ?, 1)
         let inv_matrix = (self.projection_matrix(framebuffer_size) * self.view_matrix()).inverse();

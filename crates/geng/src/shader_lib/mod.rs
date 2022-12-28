@@ -31,7 +31,7 @@ impl ShaderLib {
         let mut result = String::new();
         for line in source.lines() {
             if line.starts_with("#include") {
-                let mut iter = line.trim().split_whitespace();
+                let mut iter = line.split_whitespace();
                 iter.next();
                 let file = iter.next().expect("Expected path to include");
                 assert!(iter.next().is_none(), "Unexpected token");

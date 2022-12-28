@@ -34,7 +34,7 @@ impl LoadAsset for ugli::Program {
         let geng = geng.clone();
         async move {
             let glsl = glsl.await?;
-            Ok(geng.shader_lib().compile(&glsl)?)
+            geng.shader_lib().compile(&glsl)
         }
         .boxed_local()
     }

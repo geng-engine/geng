@@ -144,7 +144,7 @@ impl<T: HasId + 'static> IntoIterator for Collection<T> {
     type Item = T;
     type IntoIter = Box<dyn Iterator<Item = T>>;
     fn into_iter(self) -> Self::IntoIter {
-        Box::new(self.by_id.into_iter().map(|(_, obj)| obj))
+        Box::new(self.by_id.into_values())
     }
 }
 

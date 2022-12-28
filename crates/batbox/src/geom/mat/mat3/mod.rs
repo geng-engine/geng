@@ -29,7 +29,7 @@ impl<T: Copy> Mat3<T> {
     /// ]);
     /// ```
     pub fn new(values: [[T; 3]; 3]) -> Self {
-        Self { 0: values }.transpose()
+        Self(values).transpose()
     }
 
     pub fn row(&self, row_index: usize) -> Vec3<T> {

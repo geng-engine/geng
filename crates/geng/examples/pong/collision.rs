@@ -52,14 +52,12 @@ pub fn collide(ball: &Ball, player: &Player) -> Option<Collision> {
                 // Top left
                 player.position + vec2(0.0, player.size.y)
             }
+        } else if dy <= 0.0 {
+            // Bottom right
+            player.position + vec2(player.size.x, 0.0)
         } else {
-            if dy <= 0.0 {
-                // Bottom right
-                player.position + vec2(player.size.x, 0.0)
-            } else {
-                // Top right
-                player.position + player.size
-            }
+            // Top right
+            player.position + player.size
         };
         let normal = ball.position - corner;
         let penetration = ball.radius - normal.len();
