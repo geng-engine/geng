@@ -88,7 +88,7 @@ impl<T: ColorComponent> Display for Rgba<T> {
     }
 }
 
-impl<T: ColorComponent + ApproxEq> ApproxEq for Rgba<T> {
+impl<T: ColorComponent + Approx> Approx for Rgba<T> {
     fn approx_distance_to(&self, other: &Self) -> f32 {
         (self.r.approx_distance_to(&other.r)
             + self.g.approx_distance_to(&other.g)

@@ -57,7 +57,7 @@ pub use ::batbox_derive::*;
 #[doc(no_inline)]
 pub use ::batbox_macros::*;
 
-pub use crate::approx::*;
+pub use crate::approx::prelude::*;
 pub use crate::cmp::prelude::*;
 pub use crate::collection::*;
 pub use crate::color::*;

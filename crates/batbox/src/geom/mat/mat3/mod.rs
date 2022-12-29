@@ -101,7 +101,7 @@ impl<T: Num + Copy> Mat3<T> {
     }
 }
 
-impl<T: Float> ApproxEq for Mat3<T> {
+impl<T: Float> Approx for Mat3<T> {
     fn approx_distance_to(&self, other: &Self) -> f32 {
         let mut dist = 0.0;
         for i in 0..3 {
