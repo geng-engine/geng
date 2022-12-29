@@ -39,6 +39,7 @@ async-trait.workspace = true
 derive_more.workspace = true
 itertools.workspace = true
 derivative.workspace = true
+http.workspace = true
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen.workspace = true
@@ -53,3 +54,5 @@ tinyfiledialogs.workspace = true
 directories.workspace = true
 threadpool.workspace = true
 async-std.workspace = true
+reqwest.workspace = true
+async-compat.workspace = true

@@ -10,7 +10,8 @@ pub mod prelude {
 }
 
 /// Load a file at given path, returning an async reader as result
-pub async fn load(path: &std::path::Path) -> anyhow::Result<impl AsyncBufRead> {
+pub async fn load(path: impl AsRef<std::path::Path>) -> anyhow::Result<impl AsyncBufRead> {
+    let path = path.as_ref();
     #[cfg(target_arch = "wasm32")]
     {
         let fetch: JsFuture = web_sys::window()
@@ -21,6 +22,10 @@ pub async fn load(path: &std::path::Path) -> anyhow::Result<impl AsyncBufRead> {
             Ok(response) => response.unchecked_into(),
             Err(e) => anyhow::bail!("{e:?}"),
         };
+        let status = http::StatusCode::from_u16(response.status())?;
+        if !status.is_success() {
+            anyhow::bail!("Http status: {status}");
+        }
         let body = response.body().expect("response without body?");
         let stream = wasm_streams::ReadableStream::from_raw(body.unchecked_into());
         // TODO: BYOB not supported, not working, wot?
@@ -46,29 +51,48 @@ pub async fn load(path: &std::path::Path) -> anyhow::Result<impl AsyncBufRead> {
         Ok(futures::io::BufReader::new(reader))
     }
     #[cfg(not(target_arch = "wasm32"))]
-    {
-        let file = async_std::fs::File::open(path).await?;
-        let reader = async_std::io::BufReader::new(file);
-        Ok(Box::new(reader))
+    match path.to_str().and_then(|path| url::Url::parse(path).ok()) {
+        Some(url) => {
+            let request = reqwest::get(url);
+            let request = async_compat::Compat::new(request); // Because of tokio inside reqwest
+            let response = request.await?;
+            let status = response.status();
+            if !status.is_success() {
+                anyhow::bail!("Http status: {status}");
+            }
+            let reader = response
+                .bytes_stream()
+                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
+                .into_async_read();
+            let reader = futures::io::BufReader::new(reader);
+            Ok(Box::pin(reader) as Pin<Box<dyn AsyncBufRead>>)
+        }
+        None => {
+            let file = async_std::fs::File::open(path).await?;
+            let reader = futures::io::BufReader::new(file);
+            Ok(Box::pin(reader) as Pin<Box<dyn AsyncBufRead>>)
+        }
     }
 }
 
 /// Load file as a vec of bytes
-pub async fn load_bytes(path: &std::path::Path) -> anyhow::Result<Vec<u8>> {
+pub async fn load_bytes(path: impl AsRef<std::path::Path>) -> anyhow::Result<Vec<u8>> {
     let mut buf = Vec::new();
     load(path).await?.read_to_end(&mut buf).await?;
     Ok(buf)
 }
 
 /// Load file as a string
-pub async fn load_string(path: &std::path::Path) -> anyhow::Result<String> {
+pub async fn load_string(path: impl AsRef<std::path::Path>) -> anyhow::Result<String> {
     let mut buf = String::new();
     load(path).await?.read_to_string(&mut buf).await?;
     Ok(buf)
 }
 
 /// Load json file and deserialize into given type
-pub async fn load_json<T: DeserializeOwned>(path: &std::path::Path) -> anyhow::Result<T> {
+pub async fn load_json<T: DeserializeOwned>(
+    path: impl AsRef<std::path::Path>,
+) -> anyhow::Result<T> {
     let json: String = load_string(path).await?;
     let value = serde_json::from_str(&json)?;
     Ok(value)

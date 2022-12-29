@@ -3,8 +3,6 @@ use geng::prelude::*;
 #[derive(geng::Assets)]
 struct Assets {
     shader: ugli::Program,
-    #[asset(path = "crab.glb")]
-    gltf: Vec<u8>,
 }
 
 #[derive(ugli::Vertex)]
@@ -86,8 +84,8 @@ struct Example {
 }
 
 impl Example {
-    fn new(geng: Geng, assets: Assets) -> Self {
-        let (document, buffers, _images) = gltf::import_slice(&assets.gltf).unwrap();
+    fn new(geng: Geng, assets: Assets, gltf: Vec<u8>) -> Self {
+        let (document, buffers, _images) = gltf::import_slice(&gltf).unwrap();
         let mut meshes = Vec::new();
         for mesh in document.meshes() {
             info!("{:?}", mesh.name());
@@ -210,21 +208,34 @@ impl geng::State for Example {
     }
 }
 
+#[derive(clap::Parser)]
+struct Opt {
+    path: Option<std::path::PathBuf>,
+}
+
 fn main() {
-    logger::init();
+    logger::init().unwrap();
     geng::setup_panic_handler();
+    let opt: Opt = program_args::parse();
     let geng = Geng::new("Example");
+    let path = opt
+        .path
+        .unwrap_or(run_dir().join("assets").join("crab.glb"));
     geng::run(
         &geng,
         geng::LoadingScreen::new(
             &geng,
             geng::EmptyLoadingScreen,
-            geng::LoadAsset::load(&geng, &run_dir().join("assets")),
+            future::join(
+                geng::LoadAsset::load(&geng, &run_dir().join("assets")),
+                file::load_bytes(path),
+            ),
             {
                 let geng = geng.clone();
-                move |assets| {
+                move |(assets, gltf)| {
                     let assets: Assets = assets.unwrap();
-                    Example::new(geng, assets)
+                    let gltf: Vec<u8> = gltf.unwrap();
+                    Example::new(geng, assets, gltf)
                 }
             },
         ),
