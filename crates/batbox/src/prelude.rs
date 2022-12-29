@@ -31,6 +31,7 @@ pub use ::std::{
     collections::{HashMap, HashSet},
     convert::{TryFrom, TryInto},
     fmt::{self, Debug, Display},
+    hash::Hash,
     io::{BufRead, Read, Write},
     marker::PhantomData,
     mem,
@@ -59,7 +60,7 @@ pub use ::batbox_macros::*;
 
 pub use crate::approx::prelude::*;
 pub use crate::cmp::prelude::*;
-pub use crate::collection::*;
+pub use crate::collection::prelude::*;
 pub use crate::color::*;
 pub use crate::diff::*;
 pub use crate::file::prelude::*;

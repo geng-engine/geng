@@ -1,7 +1,17 @@
+//! A collection of identifiable entities
 use super::*;
-use std::hash::Hash;
 
+pub mod prelude {
+    //! Items intended to always be available. Reexported from [crate::prelude]
+
+    pub use super::{Collection, HasId};
+}
+
+/// An identifiable entity
+///
+/// The contract here is to make sure entity's id stays the same for its lifetime
 pub trait HasId {
+    /// Type of the entity's id
     type Id: Debug
         + Clone
         + Hash
@@ -12,19 +22,29 @@ pub trait HasId {
         + Send
         + Sync
         + Unpin;
+
+    /// Get this id
     fn id(&self) -> &Self::Id;
 }
 
+/// A collection of identifiable entities
+///
+/// This behaves kind of like a HashSet, but only entities' ids are used
+/// Another difference is that is allows for getting mutable references
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct Collection<T: HasId> {
     by_id: HashMap<T::Id, T>,
 }
 
+/// A difference between two collections
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CollectionDelta<T: HasId + Diff> {
+    /// Entities present in second, but not in first collection
     #[serde(bound = "")]
     pub new_entities: Vec<T>,
+    /// Entities present in first, but not in second collection
     pub deleted_entities: Vec<T::Id>,
+    /// List of deltas for mutated entities (present in both collections that are not equal)
     #[serde(bound = "")]
     pub mutated_entities: Vec<(T::Id, T::Delta)>,
 }
@@ -78,41 +98,64 @@ impl<T: HasId + Clone + Diff> Diff for Collection<T> {
 }
 
 impl<T: HasId> Collection<T> {
+    /// Construct an empty collection
     pub fn new() -> Self {
         Self {
             by_id: HashMap::new(),
         }
     }
-    pub fn insert(&mut self, obj: T) {
-        self.by_id.insert(obj.id().clone(), obj);
+
+    /// Insert a new entity into the collection
+    pub fn insert(&mut self, entity: T) {
+        self.by_id.insert(entity.id().clone(), entity);
     }
+
+    /// Get an entity by its id
     pub fn get(&self, id: &T::Id) -> Option<&T> {
         self.by_id.get(id)
     }
+
+    /// Get a mutable ref to an entity by its id
     pub fn get_mut(&mut self, id: &T::Id) -> Option<&mut T> {
         self.by_id.get_mut(id)
     }
+
+    /// Remove an entity by its id
     pub fn remove(&mut self, id: &T::Id) -> Option<T> {
         self.by_id.remove(id)
     }
+
+    /// Retain only entities specified by the predicate
     pub fn retain<F: FnMut(&T) -> bool>(&mut self, mut f: F) {
         self.by_id.retain(move |_, obj| f(obj));
     }
+
+    /// Gets an iterator over the entities
     pub fn iter(&self) -> impl Iterator<Item = &T> {
         self.into_iter()
     }
+
+    /// Gets an iterator over mutable refs of the entities
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
         self.into_iter()
     }
+
+    /// Gets an iterator of entities' ids
     pub fn ids(&self) -> impl Iterator<Item = &T::Id> + '_ {
         self.by_id.keys()
     }
+
+    /// Get number of entities in the collection
     pub fn len(&self) -> usize {
         self.by_id.len()
     }
+
+    /// Check if collection is empty
     pub fn is_empty(&self) -> bool {
         self.by_id.is_empty()
     }
+
+    /// Remove all entities from the collection
     pub fn clear(&mut self) {
         self.by_id.clear();
     }
