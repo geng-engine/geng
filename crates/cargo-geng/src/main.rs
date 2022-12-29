@@ -195,15 +195,15 @@ fn main() -> Result<(), anyhow::Error> {
             if let Some(example) = &opt.example {
                 bin_root_dir = bin_root_dir.join("examples").join(example);
             }
-            let static_dir = bin_root_dir.join("static");
-            if static_dir.is_dir() {
-                fs_extra::dir::copy(static_dir, &out_dir, &{
+            let assets_dir = bin_root_dir.join("assets");
+            std::fs::create_dir_all(&out_dir)?;
+            if assets_dir.is_dir() {
+                fs_extra::dir::copy(assets_dir, &out_dir, &{
                     let mut options = fs_extra::dir::CopyOptions::new();
                     options.copy_inside = true;
                     options
                 })?;
             }
-            std::fs::create_dir_all(&out_dir)?;
 
             let mut command = Command::new("cargo")
                 .arg("build")

@@ -285,22 +285,12 @@ impl geng::State for State {
 
 fn main() {
     logger::init().unwrap();
-    // Setup working directory
-    if let Some(dir) = std::env::var_os("CARGO_MANIFEST_DIR") {
-        std::env::set_current_dir(std::path::Path::new(&dir).join("examples/draw/static")).unwrap();
-    } else {
-        #[cfg(not(target_arch = "wasm32"))]
-        {
-            if let Some(path) = std::env::current_exe().unwrap().parent() {
-                std::env::set_current_dir(path).unwrap();
-            }
-        }
-    }
+    geng::setup_panic_handler();
     let geng = Geng::new("Let's draw!");
     let state = geng::LoadingScreen::new(
         &geng,
         geng::EmptyLoadingScreen,
-        geng::LoadAsset::load(&geng, &static_path()),
+        geng::LoadAsset::load(&geng, &run_dir().join("assets")),
         {
             let geng = geng.clone();
             move |assets| State::new(&geng, assets.unwrap())

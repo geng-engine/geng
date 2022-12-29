@@ -126,7 +126,7 @@ fn main() {
         geng::LoadingScreen::new(
             &geng,
             geng::EmptyLoadingScreen,
-            geng::LoadAsset::load(&geng, &static_path()),
+            geng::LoadAsset::load(&geng, &run_dir().join("assets")),
             {
                 let geng = geng.clone();
                 move |assets| {

@@ -85,7 +85,8 @@ struct Example {
 
 impl Example {
     fn new(geng: Geng, assets: Assets) -> Self {
-        let (document, buffers, _images) = gltf::import_slice(include_bytes!("crab.glb")).unwrap();
+        let (document, buffers, _images) =
+            gltf::import_slice(include_bytes!("assets/crab.glb")).unwrap();
         let mut meshes = Vec::new();
         for mesh in document.meshes() {
             info!("{:?}", mesh.name());
@@ -217,7 +218,7 @@ fn main() {
         geng::LoadingScreen::new(
             &geng,
             geng::EmptyLoadingScreen,
-            geng::LoadAsset::load(&geng, &static_path()),
+            geng::LoadAsset::load(&geng, &run_dir().join("assets")),
             {
                 let geng = geng.clone();
                 move |assets| {

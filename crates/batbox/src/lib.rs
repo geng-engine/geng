@@ -38,6 +38,7 @@ pub use batbox_derive::*;
 pub use batbox_macros::*;
 
 pub mod approx;
+pub mod cmp;
 pub mod collection;
 pub mod color;
 pub mod dialog;
@@ -50,6 +51,7 @@ pub mod logger;
 pub mod num;
 pub mod preferences;
 pub mod program_args;
+pub mod range;
 pub mod result_ext;
 pub mod rng;
 pub mod timer;

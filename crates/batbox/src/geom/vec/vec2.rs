@@ -176,7 +176,7 @@ impl<T: Float> Vec2<T> {
     /// let v = vec2(1.0, 2.0);
     /// assert_eq!(v.clamp_len(..=1.0), v.normalize());
     /// ```
-    pub fn clamp_len(self, len_range: impl RangeBounds<T>) -> Self {
+    pub fn clamp_len(self, len_range: impl FixedRangeBounds<T>) -> Self {
         let len = self.len();
         let target_len = len.clamp_range(len_range);
         if len == target_len {
@@ -195,8 +195,8 @@ impl<T: Float> Vec2<T> {
     /// ```
     pub fn clamp_coordinates(
         self,
-        x_range: impl RangeBounds<T>,
-        y_range: impl RangeBounds<T>,
+        x_range: impl FixedRangeBounds<T>,
+        y_range: impl FixedRangeBounds<T>,
     ) -> Self {
         vec2(self.x.clamp_range(x_range), self.y.clamp_range(y_range))
     }

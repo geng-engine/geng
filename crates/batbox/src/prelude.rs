@@ -28,7 +28,6 @@ pub use ::serde_json;
 #[doc(no_inline)]
 pub use ::std::{
     cell::{Cell, Ref, RefCell, RefMut},
-    cmp::{max, min},
     collections::{HashMap, HashSet},
     convert::{TryFrom, TryInto},
     fmt::{self, Debug, Display},
@@ -39,7 +38,6 @@ pub use ::std::{
         Add, AddAssign, Deref, DerefMut, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Rem,
         RemAssign, Sub, SubAssign,
     },
-    ops::{Bound, Range, RangeBounds, RangeInclusive},
     os::raw::{c_char, c_double, c_float, c_int, c_long, c_short, c_ulong, c_ushort, c_void},
     pin::Pin,
     rc::Rc,
@@ -58,6 +56,7 @@ pub use ::batbox_derive::*;
 pub use ::batbox_macros::*;
 
 pub use crate::approx::*;
+pub use crate::cmp::prelude::*;
 pub use crate::collection::*;
 pub use crate::color::*;
 pub use crate::diff::*;
@@ -68,8 +67,9 @@ pub use crate::localization::*;
 pub use crate::logger;
 pub use crate::num::*;
 pub use crate::program_args::{self, args as program_args};
+pub use crate::range::prelude::*;
 pub use crate::result_ext::ResultExt as _;
 pub use crate::rng::prelude::*;
 pub use crate::timer::*;
 pub use crate::updater::*;
-pub use crate::util::*;
+pub use crate::util::prelude::*;
