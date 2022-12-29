@@ -10,7 +10,8 @@ pub mod prelude {
 /// Returns a list of program arguments
 ///
 /// On the web, program arguments are constructed from the query string:
-/// `?flag&key=value1&key=value2` turns into `--flag --key=value1 --key=value2`
+/// `?flag&key=value1&key=value2` turns into `--flag --key=value1 --key=value2`.
+/// Also, `args=something` just adds an arg to the list: `?args=test` turns into `test`.
 pub fn get() -> Vec<String> {
     #[cfg(target_arch = "wasm32")]
     return {
@@ -20,7 +21,9 @@ pub fn get() -> Vec<String> {
         for (key, value) in url.query_pairs() {
             let key: &str = &key;
             let value: &str = &value;
-            if value.is_empty() {
+            if key == "args" {
+                args.push(value.to_owned());
+            } else if value.is_empty() {
                 args.push("--".to_owned() + key);
             } else {
                 args.push("--".to_owned() + key + "=" + value);
