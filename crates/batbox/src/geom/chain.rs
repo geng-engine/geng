@@ -95,7 +95,7 @@ impl<T: Float> Chain<T> {
             vertices.push(b);
         }
 
-        Self { vertices, ..self }
+        Self { vertices }
     }
 
     /// Converts a chain into a vector of segments.

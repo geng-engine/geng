@@ -39,7 +39,7 @@ pub fn load_file(path: &std::path::Path) -> impl Future<Output = anyhow::Result<
             wasm_bindgen::closure::Closure::once_into_js(handler),
         );
         request.send().unwrap();
-        return async move { receiver.await.unwrap() };
+        async move { receiver.await.unwrap() }
     }
     #[cfg(not(target_arch = "wasm32"))]
     {
