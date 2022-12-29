@@ -3,6 +3,8 @@ use geng::prelude::*;
 #[derive(geng::Assets)]
 struct Assets {
     shader: ugli::Program,
+    #[asset(path = "crab.glb")]
+    gltf: Vec<u8>,
 }
 
 #[derive(ugli::Vertex)]
@@ -85,8 +87,7 @@ struct Example {
 
 impl Example {
     fn new(geng: Geng, assets: Assets) -> Self {
-        let (document, buffers, _images) =
-            gltf::import_slice(include_bytes!("assets/crab.glb")).unwrap();
+        let (document, buffers, _images) = gltf::import_slice(&assets.gltf).unwrap();
         let mut meshes = Vec::new();
         for mesh in document.meshes() {
             info!("{:?}", mesh.name());

@@ -52,3 +52,24 @@ impl LoadAsset for serde_json::Value {
     }
     const DEFAULT_EXT: Option<&'static str> = Some("json");
 }
+
+impl LoadAsset for String {
+    fn load(_: &Geng, path: &std::path::Path) -> AssetFuture<Self> {
+        let path = path.to_owned();
+        async move { file::load_string(&path).await }.boxed_local()
+    }
+    const DEFAULT_EXT: Option<&'static str> = Some("txt");
+}
+
+impl LoadAsset for Vec<u8> {
+    fn load(_: &Geng, path: &std::path::Path) -> AssetFuture<Self> {
+        let path = path.to_owned();
+        async move {
+            let mut buf = Vec::new();
+            file::load(&path).await?.read_to_end(&mut buf).await?;
+            Ok(buf)
+        }
+        .boxed_local()
+    }
+    const DEFAULT_EXT: Option<&'static str> = None;
+}

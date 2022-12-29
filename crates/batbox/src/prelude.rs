@@ -22,7 +22,7 @@ pub use ::maplit::{btreemap, btreeset, hashmap, hashset};
 #[doc(no_inline)]
 pub use ::pin_utils::pin_mut;
 #[doc(no_inline)]
-pub use ::serde::{Deserialize, Serialize};
+pub use ::serde::{de::DeserializeOwned, Deserialize, Serialize};
 #[doc(no_inline)]
 pub use ::serde_json;
 #[doc(no_inline)]
@@ -49,6 +49,8 @@ pub use ::threadpool::ThreadPool;
 
 #[cfg(target_arch = "wasm32")]
 pub use ::wasm_bindgen::{prelude::*, JsCast as _};
+#[cfg(target_arch = "wasm32")]
+pub use ::wasm_bindgen_futures::{future_to_promise, JsFuture};
 
 #[doc(no_inline)]
 pub use ::batbox_derive::*;
@@ -60,9 +62,9 @@ pub use crate::cmp::prelude::*;
 pub use crate::collection::*;
 pub use crate::color::*;
 pub use crate::diff::*;
+pub use crate::file::prelude::*;
 pub use crate::future_ext::*;
 pub use crate::geom::*;
-pub use crate::load_file::*;
 pub use crate::localization::*;
 pub use crate::logger;
 pub use crate::num::*;

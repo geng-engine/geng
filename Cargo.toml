@@ -76,6 +76,7 @@ notify = "5"
 rodio = { git = "https://github.com/RustAudio/rodio" } # TODO
 ws = "0.9"
 gl = "0.14"
+async-std = "1"
 
 # Web
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
@@ -130,7 +131,10 @@ web-sys = { version = "0.3", features = [
     "AudioParam",
     "GainNode",
     "Performance",
+    "Response",
+    "ReadableStream",
 ] }
+wasm-streams = "0.3"
 
 # Proc macros
 syn = { version = "1", features = ["full"] }
@@ -145,4 +149,3 @@ hyper = { version = "0.14", features = ["server", "http1", "tcp"] }
 hyper-staticfile = "0.9"
 fs_extra = "1"
 cargo_metadata = "0.15"
-# Batbox
