@@ -10,6 +10,8 @@ pub mod prelude {
 }
 
 /// Load a file at given path, returning an async reader as result
+///
+/// Supports both files and urls
 pub async fn load(path: impl AsRef<std::path::Path>) -> anyhow::Result<impl AsyncBufRead> {
     let path = path.as_ref();
     #[cfg(target_arch = "wasm32")]
@@ -51,8 +53,13 @@ pub async fn load(path: impl AsRef<std::path::Path>) -> anyhow::Result<impl Asyn
         Ok(futures::io::BufReader::new(reader))
     }
     #[cfg(not(target_arch = "wasm32"))]
-    match path.to_str().and_then(|path| url::Url::parse(path).ok()) {
+    match path
+        .to_str()
+        .and_then(|path| url::Url::parse(path).ok())
+        .filter(|url| matches!(url.scheme(), "http" | "https"))
+    {
         Some(url) => {
+            info!("{:?}", url.scheme());
             let request = reqwest::get(url);
             let request = async_compat::Compat::new(request); // Because of tokio inside reqwest
             let response = request.await?;
