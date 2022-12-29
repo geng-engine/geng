@@ -129,6 +129,7 @@ web-sys = { version = "0.3", features = [
     "AudioBufferSourceNode",
     "AudioParam",
     "GainNode",
+    "Performance",
 ] }
 
 # Proc macros

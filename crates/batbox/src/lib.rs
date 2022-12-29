@@ -54,6 +54,6 @@ pub mod program_args;
 pub mod range;
 pub mod result_ext;
 pub mod rng;
-pub mod timer;
+pub mod time;
 pub mod updater;
 pub mod util;

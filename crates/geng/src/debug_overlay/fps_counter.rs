@@ -24,7 +24,7 @@ impl FpsCounter {
     }
 
     pub fn update(&mut self) {
-        let delta_time = self.timer.tick();
+        let delta_time = self.timer.tick().as_secs_f64();
         self.next_fps_update -= delta_time;
         self.frames += 1;
         if self.next_fps_update < 0.0 {

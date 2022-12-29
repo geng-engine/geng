@@ -163,7 +163,7 @@ pub fn run(geng: &Geng, state: impl State) {
 
     impl<T: State> RunState<T> {
         fn update(&mut self) {
-            let delta_time = self.timer.tick();
+            let delta_time = self.timer.tick().as_secs_f64();
             let delta_time = delta_time.min(self.geng.inner.max_delta_time.get());
             self.state.update(delta_time);
             self.ui_controller
