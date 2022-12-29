@@ -66,7 +66,7 @@ pub use crate::load_file::*;
 pub use crate::localization::*;
 pub use crate::logger;
 pub use crate::num::*;
-pub use crate::program_args::{self, args as program_args};
+pub use crate::program_args::prelude::*;
 pub use crate::range::prelude::*;
 pub use crate::result_ext::ResultExt as _;
 pub use crate::rng::prelude::*;
