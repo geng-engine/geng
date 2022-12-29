@@ -1,78 +1,38 @@
+//! Random number generation addons
+
+#[allow(unused_imports)]
 use super::*;
 
-#[doc(no_inline)]
-pub use rand::distributions::Distribution;
-#[doc(no_inline)]
-pub use rand::seq::{IteratorRandom as _, SliceRandom as _};
-#[doc(no_inline)]
-pub use rand::{self, rngs::StdRng, Rng, RngCore, SeedableRng};
-
-pub mod distributions {
-    use super::*;
+pub mod prelude {
+    //! Items intended to always be available. Reexported from [crate::prelude]
 
     #[doc(no_inline)]
-    pub use rand::distributions::*;
+    pub use super::RngExt;
 
-    pub struct UnitCircleInside;
+    #[doc(no_inline)]
+    pub use ::rand::{
+        self,
+        rngs::StdRng,
+        seq::{IteratorRandom, SliceRandom},
+        Rng, RngCore, SeedableRng,
+    };
+    // Note for web support: https://github.com/rust-random/rand#wasm-support
+    #[doc(no_inline)]
+    pub use ::rand::{rngs::ThreadRng, thread_rng};
+}
 
-    impl Distribution<Vec2<f32>> for UnitCircleInside {
-        fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Vec2<f32> {
-            let r = rng.gen_range(0.0..=1.0).sqrt();
-            let a = rng.gen_range(0.0..=2.0 * std::f32::consts::PI);
-            vec2(r * a.sin(), r * a.cos())
-        }
+#[allow(unused_imports)]
+use prelude::*;
+
+/// Extends [Rng] with more methods
+pub trait RngExt: Rng {
+    /// Generate a uniformly distributed random point inside a circle
+    fn gen_circle<T: Float>(&mut self, center: Vec2<T>, radius: T) -> Vec2<T> {
+        let r = self.gen_range(0.0..=1.0).sqrt();
+        let a = self.gen_range(0.0..=2.0 * std::f32::consts::PI);
+        let (sin, cos) = a.sin_cos();
+        vec2(r * sin, r * cos).map(T::from_f32) * radius + center
     }
 }
 
-pub fn global_rng() -> impl Rng {
-    #[cfg(target_arch = "wasm32")]
-    {
-        static GLOBAL_RNG: once_cell::sync::Lazy<Mutex<StdRng>> =
-            once_cell::sync::Lazy::new(|| {
-                fn gen_byte() -> u8 {
-                    (js_sys::Math::random() * 256.0).clamp(0.0, 255.0) as u8
-                }
-                let mut seed: [mem::MaybeUninit<u8>; 32] =
-                    unsafe { mem::MaybeUninit::uninit().assume_init() };
-                for elem in &mut seed {
-                    unsafe {
-                        std::ptr::write(elem.as_mut_ptr(), gen_byte());
-                    }
-                }
-                Mutex::new(rand::SeedableRng::from_seed(unsafe {
-                    mem::transmute(seed)
-                }))
-            });
-
-        struct GlobalRng;
-
-        impl RngCore for GlobalRng {
-            fn next_u32(&mut self) -> u32 {
-                GLOBAL_RNG.lock().unwrap().next_u32()
-            }
-            fn next_u64(&mut self) -> u64 {
-                GLOBAL_RNG.lock().unwrap().next_u64()
-            }
-            fn fill_bytes(&mut self, dest: &mut [u8]) {
-                GLOBAL_RNG.lock().unwrap().fill_bytes(dest);
-            }
-            fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand::Error> {
-                GLOBAL_RNG.lock().unwrap().try_fill_bytes(dest)
-            }
-        }
-
-        GlobalRng
-    }
-    #[cfg(not(target_arch = "wasm32"))]
-    rand::thread_rng()
-}
-
-#[test]
-fn test_random() {
-    macro_rules! test_types {
-        ($($t:ty,)*) => {
-            $(eprintln!("random {:?} = {:?}", stringify!($t), global_rng().gen::<$t>());)*
-        };
-    }
-    test_types!(i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, char, f32, f64,);
-}
+impl<T: Rng + ?Sized> RngExt for T {}

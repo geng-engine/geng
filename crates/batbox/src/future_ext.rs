@@ -1,5 +1,7 @@
+#[allow(unused_imports)]
 use super::*;
 
+#[cfg(not(target_arch = "wasm32"))]
 pub trait ThreadPoolExt {
     fn spawn<T: Send + 'static, F: FnOnce() -> T + Send + 'static>(
         &self,
@@ -7,6 +9,7 @@ pub trait ThreadPoolExt {
     ) -> futures::channel::oneshot::Receiver<T>;
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl ThreadPoolExt for ThreadPool {
     fn spawn<T: Send + 'static, F: FnOnce() -> T + Send + 'static>(
         &self,
@@ -20,8 +23,4 @@ impl ThreadPoolExt for ThreadPool {
         });
         receiver
     }
-}
-
-pub mod ext {
-    pub use super::ThreadPoolExt as _;
 }

@@ -21,6 +21,7 @@ pub trait UNum:
     + DivAssign
     + PartialEq
     + PartialOrd
+    + ::rand::distributions::uniform::SampleUniform
 {
     const ZERO: Self;
     const ONE: Self;

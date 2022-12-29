@@ -1,3 +1,4 @@
+#[allow(unused_imports)]
 use super::*;
 
 #[cfg(not(target_arch = "wasm32"))]

@@ -330,6 +330,8 @@ fn test_reals() {
 
     let mut arr = [r32(1.0), r32(0.0)];
     arr.sort();
+
+    let _random = thread_rng().gen_range(r32(0.0)..r32(1.0));
 }
 
 #[test]

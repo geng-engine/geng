@@ -49,8 +49,8 @@ impl simple_net::Model for Model {
         self.players.insert(Player {
             id: player_id,
             position: vec2(
-                global_rng().gen_range(-5.0..=5.0),
-                global_rng().gen_range(-5.0..=5.0),
+                thread_rng().gen_range(-5.0..=5.0),
+                thread_rng().gen_range(-5.0..=5.0),
             ),
         });
         player_id

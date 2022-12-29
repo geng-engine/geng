@@ -15,13 +15,14 @@ version.workspace = true
 batbox-macros.workspace = true
 batbox-derive.workspace = true
 
+# rng
+rand.workspace = true
+getrandom.workspace = true # https://github.com/rust-random/rand#wasm-support
+
 serde.workspace = true
 serde_json.workspace = true
 ron.workspace = true
-rand.workspace = true
-getrandom.workspace = true
 log.workspace = true
-threadpool.workspace = true
 clap.workspace = true
 url.workspace = true
 futures.workspace = true
@@ -49,3 +50,4 @@ web-sys.workspace = true
 libc.workspace = true
 tinyfiledialogs.workspace = true
 directories.workspace = true
+threadpool.workspace = true
