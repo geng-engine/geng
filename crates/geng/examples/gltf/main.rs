@@ -79,12 +79,13 @@ struct Example {
     time: f32,
     meshes: Vec<Mesh>,
     geng: Geng,
-    assets: Assets,
+    assets: Rc<Assets>,
     camera: Camera,
+    transition: Rc<RefCell<Option<geng::Transition>>>,
 }
 
 impl Example {
-    fn new(geng: Geng, assets: Assets, gltf: Vec<u8>) -> Self {
+    fn new(geng: Geng, assets: Rc<Assets>, gltf: Vec<u8>) -> Self {
         let (document, buffers, _images) = gltf::import_slice(&gltf).unwrap();
         let mut meshes = Vec::new();
         for mesh in document.meshes() {
@@ -156,6 +157,7 @@ impl Example {
                 rot_h: 0.0,
                 rot_v: f32::PI / 3.0,
             },
+            transition: default(),
         }
     }
 }
@@ -203,9 +205,39 @@ impl geng::State for Example {
                         (self.camera.rot_v + delta.y as f32 * sense).clamp(0.0, f32::PI);
                 }
             }
+            geng::Event::KeyDown { key: geng::Key::O } => {
+                let geng = self.geng.clone();
+                let assets = self.assets.clone();
+                let transition = self.transition.clone();
+                file::select("Choose a file", move |file| {
+                    *transition.borrow_mut() = Some(geng::Transition::Switch(Box::new(load(
+                        geng,
+                        assets,
+                        async move {
+                            let mut reader = file.reader().unwrap();
+                            let mut buf = Vec::new();
+                            reader.read_to_end(&mut buf).await.unwrap();
+                            buf
+                        },
+                    ))))
+                })
+            }
             _ => {}
         }
     }
+    fn transition(&mut self) -> Option<geng::Transition> {
+        self.transition.borrow_mut().take()
+    }
+}
+
+fn load(
+    geng: Geng,
+    assets: Rc<Assets>,
+    gltf: impl Future<Output = Vec<u8>> + 'static,
+) -> impl geng::State {
+    geng::LoadingScreen::new(&geng.clone(), geng::EmptyLoadingScreen, gltf, move |gltf| {
+        Example::new(geng, assets, gltf)
+    })
 }
 
 #[derive(clap::Parser)]
@@ -226,16 +258,18 @@ fn main() {
         geng::LoadingScreen::new(
             &geng,
             geng::EmptyLoadingScreen,
-            future::join(
-                geng::LoadAsset::load(&geng, &run_dir().join("assets")),
-                file::load_bytes(path),
-            ),
+            geng::LoadAsset::load(&geng, &run_dir().join("assets")).map(|assets| {
+                let assets: Rc<Assets> = Rc::new(assets.unwrap());
+                assets
+            }),
             {
                 let geng = geng.clone();
-                move |(assets, gltf)| {
-                    let assets: Assets = assets.unwrap();
-                    let gltf: Vec<u8> = gltf.unwrap();
-                    Example::new(geng, assets, gltf)
+                move |assets| {
+                    load(
+                        geng,
+                        assets,
+                        file::load_bytes(path).map(|result| result.unwrap()),
+                    )
                 }
             },
         ),

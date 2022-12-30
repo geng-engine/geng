@@ -29,28 +29,7 @@ pub async fn load(path: impl AsRef<std::path::Path>) -> anyhow::Result<impl Asyn
             anyhow::bail!("Http status: {status}");
         }
         let body = response.body().expect("response without body?");
-        let stream = wasm_streams::ReadableStream::from_raw(body.unchecked_into());
-        // TODO: BYOB not supported, not working, wot?
-        // let reader = stream.into_async_read();
-        let reader = stream
-            .into_stream()
-            .map(|result| match result {
-                Ok(chunk) => Ok(chunk.unchecked_into::<js_sys::Uint8Array>().to_vec()),
-                Err(e) => Err(js_to_io_error(e)),
-            })
-            .into_async_read();
-
-        fn js_to_string(js_value: &JsValue) -> Option<String> {
-            js_value.as_string().or_else(|| {
-                js_sys::Object::try_from(js_value)
-                    .map(|js_object| js_object.to_string().as_string().unwrap_throw())
-            })
-        }
-        fn js_to_io_error(js_value: JsValue) -> std::io::Error {
-            let message = js_to_string(&js_value).unwrap_or_else(|| "Unknown error".to_string());
-            std::io::Error::new(std::io::ErrorKind::Other, message)
-        }
-        Ok(futures::io::BufReader::new(reader))
+        Ok(futures::io::BufReader::new(read_stream(body)))
     }
     #[cfg(not(target_arch = "wasm32"))]
     match path
@@ -82,6 +61,32 @@ pub async fn load(path: impl AsRef<std::path::Path>) -> anyhow::Result<impl Asyn
     }
 }
 
+#[cfg(target_arch = "wasm32")]
+fn read_stream(stream: web_sys::ReadableStream) -> impl AsyncRead {
+    let stream = wasm_streams::ReadableStream::from_raw(stream.unchecked_into());
+
+    fn js_to_string(js_value: &JsValue) -> Option<String> {
+        js_value.as_string().or_else(|| {
+            js_sys::Object::try_from(js_value)
+                .map(|js_object| js_object.to_string().as_string().unwrap_throw())
+        })
+    }
+    fn js_to_io_error(js_value: JsValue) -> std::io::Error {
+        let message = js_to_string(&js_value).unwrap_or_else(|| "Unknown error".to_string());
+        std::io::Error::new(std::io::ErrorKind::Other, message)
+    }
+
+    // TODO: BYOB not supported, not working, wot?
+    // let reader = stream.into_async_read();
+    stream
+        .into_stream()
+        .map(|result| match result {
+            Ok(chunk) => Ok(chunk.unchecked_into::<js_sys::Uint8Array>().to_vec()),
+            Err(e) => Err(js_to_io_error(e)),
+        })
+        .into_async_read()
+}
+
 /// Load file as a vec of bytes
 pub async fn load_bytes(path: impl AsRef<std::path::Path>) -> anyhow::Result<Vec<u8>> {
     let mut buf = Vec::new();
@@ -103,4 +108,101 @@ pub async fn load_json<T: DeserializeOwned>(
     let json: String = load_string(path).await?;
     let value = serde_json::from_str(&json)?;
     Ok(value)
+}
+
+/// A file selected using [select] dialog
+pub struct SelectedFile {
+    #[cfg(target_arch = "wasm32")]
+    file: web_sys::File,
+    #[cfg(not(target_arch = "wasm32"))]
+    path: std::path::PathBuf,
+}
+
+impl SelectedFile {
+    /// Find out the name of the file
+    pub fn name(&self) -> std::ffi::OsString {
+        #[cfg(target_arch = "wasm32")]
+        {
+            self.file.name().into()
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            self.path.file_name().expect("no filename").to_owned()
+        }
+    }
+
+    /// Get file path
+    ///
+    /// Not available on the web
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn path(&self) -> &std::path::Path {
+        &self.path
+    }
+
+    /// Get reader for the file
+    pub fn reader(self) -> anyhow::Result<impl AsyncBufRead> {
+        #[cfg(target_arch = "wasm32")]
+        {
+            Ok(futures::io::BufReader::new(read_stream(self.file.stream())))
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            futures::executor::block_on(load(self.path))
+        }
+    }
+}
+
+/// Show a select file dialog
+///
+/// The callback may be called at any moment in the future.
+/// The callback will not be called if user cancels the dialog.
+/// On the web this will only work if called during user interaction.
+// TODO: filter
+pub fn select(title: &str, callback: impl FnOnce(SelectedFile) + 'static) {
+    #[cfg(target_arch = "wasm32")]
+    {
+        let _title = title;
+        let input: web_sys::HtmlInputElement = web_sys::window()
+            .expect("no window")
+            .document()
+            .expect("no document")
+            .create_element("input")
+            .expect("failed to create input")
+            .unchecked_into();
+        input.set_type("file");
+        input.set_onchange(Some(
+            Closure::once_into_js({
+                let input = input.clone();
+                move || {
+                    let Some(files) = input.files() else { return };
+                    let Some(file) = files.get(0) else { return };
+                    let file = SelectedFile { file };
+                    callback(file);
+                }
+            })
+            .unchecked_ref(),
+        ));
+        input.click();
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        // TODO migrate to rfd maybe?
+        if let Some(path) = tinyfiledialogs::open_file_dialog(title, "", None) {
+            let file = SelectedFile { path: path.into() };
+            callback(file);
+        }
+    }
+}
+
+// TODO
+#[cfg(not(target_arch = "wasm32"))]
+pub fn save<F: FnOnce(&mut (dyn Write + Send)) -> std::io::Result<()>>(
+    title: &str,
+    default_path: &str,
+    f: F,
+) -> std::io::Result<()> {
+    if let Some(path) = tinyfiledialogs::save_file_dialog(title, default_path) {
+        f(&mut std::io::BufWriter::new(std::fs::File::create(path)?))?;
+    }
+    Ok(())
 }

@@ -41,7 +41,6 @@ pub mod approx;
 pub mod cmp;
 pub mod collection;
 pub mod color;
-pub mod dialog;
 pub mod diff;
 pub mod file;
 pub mod future_ext;
