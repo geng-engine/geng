@@ -158,10 +158,9 @@ impl SelectedFile {
 /// The callback will not be called if user cancels the dialog.
 /// On the web this will only work if called during user interaction.
 // TODO: filter
-pub fn select(title: &str, callback: impl FnOnce(SelectedFile) + 'static) {
+pub fn select(callback: impl FnOnce(SelectedFile) + 'static) {
     #[cfg(target_arch = "wasm32")]
     {
-        let _title = title;
         let input: web_sys::HtmlInputElement = web_sys::window()
             .expect("no window")
             .document()
@@ -187,7 +186,7 @@ pub fn select(title: &str, callback: impl FnOnce(SelectedFile) + 'static) {
     #[cfg(not(target_arch = "wasm32"))]
     {
         // TODO migrate to rfd maybe?
-        if let Some(path) = tinyfiledialogs::open_file_dialog(title, "", None) {
+        if let Some(path) = tinyfiledialogs::open_file_dialog("Select", "", None) {
             let file = SelectedFile { path: path.into() };
             callback(file);
         }
@@ -195,10 +194,9 @@ pub fn select(title: &str, callback: impl FnOnce(SelectedFile) + 'static) {
 }
 
 /// Show a save file dialog and write the data into the file
-pub fn save(title: &str, file_name: &str, data: &[u8]) -> anyhow::Result<()> {
+pub fn save(file_name: &str, data: &[u8]) -> anyhow::Result<()> {
     #[cfg(target_arch = "wasm32")]
     {
-        let _title = title;
         let data = web_sys::Blob::new_with_u8_array_sequence(&js_sys::Array::of1(
             &js_sys::Uint8Array::from(data), // TODO: no copy?
         ))
@@ -220,7 +218,7 @@ pub fn save(title: &str, file_name: &str, data: &[u8]) -> anyhow::Result<()> {
     }
     #[cfg(not(target_arch = "wasm32"))]
     {
-        if let Some(path) = tinyfiledialogs::save_file_dialog(title, file_name) {
+        if let Some(path) = tinyfiledialogs::save_file_dialog("Save", file_name) {
             let file = std::fs::File::create(path)?;
             let mut writer = std::io::BufWriter::new(file);
             writer.write_all(data)?;
