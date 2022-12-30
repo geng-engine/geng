@@ -194,15 +194,37 @@ pub fn select(title: &str, callback: impl FnOnce(SelectedFile) + 'static) {
     }
 }
 
-// TODO
-#[cfg(not(target_arch = "wasm32"))]
-pub fn save<F: FnOnce(&mut (dyn Write + Send)) -> std::io::Result<()>>(
-    title: &str,
-    default_path: &str,
-    f: F,
-) -> std::io::Result<()> {
-    if let Some(path) = tinyfiledialogs::save_file_dialog(title, default_path) {
-        f(&mut std::io::BufWriter::new(std::fs::File::create(path)?))?;
+/// Show a save file dialog and write the data into the file
+pub fn save(title: &str, file_name: &str, data: &[u8]) -> anyhow::Result<()> {
+    #[cfg(target_arch = "wasm32")]
+    {
+        let _title = title;
+        let data = web_sys::Blob::new_with_u8_array_sequence(&js_sys::Array::of1(
+            &js_sys::Uint8Array::from(data), // TODO: no copy?
+        ))
+        .expect("failed to create blob");
+        let a: web_sys::HtmlAnchorElement = web_sys::window()
+            .expect("no window")
+            .document()
+            .expect("no document")
+            .create_element("a")
+            .expect("failed to create <a> element")
+            .unchecked_into();
+        let url =
+            web_sys::Url::create_object_url_with_blob(&data).expect("failed to create blob url");
+        a.set_href(&url);
+        a.set_download(file_name);
+        // TODO force "Save As"? Currently no dialog appearing
+        a.click();
+        web_sys::Url::revoke_object_url(&a.href()).expect("failed to revoke url");
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        if let Some(path) = tinyfiledialogs::save_file_dialog(title, file_name) {
+            let file = std::fs::File::create(path)?;
+            let mut writer = std::io::BufWriter::new(file);
+            writer.write_all(data)?;
+        }
     }
     Ok(())
 }

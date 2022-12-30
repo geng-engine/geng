@@ -141,6 +141,8 @@ web-sys = { version = "0.3", features = [
     "ReadableStream",
     "FileList",
     "File",
+    "Url",
+    "HtmlAnchorElement",
 ] }
 wasm-streams = "0.3"
 

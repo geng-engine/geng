@@ -205,7 +205,15 @@ impl geng::State for Example {
                         (self.camera.rot_v + delta.y as f32 * sense).clamp(0.0, f32::PI);
                 }
             }
-            geng::Event::KeyDown { key: geng::Key::O } => {
+
+            geng::Event::KeyDown { key: geng::Key::S }
+                if self.geng.window().is_key_pressed(geng::Key::LCtrl) =>
+            {
+                file::save("Test saving files", "test.txt", "Hello, world!".as_bytes()).unwrap();
+            }
+            geng::Event::KeyDown { key: geng::Key::O }
+                if self.geng.window().is_key_pressed(geng::Key::LCtrl) =>
+            {
                 let geng = self.geng.clone();
                 let assets = self.assets.clone();
                 let transition = self.transition.clone();
