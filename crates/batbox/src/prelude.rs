@@ -64,7 +64,6 @@ pub use crate::collection::prelude::*;
 pub use crate::color::*;
 pub use crate::diff::prelude::*;
 pub use crate::file::prelude::*;
-pub use crate::future_ext::*;
 pub use crate::geom::*;
 pub use crate::localization::*;
 pub use crate::logger;

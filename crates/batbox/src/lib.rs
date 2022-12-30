@@ -43,7 +43,6 @@ pub mod collection;
 pub mod color;
 pub mod diff;
 pub mod file;
-pub mod future_ext;
 pub mod geom;
 pub mod localization;
 pub mod logger;
