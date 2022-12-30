@@ -21,3 +21,5 @@ fs_extra.workspace = true
 cargo_metadata.workspace = true
 clap.workspace = true
 anyhow.workspace = true
+wasm-bindgen-cli-support.workspace = true
+wasm-opt.workspace = true
