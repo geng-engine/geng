@@ -62,7 +62,7 @@ pub use crate::approx::prelude::*;
 pub use crate::cmp::prelude::*;
 pub use crate::collection::prelude::*;
 pub use crate::color::*;
-pub use crate::diff::*;
+pub use crate::diff::prelude::*;
 pub use crate::file::prelude::*;
 pub use crate::future_ext::*;
 pub use crate::geom::*;

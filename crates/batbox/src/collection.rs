@@ -5,11 +5,14 @@ pub mod prelude {
     //! Items intended to always be available. Reexported from [crate::prelude]
 
     pub use super::{Collection, HasId};
+    // pub use ::batbox_derive::HasId; previous use imports same thing???
 }
 
 /// An identifiable entity
 ///
 /// The contract here is to make sure entity's id stays the same for its lifetime
+///
+/// [Can be derived](::batbox_derive::HasId)
 pub trait HasId {
     /// Type of the entity's id
     type Id: Debug
