@@ -44,7 +44,7 @@ pub mod color;
 pub mod diff;
 pub mod file;
 pub mod geom;
-pub mod localization;
+pub mod i18n;
 pub mod logger;
 pub mod num;
 pub mod preferences;

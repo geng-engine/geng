@@ -1,0 +1,7 @@
+[en]
+hello = "Hello"
+world = "World"
+
+[ru]
+hello = "Привет"
+world = "Мир"
