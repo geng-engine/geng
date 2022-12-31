@@ -1,6 +1,6 @@
 //! Internationalization
 //!
-//! Use i18n!("path/to.toml") to generate i18n mod
+//! Use `i18n!("path/to.toml")` to generate i18n mod
 //!
 //! Example toml file:
 //!
