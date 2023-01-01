@@ -67,7 +67,7 @@ impl BlendMode {
                     BlendFactor::SrcColor => raw::SRC_COLOR,
                     BlendFactor::OneMinusSrcColor => raw::ONE_MINUS_SRC_COLOR,
                     BlendFactor::DstColor => raw::DST_COLOR,
-                    BlendFactor::OneMinusDstColor => raw::ONE_MINUS_DST_ALPHA,
+                    BlendFactor::OneMinusDstColor => raw::ONE_MINUS_DST_COLOR,
                     BlendFactor::SrcAlpha => raw::SRC_ALPHA,
                     BlendFactor::OneMinusSrcAlpha => raw::ONE_MINUS_SRC_ALPHA,
                     BlendFactor::DstAlpha => raw::DST_ALPHA,
