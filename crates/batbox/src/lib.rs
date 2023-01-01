@@ -9,6 +9,7 @@ pub mod crates {
     pub use ::bincode;
     pub use ::clap;
     pub use ::derive_more;
+    pub use ::env_logger;
     pub use ::futures;
     pub use ::itertools;
     #[cfg(target_arch = "wasm32")]

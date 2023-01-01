@@ -36,6 +36,7 @@ use super::*;
 pub mod prelude {
     //! Items intended to always be available. Reexported from [crate::prelude]
 
+    #[doc(no_inline)]
     pub use crate::file;
     // pub use batbox_derive::i18n;
 }

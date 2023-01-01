@@ -4,6 +4,7 @@ use super::*;
 pub mod prelude {
     //! Items intended to always be available. Reexported from [crate::prelude]
 
+    #[doc(no_inline)]
     pub use super::Diff;
     // pub use ::batbox_derive::Diff; previous use imports same thing???
 }

@@ -22,8 +22,6 @@ pub use ::futures::prelude::*;
 #[doc(no_inline)]
 pub use ::itertools::izip;
 #[doc(no_inline)]
-pub use ::log::{debug, error, info, log_enabled, trace, warn};
-#[doc(no_inline)]
 pub use ::maplit::{btreemap, btreeset, hashmap, hashset};
 #[doc(no_inline)]
 pub use ::pin_utils::pin_mut;
@@ -72,7 +70,7 @@ pub use crate::diff::prelude::*;
 pub use crate::file::prelude::*;
 pub use crate::geom::*;
 pub use crate::i18n::prelude::*;
-pub use crate::logger;
+pub use crate::logger::prelude::*;
 pub use crate::num::*;
 pub use crate::program_args::prelude::*;
 pub use crate::range::prelude::*;
