@@ -1,3 +1,9 @@
+//! Items intended to always be available
+//!
+//! ```
+//! use batbox::prelude::*;
+//! ```
+
 #[doc(no_inline)]
 pub use crate::crates::*;
 

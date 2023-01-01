@@ -2,6 +2,8 @@
 use crate as batbox;
 
 pub mod crates {
+    //! External crates
+
     pub use ::anyhow;
     pub use ::async_trait;
     pub use ::bincode;
