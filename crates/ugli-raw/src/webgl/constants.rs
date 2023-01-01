@@ -92,6 +92,7 @@ pub const DEPTH_STENCIL_ATTACHMENT: Enum = web_sys::WebGlRenderingContext::DEPTH
 pub const ONE: Enum = web_sys::WebGlRenderingContext::ONE;
 pub const SRC_COLOR: Enum = web_sys::WebGlRenderingContext::SRC_COLOR;
 pub const ONE_MINUS_SRC_COLOR: Enum = web_sys::WebGlRenderingContext::ONE_MINUS_SRC_COLOR;
+pub const ONE_MINUS_DST_COLOR: Enum = web_sys::WebGlRenderingContext::ONE_MINUS_DST_COLOR;
 pub const DST_COLOR: Enum = web_sys::WebGlRenderingContext::DST_COLOR;
 pub const ONE_MINUS_DST_ALPHA: Enum = web_sys::WebGlRenderingContext::ONE_MINUS_DST_ALPHA;
 pub const DST_ALPHA: Enum = web_sys::WebGlRenderingContext::DST_ALPHA;
