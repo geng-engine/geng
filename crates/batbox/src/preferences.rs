@@ -1,8 +1,17 @@
-use std::path::PathBuf;
-
+//! Saving/loading preferences (small amounts of user data)
+//!
+//! Web implementation uses [local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)
 use super::*;
 
-pub fn base_path() -> PathBuf {
+pub mod prelude {
+    //! Items intended to always be available. Reexported from [crate::prelude]
+
+    #[doc(no_inline)]
+    pub use crate::preferences;
+}
+
+/// Base path where preferences are going to be saved/loaded from
+pub fn base_path() -> std::path::PathBuf {
     #[cfg(target_arch = "wasm32")]
     {
         PathBuf::from(".") // TODO: detect app name by url?
@@ -23,9 +32,10 @@ pub fn base_path() -> PathBuf {
     }
 }
 
-pub fn save<T: Serialize>(path: &str, value: &T) {
+/// Save given value for given key
+pub fn save<T: Serialize>(key: &str, value: &T) {
     let base_path = base_path();
-    let path = base_path.join(path);
+    let path = base_path.join(key);
     #[cfg(target_arch = "wasm32")]
     {
         let path = path.to_str().unwrap();
@@ -58,9 +68,10 @@ pub fn save<T: Serialize>(path: &str, value: &T) {
     }
 }
 
-pub fn load<T: for<'de> Deserialize<'de>>(path: &str) -> Option<T> {
+/// Load value for given key
+pub fn load<T: DeserializeOwned>(key: &str) -> Option<T> {
     let base_path = base_path();
-    let path = base_path.join(path);
+    let path = base_path.join(key);
     #[cfg(target_arch = "wasm32")]
     {
         let path = path.to_str().unwrap();
