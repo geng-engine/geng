@@ -75,7 +75,6 @@ pub use crate::num::*;
 pub use crate::preferences::prelude::*;
 pub use crate::program_args::prelude::*;
 pub use crate::range::prelude::*;
-pub use crate::result_ext::ResultExt as _;
 pub use crate::rng::prelude::*;
 pub use crate::time::prelude::*;
 pub use crate::updater::*;

@@ -53,7 +53,6 @@ pub mod num;
 pub mod preferences;
 pub mod program_args;
 pub mod range;
-pub mod result_ext;
 pub mod rng;
 pub mod time;
 pub mod updater;
