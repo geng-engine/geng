@@ -97,7 +97,7 @@ pub fn partial_min_max<T: PartialOrd>(a: T, b: T) -> (T, T) {
 }
 
 /// Provides methods for clamping values
-pub trait Clamp: PartialOrd {
+pub trait Clamp: Sized + PartialOrd {
     /// Clamps a value in range.
     /// # Examples
     /// ```
@@ -127,6 +127,20 @@ pub trait Clamp: PartialOrd {
         Self: Neg<Output = Self> + Copy,
     {
         self.clamp_range(-max..=max)
+    }
+
+    /// Clamp by maximum value
+    ///
+    /// If self is greater than max then return max, otherwise return self
+    fn clamp_max(self, max: Self) -> Self {
+        partial_min(self, max)
+    }
+
+    /// Clamp by minimum value
+    ///
+    /// If self is less than min then return min, otherwise return self
+    fn clamp_min(self, min: Self) -> Self {
+        partial_max(self, min)
     }
 }
 
