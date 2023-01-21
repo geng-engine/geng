@@ -151,14 +151,14 @@ pub fn run(geng: &Geng, state: impl State) {
         state: T,
         ui_controller: ui::Controller,
         timer: Timer,
-        fixed_updater: FixedUpdater,
+        next_fixed_update: f64,
     }
     let state = Rc::new(RefCell::new(RunState {
         geng: geng.clone(),
         state,
         ui_controller: ui::Controller::new(geng),
         timer: Timer::new(),
-        fixed_updater: FixedUpdater::new(geng.inner.fixed_delta_time.get(), 0.0),
+        next_fixed_update: geng.inner.fixed_delta_time.get(),
     }));
 
     impl<T: State> RunState<T> {
@@ -168,8 +168,11 @@ pub fn run(geng: &Geng, state: impl State) {
             self.state.update(delta_time);
             self.ui_controller
                 .update(self.state.ui(&self.ui_controller).deref_mut(), delta_time);
-            for _ in 0..self.fixed_updater.update(delta_time) {
-                self.state.fixed_update(self.fixed_updater.fixed_delta_time);
+            self.next_fixed_update += delta_time;
+            while self.next_fixed_update <= 0.0 {
+                let delta_time = self.geng.inner.fixed_delta_time.get();
+                self.next_fixed_update += delta_time;
+                self.state.fixed_update(delta_time);
             }
         }
 

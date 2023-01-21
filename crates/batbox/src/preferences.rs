@@ -14,7 +14,7 @@ pub mod prelude {
 pub fn base_path() -> std::path::PathBuf {
     #[cfg(target_arch = "wasm32")]
     {
-        PathBuf::from(".") // TODO: detect app name by url?
+        ".".into() // TODO: detect app name by url?
     }
     #[cfg(not(target_arch = "wasm32"))]
     {

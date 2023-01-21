@@ -77,5 +77,4 @@ pub use crate::program_args::prelude::*;
 pub use crate::range::prelude::*;
 pub use crate::rng::prelude::*;
 pub use crate::time::prelude::*;
-pub use crate::updater::*;
 pub use crate::util::prelude::*;
