@@ -327,40 +327,6 @@ impl<T: Float> UNum for RealImpl<T> {
     const ONE: Self = Self(T::ONE);
 }
 
-impl<T: Float> RealImpl<T> {
-    pub const PI: Self = <Self as Real>::PI;
-    pub fn signum(self) -> Self {
-        Real::signum(self)
-    }
-    pub fn floor(self) -> Self {
-        Real::floor(self)
-    }
-    pub fn ceil(self) -> Self {
-        Real::ceil(self)
-    }
-    pub fn sqrt(self) -> Self {
-        Real::sqrt(self)
-    }
-    pub fn tan(self) -> Self {
-        Real::tan(self)
-    }
-    pub fn sin(self) -> Self {
-        Real::sin(self)
-    }
-    pub fn cos(self) -> Self {
-        Real::cos(self)
-    }
-    pub fn sin_cos(self) -> (Self, Self) {
-        Real::sin_cos(self)
-    }
-    pub fn atan2(y: Self, x: Self) -> Self {
-        Real::atan2(y, x)
-    }
-    pub fn as_f32(self) -> f32 {
-        Real::as_f32(self)
-    }
-}
-
 pub struct UniformReal<T: rand::distributions::uniform::SampleUniform>(T::Sampler);
 
 impl<T: Float + rand::distributions::uniform::SampleUniform>
@@ -499,6 +465,173 @@ impl<T: Float> Real for RealImpl<T> {
     }
     fn as_f32(self) -> f32 {
         self.0.as_f32()
+    }
+}
+
+/// TODO: basically duplicates the trait wtf
+impl<T: Float> RealImpl<T> {
+    /// Archimedes’ constant (π)
+    pub const PI: Self = <Self as Real>::PI;
+
+    /// Computes the arccosine of a number.
+    ///
+    /// Return value is in radians in the range [0, pi] or NaN if the number is outside the range [-1, 1].
+    pub fn acos(self) -> Self {
+        <Self as Real>::acos(self)
+    }
+
+    /// Computes the arcsine of a number.
+    ///
+    /// Return value is in radians in the range [-pi/2, pi/2] or NaN if the number is outside the range [-1, 1].
+    pub fn asin(self) -> Self {
+        <Self as Real>::asin(self)
+    }
+
+    /// Computes the arctangent of a number.
+    ///
+    /// Return value is in radians in the range [-pi/2, pi/2];
+    pub fn atan(self) -> Self {
+        <Self as Real>::atan(self)
+    }
+
+    /// Computes the four quadrant arctangent of `self` (`y`) and `other` (`x`) in radians.  
+    ///
+    /// * `x = 0`, `y = 0`: `0`
+    /// * `x >= 0`: `arctan(y/x)` -> `[-pi/2, pi/2]`
+    /// * `y >= 0`: `arctan(y/x) + pi` -> `(pi/2, pi]`
+    /// * `y < 0`: `arctan(y/x) - pi` -> `(-pi, -pi/2)`
+    pub fn atan2(y: Self, x: Self) -> Self {
+        <Self as Real>::atan2(y, x)
+    }
+
+    /// Returns the smallest integer greater than or equal to a number.
+    pub fn ceil(self) -> Self {
+        <Self as Real>::ceil(self)
+    }
+
+    /// Computes the cosine of a number (in radians).
+    pub fn cos(self) -> Self {
+        <Self as Real>::cos(self)
+    }
+
+    /// Calculates Euclidean division, the matching method for rem_euclid.
+    ///
+    /// This computes the integer n such that self = n * rhs + self.rem_euclid(rhs).
+    /// In other words, the result is self / rhs rounded to the integer n such that self >= n * rhs.
+    pub fn div_euclid(self, other: Self) -> Self {
+        <Self as Real>::div_euclid(self, other)
+    }
+
+    /// Returns `e^(self)`, (the exponential function).
+    pub fn exp(self) -> Self {
+        <Self as Real>::exp(self)
+    }
+
+    /// Returns the largest integer less than or equal to `self`.
+    pub fn floor(self) -> Self {
+        <Self as Real>::floor(self)
+    }
+
+    /// Returns the fractional part of `self`.
+    pub fn fract(self) -> Self {
+        <Self as Real>::fract(self)
+    }
+
+    /// Returns the natural logarithm of the number.
+    pub fn ln(self) -> Self {
+        <Self as Real>::ln(self)
+    }
+
+    /// Returns the logarithm of the number with respect to an arbitrary base.
+    pub fn log(self, base: Self) -> Self {
+        <Self as Real>::log(self, base)
+    }
+
+    /// Returns the base 10 logarithm of the number.
+    pub fn log10(self) -> Self {
+        <Self as Real>::log10(self)
+    }
+
+    /// Returns the base 2 logarithm of the number.
+    pub fn log2(self) -> Self {
+        <Self as Real>::log2(self)
+    }
+
+    /// Raises a number to a floating point power.
+    pub fn powf(self, n: Self) -> Self {
+        <Self as Real>::powf(self, n)
+    }
+
+    /// Raises a number to an integer power.
+    pub fn powi(self, n: i32) -> Self {
+        <Self as Real>::powi(self, n)
+    }
+
+    /// Takes the reciprocal (inverse) of a number, 1/x
+    pub fn recip(self) -> Self {
+        <Self as Real>::recip(self)
+    }
+
+    /// Calculates the least nonnegative remainder of `self (mod rhs)`.
+    ///
+    /// In particular, the return value `r` satisfies `0.0 <= r < rhs.abs()` in
+    /// most cases. However, due to a floating point round-off error it can
+    /// result in `r == rhs.abs()`, violating the mathematical definition, if
+    /// `self` is much smaller than `rhs.abs()` in magnitude and `self < 0.0`.
+    /// This result is not an element of the function's codomain, but it is the
+    /// closest floating point number in the real numbers and thus fulfills the
+    /// property `self == self.div_euclid(rhs) * rhs + self.rem_euclid(rhs)`
+    /// approximately.
+    pub fn rem_euclid(self, other: Self) -> Self {
+        <Self as Real>::rem_euclid(self, other)
+    }
+
+    /// Returns the nearest integer to `self`.
+    /// Round half-way cases away from `0.0`.
+    pub fn round(self) -> Self {
+        <Self as Real>::round(self)
+    }
+
+    /// Returns a number that represents the sign of `self`.
+    ///
+    /// - `1.0` if the number is positive, `+0.0` or `INFINITY`
+    /// - `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
+    /// - NaN if the number is NaN
+    pub fn signum(self) -> Self {
+        <Self as Real>::signum(self)
+    }
+
+    /// Computes the sine of a number (in radians).
+    pub fn sin(self) -> Self {
+        <Self as Real>::sin(self)
+    }
+
+    /// Simultaneously computes the sine and cosine of the number, `x`.
+    /// Returns `(sin(x), cos(x))`.
+    pub fn sin_cos(self) -> (Self, Self) {
+        <Self as Real>::sin_cos(self)
+    }
+
+    /// Returns the square root of a number.
+    ///
+    /// Returns NaN if `self` is a negative number other than `-0.0`.
+    pub fn sqrt(self) -> Self {
+        <Self as Real>::sqrt(self)
+    }
+
+    /// Computes the tangent of a number (in radians).
+    pub fn tan(self) -> Self {
+        <Self as Real>::tan(self)
+    }
+
+    /// Convert an [f32] into [Self]
+    pub fn from_f32(x: f32) -> Self {
+        <Self as Real>::from_f32(x)
+    }
+
+    /// Convert self into an [f32]
+    pub fn as_f32(self) -> f32 {
+        <Self as Real>::as_f32(self)
     }
 }
 
