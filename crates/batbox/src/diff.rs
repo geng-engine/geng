@@ -6,7 +6,7 @@ pub mod prelude {
 
     #[doc(no_inline)]
     pub use super::Diff;
-    // pub use ::batbox_derive::Diff; previous use imports same thing???
+    // pub use ::batbox_derive::Diff; // TODO previous use imports same thing???
 }
 
 /// A diffable type
