@@ -1,12 +1,12 @@
 use super::*;
 
-mod vec2;
-mod vec3;
-mod vec4;
+mod _2d;
+mod _3d;
+mod _4d;
 
-pub use vec2::*;
-pub use vec3::*;
-pub use vec4::*;
+pub use _2d::*;
+pub use _3d::*;
+pub use _4d::*;
 
 macro_rules! left_mul_impl {
     ($name:ident for $($typ:ty),*) => {$(
@@ -20,7 +20,7 @@ macro_rules! left_mul_impl {
 }
 
 macro_rules! vec_impl_ops {
-    ($name:ident : $($f:ident),*) => {
+    ($name:ident : $($f:tt),*) => {
         impl<T: Add<Output=T>> Add for $name<T> {
             type Output = Self;
             fn add(self, rhs: Self) -> Self {
@@ -124,6 +124,6 @@ macro_rules! vec_impl_ops {
     };
 }
 
-vec_impl_ops!(Vec2: x, y);
-vec_impl_ops!(Vec3: x, y, z);
-vec_impl_ops!(Vec4: x, y, z, w);
+vec_impl_ops!(vec2: 0, 1);
+vec_impl_ops!(vec3: 0, 1, 2);
+vec_impl_ops!(vec4: 0, 1, 2, 3);

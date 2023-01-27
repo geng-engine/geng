@@ -21,7 +21,7 @@ pub struct FramebufferRead<'a> {
     pub(crate) fbo: Fbo,
     color: ColorAttachmentRead<'a>,
     depth: DepthAttachmentRead<'a>,
-    size: Vec2<usize>,
+    size: vec2<usize>,
 }
 
 impl<'a> FramebufferRead<'a> {
@@ -79,7 +79,7 @@ impl<'a> FramebufferRead<'a> {
     pub fn new_color(ugli: &Ugli, color: ColorAttachmentRead<'a>) -> Self {
         Self::new(ugli, color, DepthAttachmentRead::None)
     }
-    pub fn size(&self) -> Vec2<usize> {
+    pub fn size(&self) -> vec2<usize> {
         self.size
     }
 

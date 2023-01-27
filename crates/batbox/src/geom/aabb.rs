@@ -4,16 +4,16 @@ use super::*;
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Aabb2<T> {
     /// Minimum coordinates
-    pub min: Vec2<T>,
+    pub min: vec2<T>,
     /// Maximum coordinates
-    pub max: Vec2<T>,
+    pub max: vec2<T>,
 }
 
 impl<T: UNum> Aabb2<T> {
     /// An [Aabb2] with both position and size equal to (0, 0).
     pub const ZERO: Self = Aabb2 {
-        min: Vec2::ZERO,
-        max: Vec2::ZERO,
+        min: vec2::ZERO,
+        max: vec2::ZERO,
     };
 
     /// Construct an [Aabb2] from two opposite corners. The two corners can be given in any order.
@@ -25,7 +25,7 @@ impl<T: UNum> Aabb2<T> {
     /// let same = Aabb2::from_corners(vec2(5.0, -5.0), vec2(-5.0, 5.0));
     /// assert_eq!(aabb, same);
     /// ```
-    pub fn from_corners(p1: Vec2<T>, p2: Vec2<T>) -> Self {
+    pub fn from_corners(p1: vec2<T>, p2: vec2<T>) -> Self {
         let (min_x, max_x) = partial_min_max(p1.x, p2.x);
         let (min_y, max_y) = partial_min_max(p1.y, p2.y);
         Self {
@@ -39,9 +39,9 @@ impl<T: UNum> Aabb2<T> {
     /// # Examples
     /// ```
     /// # use batbox::prelude::*;
-    /// assert_eq!(Aabb2::<f32>::ZERO, Aabb2::point(Vec2::ZERO));
+    /// assert_eq!(Aabb2::<f32>::ZERO, Aabb2::point(vec2::ZERO));
     /// ```
-    pub fn point(point: Vec2<T>) -> Self {
+    pub fn point(point: vec2<T>) -> Self {
         Self {
             min: point,
             max: point,
@@ -72,7 +72,7 @@ impl<T: UNum> Aabb2<T> {
     /// let same = Aabb2::from_corners(vec2(-10, -5), vec2(10, 5));
     /// assert_eq!(aabb, same);
     /// ```
-    pub fn extend_symmetric(self, extend: Vec2<T>) -> Self {
+    pub fn extend_symmetric(self, extend: vec2<T>) -> Self {
         Self {
             min: self.min - extend,
             max: self.max + extend,
@@ -88,7 +88,7 @@ impl<T: UNum> Aabb2<T> {
     /// let same = Aabb2::ZERO.extend_symmetric(vec2(10.0, 5.0));
     /// assert_eq!(aabb, same);
     /// ```
-    pub fn extend_positive(self, extend: Vec2<T>) -> Self {
+    pub fn extend_positive(self, extend: vec2<T>) -> Self {
         Self {
             min: self.min,
             max: self.max + extend,
@@ -136,27 +136,27 @@ impl<T: UNum> Aabb2<T> {
     }
 
     /// Get the bottom-left corner of the [Aabb2].
-    pub fn bottom_left(&self) -> Vec2<T> {
+    pub fn bottom_left(&self) -> vec2<T> {
         self.min
     }
 
     /// Get the bottom-right corner of the [Aabb2].
-    pub fn bottom_right(&self) -> Vec2<T> {
+    pub fn bottom_right(&self) -> vec2<T> {
         vec2(self.max.x, self.min.y)
     }
 
     /// Get the top-left corner of the [Aabb2].
-    pub fn top_left(&self) -> Vec2<T> {
+    pub fn top_left(&self) -> vec2<T> {
         vec2(self.min.x, self.max.y)
     }
 
     /// Get the top-right corner of the [Aabb2].
-    pub fn top_right(&self) -> Vec2<T> {
+    pub fn top_right(&self) -> vec2<T> {
         vec2(self.max.x, self.max.y)
     }
 
     /// Get the center position of the [Aabb2].
-    pub fn center(&self) -> Vec2<T> {
+    pub fn center(&self) -> vec2<T> {
         let two: T = T::ONE + T::ONE;
         vec2(
             (self.min.x + self.max.x) / two,
@@ -165,7 +165,7 @@ impl<T: UNum> Aabb2<T> {
     }
 
     /// Get an array of all four corner points
-    pub fn corners(&self) -> [Vec2<T>; 4] {
+    pub fn corners(&self) -> [vec2<T>; 4] {
         [
             self.bottom_left(),
             self.bottom_right(),
@@ -183,7 +183,7 @@ impl<T: UNum> Aabb2<T> {
     }
 
     /// Map bounds (min & max vectors)
-    pub fn map_bounds<U: UNum, F: Fn(Vec2<T>) -> Vec2<U>>(self, f: F) -> Aabb2<U> {
+    pub fn map_bounds<U: UNum, F: Fn(vec2<T>) -> vec2<U>>(self, f: F) -> Aabb2<U> {
         Aabb2 {
             min: f(self.min),
             max: f(self.max),
@@ -201,7 +201,7 @@ impl<T: UNum> Aabb2<T> {
     }
 
     /// Return the size of the [Aabb2].
-    pub fn size(&self) -> Vec2<T> {
+    pub fn size(&self) -> vec2<T> {
         vec2(self.width(), self.height())
     }
 
@@ -214,7 +214,7 @@ impl<T: UNum> Aabb2<T> {
     /// assert!(rect.contains(vec2(2, 3)));
     /// assert!(!rect.contains(vec2(5, 5)));
     /// ```
-    pub fn contains(&self, point: Vec2<T>) -> bool {
+    pub fn contains(&self, point: vec2<T>) -> bool {
         self.min.x <= point.x
             && point.x < self.max.x
             && self.min.y <= point.y
@@ -230,7 +230,7 @@ impl<T: UNum> Aabb2<T> {
     }
 
     /// Moves the [Aabb2] by a given vector.
-    pub fn translate(self, v: Vec2<T>) -> Self {
+    pub fn translate(self, v: vec2<T>) -> Self {
         Self {
             min: self.min + v,
             max: self.max + v,
@@ -238,7 +238,7 @@ impl<T: UNum> Aabb2<T> {
     }
 
     /// Returns an iterator over points inside the [Aabb2].
-    pub fn points(self) -> impl Iterator<Item = Vec2<T>>
+    pub fn points(self) -> impl Iterator<Item = vec2<T>>
     where
         Range<T>: Iterator<Item = T>,
     {
@@ -261,15 +261,12 @@ impl<T: UNum> Aabb2<T> {
     /// ]);
     /// assert_eq!(aabb, Aabb2 { min: vec2(-1, -2), max: vec2(3, 4) });
     /// ```
-    pub fn points_bounding_box(points: impl IntoIterator<Item = Vec2<T>>) -> Self {
+    pub fn points_bounding_box(points: impl IntoIterator<Item = vec2<T>>) -> Self {
         let mut points = points.into_iter();
-        let Vec2 {
-            x: mut min_x,
-            y: mut min_y,
-        } = points.next().expect("At least one point expected");
+        let vec2(mut min_x, mut min_y) = points.next().expect("At least one point expected");
         let mut max_x = min_x;
         let mut max_y = min_y;
-        for Vec2 { x, y } in points {
+        for vec2(x, y) in points {
             // TODO: disallow partials?
             min_x = partial_min(min_x, x);
             min_y = partial_min(min_y, y);

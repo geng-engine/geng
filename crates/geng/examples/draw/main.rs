@@ -11,7 +11,7 @@ struct Grid<'a> {
 }
 
 impl<'a> Grid<'a> {
-    pub fn new(size: Vec2<usize>, objects: impl IntoIterator<Item = &'a dyn geng::Draw2d>) -> Self {
+    pub fn new(size: vec2<usize>, objects: impl IntoIterator<Item = &'a dyn geng::Draw2d>) -> Self {
         let mut table = vec![vec![None; size.y]; size.x];
         for (storage, object) in table.iter_mut().flat_map(|row| row.iter_mut()).zip(objects) {
             *storage = Some(object);
@@ -50,7 +50,7 @@ impl<'a> geng::Draw2d for Grid<'a> {
                         camera,
                         &object
                             .transformed()
-                            .fit_into(Aabb2::point(Vec2::ZERO).extend_uniform(0.9))
+                            .fit_into(Aabb2::point(vec2::ZERO).extend_uniform(0.9))
                             .transform(
                                 self.transform
                                     * Mat3::translate(vec2(-1.0, -1.0))
@@ -82,7 +82,7 @@ impl State {
         let mut result = Self {
             geng: geng.clone(),
             camera: geng::Camera2d {
-                center: Vec2::ZERO,
+                center: vec2::ZERO,
                 rotation: 0.0,
                 fov: 10.0,
             },

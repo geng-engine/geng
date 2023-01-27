@@ -7,23 +7,23 @@ struct Assets {
 
 #[derive(ugli::Vertex)]
 struct Vertex {
-    a_uv: Vec2<f32>,
-    a_mr_uv: Vec2<f32>,
-    a_pos: Vec3<f32>,
-    a_normal: Vec3<f32>,
+    a_uv: vec2<f32>,
+    a_mr_uv: vec2<f32>,
+    a_pos: vec3<f32>,
+    a_normal: vec3<f32>,
     a_color: Rgba<f32>,
 }
 
 pub struct Camera {
     pub fov: f32,
-    pub pos: Vec3<f32>,
+    pub pos: vec3<f32>,
     pub distance: f32,
     pub rot_h: f32,
     pub rot_v: f32,
 }
 
 impl Camera {
-    pub fn eye_pos(&self) -> Vec3<f32> {
+    pub fn eye_pos(&self) -> vec3<f32> {
         let v = vec2(self.distance, 0.0).rotate(self.rot_v);
         self.pos + vec3(0.0, -v.y, v.x)
     }
@@ -37,7 +37,7 @@ impl geng::AbstractCamera3d for Camera {
             * Mat4::translate(-self.pos)
     }
 
-    fn projection_matrix(&self, framebuffer_size: Vec2<f32>) -> Mat4<f32> {
+    fn projection_matrix(&self, framebuffer_size: vec2<f32>) -> Mat4<f32> {
         Mat4::perspective(
             self.fov,
             framebuffer_size.x / framebuffer_size.y,
@@ -92,12 +92,12 @@ impl Example {
             info!("{:?}", mesh.name());
             for primitive in mesh.primitives() {
                 let reader = primitive.reader(|buffer| buffers.get(buffer.index()).map(|x| &**x));
-                let positions: Vec<Vec3<f32>> = reader
+                let positions: Vec<vec3<f32>> = reader
                     .read_positions()
                     .expect("No positions for primitive mesh WAT")
                     .map(|[x, y, z]| vec3(x, y, z))
                     .collect();
-                let normals: Vec<Vec3<f32>> = reader
+                let normals: Vec<vec3<f32>> = reader
                     .read_normals()
                     .expect("Missing normals, this is not supported yet")
                     .map(|[x, y, z]| vec3(x, y, z))
@@ -118,8 +118,8 @@ impl Example {
                     geng.ugli(),
                     indices
                         .map(|index| Vertex {
-                            a_mr_uv: Vec2::ZERO, // TODO
-                            a_uv: Vec2::ZERO,    // TODO
+                            a_mr_uv: vec2::ZERO, // TODO
+                            a_uv: vec2::ZERO,    // TODO
                             a_pos: positions[index],
                             a_normal: normals[index], // TODO: optional
                             a_color: colors.as_ref().map_or(Rgba::WHITE, |colors| colors[index]),

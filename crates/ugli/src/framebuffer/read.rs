@@ -59,7 +59,7 @@ impl<'a> FramebufferRead<'a> {
         &self,
         texture: &mut Texture,
         source_rect: Aabb2<usize>,
-        dest: Vec2<usize>,
+        dest: vec2<usize>,
     ) {
         let gl = &self.fbo.ugli.inner.raw;
         self.fbo.bind();

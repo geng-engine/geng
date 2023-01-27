@@ -38,7 +38,7 @@ impl<T: Float> Quat<T> {
     }
 
     /// Construct a quaternion representing rotation around given axis by given angle
-    pub fn from_axis_angle(axis: Vec3<T>, angle: T) -> Self {
+    pub fn from_axis_angle(axis: vec3<T>, angle: T) -> Self {
         let angle = angle / (T::ONE + T::ONE);
         let sin = angle.sin();
         let cos = angle.cos();

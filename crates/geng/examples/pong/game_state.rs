@@ -18,7 +18,7 @@ const BOUNDARY_WIDTH: f32 = 5.0;
 
 const PLAYER_WIDTH: f32 = 10.0;
 const PLAYER_HEIGHT: f32 = 50.0;
-const PLAYER_SIZE: Vec2<f32> = vec2(PLAYER_WIDTH, PLAYER_HEIGHT);
+const PLAYER_SIZE: vec2<f32> = vec2(PLAYER_WIDTH, PLAYER_HEIGHT);
 const PLAYER_SPEED: f32 = 100.0;
 
 const BALL_RADIUS: f32 = 5.0;
@@ -151,7 +151,7 @@ impl GameState {
                 // Move and change velocity of the ball
                 ball.position += collision.normal * collision.penetration;
                 ball.velocity +=
-                    Vec2::dot(ball.velocity, -collision.normal) * collision.normal * 2.0;
+                    vec2::dot(ball.velocity, -collision.normal) * collision.normal * 2.0;
             }
         }
     }

@@ -4,12 +4,12 @@ use super::*;
 #[derive(Debug, Clone)]
 pub struct Chain<T> {
     /// List of points
-    pub vertices: Vec<Vec2<T>>,
+    pub vertices: Vec<vec2<T>>,
 }
 
 impl<T: Float> Chain<T> {
     /// Construct a new chain
-    pub fn new(vertices: Vec<Vec2<T>>) -> Self {
+    pub fn new(vertices: Vec<vec2<T>>) -> Self {
         Self { vertices }
     }
 

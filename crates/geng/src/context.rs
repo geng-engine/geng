@@ -30,9 +30,9 @@ pub struct ContextOptions {
     pub antialias: bool,
     pub transparency: bool,
     pub shader_prefix: Option<(String, String)>,
-    pub window_size: Option<Vec2<usize>>,
+    pub window_size: Option<vec2<usize>>,
     pub fullscreen: bool,
-    pub target_ui_resolution: Option<Vec2<f64>>,
+    pub target_ui_resolution: Option<vec2<f64>>,
 }
 
 impl Default for ContextOptions {

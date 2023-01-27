@@ -111,15 +111,15 @@ impl<T: Num + Copy + DivAssign> DivAssign<T> for Mat4<T> {
     }
 }
 
-impl<T: Num + Copy> Mul<Vec4<T>> for Mat4<T> {
-    type Output = Vec4<T>;
+impl<T: Num + Copy> Mul<vec4<T>> for Mat4<T> {
+    type Output = vec4<T>;
 
-    fn mul(self, rhs: Vec4<T>) -> Vec4<T> {
+    fn mul(self, rhs: vec4<T>) -> vec4<T> {
         vec4(
-            Vec4::dot(self.row(0), rhs),
-            Vec4::dot(self.row(1), rhs),
-            Vec4::dot(self.row(2), rhs),
-            Vec4::dot(self.row(3), rhs),
+            vec4::dot(self.row(0), rhs),
+            vec4::dot(self.row(1), rhs),
+            vec4::dot(self.row(2), rhs),
+            vec4::dot(self.row(3), rhs),
         )
     }
 }

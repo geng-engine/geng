@@ -8,14 +8,14 @@ pub struct Ellipse<T> {
 
 impl<T: Float> Ellipse<T> {
     /// Create a new ellipse with given center and given half size
-    pub fn new(center: Vec2<T>, half_size: Vec2<T>) -> Self {
+    pub fn new(center: vec2<T>, half_size: vec2<T>) -> Self {
         Self {
             transform: Mat3::translate(center) * Mat3::scale(half_size),
         }
     }
 
     /// Create a circle with given center and radius
-    pub fn circle(center: Vec2<T>, radius: T) -> Self {
+    pub fn circle(center: vec2<T>, radius: T) -> Self {
         Self {
             transform: Mat3::translate(center) * Mat3::scale_uniform(radius),
         }

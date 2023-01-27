@@ -2,7 +2,7 @@ use super::*;
 
 pub struct TouchSimulator {
     geng: Geng,
-    touches: Vec<Vec2<f64>>,
+    touches: Vec<vec2<f64>>,
     holding: Option<usize>,
 }
 
@@ -69,7 +69,7 @@ impl TouchSimulator {
         }
         None
     }
-    fn new_touch(&mut self, position: Vec2<f64>) -> Vec<Event> {
+    fn new_touch(&mut self, position: vec2<f64>) -> Vec<Event> {
         self.holding = Some(self.touches.len());
         self.touches.push(position);
         vec![Event::TouchStart {
@@ -80,7 +80,7 @@ impl TouchSimulator {
                 .collect(),
         }]
     }
-    fn move_touch(&mut self, index: usize, position: Vec2<f64>) -> Vec<Event> {
+    fn move_touch(&mut self, index: usize, position: vec2<f64>) -> Vec<Event> {
         self.touches[index] = position;
         vec![Event::TouchMove {
             touches: self

@@ -12,7 +12,7 @@ struct CrabRave {
     geng: Geng,
     assets: Assets,
     t: f32,
-    limb_offsets: [Vec2<f32>; 5],
+    limb_offsets: [vec2<f32>; 5],
 }
 
 impl CrabRave {
@@ -21,7 +21,7 @@ impl CrabRave {
             geng,
             assets,
             t: 0.0,
-            limb_offsets: [Vec2::ZERO; 5],
+            limb_offsets: [vec2::ZERO; 5],
         }
     }
 }
@@ -45,7 +45,7 @@ impl geng::State for CrabRave {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
         let camera = geng::Camera2d {
-            center: Vec2::ZERO,
+            center: vec2::ZERO,
             rotation: 0.0,
             fov: 3.0,
         };
@@ -55,11 +55,11 @@ impl geng::State for CrabRave {
                 * Mat3::rotate(self.t.sin() * 0.2);
 
         let limb =
-            |attach_pos: Vec2<f32>, end_pos: Vec2<f32>, target_end_pos: Vec2<f32>| -> Mat3<f32> {
+            |attach_pos: vec2<f32>, end_pos: vec2<f32>, target_end_pos: vec2<f32>| -> Mat3<f32> {
                 let attach_pos_world = (body * attach_pos.extend(1.0)).xy();
                 let (attach_pos, attach_pos_world, end_pos, target_end_pos) =
                     (end_pos, target_end_pos, attach_pos, attach_pos_world);
-                let m = |v: Vec2<f32>| -> Mat3<f32> {
+                let m = |v: vec2<f32>| -> Mat3<f32> {
                     let v = v.normalize_or_zero();
                     Mat3::from_orts(v, v.rotate_90())
                 };

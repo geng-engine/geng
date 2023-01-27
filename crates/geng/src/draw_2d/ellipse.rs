@@ -8,11 +8,11 @@ pub struct Ellipse {
 }
 
 impl Ellipse {
-    pub fn circle(center: Vec2<f32>, radius: f32, color: Rgba<f32>) -> Self {
+    pub fn circle(center: vec2<f32>, radius: f32, color: Rgba<f32>) -> Self {
         Self::unit(color).transform(Mat3::translate(center) * Mat3::scale_uniform(radius))
     }
     pub fn circle_with_cut(
-        center: Vec2<f32>,
+        center: vec2<f32>,
         inner_radius: f32,
         radius: f32,
         color: Rgba<f32>,

@@ -62,15 +62,15 @@ impl Sense {
 
 #[derive(Debug, Copy, Clone)]
 pub struct Constraints {
-    pub min_size: Vec2<f64>,
-    pub flex: Vec2<f64>,
+    pub min_size: vec2<f64>,
+    pub flex: vec2<f64>,
 }
 
 impl Constraints {
     pub fn zero() -> Self {
         Self {
-            min_size: Vec2::ZERO,
-            flex: Vec2::ZERO,
+            min_size: vec2::ZERO,
+            flex: vec2::ZERO,
         }
     }
 }

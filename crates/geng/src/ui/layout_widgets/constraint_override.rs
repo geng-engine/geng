@@ -33,7 +33,7 @@ mod ext {
     use super::*;
 
     pub trait WidgetExt: Widget + Sized {
-        fn fixed_size(self, size: Vec2<f64>) -> ConstraintOverride<Self> {
+        fn fixed_size(self, size: vec2<f64>) -> ConstraintOverride<Self> {
             self.constraints_override(Constraints {
                 min_size: size,
                 flex: vec2(0.0, 0.0),

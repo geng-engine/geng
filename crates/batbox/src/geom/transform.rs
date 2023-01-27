@@ -70,7 +70,7 @@ pub trait Transform2dExt<F: Float>: Transform2d<F> {
     /// let quad = quad.align_bounding_box(vec2(0.0, 1.0));
     /// assert_eq!(quad.bounding_box(), Aabb2::from_corners(vec2(0.0, 0.0), vec2(2.0, -2.0)));
     /// ```
-    fn align_bounding_box(self, alignment: Vec2<F>) -> Self
+    fn align_bounding_box(self, alignment: vec2<F>) -> Self
     where
         Self: Sized,
     {
@@ -79,7 +79,7 @@ pub trait Transform2dExt<F: Float>: Transform2d<F> {
     }
 
     /// Translate object by given vector
-    fn translate(self, delta: Vec2<F>) -> Self
+    fn translate(self, delta: vec2<F>) -> Self
     where
         Self: Sized,
     {
@@ -87,7 +87,7 @@ pub trait Transform2dExt<F: Float>: Transform2d<F> {
     }
 
     /// Scale object around (0, 0) by given factor
-    fn scale(self, factor: Vec2<F>) -> Self
+    fn scale(self, factor: vec2<F>) -> Self
     where
         Self: Sized,
     {

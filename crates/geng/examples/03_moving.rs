@@ -2,14 +2,14 @@ use geng::prelude::*;
 
 struct State {
     geng: Geng,
-    position: Vec2<f32>, // Current position
+    position: vec2<f32>, // Current position
 }
 
 impl State {
     fn new(geng: &Geng) -> Self {
         Self {
             geng: geng.clone(),
-            position: Vec2::ZERO,
+            position: vec2::ZERO,
         }
     }
 }
@@ -60,7 +60,7 @@ impl geng::State for State {
                 key: geng::Key::Space
             }
         ) {
-            self.position = Vec2::ZERO;
+            self.position = vec2::ZERO;
         }
     }
 }

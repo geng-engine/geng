@@ -20,24 +20,24 @@ pub use text::*;
 
 #[derive(ugli::Vertex, Copy, Clone, Debug)]
 pub struct ColoredVertex {
-    pub a_pos: Vec2<f32>,
+    pub a_pos: vec2<f32>,
     pub a_color: Rgba<f32>,
 }
 
 #[derive(ugli::Vertex, Copy, Clone, Debug)]
 pub struct Vertex {
-    pub a_pos: Vec2<f32>,
+    pub a_pos: vec2<f32>,
 }
 
 #[derive(ugli::Vertex, Copy, Clone, Debug)]
 pub struct TexturedVertex {
-    pub a_pos: Vec2<f32>,
+    pub a_pos: vec2<f32>,
     pub a_color: Rgba<f32>,
-    pub a_vt: Vec2<f32>,
+    pub a_vt: vec2<f32>,
 }
 
-impl From<Vec2<f32>> for ColoredVertex {
-    fn from(v: Vec2<f32>) -> ColoredVertex {
+impl From<vec2<f32>> for ColoredVertex {
+    fn from(v: vec2<f32>) -> ColoredVertex {
         ColoredVertex {
             a_pos: v,
             a_color: Rgba::WHITE,
@@ -307,8 +307,8 @@ impl Helper {
         &self,
         framebuffer: &mut ugli::Framebuffer,
         camera: &impl AbstractCamera2d,
-        position: Vec2<f32>,
-        radius: Vec2<f32>,
+        position: vec2<f32>,
+        radius: vec2<f32>,
         inner_cut: f32,
         color: Rgba<f32>,
     ) {
@@ -338,8 +338,8 @@ impl Helper {
         &self,
         framebuffer: &mut ugli::Framebuffer,
         camera: &impl AbstractCamera2d,
-        position: Vec2<f32>,
-        radius: Vec2<f32>,
+        position: vec2<f32>,
+        radius: vec2<f32>,
         color: Rgba<f32>,
     ) {
         self.ellipse_with_cut(framebuffer, camera, position, radius, 0.0, color);
@@ -349,7 +349,7 @@ impl Helper {
         &self,
         framebuffer: &mut ugli::Framebuffer,
         camera: &impl AbstractCamera2d,
-        position: Vec2<f32>,
+        position: vec2<f32>,
         inner_radius: f32,
         outer_radius: f32,
         color: Rgba<f32>,
@@ -368,7 +368,7 @@ impl Helper {
         &self,
         framebuffer: &mut ugli::Framebuffer,
         camera: &impl AbstractCamera2d,
-        position: Vec2<f32>,
+        position: vec2<f32>,
         radius: f32,
         color: Rgba<f32>,
     ) {

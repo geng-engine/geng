@@ -66,13 +66,13 @@ impl Chain {
                 // Calculate angles
                 let backward = (prev.a_pos - current.a_pos).normalize_or_zero();
                 let forward = (next.a_pos - current.a_pos).normalize_or_zero();
-                if backward == Vec2::ZERO || forward == Vec2::ZERO {
+                if backward == vec2::ZERO || forward == vec2::ZERO {
                     // Too small distance
                     current = next;
                     continue;
                 }
 
-                let cos = -Vec2::dot(forward, backward);
+                let cos = -vec2::dot(forward, backward);
                 let cos_half = ((cos + 1.0) / 2.0).max(0.0).sqrt();
 
                 if cos_half.approx_eq(&1.0) {
@@ -109,7 +109,7 @@ impl Chain {
 
                 // Positive side -> turn left
                 // Negative side -> turn right
-                let side = Vec2::dot(
+                let side = vec2::dot(
                     (next.a_pos - prev.a_pos).normalize_or_zero().rotate_90(),
                     inside_dir,
                 )
@@ -147,7 +147,7 @@ impl Chain {
 
                 // Round
                 {
-                    let angle = Vec2::dot(forward_norm, backward_norm)
+                    let angle = vec2::dot(forward_norm, backward_norm)
                         .clamp(-1.0, 1.0) // Clamp for good measure (because of float inconsistency)
                         .acos();
                     let (start, end, shift) = if side.is_sign_positive() {

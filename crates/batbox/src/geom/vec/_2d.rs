@@ -1,58 +1,59 @@
 use super::*;
 
 /// 2 dimensional vector.
+#[allow(non_camel_case_types)]
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Vec2<T> {
-    /// `x` coordinate of the vector
-    pub x: T,
-    /// `y` coordinate of the vector
-    pub y: T,
-}
+pub struct vec2<T>(pub T, pub T);
 
-impl<T: Display> Display for Vec2<T> {
+impl<T: Display> Display for vec2<T> {
     fn fmt(&self, fmt: &mut std::fmt::Formatter) -> fmt::Result {
-        write!(fmt, "({}, {})", self.x, self.y)
+        write!(fmt, "({}, {})", self.0, self.1)
     }
 }
 
-/// Construct a 2-d vector with given components.
-///
-/// # Example
-/// ```
-/// use batbox::prelude::*;
-/// let v = vec2(1, 2);
-/// ```
-pub const fn vec2<T>(x: T, y: T) -> Vec2<T> {
-    Vec2 { x, y }
-}
-
-impl<T> From<[T; 2]> for Vec2<T> {
-    fn from(v: [T; 2]) -> Vec2<T> {
+impl<T> From<[T; 2]> for vec2<T> {
+    fn from(v: [T; 2]) -> vec2<T> {
         let [x, y] = v;
         vec2(x, y)
     }
 }
 
-impl<T> Deref for Vec2<T> {
+/// Data structure used to provide access to coordinates with the dot notation, e.g. `v.x`
+pub struct XY<T> {
+    #[allow(missing_docs)]
+    pub x: T,
+    #[allow(missing_docs)]
+    pub y: T,
+}
+
+impl<T> Deref for XY<T> {
     type Target = [T; 2];
     fn deref(&self) -> &[T; 2] {
         unsafe { mem::transmute(self) }
     }
 }
 
-impl<T> DerefMut for Vec2<T> {
+impl<T> DerefMut for XY<T> {
     fn deref_mut(&mut self) -> &mut [T; 2] {
         unsafe { mem::transmute(self) }
     }
 }
 
-impl<T> Vec2<T> {
-    /// Construct a new [Vec2]
-    pub fn new(x: T, y: T) -> Self {
-        Self { x, y }
+impl<T> Deref for vec2<T> {
+    type Target = XY<T>;
+    fn deref(&self) -> &XY<T> {
+        unsafe { mem::transmute(self) }
     }
+}
 
+impl<T> DerefMut for vec2<T> {
+    fn deref_mut(&mut self) -> &mut XY<T> {
+        unsafe { mem::transmute(self) }
+    }
+}
+
+impl<T> vec2<T> {
     /// Extend into a 3-d vector.
     ///
     /// # Examples
@@ -60,28 +61,28 @@ impl<T> Vec2<T> {
     /// use batbox::prelude::*;
     /// assert_eq!(vec2(1, 2).extend(3), vec3(1, 2, 3));
     /// ```
-    pub fn extend(self, z: T) -> Vec3<T> {
-        vec3(self.x, self.y, z)
+    pub fn extend(self, z: T) -> vec3<T> {
+        vec3(self.0, self.1, z)
     }
 
     /// Map every component (coordinate)
-    pub fn map<U, F: Fn(T) -> U>(self, f: F) -> Vec2<U> {
-        vec2(f(self.x), f(self.y))
+    pub fn map<U, F: Fn(T) -> U>(self, f: F) -> vec2<U> {
+        vec2(f(self.0), f(self.1))
     }
 }
 
-impl<T: UNum> Vec2<T> {
+impl<T: UNum> vec2<T> {
     /// A zero 2-d vector
     pub const ZERO: Self = vec2(T::ZERO, T::ZERO);
 }
 
-impl<T: Num + Copy> Vec2<T> {
+impl<T: Num> vec2<T> {
     /// Calculate dot product of two vectors.
     ///
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
-    /// assert_eq!(Vec2::dot(vec2(1, 2), vec2(3, 4)), 11);
+    /// assert_eq!(vec2::dot(vec2(1, 2), vec2(3, 4)), 11);
     /// ```
     pub fn dot(a: Self, b: Self) -> T {
         a.x * b.x + a.y * b.y
@@ -92,14 +93,14 @@ impl<T: Num + Copy> Vec2<T> {
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
-    /// assert_eq!(Vec2::skew(vec2(1, 2), vec2(3, 4)), -2);
+    /// assert_eq!(vec2::skew(vec2(1, 2), vec2(3, 4)), -2);
     /// ```
     pub fn skew(a: Self, b: Self) -> T {
         a.x * b.y - a.y * b.x
     }
 }
 
-impl<T: Neg<Output = T>> Vec2<T> {
+impl<T: Neg<Output = T>> vec2<T> {
     /// Rotate a vector by 90 degrees counter clockwise.
     /// # Examples
     /// ```
@@ -108,17 +109,18 @@ impl<T: Neg<Output = T>> Vec2<T> {
     /// assert_eq!(v.rotate_90(), vec2(-4.0, 3.0));
     /// ```
     pub fn rotate_90(self) -> Self {
-        vec2(-self.y, self.x)
+        let vec2(x, y) = self;
+        vec2(-y, x)
     }
 }
 
-impl<T: Float> Vec2<T> {
+impl<T: Float> vec2<T> {
     /// Normalize a vector.
     ///
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
-    /// let v: Vec2<f64> = vec2(1.0, 2.0);
+    /// let v: vec2<f64> = vec2(1.0, 2.0);
     /// assert!((v.normalize().len() - 1.0).abs() < 1e-5);
     /// ```
     pub fn normalize(self) -> Self {
@@ -134,12 +136,12 @@ impl<T: Float> Vec2<T> {
     /// let v = vec2(1.0, 2.0);
     /// assert_eq!(v.normalize_or_zero(), v.normalize());
     /// let v = vec2(1e-10, 1e-10);
-    /// assert_eq!(v.normalize_or_zero(), Vec2::ZERO);
+    /// assert_eq!(v.normalize_or_zero(), vec2::ZERO);
     /// ```
     pub fn normalize_or_zero(self) -> Self {
         let len = self.len();
         if len.approx_eq(&T::ZERO) {
-            Vec2::ZERO
+            vec2::ZERO
         } else {
             self / len
         }
@@ -159,7 +161,7 @@ impl<T: Float> Vec2<T> {
 
     /// Calculate squared length of this vector
     pub fn len_sqr(self) -> T {
-        Vec2::dot(self, self)
+        vec2::dot(self, self)
     }
 
     /// Rotate a vector by a given angle.
@@ -172,10 +174,7 @@ impl<T: Float> Vec2<T> {
     /// ```
     pub fn rotate(self, angle: T) -> Self {
         let (sin, cos) = T::sin_cos(angle);
-        Self {
-            x: self.x * cos - self.y * sin,
-            y: self.x * sin + self.y * cos,
-        }
+        Self(self.x * cos - self.y * sin, self.x * sin + self.y * cos)
     }
 
     /// Clamp vector's length. Note that the range must be inclusive.
@@ -249,5 +248,5 @@ impl<T: Float> Vec2<T> {
 
 #[test]
 fn test_clamp_zero_len() {
-    Vec2::ZERO.clamp_len(..=R64::ONE);
+    vec2::ZERO.clamp_len(..=R64::ONE);
 }

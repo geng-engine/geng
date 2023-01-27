@@ -14,32 +14,28 @@ pub fn row<'a>(widgets: Vec<Box<dyn Widget + 'a>>) -> Row<'a> {
 impl<'a> Widget for Row<'a> {
     fn calc_constraints(&mut self, children: &ConstraintsContext) -> Constraints {
         Constraints {
-            min_size: Vec2 {
-                x: self
-                    .children
+            min_size: vec2(
+                self.children
                     .iter()
                     .map(|child| children.get_constraints(child.deref()).min_size.x)
                     .sum(),
-                y: self
-                    .children
+                self.children
                     .iter()
                     .map(|child| children.get_constraints(child.deref()).min_size.y)
                     .max_by(|a, b| a.partial_cmp(b).unwrap())
                     .unwrap_or(0.0),
-            },
-            flex: Vec2 {
-                x: self
-                    .children
+            ),
+            flex: vec2(
+                self.children
                     .iter()
                     .map(|child| children.get_constraints(child.deref()).flex.x)
                     .sum(),
-                y: self
-                    .children
+                self.children
                     .iter()
                     .map(|child| children.get_constraints(child.deref()).flex.y)
                     .max_by(|a, b| a.partial_cmp(b).unwrap())
                     .unwrap_or(0.0),
-            },
+            ),
         }
     }
     fn layout_children(&mut self, cx: &mut LayoutContext) {

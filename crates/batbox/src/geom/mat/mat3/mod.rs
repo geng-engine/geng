@@ -33,8 +33,8 @@ impl<T: Copy> Mat3<T> {
         Self(values).transpose()
     }
 
-    /// Get row as a [Vec3]
-    pub fn row(&self, row_index: usize) -> Vec3<T> {
+    /// Get row as a [vec3]
+    pub fn row(&self, row_index: usize) -> vec3<T> {
         vec3(
             self[(row_index, 0)],
             self[(row_index, 1)],
@@ -42,8 +42,8 @@ impl<T: Copy> Mat3<T> {
         )
     }
 
-    /// Get column as a [Vec3]
-    pub fn col(&self, col_index: usize) -> Vec3<T> {
+    /// Get column as a [vec3]
+    pub fn col(&self, col_index: usize) -> vec3<T> {
         vec3(
             self[(0, col_index)],
             self[(1, col_index)],

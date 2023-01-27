@@ -2,7 +2,7 @@ use super::*;
 
 pub(crate) struct UgliImpl {
     pub(crate) raw: raw::Context,
-    size: Cell<Vec2<usize>>,
+    size: Cell<vec2<usize>>,
     phantom_data: PhantomData<*mut ()>,
 }
 
@@ -100,10 +100,10 @@ impl Ugli {
         self.check();
     }
     #[doc(hidden)]
-    pub fn _set_size(&self, size: Vec2<usize>) {
+    pub fn _set_size(&self, size: vec2<usize>) {
         self.inner.size.set(size);
     }
-    pub(crate) fn size(&self) -> Vec2<usize> {
+    pub(crate) fn size(&self) -> vec2<usize> {
         self.inner.size.get()
     }
 }

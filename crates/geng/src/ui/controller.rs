@@ -1,7 +1,7 @@
 use super::*;
 
 struct State {
-    size: Vec2<f64>,
+    size: vec2<f64>,
     scale: f64,
     constraints: HashMap<*const c_void, Constraints>,
     positions: HashMap<*const c_void, Aabb2<f64>>,

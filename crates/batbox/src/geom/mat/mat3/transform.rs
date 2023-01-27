@@ -21,7 +21,7 @@ impl<T: Num + Copy> Mat3<T> {
     /// let matrix = Mat3::scale(vec2(1, 2));
     /// assert_eq!(matrix * vec3(1, 2, 1), vec3(1, 4, 1));
     /// ```
-    pub fn scale(factor: Vec2<T>) -> Self {
+    pub fn scale(factor: vec2<T>) -> Self {
         let mut result = Self::zero();
         result[(0, 0)] = factor.x;
         result[(1, 1)] = factor.y;
@@ -37,7 +37,7 @@ impl<T: Num + Copy> Mat3<T> {
     /// let matrix = Mat3::translate(vec2(3, 2));
     /// assert_eq!(matrix * vec3(1, 2, 1), vec3(4, 4, 1));
     /// ```
-    pub fn translate(dv: Vec2<T>) -> Self {
+    pub fn translate(dv: vec2<T>) -> Self {
         let mut result = Self::identity();
         result[(0, 2)] = dv.x;
         result[(1, 2)] = dv.y;

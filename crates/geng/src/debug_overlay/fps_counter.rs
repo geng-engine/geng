@@ -39,8 +39,8 @@ impl FpsCounter {
         use ui::*;
         ui::stack![
             ui::ColorBox::new(Rgba::BLACK).constraints_override(Constraints {
-                min_size: Vec2::ZERO,
-                flex: Vec2::ZERO
+                min_size: vec2::ZERO,
+                flex: vec2::ZERO
             }),
             ui::Text::new(&mut self.text, self.geng.default_font(), 16.0, Rgba::WHITE)
                 .uniform_padding(2.0),

@@ -62,21 +62,21 @@ unsafe impl VertexAttributePrimitive for [[f32; 4]; 4] {
 mod batbox {
     use super::*;
 
-    impl VertexAttribute for Vec2<f32> {
+    impl VertexAttribute for vec2<f32> {
         type Primitive = [f32; 2];
         fn as_primitive(ptr: *const Self) -> *const [f32; 2] {
             ptr as _
         }
     }
 
-    impl VertexAttribute for Vec3<f32> {
+    impl VertexAttribute for vec3<f32> {
         type Primitive = [f32; 3];
         fn as_primitive(ptr: *const Self) -> *const [f32; 3] {
             ptr as _
         }
     }
 
-    impl VertexAttribute for Vec4<f32> {
+    impl VertexAttribute for vec4<f32> {
         type Primitive = [f32; 4];
         fn as_primitive(ptr: *const Self) -> *const [f32; 4] {
             ptr as _

@@ -4,7 +4,7 @@ use super::*;
 #[derive(Debug)]
 pub struct CardinalSpline<T> {
     /// The key points
-    pub points: Vec<Vec2<T>>,
+    pub points: Vec<vec2<T>>,
 
     /// Tension parameter
     pub tension: T,
@@ -14,7 +14,7 @@ impl<T> CardinalSpline<T> {
     /// Create a cardinal spline passing through points.
     /// Tension should be in range `0..=1`.
     /// For example, if tension is `0.5`, then the curve is a Catmull-Rom spline.
-    pub fn new(points: Vec<Vec2<T>>, tension: T) -> Self {
+    pub fn new(points: Vec<vec2<T>>, tension: T) -> Self {
         Self { points, tension }
     }
 }

@@ -21,7 +21,7 @@ impl<T: Num + Copy> Mat4<T> {
     /// let matrix = Mat4::scale(vec3(1, 2, 3));
     /// assert_eq!(matrix * vec4(1, 2, 3, 1), vec4(1, 4, 9, 1));
     /// ```
-    pub fn scale(factor: Vec3<T>) -> Self {
+    pub fn scale(factor: vec3<T>) -> Self {
         let mut result = Self::zero();
         result[(0, 0)] = factor.x;
         result[(1, 1)] = factor.y;
@@ -38,7 +38,7 @@ impl<T: Num + Copy> Mat4<T> {
     /// let matrix = Mat4::translate(vec3(3, 2, 1));
     /// assert_eq!(matrix * vec4(1, 2, 3, 1), vec4(4, 4, 4, 1));
     /// ```
-    pub fn translate(dv: Vec3<T>) -> Self {
+    pub fn translate(dv: vec3<T>) -> Self {
         let mut result = Self::identity();
         result[(0, 3)] = dv.x;
         result[(1, 3)] = dv.y;
@@ -85,7 +85,7 @@ impl<T: Float> Mat4<T> {
     }
 
     /// Construct a rotational matrix around given axis
-    pub fn rotate(v: Vec3<T>, angle: T) -> Self
+    pub fn rotate(v: vec3<T>, angle: T) -> Self
     where
         T: SubAssign + AddAssign,
     {

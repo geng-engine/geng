@@ -34,8 +34,8 @@ impl<T: Copy> Mat4<T> {
         Self(values).transpose()
     }
 
-    /// Get a row as a [Vec4]
-    pub fn row(&self, row_index: usize) -> Vec4<T> {
+    /// Get a row as a [vec4]
+    pub fn row(&self, row_index: usize) -> vec4<T> {
         vec4(
             self[(row_index, 0)],
             self[(row_index, 1)],
@@ -44,8 +44,8 @@ impl<T: Copy> Mat4<T> {
         )
     }
 
-    /// Get a column as a [Vec4]
-    pub fn col(&self, col_index: usize) -> Vec4<T> {
+    /// Get a column as a [vec4]
+    pub fn col(&self, col_index: usize) -> vec4<T> {
         vec4(
             self[(0, col_index)],
             self[(1, col_index)],

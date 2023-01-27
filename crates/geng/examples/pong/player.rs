@@ -6,9 +6,9 @@ pub struct Player {
     /// Key to move the player down
     key_down: geng::Key,
     /// Position of the bottom-left corner of the player
-    pub position: Vec2<f32>,
-    pub size: Vec2<f32>,
-    velocity: Vec2<f32>,
+    pub position: vec2<f32>,
+    pub size: vec2<f32>,
+    velocity: vec2<f32>,
     speed: f32,
     pub color: Rgba<f32>,
 }
@@ -16,8 +16,8 @@ pub struct Player {
 impl Player {
     /// Creates a new player with given center position
     pub fn new(
-        position: Vec2<f32>,
-        size: Vec2<f32>,
+        position: vec2<f32>,
+        size: vec2<f32>,
         speed: f32,
         color: Rgba<f32>,
         key_up: geng::Key,
@@ -30,7 +30,7 @@ impl Player {
             size,
             speed,
             color,
-            velocity: Vec2::ZERO,
+            velocity: vec2::ZERO,
         }
     }
 

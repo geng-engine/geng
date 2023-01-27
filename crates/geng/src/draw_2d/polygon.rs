@@ -7,7 +7,7 @@ pub struct Polygon {
 }
 
 impl Polygon {
-    pub fn new(vertices: Vec<Vec2<f32>>, color: Rgba<f32>) -> Self {
+    pub fn new(vertices: Vec<vec2<f32>>, color: Rgba<f32>) -> Self {
         Self::new_gradient(
             vertices
                 .into_iter()
@@ -26,7 +26,7 @@ impl Polygon {
             draw_mode: ugli::DrawMode::TriangleFan,
         }
     }
-    pub fn strip(vertices: Vec<Vec2<f32>>, color: Rgba<f32>) -> Self {
+    pub fn strip(vertices: Vec<vec2<f32>>, color: Rgba<f32>) -> Self {
         Self::strip_gradient(
             vertices
                 .into_iter()

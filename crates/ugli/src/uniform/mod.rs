@@ -135,7 +135,7 @@ impl<'a, U: Uniform> Uniform for Ref<'a, U> {
     }
 }
 
-impl<U> Uniform for Vec2<U>
+impl<U> Uniform for vec2<U>
 where
     [U; 2]: Uniform,
 {
@@ -144,7 +144,7 @@ where
     }
 }
 
-impl<U> Uniform for Vec3<U>
+impl<U> Uniform for vec3<U>
 where
     [U; 3]: Uniform,
 {
@@ -153,7 +153,7 @@ where
     }
 }
 
-impl<U> Uniform for Vec4<U>
+impl<U> Uniform for vec4<U>
 where
     [U; 4]: Uniform,
 {

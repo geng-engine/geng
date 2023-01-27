@@ -18,10 +18,10 @@ impl Default for Options {
 
 #[derive(Debug, Clone, ugli::Vertex)]
 pub struct GlyphInstance {
-    pub i_pos: Vec2<f32>,
-    pub i_size: Vec2<f32>,
-    pub i_uv_pos: Vec2<f32>,
-    pub i_uv_size: Vec2<f32>,
+    pub i_pos: vec2<f32>,
+    pub i_size: vec2<f32>,
+    pub i_uv_pos: vec2<f32>,
+    pub i_uv_size: vec2<f32>,
 }
 
 #[derive(Debug)]
@@ -177,21 +177,21 @@ impl Ttf {
 
             #[derive(ugli::Vertex, Copy, Clone)]
             struct Vertex {
-                a_pos: Vec3<f32>,
+                a_pos: vec3<f32>,
             }
-            fn v(a_pos: Vec3<f32>) -> Vertex {
+            fn v(a_pos: vec3<f32>) -> Vertex {
                 Vertex { a_pos }
             }
             struct Builder {
                 distance_mesh: Vec<Vertex>,
                 stencil_mesh: Vec<Vertex>,
-                pos: Vec2<f32>,
+                pos: vec2<f32>,
                 scale: f32,
-                offset: Vec2<f32>,
+                offset: vec2<f32>,
                 options: Options,
             }
             impl Builder {
-                fn new_glyph_at(&mut self, offset: Vec2<f32>) {
+                fn new_glyph_at(&mut self, offset: vec2<f32>) {
                     self.offset = offset;
                 }
                 fn add_triangle_fan(&mut self, mid: Vertex, vs: impl IntoIterator<Item = Vertex>) {
@@ -211,7 +211,7 @@ impl Ttf {
                     let v0 = vs.next();
                     self.add_triangle_fan(mid, itertools::chain![v0, vs, v0]);
                 }
-                fn add_line(&mut self, a: Vec2<f32>, b: Vec2<f32>) {
+                fn add_line(&mut self, a: vec2<f32>, b: vec2<f32>) {
                     self.stencil_mesh.push(v(self.offset.extend(0.0)));
                     self.stencil_mesh.push(v(a.extend(0.0)));
                     self.stencil_mesh.push(v(b.extend(0.0)));
@@ -268,9 +268,9 @@ impl Ttf {
             let mut builder = Builder {
                 distance_mesh: vec![],
                 stencil_mesh: vec![],
-                pos: Vec2::ZERO,
+                pos: vec2::ZERO,
                 scale,
-                offset: Vec2::ZERO,
+                offset: vec2::ZERO,
                 options: options.clone(),
             };
             for glyph in &raw_glyphs {
@@ -457,7 +457,7 @@ impl Ttf {
         camera: &(impl AbstractCamera2d + ?Sized),
         transform: Mat3<f32>,
         text: &str,
-        pos: Vec2<f32>,
+        pos: vec2<f32>,
         size: f32,
         color: Rgba<f32>,
         outline_size: f32,
@@ -474,7 +474,7 @@ impl Ttf {
                 ugli::instanced(
                     &ugli::VertexBuffer::new_dynamic(
                         &self.ugli,
-                        Aabb2::point(Vec2::ZERO)
+                        Aabb2::point(vec2::ZERO)
                             .extend_positive(vec2(1.0, 1.0))
                             .corners()
                             .into_iter()
@@ -507,7 +507,7 @@ impl Ttf {
         framebuffer: &mut ugli::Framebuffer,
         camera: &impl AbstractCamera2d,
         text: &str,
-        pos: Vec2<f32>,
+        pos: vec2<f32>,
         align: TextAlign,
         size: f32,
         color: Rgba<f32>,
@@ -536,7 +536,7 @@ impl Ttf {
         framebuffer: &mut ugli::Framebuffer,
         camera: &impl AbstractCamera2d,
         text: &str,
-        pos: Vec2<f32>,
+        pos: vec2<f32>,
         align: TextAlign,
         size: f32,
         color: Rgba<f32>,

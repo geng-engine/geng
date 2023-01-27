@@ -36,7 +36,7 @@ pub enum Filter {
 pub struct Texture2d<P: TexturePixel> {
     pub(crate) ugli: Ugli,
     pub(crate) handle: raw::Texture,
-    size: Cell<Vec2<usize>>,
+    size: Cell<vec2<usize>>,
     phantom_data: PhantomData<*mut P>,
 }
 
@@ -50,7 +50,7 @@ impl<P: TexturePixel> Drop for Texture2d<P> {
 pub type Texture = Texture2d<Rgba<f32>>;
 
 impl<P: TexturePixel> Texture2d<P> {
-    fn new_raw(ugli: &Ugli, size: Vec2<usize>) -> Self {
+    fn new_raw(ugli: &Ugli, size: vec2<usize>) -> Self {
         let gl = &ugli.inner.raw;
         let handle = gl.create_texture().unwrap();
         gl.bind_texture(raw::TEXTURE_2D, &handle);
@@ -76,7 +76,7 @@ impl<P: TexturePixel> Texture2d<P> {
         size.x & (size.x - 1) == 0 && size.y & (size.y - 1) == 0
     }
 
-    pub fn new_uninitialized(ugli: &Ugli, size: Vec2<usize>) -> Self {
+    pub fn new_uninitialized(ugli: &Ugli, size: vec2<usize>) -> Self {
         let texture = Self::new_raw(ugli, size);
         let gl = &ugli.inner.raw;
         gl.tex_image_2d::<u8>(
@@ -111,12 +111,12 @@ impl<P: TexturePixel> Texture2d<P> {
         self.ugli.debug_check();
     }
 
-    pub fn size(&self) -> Vec2<usize> {
+    pub fn size(&self) -> vec2<usize> {
         self.size.get()
     }
 
     #[doc(hidden)]
-    pub fn _set_size(&self, size: Vec2<usize>) {
+    pub fn _set_size(&self, size: vec2<usize>) {
         self.size.set(size);
     }
 
@@ -126,7 +126,7 @@ impl<P: TexturePixel> Texture2d<P> {
     }
 
     // TODO: use like Matrix<Color>?
-    pub fn sub_image(&mut self, pos: Vec2<usize>, size: Vec2<usize>, data: &[u8]) {
+    pub fn sub_image(&mut self, pos: vec2<usize>, size: vec2<usize>, data: &[u8]) {
         assert_eq!(
             size.x
                 * size.y
@@ -169,9 +169,9 @@ impl Texture {
         self.ugli.debug_check();
     }
 
-    pub fn new_with<F: FnMut(Vec2<usize>) -> Rgba<f32>>(
+    pub fn new_with<F: FnMut(vec2<usize>) -> Rgba<f32>>(
         ugli: &Ugli,
-        size: Vec2<usize>,
+        size: vec2<usize>,
         mut f: F,
     ) -> Self {
         let texture = Texture2d::new_raw(ugli, size);

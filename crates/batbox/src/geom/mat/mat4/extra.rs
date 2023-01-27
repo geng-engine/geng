@@ -43,7 +43,7 @@ impl<T: Num> Mat4<T> {
     /// let v = vec3(2.0, 3.0, 4.0);
     /// assert_eq!(v.transform(m), e1 * v.x + e2 * v.y + e3 * v.z);
     /// ```
-    pub fn from_orts(x: Vec3<T>, y: Vec3<T>, z: Vec3<T>) -> Self {
+    pub fn from_orts(x: vec3<T>, y: vec3<T>, z: vec3<T>) -> Self {
         Mat4::new([
             [x.x, y.x, z.x, T::ZERO],
             [x.y, y.y, z.y, T::ZERO],

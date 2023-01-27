@@ -1,9 +1,9 @@
 use super::*;
 
 pub struct Align<T> {
-    align: Vec2<f64>,
+    align: vec2<f64>,
     maintain_aspect: bool,
-    flex: Vec2<Option<f64>>,
+    flex: vec2<Option<f64>>,
     child: T,
 }
 
@@ -23,7 +23,7 @@ mod ext {
     use super::*;
 
     pub trait WidgetExt: Widget + Sized {
-        fn align(self, align: Vec2<f64>) -> Align<Self> {
+        fn align(self, align: vec2<f64>) -> Align<Self> {
             Align {
                 align,
                 maintain_aspect: false,
@@ -34,7 +34,7 @@ mod ext {
         fn center(self) -> Align<Self> {
             self.align(vec2(0.5, 0.5))
         }
-        fn flex_align(self, flex: Vec2<Option<f64>>, align: Vec2<f64>) -> Align<Self> {
+        fn flex_align(self, flex: vec2<Option<f64>>, align: vec2<f64>) -> Align<Self> {
             Align {
                 align,
                 maintain_aspect: false,
@@ -42,7 +42,7 @@ mod ext {
                 child: self,
             }
         }
-        fn maintain_aspect(self, align: Vec2<f64>) -> Align<Self> {
+        fn maintain_aspect(self, align: vec2<f64>) -> Align<Self> {
             Align {
                 align,
                 maintain_aspect: true,

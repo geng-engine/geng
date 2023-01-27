@@ -5,7 +5,7 @@ use super::*;
 pub struct Quad<T: Float> {
     /// Transformation matrix
     ///
-    /// Get corners of the quad by transforming [Vec2] of -1/+1 by this
+    /// Get corners of the quad by transforming [vec2] of -1/+1 by this
     pub transform: Mat3<T>,
 }
 
@@ -34,7 +34,7 @@ impl<T: Float> FitTarget2d<T> for Quad<T> {
             .bounding_quad()
             .transform(inversed_matrix)
             .transformed()
-            .fit_into(Aabb2::point(Vec2::ZERO).extend_uniform(T::ONE))
+            .fit_into(Aabb2::point(vec2::ZERO).extend_uniform(T::ONE))
             .transform;
         object.apply_transform(self.transform * local_transform * inversed_matrix)
     }

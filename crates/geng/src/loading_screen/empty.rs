@@ -2,7 +2,7 @@ use super::*;
 
 #[derive(ugli::Vertex)]
 pub struct Vertex {
-    a_pos: Vec2<f32>,
+    a_pos: vec2<f32>,
 }
 
 pub struct EmptyLoadingScreen;

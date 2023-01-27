@@ -4,14 +4,14 @@ pub struct Vec2Slider<'a> {
     pub position: &'a mut Aabb2<f32>,
     pub sense: &'a mut geng::ui::Sense,
     pub animation: &'a mut f32,
-    pub change: RefCell<&'a mut Option<Vec2<f32>>>,
-    pub value: Vec2<f32>,
+    pub change: RefCell<&'a mut Option<vec2<f32>>>,
+    pub value: vec2<f32>,
 }
 
 impl<'a> Vec2Slider<'a> {
-    pub fn new(cx: &'a geng::ui::Controller, value: Vec2<f32>) -> Self {
+    pub fn new(cx: &'a geng::ui::Controller, value: vec2<f32>) -> Self {
         Self {
-            position: cx.get_state_with(|| Aabb2::point(Vec2::ZERO)),
+            position: cx.get_state_with(|| Aabb2::point(vec2::ZERO)),
             sense: cx.get_state(),
             animation: cx.get_state(),
             change: RefCell::new(cx.get_state()),
@@ -19,7 +19,7 @@ impl<'a> Vec2Slider<'a> {
         }
     }
 
-    pub fn get_change(&self) -> Option<Vec2<f32>> {
+    pub fn get_change(&self) -> Option<vec2<f32>> {
         self.change.borrow_mut().take()
     }
 }
