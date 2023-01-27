@@ -27,7 +27,7 @@ pub trait HasId {
         + Sync
         + Unpin;
 
-    /// Get this id
+    /// Get the entity's id
     fn id(&self) -> &Self::Id;
 }
 
