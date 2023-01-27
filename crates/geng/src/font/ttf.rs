@@ -26,8 +26,8 @@ pub struct GlyphInstance {
 
 #[derive(Debug)]
 struct GlyphMetrics {
-    uv: AABB<f32>,
-    pos: AABB<f32>,
+    uv: Aabb2<f32>,
+    pos: Aabb2<f32>,
 }
 
 #[derive(Debug)]
@@ -61,7 +61,7 @@ impl Ttf {
         struct RawGlyph {
             id: ttf_parser::GlyphId,
             code_point: char,
-            bounding_box: Option<AABB<f32>>,
+            bounding_box: Option<Aabb2<f32>>,
         }
         let unit_scale = 1.0 / (face.ascender() - face.descender()) as f32;
         let scale = options.pixel_size * unit_scale;
@@ -85,7 +85,7 @@ impl Ttf {
                 }
                 found.insert(code_point);
                 let bounding_box = face.glyph_bounding_box(id).map(|rect| {
-                    AABB {
+                    Aabb2 {
                         x_min: rect.x_min,
                         x_max: rect.x_max,
                         y_min: rect.y_min,
@@ -139,7 +139,7 @@ impl Ttf {
                 y += row_height;
                 row_height = 0;
             }
-            let uv = AABB::point(vec2(x, y)).extend_positive(glyph_size);
+            let uv = Aabb2::point(vec2(x, y)).extend_positive(glyph_size);
             x = uv.x_max;
             row_height = row_height.max(uv.height());
             width = width.max(x);
@@ -220,9 +220,9 @@ impl Ttf {
                     self.stencil_mesh.push(v(self.offset.extend(0.0)));
                     self.stencil_mesh.push(v(a.extend(0.0)));
                     self.stencil_mesh.push(v(b.extend(0.0)));
-                    let a_quad = AABB::point(a)
+                    let a_quad = Aabb2::point(a)
                         .extend_uniform(self.options.max_distance * self.options.pixel_size);
-                    let b_quad = AABB::point(b)
+                    let b_quad = Aabb2::point(b)
                         .extend_uniform(self.options.max_distance * self.options.pixel_size);
                     self.add_triangle_fan_loop(
                         v(a.extend(0.0)),
@@ -347,7 +347,7 @@ impl Ttf {
                 ugli::DrawMode::TriangleFan,
                 &ugli::VertexBuffer::new_static(
                     ugli,
-                    AABB::point(vec2(0, 0))
+                    Aabb2::point(vec2(0, 0))
                         .extend_positive(framebuffer.size())
                         .corners()
                         .into_iter()
@@ -402,17 +402,19 @@ impl Ttf {
         self.line_gap
     }
 
-    pub fn measure_bounding_box(&self, text: &str) -> Option<AABB<f32>> {
+    pub fn measure_bounding_box(&self, text: &str) -> Option<Aabb2<f32>> {
         self.draw_with(text, |glyphs, _| {
             if glyphs.is_empty() {
                 return None;
             }
-            Some(AABB::points_bounding_box(glyphs.iter().flat_map(|glyph| {
-                [
-                    glyph.i_pos + vec2(self.max_distance, self.max_distance),
-                    glyph.i_pos + glyph.i_size - vec2(self.max_distance, self.max_distance),
-                ]
-            })))
+            Some(Aabb2::points_bounding_box(glyphs.iter().flat_map(
+                |glyph| {
+                    [
+                        glyph.i_pos + vec2(self.max_distance, self.max_distance),
+                        glyph.i_pos + glyph.i_size - vec2(self.max_distance, self.max_distance),
+                    ]
+                },
+            )))
         })
     }
 
@@ -448,7 +450,7 @@ impl Ttf {
     }
 
     #[deprecated]
-    pub fn measure(&self, text: &str, size: f32) -> Option<AABB<f32>> {
+    pub fn measure(&self, text: &str, size: f32) -> Option<Aabb2<f32>> {
         self.measure_bounding_box(text)
             .map(|aabb| aabb.map(|x| x * size))
     }
@@ -477,7 +479,7 @@ impl Ttf {
                 ugli::instanced(
                     &ugli::VertexBuffer::new_dynamic(
                         &self.ugli,
-                        AABB::point(Vec2::ZERO)
+                        Aabb2::point(Vec2::ZERO)
                             .extend_positive(vec2(1.0, 1.0))
                             .corners()
                             .into_iter()

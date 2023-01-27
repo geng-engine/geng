@@ -29,7 +29,7 @@ impl<T: Float> FitTarget2d<T> for Quad<T> {
             .bounding_quad()
             .transform(inversed_matrix)
             .transformed()
-            .fit_into(AABB::point(Vec2::ZERO).extend_uniform(T::ONE))
+            .fit_into(Aabb2::point(Vec2::ZERO).extend_uniform(T::ONE))
             .transform;
         object.apply_transform(self.transform * local_transform * inversed_matrix)
     }

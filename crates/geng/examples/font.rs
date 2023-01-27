@@ -82,7 +82,7 @@ impl geng::State for State {
                 ugli::instanced(
                     &ugli::VertexBuffer::new_dynamic(
                         self.geng.ugli(),
-                        AABB::point(Vec2::ZERO)
+                        Aabb2::point(Vec2::ZERO)
                             .extend_positive(vec2(1.0, 1.0))
                             .corners()
                             .into_iter()

@@ -66,7 +66,7 @@ impl<'a> Widget for Row<'a> {
                 + cx.get_constraints(child).flex.x * size_per_flex;
             cx.set_position(
                 child,
-                AABB::point(vec2(pos, cx.position.y_min))
+                Aabb2::point(vec2(pos, cx.position.y_min))
                     .extend_positive(vec2(width, cx.position.height())),
             );
             pos += width;

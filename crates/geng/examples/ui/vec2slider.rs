@@ -1,7 +1,7 @@
 use super::*;
 
 pub struct Vec2Slider<'a> {
-    pub position: &'a mut AABB<f32>,
+    pub position: &'a mut Aabb2<f32>,
     pub sense: &'a mut geng::ui::Sense,
     pub animation: &'a mut f32,
     pub change: RefCell<&'a mut Option<Vec2<f32>>>,
@@ -11,7 +11,7 @@ pub struct Vec2Slider<'a> {
 impl<'a> Vec2Slider<'a> {
     pub fn new(cx: &'a geng::ui::Controller, value: Vec2<f32>) -> Self {
         Self {
-            position: cx.get_state_with(|| AABB::point(Vec2::ZERO)),
+            position: cx.get_state_with(|| Aabb2::point(Vec2::ZERO)),
             sense: cx.get_state(),
             animation: cx.get_state(),
             change: RefCell::new(cx.get_state()),

@@ -50,7 +50,7 @@ impl<'a> geng::Draw2d for Grid<'a> {
                         camera,
                         &object
                             .transformed()
-                            .fit_into(AABB::point(Vec2::ZERO).extend_uniform(0.9))
+                            .fit_into(Aabb2::point(Vec2::ZERO).extend_uniform(0.9))
                             .transform(
                                 self.transform
                                     * Mat3::translate(vec2(-1.0, -1.0))

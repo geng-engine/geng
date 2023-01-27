@@ -94,7 +94,7 @@ impl<T: Widget> Widget for Align<T> {
         }
         cx.set_position(
             &self.child,
-            AABB::point(
+            Aabb2::point(
                 cx.position.bottom_left()
                     + vec2(
                         (size.x - child_size.x) * self.align.x,

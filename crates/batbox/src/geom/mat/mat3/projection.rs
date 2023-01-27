@@ -1,8 +1,8 @@
 use super::*;
 
 impl<T: Float> Mat3<T> {
-    pub fn ortho(aabb: AABB<T>) -> Self {
-        let AABB {
+    pub fn ortho(aabb: Aabb2<T>) -> Self {
+        let Aabb2 {
             x_min: l,
             x_max: r,
             y_min: b,

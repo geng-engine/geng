@@ -55,7 +55,7 @@ impl Player {
     }
 
     /// Returns an AABB representing the player's shape
-    pub fn aabb(&self) -> AABB<f32> {
-        AABB::point(self.position).extend_positive(self.size)
+    pub fn aabb(&self) -> Aabb2<f32> {
+        Aabb2::point(self.position).extend_positive(self.size)
     }
 }

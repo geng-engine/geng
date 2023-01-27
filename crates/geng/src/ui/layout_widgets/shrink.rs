@@ -39,7 +39,7 @@ impl<T: Widget> Widget for Shrink<T> {
         let ratio = self.ratio / 2.0;
         cx.set_position(
             &self.child,
-            AABB {
+            Aabb2 {
                 x_min: cx.position.x_min + cx.position.width() * ratio,
                 x_max: cx.position.x_max - cx.position.width() * ratio,
                 y_min: cx.position.y_min + cx.position.height() * ratio,

@@ -247,7 +247,7 @@ impl Helper {
         &self,
         framebuffer: &mut ugli::Framebuffer,
         camera: &impl AbstractCamera2d,
-        position: AABB<f32>,
+        position: Aabb2<f32>,
         color: Rgba<f32>,
     ) {
         self.draw(
@@ -268,7 +268,7 @@ impl Helper {
         &self,
         framebuffer: &mut ugli::Framebuffer,
         camera: &impl AbstractCamera2d,
-        position: AABB<f32>,
+        position: Aabb2<f32>,
         texture: &ugli::Texture,
         color: Rgba<f32>,
     ) {

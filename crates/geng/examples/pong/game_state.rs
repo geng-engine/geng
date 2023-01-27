@@ -30,7 +30,7 @@ const BALL_START_ANGLE_MAX: f32 = 0.7;
 pub struct GameState {
     geng: Geng,
     camera: geng::Camera2d,
-    boundary: AABB<f32>,
+    boundary: Aabb2<f32>,
     ball: Ball,
     players: [Player; 2],
     scores: [u32; 2],
@@ -45,7 +45,7 @@ impl GameState {
                 rotation: 0.0,
                 fov: 400.0,
             },
-            boundary: AABB::ZERO.extend_symmetric(vec2(ARENA_SIZE_X, ARENA_SIZE_Y) / 2.0),
+            boundary: Aabb2::ZERO.extend_symmetric(vec2(ARENA_SIZE_X, ARENA_SIZE_Y) / 2.0),
             ball: Self::new_ball(),
             players: {
                 // Distance from the arena edge to the player
@@ -197,7 +197,7 @@ impl geng::State for GameState {
         ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
 
         // Draw boundaries
-        let boundary = AABB::point(self.boundary.center())
+        let boundary = Aabb2::point(self.boundary.center())
             .extend_symmetric(vec2(self.boundary.width(), BOUNDARY_WIDTH) / 2.0);
         let boundary_translate = self.boundary.height() / 2.0 + BOUNDARY_WIDTH / 2.0;
         self.geng.draw_2d_helper().quad(

@@ -2,7 +2,7 @@ use super::*;
 
 pub struct TextureAtlas {
     texture: ugli::Texture,
-    uvs: Vec<AABB<f32>>,
+    uvs: Vec<Aabb2<f32>>,
 }
 
 impl TextureAtlas {
@@ -24,11 +24,11 @@ impl TextureAtlas {
             );
             framebuffer.copy_to_texture(
                 &mut atlas_texture,
-                AABB::ZERO.extend_positive(texture.size()),
+                Aabb2::ZERO.extend_positive(texture.size()),
                 vec2(x, 0),
             );
             uvs.push(
-                AABB::point(vec2(x as f32 / width as f32, 0.0)).extend_positive(vec2(
+                Aabb2::point(vec2(x as f32 / width as f32, 0.0)).extend_positive(vec2(
                     texture.size().x as f32 / width as f32,
                     texture.size().y as f32 / height as f32,
                 )),
@@ -41,7 +41,7 @@ impl TextureAtlas {
             uvs,
         }
     }
-    pub fn uv(&self, texture_index: usize) -> AABB<f32> {
+    pub fn uv(&self, texture_index: usize) -> Aabb2<f32> {
         self.uvs[texture_index]
     }
     pub fn texture(&self) -> &ugli::Texture {

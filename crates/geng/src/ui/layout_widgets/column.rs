@@ -63,7 +63,7 @@ impl<'a> Widget for Column<'a> {
             pos -= height;
             cx.set_position(
                 child,
-                AABB::point(vec2(cx.position.x_min, pos))
+                Aabb2::point(vec2(cx.position.x_min, pos))
                     .extend_positive(vec2(cx.position.width(), height)),
             );
         }

@@ -6,7 +6,7 @@ pub struct Quad {
 }
 
 impl Quad {
-    pub fn new(aabb: AABB<f32>, color: Rgba<f32>) -> Self {
+    pub fn new(aabb: Aabb2<f32>, color: Rgba<f32>) -> Self {
         Self::unit(color).transform(Mat3::translate(aabb.center()) * Mat3::scale(aabb.size() / 2.0))
     }
     pub fn unit(color: Rgba<f32>) -> Self {
@@ -65,10 +65,10 @@ pub struct TexturedQuad<T: std::borrow::Borrow<ugli::Texture>> {
 }
 
 impl<T: std::borrow::Borrow<ugli::Texture>> TexturedQuad<T> {
-    pub fn new(aabb: AABB<f32>, texture: T) -> Self {
+    pub fn new(aabb: Aabb2<f32>, texture: T) -> Self {
         Self::colored(aabb, texture, Rgba::WHITE)
     }
-    pub fn colored(aabb: AABB<f32>, texture: T, color: Rgba<f32>) -> Self {
+    pub fn colored(aabb: Aabb2<f32>, texture: T, color: Rgba<f32>) -> Self {
         Self::unit_colored(texture, color)
             .transform(Mat3::translate(aabb.center()) * Mat3::scale(aabb.size() / 2.0))
     }

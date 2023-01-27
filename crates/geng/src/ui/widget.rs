@@ -87,7 +87,7 @@ impl Default for Constraints {
 pub struct DrawContext<'a, 'b> {
     pub geng: &'a Geng,
     pub theme: &'a Theme,
-    pub position: AABB<f64>,
+    pub position: Aabb2<f64>,
     pub framebuffer: &'a mut ugli::Framebuffer<'b>,
 }
 

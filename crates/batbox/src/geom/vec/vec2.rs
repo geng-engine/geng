@@ -211,7 +211,7 @@ impl<T: Float> Vec2<T> {
     /// let aabb = AABB::from_corners(min, max);
     /// assert_eq!(v.clamp_aabb(aabb), vec2(0.5, 1.0));
     /// ```
-    pub fn clamp_aabb(self, aabb: AABB<T>) -> Self {
+    pub fn clamp_aabb(self, aabb: Aabb2<T>) -> Self {
         let start = aabb.bottom_left();
         let end = aabb.top_right();
         self.clamp_coordinates(start.x..=end.x, start.y..=end.y)

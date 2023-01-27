@@ -70,7 +70,7 @@ impl<T: Widget> Widget for Padding<T> {
     fn layout_children(&mut self, cx: &mut LayoutContext) {
         cx.set_position(
             &self.child,
-            AABB {
+            Aabb2 {
                 x_min: cx.position.x_min + self.left,
                 x_max: cx.position.x_max - self.right,
                 y_min: cx.position.y_min + self.bottom,

@@ -4,7 +4,7 @@ struct State {
     size: Vec2<f64>,
     scale: f64,
     constraints: HashMap<*const c_void, Constraints>,
-    positions: HashMap<*const c_void, AABB<f64>>,
+    positions: HashMap<*const c_void, Aabb2<f64>>,
     states: Vec<std::cell::UnsafeCell<Box<dyn std::any::Any>>>,
     next_state: usize,
 }
@@ -16,10 +16,10 @@ impl State {
     fn set_constraints(&mut self, widget: &dyn Widget, constraints: Constraints) {
         self.constraints.insert(widget_ptr(widget), constraints);
     }
-    fn get_position(&self, widget: &dyn Widget) -> AABB<f64> {
+    fn get_position(&self, widget: &dyn Widget) -> Aabb2<f64> {
         self.positions[&widget_ptr(widget)]
     }
-    fn set_position(&mut self, widget: &dyn Widget, position: AABB<f64>) {
+    fn set_position(&mut self, widget: &dyn Widget, position: Aabb2<f64>) {
         self.positions.insert(widget_ptr(widget), position);
     }
 }
@@ -41,7 +41,7 @@ impl ConstraintsContext<'_> {
 
 pub struct LayoutContext<'a> {
     pub theme: &'a Theme,
-    pub position: AABB<f64>,
+    pub position: Aabb2<f64>,
     state: &'a mut State,
 }
 
@@ -49,7 +49,7 @@ impl LayoutContext<'_> {
     pub fn get_constraints(&self, widget: &dyn Widget) -> Constraints {
         self.state.get_constraints(widget)
     }
-    pub fn set_position(&mut self, widget: &dyn Widget, position: AABB<f64>) {
+    pub fn set_position(&mut self, widget: &dyn Widget, position: Aabb2<f64>) {
         self.state.set_position(widget, position);
     }
 }
@@ -121,7 +121,7 @@ impl Controller {
             });
             state.set_constraints(widget, constraints);
         });
-        let root_position = AABB::ZERO.extend_positive(state.size);
+        let root_position = Aabb2::ZERO.extend_positive(state.size);
         state.set_position(root, root_position);
         traverse_mut(
             root,

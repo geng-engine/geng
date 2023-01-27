@@ -203,7 +203,7 @@ pub struct DrawParameters {
     pub blend_mode: Option<BlendMode>,
     pub stencil_mode: Option<StencilMode>,
     pub cull_face: Option<CullFace>,
-    pub viewport: Option<AABB<usize>>,
+    pub viewport: Option<Aabb2<usize>>,
     pub write_color: bool,
     pub write_depth: bool,
     pub reset_uniforms: bool,

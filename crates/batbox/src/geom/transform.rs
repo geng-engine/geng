@@ -71,8 +71,8 @@ pub trait Transform2dExt<F: Float>: Transform2d<F> {
     fn transformed(&self) -> Transformed2d<F, Self> {
         Transformed2d::new(self, Mat3::identity())
     }
-    fn bounding_box(&self) -> AABB<F> {
-        AABB::points_bounding_box(
+    fn bounding_box(&self) -> Aabb2<F> {
+        Aabb2::points_bounding_box(
             [
                 vec2(-F::ONE, -F::ONE),
                 vec2(F::ONE, -F::ONE),

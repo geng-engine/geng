@@ -5,7 +5,7 @@ use geng::ui::*;
 pub struct Slider<'a> {
     cx: &'a Controller,
     sense: &'a mut Sense,
-    pos: &'a mut Option<AABB<f64>>,
+    pos: &'a mut Option<Aabb2<f64>>,
     tick_radius: &'a mut f32,
     value: f64,
     range: RangeInclusive<f64>,
@@ -63,7 +63,7 @@ impl<'a> Widget for Slider<'a> {
             cx.framebuffer,
             &geng::PixelPerfectCamera,
             &draw_2d::Quad::new(
-                AABB::from_corners(
+                Aabb2::from_corners(
                     position.bottom_left()
                         + vec2(value_position, (position.height() - line_width) / 2.0),
                     position.top_right()
@@ -83,7 +83,7 @@ impl<'a> Widget for Slider<'a> {
             cx.framebuffer,
             &geng::PixelPerfectCamera,
             &draw_2d::Quad::new(
-                AABB::from_corners(
+                Aabb2::from_corners(
                     position.bottom_left()
                         + vec2(line_width / 2.0, (position.height() - line_width) / 2.0),
                     position.bottom_left()

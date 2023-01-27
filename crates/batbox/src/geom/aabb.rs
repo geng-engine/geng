@@ -1,17 +1,17 @@
 use super::*;
 
-/// Axis aligned bounding box.
+/// 2d Axis aligned bounding box.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
-pub struct AABB<T> {
+pub struct Aabb2<T> {
     pub x_min: T,
     pub x_max: T,
     pub y_min: T,
     pub y_max: T,
 }
 
-impl<T: UNum> AABB<T> {
+impl<T: UNum> Aabb2<T> {
     /// An AABB with both position and size equal to (0, 0).
-    pub const ZERO: Self = AABB {
+    pub const ZERO: Self = Aabb2 {
         x_min: T::ZERO,
         x_max: T::ZERO,
         y_min: T::ZERO,
@@ -160,7 +160,7 @@ impl<T: UNum> AABB<T> {
         vec2(self.x_min, self.y_max)
     }
 
-    /// Get the top-rigth corner of the AABB.
+    /// Get the top-right corner of the AABB.
     pub fn top_right(&self) -> Vec2<T> {
         vec2(self.x_max, self.y_max)
     }
@@ -184,8 +184,8 @@ impl<T: UNum> AABB<T> {
     }
 
     /// Map every value (coordinate) of the AABB.
-    pub fn map<U: UNum, F: Fn(T) -> U>(self, f: F) -> AABB<U> {
-        AABB {
+    pub fn map<U: UNum, F: Fn(T) -> U>(self, f: F) -> Aabb2<U> {
+        Aabb2 {
             x_min: f(self.x_min),
             x_max: f(self.x_max),
             y_min: f(self.y_min),
@@ -267,7 +267,7 @@ impl<T: UNum> AABB<T> {
             x_max = partial_max(x_max, x);
             y_max = partial_max(y_max, y);
         }
-        AABB {
+        Aabb2 {
             x_min,
             x_max,
             y_min,
@@ -276,7 +276,7 @@ impl<T: UNum> AABB<T> {
     }
 }
 
-impl<T: Float> AABB<T> {
+impl<T: Float> Aabb2<T> {
     /// Returns the distance between two AABB's.
     pub fn distance_to(&self, other: &Self) -> T {
         partial_max(
@@ -289,7 +289,7 @@ impl<T: Float> AABB<T> {
     }
 }
 
-impl<T: Float> FitTarget2d<T> for AABB<T> {
+impl<T: Float> FitTarget2d<T> for Aabb2<T> {
     fn make_fit(&self, object: &mut impl Transform2d<T>) {
         let current_aabb = object.bounding_box();
         let current_width = current_aabb.width();
