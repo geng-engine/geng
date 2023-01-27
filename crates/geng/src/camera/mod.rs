@@ -8,23 +8,23 @@ pub use pixel_perfect::*;
 
 /// Represents any 3d camera.
 pub trait AbstractCamera3d {
-    fn view_matrix(&self) -> Mat4<f32>;
-    fn projection_matrix(&self, framebuffer_size: vec2<f32>) -> Mat4<f32>;
+    fn view_matrix(&self) -> mat4<f32>;
+    fn projection_matrix(&self, framebuffer_size: vec2<f32>) -> mat4<f32>;
 }
 
 /// Represents any 2d camera.
 pub trait AbstractCamera2d {
-    fn view_matrix(&self) -> Mat3<f32>;
-    fn projection_matrix(&self, framebuffer_size: vec2<f32>) -> Mat3<f32>;
+    fn view_matrix(&self) -> mat3<f32>;
+    fn projection_matrix(&self, framebuffer_size: vec2<f32>) -> mat3<f32>;
 }
 
 pub struct Camera2dAs3d<T>(pub T);
 
 impl<C: AbstractCamera2d> AbstractCamera3d for Camera2dAs3d<C> {
-    fn view_matrix(&self) -> Mat4<f32> {
+    fn view_matrix(&self) -> mat4<f32> {
         self.0.view_matrix().extend3d()
     }
-    fn projection_matrix(&self, framebuffer_size: vec2<f32>) -> Mat4<f32> {
+    fn projection_matrix(&self, framebuffer_size: vec2<f32>) -> mat4<f32> {
         self.0.projection_matrix(framebuffer_size).extend3d()
     }
 }

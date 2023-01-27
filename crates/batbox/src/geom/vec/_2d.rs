@@ -74,6 +74,12 @@ impl<T> vec2<T> {
 impl<T: UNum> vec2<T> {
     /// A zero 2-d vector
     pub const ZERO: Self = vec2(T::ZERO, T::ZERO);
+
+    /// A unit X
+    pub const UNIT_X: Self = Self(T::ONE, T::ZERO);
+
+    /// A unit Y
+    pub const UNIT_Y: Self = Self(T::ZERO, T::ONE);
 }
 
 impl<T: Num> vec2<T> {
@@ -241,7 +247,7 @@ impl<T: Float> vec2<T> {
     }
 
     /// Apply transformation matrix
-    pub fn transform(self, transform: Mat3<T>) -> Self {
+    pub fn transform(self, transform: mat3<T>) -> Self {
         (transform * self.extend(T::ONE)).into_2d()
     }
 }

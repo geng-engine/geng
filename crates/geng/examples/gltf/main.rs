@@ -30,15 +30,15 @@ impl Camera {
 }
 
 impl geng::AbstractCamera3d for Camera {
-    fn view_matrix(&self) -> Mat4<f32> {
-        Mat4::translate(vec3(0.0, 0.0, -self.distance))
-            * Mat4::rotate_x(-self.rot_v)
-            * Mat4::rotate_z(-self.rot_h)
-            * Mat4::translate(-self.pos)
+    fn view_matrix(&self) -> mat4<f32> {
+        mat4::translate(vec3(0.0, 0.0, -self.distance))
+            * mat4::rotate_x(-self.rot_v)
+            * mat4::rotate_z(-self.rot_h)
+            * mat4::translate(-self.pos)
     }
 
-    fn projection_matrix(&self, framebuffer_size: vec2<f32>) -> Mat4<f32> {
-        Mat4::perspective(
+    fn projection_matrix(&self, framebuffer_size: vec2<f32>) -> mat4<f32> {
+        mat4::perspective(
             self.fov,
             framebuffer_size.x / framebuffer_size.y,
             0.1,
@@ -179,7 +179,7 @@ impl geng::State for Example {
                 (
                     mesh.material.uniforms(),
                     ugli::uniforms! {
-                        u_model_matrix: Mat4::rotate_z(self.time), // TODO
+                        u_model_matrix: mat4::rotate_z(self.time), // TODO
                         u_eye_pos: self.camera.eye_pos(),
                         u_light_dir: vec3(1.0, -2.0, 5.0),
                         u_light_color: Rgba::WHITE,

@@ -90,14 +90,14 @@ mod batbox {
         }
     }
 
-    impl VertexAttribute for Mat3<f32> {
+    impl VertexAttribute for mat3<f32> {
         type Primitive = [[f32; 3]; 3];
         fn as_primitive(ptr: *const Self) -> *const [[f32; 3]; 3] {
             ptr as _
         }
     }
 
-    impl VertexAttribute for Mat4<f32> {
+    impl VertexAttribute for mat4<f32> {
         type Primitive = [[f32; 4]; 4];
         fn as_primitive(ptr: *const Self) -> *const [[f32; 4]; 4] {
             ptr as _

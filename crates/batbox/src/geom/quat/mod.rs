@@ -150,7 +150,7 @@ impl<T: Neg<Output = T>> Neg for Quat<T> {
     }
 }
 
-impl<T: Float> From<Quat<T>> for Mat4<T> {
+impl<T: Float> From<Quat<T>> for mat4<T> {
     fn from(quat: Quat<T>) -> Self {
         let i = quat.i;
         let j = quat.j;
@@ -181,7 +181,7 @@ impl<T: Float> From<Quat<T>> for Mat4<T> {
 
 #[test]
 fn test_quat() {
-    let mat = Mat4::from(Quat::from_axis_angle(
+    let mat = mat4::from(Quat::from_axis_angle(
         vec3(0.0, 1.0, 0.0),
         std::f64::consts::PI / 2.0,
     ));

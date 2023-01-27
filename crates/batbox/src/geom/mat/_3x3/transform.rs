@@ -1,12 +1,12 @@
 use super::*;
 
-impl<T: Num + Copy> Mat3<T> {
+impl<T: Num + Copy> mat3<T> {
     /// Construct a uniform scale matrix.
     ///
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
-    /// let matrix = Mat3::scale_uniform(2);
+    /// let matrix = mat3::scale_uniform(2);
     /// assert_eq!(matrix * vec3(1, 2, 1), vec3(2, 4, 1));
     /// ```
     pub fn scale_uniform(factor: T) -> Self {
@@ -18,7 +18,7 @@ impl<T: Num + Copy> Mat3<T> {
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
-    /// let matrix = Mat3::scale(vec2(1, 2));
+    /// let matrix = mat3::scale(vec2(1, 2));
     /// assert_eq!(matrix * vec3(1, 2, 1), vec3(1, 4, 1));
     /// ```
     pub fn scale(factor: vec2<T>) -> Self {
@@ -34,7 +34,7 @@ impl<T: Num + Copy> Mat3<T> {
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
-    /// let matrix = Mat3::translate(vec2(3, 2));
+    /// let matrix = mat3::translate(vec2(3, 2));
     /// assert_eq!(matrix * vec3(1, 2, 1), vec3(4, 4, 1));
     /// ```
     pub fn translate(dv: vec2<T>) -> Self {
@@ -45,7 +45,7 @@ impl<T: Num + Copy> Mat3<T> {
     }
 }
 
-impl<T: Float> Mat3<T> {
+impl<T: Float> mat3<T> {
     /// Construct rotational matrix
     pub fn rotate(angle: T) -> Self {
         let mut result = Self::identity();

@@ -8,14 +8,14 @@ pub trait Transform2d<F: Float> {
     fn bounding_quad(&self) -> Quad<F>;
 
     /// Apply transformation matrix to this object
-    fn apply_transform(&mut self, transform: Mat3<F>);
+    fn apply_transform(&mut self, transform: mat3<F>);
 }
 
 impl<F: Float, T: Transform2d<F> + ?Sized> Transform2d<F> for Box<T> {
     fn bounding_quad(&self) -> Quad<F> {
         (**self).bounding_quad()
     }
-    fn apply_transform(&mut self, transform: Mat3<F>) {
+    fn apply_transform(&mut self, transform: mat3<F>) {
         (**self).apply_transform(transform);
     }
 }
@@ -28,12 +28,12 @@ pub struct Transformed2d<'a, F: Float, T: Transform2d<F> + ?Sized> {
     pub inner: &'a T,
 
     /// Additional transformation
-    pub transform: Mat3<F>,
+    pub transform: mat3<F>,
 }
 
 impl<'a, F: Float, T: Transform2d<F> + ?Sized> Transformed2d<'a, F, T> {
     /// Apply additional transformation to the given object
-    pub fn new(inner: &'a T, transform: Mat3<F>) -> Self {
+    pub fn new(inner: &'a T, transform: mat3<F>) -> Self {
         Self { inner, transform }
     }
 }
@@ -42,7 +42,7 @@ impl<'a, F: Float, T: Transform2d<F> + ?Sized> Transform2d<F> for Transformed2d<
     fn bounding_quad(&self) -> Quad<F> {
         self.inner.bounding_quad().transform(self.transform)
     }
-    fn apply_transform(&mut self, transform: Mat3<F>) {
+    fn apply_transform(&mut self, transform: mat3<F>) {
         self.transform = transform * self.transform;
     }
 }
@@ -50,7 +50,7 @@ impl<'a, F: Float, T: Transform2d<F> + ?Sized> Transform2d<F> for Transformed2d<
 /// Extra methods for [Transform2d] types
 pub trait Transform2dExt<F: Float>: Transform2d<F> {
     /// Apply transformation to the object, returning a modified value to allow chaining methods
-    fn transform(self, transform: Mat3<F>) -> Self
+    fn transform(self, transform: mat3<F>) -> Self
     where
         Self: Sized,
     {
@@ -83,7 +83,7 @@ pub trait Transform2dExt<F: Float>: Transform2d<F> {
     where
         Self: Sized,
     {
-        self.transform(Mat3::translate(delta))
+        self.transform(mat3::translate(delta))
     }
 
     /// Scale object around (0, 0) by given factor
@@ -91,7 +91,7 @@ pub trait Transform2dExt<F: Float>: Transform2d<F> {
     where
         Self: Sized,
     {
-        self.transform(Mat3::scale(factor))
+        self.transform(mat3::scale(factor))
     }
 
     /// Scale object around (0, 0) by given factor uniformly along both axis
@@ -99,14 +99,14 @@ pub trait Transform2dExt<F: Float>: Transform2d<F> {
     where
         Self: Sized,
     {
-        self.transform(Mat3::scale_uniform(factor))
+        self.transform(mat3::scale_uniform(factor))
     }
 
     /// Create a reference to this object with additional transformation applied
     ///
     /// TODO: bad naming
     fn transformed(&self) -> Transformed2d<F, Self> {
-        Transformed2d::new(self, Mat3::identity())
+        Transformed2d::new(self, mat3::identity())
     }
 
     /// Calculate bounding box of this object, getting [Aabb2] instead of a [Quad]

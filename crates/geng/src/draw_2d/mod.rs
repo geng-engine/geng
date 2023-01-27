@@ -60,7 +60,7 @@ pub trait Draw2d: Transform2d<f32> {
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
-        transform: Mat3<f32>,
+        transform: mat3<f32>,
     );
     fn draw_2d(
         &self,
@@ -68,7 +68,7 @@ pub trait Draw2d: Transform2d<f32> {
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
     ) {
-        self.draw_2d_transformed(geng, framebuffer, camera, Mat3::identity());
+        self.draw_2d_transformed(geng, framebuffer, camera, mat3::identity());
     }
 }
 
@@ -78,7 +78,7 @@ impl<T: Draw2d + ?Sized> Draw2d for Box<T> {
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
-        transform: Mat3<f32>,
+        transform: mat3<f32>,
     ) {
         (**self).draw_2d_transformed(geng, framebuffer, camera, transform);
     }
@@ -90,7 +90,7 @@ impl<'a, T: Draw2d + ?Sized> Draw2d for Transformed2d<'a, f32, T> {
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
-        transform: Mat3<f32>,
+        transform: mat3<f32>,
     ) {
         self.inner
             .draw_2d_transformed(geng, framebuffer, camera, transform * self.transform);
@@ -104,14 +104,14 @@ impl Geng {
         camera: &dyn AbstractCamera2d,
         drawable: &impl Draw2d,
     ) {
-        self.draw_2d_transformed(framebuffer, camera, drawable, Mat3::identity());
+        self.draw_2d_transformed(framebuffer, camera, drawable, mat3::identity());
     }
     pub fn draw_2d_transformed(
         &self,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
         drawable: &impl Draw2d,
-        transform: Mat3<f32>,
+        transform: mat3<f32>,
     ) {
         drawable.draw_2d_transformed(self, framebuffer, camera, transform);
     }
@@ -191,7 +191,7 @@ impl Helper {
                 ugli::uniforms! {
                     u_color: color,
                     u_framebuffer_size: framebuffer_size,
-                    u_model_matrix: Mat3::<f32>::identity(),
+                    u_model_matrix: mat3::<f32>::identity(),
                 },
                 camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
             ),
@@ -232,7 +232,7 @@ impl Helper {
                     u_color: color,
                     u_texture: texture,
                     u_framebuffer_size: framebuffer_size,
-                    u_model_matrix: Mat3::<f32>::identity(),
+                    u_model_matrix: mat3::<f32>::identity(),
                 },
                 camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
             ),
@@ -320,7 +320,7 @@ impl Helper {
             &self.unit_quad_geometry,
             (
                 ugli::uniforms! {
-                    u_model_matrix: Mat3::translate(position) * Mat3::scale(radius),
+                    u_model_matrix: mat3::translate(position) * mat3::scale(radius),
                     u_color: color,
                     u_framebuffer_size: framebuffer_size,
                     u_inner_cut: inner_cut,

@@ -1,12 +1,12 @@
 use super::*;
 
-impl<T: Num + Copy> Mat4<T> {
+impl<T: Num + Copy> mat4<T> {
     /// Construct a uniform scale matrix.
     ///
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
-    /// let matrix = Mat4::scale_uniform(2);
+    /// let matrix = mat4::scale_uniform(2);
     /// assert_eq!(matrix * vec4(1, 2, 3, 1), vec4(2, 4, 6, 1));
     /// ```
     pub fn scale_uniform(factor: T) -> Self {
@@ -18,7 +18,7 @@ impl<T: Num + Copy> Mat4<T> {
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
-    /// let matrix = Mat4::scale(vec3(1, 2, 3));
+    /// let matrix = mat4::scale(vec3(1, 2, 3));
     /// assert_eq!(matrix * vec4(1, 2, 3, 1), vec4(1, 4, 9, 1));
     /// ```
     pub fn scale(factor: vec3<T>) -> Self {
@@ -35,7 +35,7 @@ impl<T: Num + Copy> Mat4<T> {
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
-    /// let matrix = Mat4::translate(vec3(3, 2, 1));
+    /// let matrix = mat4::translate(vec3(3, 2, 1));
     /// assert_eq!(matrix * vec4(1, 2, 3, 1), vec4(4, 4, 4, 1));
     /// ```
     pub fn translate(dv: vec3<T>) -> Self {
@@ -47,7 +47,7 @@ impl<T: Num + Copy> Mat4<T> {
     }
 }
 
-impl<T: Float> Mat4<T> {
+impl<T: Float> mat4<T> {
     /// Construct matrix rotating around x axis.
     pub fn rotate_x(angle: T) -> Self {
         let mut result = Self::identity();

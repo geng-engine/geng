@@ -1,6 +1,6 @@
 use super::*;
 
-impl<T: Float> Mat3<T> {
+impl<T: Float> mat3<T> {
     /// Get 2d part of the orthographic projection matrix
     pub fn ortho(aabb: Aabb2<T>) -> Self {
         let Aabb2 {

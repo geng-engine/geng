@@ -75,6 +75,15 @@ impl<T> vec3<T> {
 impl<T: UNum> vec3<T> {
     /// A zero 3-d vector
     pub const ZERO: Self = vec3(T::ZERO, T::ZERO, T::ZERO);
+
+    /// A unit X
+    pub const UNIT_X: Self = Self(T::ONE, T::ZERO, T::ZERO);
+
+    /// A unit Y
+    pub const UNIT_Y: Self = Self(T::ZERO, T::ONE, T::ZERO);
+
+    /// A unit Z
+    pub const UNIT_Z: Self = Self(T::ZERO, T::ZERO, T::ONE);
 }
 
 impl<T: Copy + Num> vec3<T> {
@@ -195,7 +204,7 @@ impl<T: Float> vec3<T> {
     }
 
     /// Apply transformation matrix
-    pub fn transform(self, transform: Mat4<T>) -> Self {
+    pub fn transform(self, transform: mat4<T>) -> Self {
         (transform * self.extend(T::ONE)).into_3d()
     }
 }

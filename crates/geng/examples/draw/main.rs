@@ -7,7 +7,7 @@ struct Assets {
 
 struct Grid<'a> {
     table: Vec<Vec<Option<&'a dyn geng::Draw2d>>>,
-    transform: Mat3<f32>,
+    transform: mat3<f32>,
 }
 
 impl<'a> Grid<'a> {
@@ -18,7 +18,7 @@ impl<'a> Grid<'a> {
         }
         Self {
             table,
-            transform: Mat3::scale(size.map(|x| x as f32)),
+            transform: mat3::scale(size.map(|x| x as f32)),
         }
     }
 }
@@ -29,7 +29,7 @@ impl<'a> Transform2d<f32> for Grid<'a> {
             transform: self.transform,
         }
     }
-    fn apply_transform(&mut self, transform: Mat3<f32>) {
+    fn apply_transform(&mut self, transform: mat3<f32>) {
         self.transform = transform * self.transform;
     }
 }
@@ -40,7 +40,7 @@ impl<'a> geng::Draw2d for Grid<'a> {
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn geng::AbstractCamera2d,
-        transform: Mat3<f32>,
+        transform: mat3<f32>,
     ) {
         for (x, column) in self.table.iter().enumerate() {
             for (y, object) in column.iter().enumerate() {
@@ -53,15 +53,15 @@ impl<'a> geng::Draw2d for Grid<'a> {
                             .fit_into(Aabb2::point(vec2::ZERO).extend_uniform(0.9))
                             .transform(
                                 self.transform
-                                    * Mat3::translate(vec2(-1.0, -1.0))
-                                    * Mat3::scale_uniform(2.0)
-                                    * Mat3::scale(vec2(
+                                    * mat3::translate(vec2(-1.0, -1.0))
+                                    * mat3::scale_uniform(2.0)
+                                    * mat3::scale(vec2(
                                         1.0 / self.table.len() as f32,
                                         1.0 / self.table[0].len() as f32,
                                     ))
-                                    * Mat3::translate(vec2(x as f32, y as f32))
-                                    * Mat3::scale_uniform(0.5)
-                                    * Mat3::translate(vec2(1.0, 1.0)),
+                                    * mat3::translate(vec2(x as f32, y as f32))
+                                    * mat3::scale_uniform(0.5)
+                                    * mat3::translate(vec2(1.0, 1.0)),
                             ),
                         transform,
                     );
@@ -90,7 +90,7 @@ impl State {
         };
         result.add(
             draw_2d::Quad::unit(Rgba::WHITE)
-                .transform(Mat3::rotate(0.5) * Mat3::scale_uniform(0.5)),
+                .transform(mat3::rotate(0.5) * mat3::scale_uniform(0.5)),
         );
         result.add(draw_2d::TexturedQuad::unit(ugli::Texture::new_with(
             geng.ugli(),
@@ -138,7 +138,7 @@ impl State {
         result.add(draw_2d::Ellipse::unit(Rgba::RED));
         result.add(
             draw_2d::Ellipse::unit_with_cut(0.5, Rgba::RED)
-                .transform(Mat3::rotate(f32::PI / 4.0) * Mat3::scale(vec2(1.0, 0.5))),
+                .transform(mat3::rotate(f32::PI / 4.0) * mat3::scale(vec2(1.0, 0.5))),
         );
         result.add(draw_2d::Polygon::new_gradient(vec![
             draw_2d::ColoredVertex {
@@ -167,11 +167,11 @@ impl State {
         ));
         result.add(
             draw_2d::Text::unit(geng.default_font().clone(), "Hello!", Rgba::WHITE)
-                .transform(Mat3::rotate(f32::PI / 6.0)),
+                .transform(mat3::rotate(f32::PI / 6.0)),
         );
         result.add(
             draw_2d::Text::unit(geng.default_font().clone(), "", Rgba::WHITE)
-                .transform(Mat3::rotate(f32::PI / 6.0)),
+                .transform(mat3::rotate(f32::PI / 6.0)),
         );
         result.add(draw_2d::Segment::new(
             Segment(vec2(-3.0, -5.0), vec2(3.0, 5.0)),

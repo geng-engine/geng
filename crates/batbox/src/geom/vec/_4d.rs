@@ -77,6 +77,18 @@ impl<T> vec4<T> {
 impl<T: UNum> vec4<T> {
     /// A zero 4-d vector
     pub const ZERO: Self = vec4(T::ZERO, T::ZERO, T::ZERO, T::ZERO);
+
+    /// A unit X
+    pub const UNIT_X: Self = Self(T::ONE, T::ZERO, T::ZERO, T::ZERO);
+
+    /// A unit Y
+    pub const UNIT_Y: Self = Self(T::ZERO, T::ONE, T::ZERO, T::ZERO);
+
+    /// A unit Z
+    pub const UNIT_Z: Self = Self(T::ZERO, T::ZERO, T::ONE, T::ZERO);
+
+    /// A unit W
+    pub const UNIT_W: Self = Self(T::ZERO, T::ZERO, T::ZERO, T::ONE);
 }
 
 impl<T: Copy + Num> vec4<T> {

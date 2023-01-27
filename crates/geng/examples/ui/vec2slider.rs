@@ -54,8 +54,8 @@ impl geng::ui::Widget for Vec2Slider<'_> {
             cx.framebuffer,
             &geng::PixelPerfectCamera,
             &draw_2d::Ellipse {
-                transform: Mat3::translate(self.position.center())
-                    * Mat3::scale(self.position.size() / 2.0),
+                transform: mat3::translate(self.position.center())
+                    * mat3::scale(self.position.size() / 2.0),
                 cut: 0.0,
                 color: cx.theme.usable_color,
             },

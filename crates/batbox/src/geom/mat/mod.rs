@@ -1,7 +1,7 @@
 use super::*;
 
-mod mat3;
-pub use mat3::*;
+mod _3x3;
+pub use _3x3::*;
 
-mod mat4;
-pub use mat4::*;
+mod _4x4;
+pub use _4x4::*;

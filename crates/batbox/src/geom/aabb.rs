@@ -290,9 +290,9 @@ impl<T: Float> FitTarget2d<T> for Aabb2<T> {
         }
         let scale = partial_min(self.height() / current_height, self.width() / current_width);
         object.apply_transform(
-            Mat3::translate(self.center())
-                * Mat3::scale_uniform(scale)
-                * Mat3::translate(-current_aabb.center()),
+            mat3::translate(self.center())
+                * mat3::scale_uniform(scale)
+                * mat3::translate(-current_aabb.center()),
         );
     }
 }

@@ -1,6 +1,6 @@
 use super::*;
 
-impl<T: Float> Mat4<T> {
+impl<T: Float> mat4<T> {
     /// Construct prespective projection matrix.
     pub fn perspective(fov: T, aspect: T, near: T, far: T) -> Self {
         let ymax = near * (fov / (T::ONE + T::ONE)).tan();
@@ -14,7 +14,7 @@ impl<T: Float> Mat4<T> {
         let width = right - left;
         let height = top - bottom;
         let depth = far - near;
-        Mat4::new([
+        mat4::new([
             [
                 double_near / width,
                 T::ZERO,

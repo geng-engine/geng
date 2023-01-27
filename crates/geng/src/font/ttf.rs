@@ -455,7 +455,7 @@ impl Ttf {
         &self,
         framebuffer: &mut ugli::Framebuffer,
         camera: &(impl AbstractCamera2d + ?Sized),
-        transform: Mat3<f32>,
+        transform: mat3<f32>,
         text: &str,
         pos: vec2<f32>,
         size: f32,
@@ -463,7 +463,7 @@ impl Ttf {
         outline_size: f32,
         outline_color: Rgba<f32>,
     ) {
-        let transform = transform * Mat3::translate(pos) * Mat3::scale_uniform(size);
+        let transform = transform * mat3::translate(pos) * mat3::scale_uniform(size);
         self.draw_with(text, |glyphs, texture| {
             let framebuffer_size = framebuffer.size();
             ugli::draw(
@@ -518,7 +518,7 @@ impl Ttf {
                 self.draw_impl(
                     framebuffer,
                     camera,
-                    Mat3::identity(),
+                    mat3::identity(),
                     line,
                     vec2(pos.x - aabb.width() * align.0, pos.y),
                     size,
@@ -549,7 +549,7 @@ impl Ttf {
                 self.draw_impl(
                     framebuffer,
                     camera,
-                    Mat3::identity(),
+                    mat3::identity(),
                     line,
                     vec2(pos.x - aabb.width() * align.0, pos.y),
                     size,

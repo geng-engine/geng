@@ -6,14 +6,14 @@ pub struct Quad<T: Float> {
     /// Transformation matrix
     ///
     /// Get corners of the quad by transforming [vec2] of -1/+1 by this
-    pub transform: Mat3<T>,
+    pub transform: mat3<T>,
 }
 
 impl<T: Float> Quad<T> {
     /// A unit quad - one with corners at -1/+1
     pub fn unit() -> Self {
         Self {
-            transform: Mat3::identity(),
+            transform: mat3::identity(),
         }
     }
 }
@@ -22,7 +22,7 @@ impl<T: Float> Transform2d<T> for Quad<T> {
     fn bounding_quad(&self) -> Quad<T> {
         *self
     }
-    fn apply_transform(&mut self, transform: Mat3<T>) {
+    fn apply_transform(&mut self, transform: mat3<T>) {
         self.transform = transform * self.transform;
     }
 }

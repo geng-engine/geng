@@ -1,7 +1,7 @@
 use super::*;
 
 pub struct Chain {
-    pub transform: Mat3<f32>,
+    pub transform: mat3<f32>,
     pub vertices: Vec<ColoredVertex>,
 }
 
@@ -30,7 +30,7 @@ impl Chain {
         let len = vertices.len();
         if len < 2 {
             return Self {
-                transform: Mat3::identity(),
+                transform: mat3::identity(),
                 vertices: vec![],
             };
         }
@@ -223,7 +223,7 @@ impl Transform2d<f32> for Chain {
         }
     }
 
-    fn apply_transform(&mut self, transform: Mat3<f32>) {
+    fn apply_transform(&mut self, transform: mat3<f32>) {
         self.transform = transform * self.transform;
     }
 }
@@ -234,7 +234,7 @@ impl Draw2d for Chain {
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
-        transform: Mat3<f32>,
+        transform: mat3<f32>,
     ) {
         let framebuffer_size = framebuffer.size();
         ugli::draw(
