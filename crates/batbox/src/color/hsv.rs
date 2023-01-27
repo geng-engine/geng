@@ -15,9 +15,12 @@ pub struct Hsva<T: ColorComponent> {
 }
 
 impl<T: ColorComponent> Hsva<T> {
+    /// Construct a new Hsva value
     pub fn new(h: T, s: T, v: T, a: T) -> Self {
         Self { h, s, v, a }
     }
+
+    /// Map all component values using same function
     pub fn map<F: Fn(T) -> U, U: ColorComponent>(self, f: F) -> Hsva<U> {
         Hsva {
             h: f(self.h),
@@ -26,6 +29,8 @@ impl<T: ColorComponent> Hsva<T> {
             a: f(self.a),
         }
     }
+
+    /// Convert color component type
     pub fn convert<U: ColorComponent>(self) -> Hsva<U> {
         self.map(|x| x.convert())
     }

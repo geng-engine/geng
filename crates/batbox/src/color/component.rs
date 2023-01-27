@@ -1,12 +1,21 @@
 #[allow(unused_imports)]
 use super::*;
 
-/// A trait representing a color component in `Color`.
+/// A trait representing a color component in a color.
 pub trait ColorComponent: Copy {
+    /// Min value (black)
+
     const ZERO: Self;
+    /// Half value (gray)
     const HALF: Self;
+
+    /// Max value (white)
     const MAX: Self;
+
+    /// Convert into an f32
     fn as_f32(self) -> f32;
+
+    /// Convert from an f32
     fn from_f32(value: f32) -> Self;
 
     /// Convert from one type to another
