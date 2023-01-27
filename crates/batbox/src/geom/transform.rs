@@ -22,7 +22,7 @@ impl<F: Float, T: Transform2d<F> + ?Sized> Transform2d<F> for Box<T> {
 
 /// A reference to a 2d object with additional transformation applied
 ///
-/// TODO: is this needed? should it be reference?
+// TODO: is this needed? should it be reference?
 pub struct Transformed2d<'a, F: Float, T: Transform2d<F> + ?Sized> {
     /// Reference to the actual object
     pub inner: &'a T,
