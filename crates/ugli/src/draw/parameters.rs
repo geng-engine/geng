@@ -241,8 +241,8 @@ impl DrawParameters {
         }
         if let Some(rect) = self.viewport {
             gl.viewport(
-                rect.x_min as _,
-                rect.y_min as _,
+                rect.min.x as _,
+                rect.min.y as _,
                 rect.width() as _,
                 rect.height() as _,
             );

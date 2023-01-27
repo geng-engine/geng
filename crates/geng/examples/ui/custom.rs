@@ -97,7 +97,7 @@ impl geng::ui::Widget for CustomWidget<'_> {
             if let geng::Event::MouseDown { position, .. }
             | geng::Event::MouseMove { position, .. } = &event
             {
-                let new_value = ((position.y as f32 - self.position.y_min)
+                let new_value = ((position.y as f32 - self.position.min.y)
                     / self.position.height().max(0.1))
                 .clamp(0.0, 1.0);
                 **self.change.borrow_mut() = Some(new_value);

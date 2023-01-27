@@ -52,13 +52,22 @@ impl<T> DerefMut for Vec4<T> {
 }
 
 impl<T> Vec4<T> {
+    /// Construct a new [Vec4]
+    pub fn new(x: T, y: T, z: T, w: T) -> Self {
+        Self { x, y, z, w }
+    }
+
+    /// Get first two components as a [Vec2]
     pub fn xy(self) -> Vec2<T> {
         vec2(self.x, self.y)
     }
+
+    /// Get first three components as a [Vec3]
     pub fn xyz(self) -> Vec3<T> {
         vec3(self.x, self.y, self.z)
     }
 
+    /// Map every value (coordinate).
     pub fn map<U, F: Fn(T) -> U>(self, f: F) -> Vec4<U> {
         vec4(f(self.x), f(self.y), f(self.z), f(self.w))
     }
@@ -79,5 +88,14 @@ impl<T: Copy + Num> Vec4<T> {
     /// ```
     pub fn dot(a: Self, b: Self) -> T {
         a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w
+    }
+}
+
+impl<T: Float> Vec4<T> {
+    /// Convert a homogenous 4d vector into 3d
+    ///
+    /// Same as self.xyz() / self.w
+    pub fn into_3d(self) -> Vec3<T> {
+        self.xyz() / self.w
     }
 }

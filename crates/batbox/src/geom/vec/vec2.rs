@@ -48,6 +48,11 @@ impl<T> DerefMut for Vec2<T> {
 }
 
 impl<T> Vec2<T> {
+    /// Construct a new [Vec2]
+    pub fn new(x: T, y: T) -> Self {
+        Self { x, y }
+    }
+
     /// Extend into a 3-d vector.
     ///
     /// # Examples
@@ -59,6 +64,7 @@ impl<T> Vec2<T> {
         vec3(self.x, self.y, z)
     }
 
+    /// Map every component (coordinate)
     pub fn map<U, F: Fn(T) -> U>(self, f: F) -> Vec2<U> {
         vec2(f(self.x), f(self.y))
     }
@@ -140,6 +146,7 @@ impl<T: Float> Vec2<T> {
     }
 
     /// Calculate length of a vector.
+    ///
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
@@ -150,11 +157,13 @@ impl<T: Float> Vec2<T> {
         T::sqrt(self.len_sqr())
     }
 
+    /// Calculate squared length of this vector
     pub fn len_sqr(self) -> T {
-        self.x * self.x + self.y * self.y
+        Vec2::dot(self, self)
     }
 
     /// Rotate a vector by a given angle.
+    ///
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
@@ -170,6 +179,7 @@ impl<T: Float> Vec2<T> {
     }
 
     /// Clamp vector's length. Note that the range must be inclusive.
+    ///
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
@@ -187,6 +197,7 @@ impl<T: Float> Vec2<T> {
     }
 
     /// Clamp vector in range. Note the range must be inclusive.
+    ///
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
@@ -202,13 +213,14 @@ impl<T: Float> Vec2<T> {
     }
 
     /// Clamp vector by `aabb` corners.
+    ///
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
     /// let v = vec2(0.5, 2.0);
     /// let min = vec2(0.0, 0.0);
     /// let max = vec2(1.0, 1.0);
-    /// let aabb = AABB::from_corners(min, max);
+    /// let aabb = Aabb2::from_corners(min, max);
     /// assert_eq!(v.clamp_aabb(aabb), vec2(0.5, 1.0));
     /// ```
     pub fn clamp_aabb(self, aabb: Aabb2<T>) -> Self {
@@ -218,6 +230,7 @@ impl<T: Float> Vec2<T> {
     }
 
     /// Get an angle between the positive direction of the x-axis.
+    ///
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
@@ -226,6 +239,11 @@ impl<T: Float> Vec2<T> {
     /// ```
     pub fn arg(self) -> T {
         T::atan2(self.y, self.x)
+    }
+
+    /// Apply transformation matrix
+    pub fn transform(self, transform: Mat3<T>) -> Self {
+        (transform * self.extend(T::ONE)).into_2d()
     }
 }
 

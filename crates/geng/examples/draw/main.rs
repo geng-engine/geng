@@ -174,7 +174,7 @@ impl State {
                 .transform(Mat3::rotate(f32::PI / 6.0)),
         );
         result.add(draw_2d::Segment::new(
-            Segment::new(vec2(-3.0, -5.0), vec2(3.0, 5.0)),
+            Segment(vec2(-3.0, -5.0), vec2(3.0, 5.0)),
             0.5,
             Rgba::GREEN,
         ));

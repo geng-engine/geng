@@ -9,11 +9,11 @@ impl Segment {
     pub fn new(segment: batbox::geom::Segment<f32>, width: f32, color: Rgba<f32>) -> Self {
         Self::new_gradient(
             ColoredVertex {
-                a_pos: segment.start,
+                a_pos: segment.0,
                 a_color: color,
             },
             ColoredVertex {
-                a_pos: segment.end,
+                a_pos: segment.1,
                 a_color: color,
             },
             width,

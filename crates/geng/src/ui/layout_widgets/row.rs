@@ -59,14 +59,14 @@ impl<'a> Widget for Row<'a> {
                     .sum::<f64>())
                 / total_flex
         };
-        let mut pos = cx.position.x_min;
+        let mut pos = cx.position.min.x;
         for child in &self.children {
             let child = child.deref();
             let width = cx.get_constraints(child).min_size.x
                 + cx.get_constraints(child).flex.x * size_per_flex;
             cx.set_position(
                 child,
-                Aabb2::point(vec2(pos, cx.position.y_min))
+                Aabb2::point(vec2(pos, cx.position.min.y))
                     .extend_positive(vec2(width, cx.position.height())),
             );
             pos += width;

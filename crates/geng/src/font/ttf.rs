@@ -86,10 +86,8 @@ impl Ttf {
                 found.insert(code_point);
                 let bounding_box = face.glyph_bounding_box(id).map(|rect| {
                     Aabb2 {
-                        x_min: rect.x_min,
-                        x_max: rect.x_max,
-                        y_min: rect.y_min,
-                        y_max: rect.y_max,
+                        min: vec2(rect.x_min, rect.y_min),
+                        max: vec2(rect.x_max, rect.y_max),
                     }
                     .map(|x| x as f32 * scale)
                 });
@@ -140,7 +138,7 @@ impl Ttf {
                 row_height = 0;
             }
             let uv = Aabb2::point(vec2(x, y)).extend_positive(glyph_size);
-            x = uv.x_max;
+            x = uv.max.x;
             row_height = row_height.max(uv.height());
             width = width.max(x);
             glyphs.insert(
@@ -158,10 +156,7 @@ impl Ttf {
         let atlas_size = vec2(width, height);
         for glyph in glyphs.values_mut() {
             if let Some(metrics) = &mut glyph.metrics {
-                metrics.uv.x_min /= atlas_size.x as f32;
-                metrics.uv.x_max /= atlas_size.x as f32;
-                metrics.uv.y_min /= atlas_size.y as f32;
-                metrics.uv.y_max /= atlas_size.y as f32;
+                metrics.uv = metrics.uv.map_bounds(|b| b / atlas_size.map(|x| x as f32));
             }
         }
         let mut atlas = ugli::Texture::new_uninitialized(ugli, atlas_size);

@@ -50,13 +50,22 @@ impl<T> DerefMut for Vec3<T> {
 }
 
 impl<T> Vec3<T> {
+    /// Construct a new [Vec3]
+    pub fn new(x: T, y: T, z: T) -> Self {
+        Self { x, y, z }
+    }
+
+    /// Get the first two components as a [Vec2]
     pub fn xy(self) -> Vec2<T> {
         vec2(self.x, self.y)
     }
+
+    /// Extend with another component and get a [Vec4]
     pub fn extend(self, w: T) -> Vec4<T> {
         vec4(self.x, self.y, self.z, w)
     }
 
+    /// Map every component (coordinate)
     pub fn map<U, F: Fn(T) -> U>(self, f: F) -> Vec3<U> {
         vec3(f(self.x), f(self.y), f(self.z))
     }
@@ -108,8 +117,10 @@ impl<T: Float> Vec3<T> {
         self / self.len()
     }
 
-    /// Normalizes a vector unless its length its approximately 0.
+    /// Normalizes a vector unless its length is approximately 0.
     /// Can be used to avoid division by 0.
+    ///
+    /// Uses [Approx::approx_eq] to determine equality to zero
     ///
     /// # Examples
     /// ```
@@ -133,12 +144,16 @@ impl<T: Float> Vec3<T> {
         T::sqrt(self.len_sqr())
     }
 
+    /// Calculate squared length of this vector
     pub fn len_sqr(self) -> T {
-        self.x * self.x + self.y * self.y + self.z * self.z
+        Vec3::dot(self, self)
     }
 
+    /// Convert a homogenous 3d vector into 2d
+    ///
+    /// Same as self.xy() / self.z
     pub fn into_2d(self) -> Vec2<T> {
-        vec2(self.x / self.z, self.y / self.z)
+        self.xy() / self.z
     }
 
     /// Clamp vector's length. Note that the range must be inclusive.
@@ -176,5 +191,10 @@ impl<T: Float> Vec3<T> {
             self.y.clamp_range(y_range),
             self.z.clamp_range(z_range),
         )
+    }
+
+    /// Apply transformation matrix
+    pub fn transform(self, transform: Mat4<T>) -> Self {
+        (transform * self.extend(T::ONE)).into_3d()
     }
 }

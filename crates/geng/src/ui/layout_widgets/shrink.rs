@@ -39,12 +39,7 @@ impl<T: Widget> Widget for Shrink<T> {
         let ratio = self.ratio / 2.0;
         cx.set_position(
             &self.child,
-            Aabb2 {
-                x_min: cx.position.x_min + cx.position.width() * ratio,
-                x_max: cx.position.x_max - cx.position.width() * ratio,
-                y_min: cx.position.y_min + cx.position.height() * ratio,
-                y_max: cx.position.y_max - cx.position.height() * ratio,
-            },
+            cx.position.extend_symmetric(-cx.position.size() * ratio),
         );
     }
     fn walk_children_mut<'a>(&mut self, mut f: Box<dyn FnMut(&mut dyn Widget) + 'a>) {

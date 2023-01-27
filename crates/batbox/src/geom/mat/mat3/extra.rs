@@ -26,6 +26,21 @@ impl<T: Copy> Mat3<T> {
 }
 
 impl<T: Num> Mat3<T> {
+    /// Construct a transformation matrix with given orts
+    ///
+    /// # Examples
+    /// ```
+    /// use batbox::prelude::*;
+    ///
+    /// let e1 = vec2(1.0, 2.0);
+    /// let e2 = vec2(3.0, 4.0);
+    ///
+    /// let m = Mat3::from_orts(e1, e2);
+    /// assert_eq!(vec2(1.0, 0.0).transform(m), e1);
+    /// assert_eq!(vec2(0.0, 1.0).transform(m), e2);
+    /// let v = vec2(2.0, 3.0);
+    /// assert_eq!(v.transform(m), e1 * v.x + e2 * v.y);
+    /// ```
     pub fn from_orts(x: Vec2<T>, y: Vec2<T>) -> Self {
         Mat3::new([
             [x.x, y.x, T::ZERO],
@@ -34,6 +49,7 @@ impl<T: Num> Mat3<T> {
         ])
     }
 
+    /// Extend this into a 3d transformation matrix, leaving z coordinate as is
     pub fn extend3d(self) -> Mat4<T> {
         let Self([[a00, a01, a02], [a10, a11, a12], [a20, a21, a22]]) = self;
         Mat4([

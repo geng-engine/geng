@@ -125,20 +125,20 @@ impl GameState {
             player.position.y = player
                 .position
                 .y
-                .clamp(self.boundary.y_min, self.boundary.y_max - player.size.y);
+                .clamp(self.boundary.min.y, self.boundary.max.y - player.size.y);
         }
 
         // Move, bounce, and bounce ball
         let ball = &mut self.ball;
         ball.movement(delta_time);
-        if ball.position.y - ball.radius <= self.boundary.y_min
-            || ball.position.y + ball.radius >= self.boundary.y_max
+        if ball.position.y - ball.radius <= self.boundary.min.y
+            || ball.position.y + ball.radius >= self.boundary.max.y
         {
             ball.velocity.y *= -1.0;
         }
         ball.position.y = ball.position.y.clamp(
-            self.boundary.y_min + ball.radius,
-            self.boundary.y_max - ball.radius,
+            self.boundary.min.y + ball.radius,
+            self.boundary.max.y - ball.radius,
         );
     }
 
@@ -159,11 +159,11 @@ impl GameState {
     /// Checks whether someone scored, adds the score, and resets the round
     fn check_round_end(&mut self) {
         let ball = &self.ball;
-        let score = if ball.position.x - ball.radius > self.boundary.x_max {
+        let score = if ball.position.x - ball.radius > self.boundary.max.x {
             // Left player scored
             self.scores[0] += 1;
             true
-        } else if ball.position.x + ball.radius < self.boundary.x_min {
+        } else if ball.position.x + ball.radius < self.boundary.min.x {
             // Right player scored
             self.scores[1] += 1;
             true
@@ -236,7 +236,7 @@ impl geng::State for GameState {
             framebuffer,
             &self.camera,
             &scores,
-            vec2(0.0, self.boundary.y_max + 10.0), // Just above the top boundary
+            vec2(0.0, self.boundary.max.y + 10.0), // Just above the top boundary
             geng::TextAlign::CENTER,
             32.0,
             Rgba::WHITE,

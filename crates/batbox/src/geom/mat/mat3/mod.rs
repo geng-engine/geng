@@ -11,6 +11,7 @@ mod transform;
 pub struct Mat3<T>(pub(crate) [[T; 3]; 3]);
 
 impl<T> Mat3<T> {
+    /// Map every element
     pub fn map<U, F: Fn(T) -> U>(self, f: F) -> Mat3<U> {
         Mat3(self.0.map(|row| row.map(&f)))
     }
@@ -32,11 +33,21 @@ impl<T: Copy> Mat3<T> {
         Self(values).transpose()
     }
 
+    /// Get row as a [Vec3]
     pub fn row(&self, row_index: usize) -> Vec3<T> {
         vec3(
             self[(row_index, 0)],
             self[(row_index, 1)],
             self[(row_index, 2)],
+        )
+    }
+
+    /// Get column as a [Vec3]
+    pub fn col(&self, col_index: usize) -> Vec3<T> {
+        vec3(
+            self[(0, col_index)],
+            self[(1, col_index)],
+            self[(2, col_index)],
         )
     }
 }
@@ -55,9 +66,11 @@ impl<T> IndexMut<(usize, usize)> for Mat3<T> {
 }
 
 impl<T> Mat3<T> {
+    /// Get self as a flat array
     pub fn as_flat_array(&self) -> &[T; 9] {
         unsafe { mem::transmute(self) }
     }
+    /// Get self as a mutable flat array
     pub fn as_flat_array_mut(&mut self) -> &mut [T; 9] {
         unsafe { mem::transmute(self) }
     }

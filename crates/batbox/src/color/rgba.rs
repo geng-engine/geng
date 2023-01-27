@@ -115,7 +115,7 @@ impl<T: ColorComponent + PartialEq> PartialEq for Rgba<T> {
 impl<T: ColorComponent + Eq> Eq for Rgba<T> {}
 
 impl<T: ColorComponent> Rgba<T> {
-    /// Construct `Rgba` from red, green, and blue components, fully opaque (max ALPHA).
+    /// Construct `Rgba` from red, green, and blue components, fully opaque (max alpha).
     pub fn opaque(r: T, g: T, b: T) -> Self {
         Self { r, g, b, a: T::MAX }
     }
@@ -186,7 +186,7 @@ impl<T: ColorComponent> Rgba<T> {
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
-    /// assert_eq!(Rgba::from_rgb(0, 255, 0).convert(), Rgba::from_rgb(0.0, 1.0, 0.0));
+    /// assert_eq!(Rgba::opaque(0, 255, 0).convert(), Rgba::opaque(0.0, 1.0, 0.0));
     /// ```
     pub fn convert<U: ColorComponent>(self) -> Rgba<U> {
         self.map(|component| component.convert())
@@ -197,8 +197,8 @@ impl<T: ColorComponent> Rgba<T> {
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
-    /// let start = Rgba::from_rgb(0.0, 0.0, 0.0);
-    /// let end = Rgba::from_rgb(1.0, 1.0, 1.0);
+    /// let start = Rgba::opaque(0.0, 0.0, 0.0);
+    /// let end = Rgba::opaque(1.0, 1.0, 1.0);
     /// let interpolated = Rgba::lerp(start, end, 0.3);
     /// assert!(interpolated.r - 0.3 < 1e-5);
     /// assert!(interpolated.g - 0.3 < 1e-5);

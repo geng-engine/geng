@@ -3,177 +3,168 @@ use super::*;
 /// 2d Axis aligned bounding box.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Aabb2<T> {
-    pub x_min: T,
-    pub x_max: T,
-    pub y_min: T,
-    pub y_max: T,
+    /// Minimum coordinates
+    pub min: Vec2<T>,
+    /// Maximum coordinates
+    pub max: Vec2<T>,
 }
 
 impl<T: UNum> Aabb2<T> {
-    /// An AABB with both position and size equal to (0, 0).
+    /// An [Aabb2] with both position and size equal to (0, 0).
     pub const ZERO: Self = Aabb2 {
-        x_min: T::ZERO,
-        x_max: T::ZERO,
-        y_min: T::ZERO,
-        y_max: T::ZERO,
+        min: Vec2::ZERO,
+        max: Vec2::ZERO,
     };
 
-    /// Construct an AABB from two opposite corners. The two corners can be given in any order.
+    /// Construct an [Aabb2] from two opposite corners. The two corners can be given in any order.
+    ///
     /// # Examples
     /// ```
     /// # use batbox::prelude::*;
-    /// let aabb = AABB::from_corners(vec2(-5.0, -5.0), vec2(5.0, 5.0));
-    /// let same = AABB::from_corners(vec2(5.0, -5.0), vec2(-5.0, 5.0));
+    /// let aabb = Aabb2::from_corners(vec2(-5.0, -5.0), vec2(5.0, 5.0));
+    /// let same = Aabb2::from_corners(vec2(5.0, -5.0), vec2(-5.0, 5.0));
     /// assert_eq!(aabb, same);
     /// ```
     pub fn from_corners(p1: Vec2<T>, p2: Vec2<T>) -> Self {
-        let (x_min, x_max) = partial_min_max(p1.x, p2.x);
-        let (y_min, y_max) = partial_min_max(p1.y, p2.y);
+        let (min_x, max_x) = partial_min_max(p1.x, p2.x);
+        let (min_y, max_y) = partial_min_max(p1.y, p2.y);
         Self {
-            x_min,
-            x_max,
-            y_min,
-            y_max,
+            min: vec2(min_x, min_y),
+            max: vec2(max_x, max_y),
         }
     }
 
-    /// Create an AABB at given position of size (0, 0).
+    /// Create an [Aabb2] at given position of size (0, 0).
+    ///
     /// # Examples
     /// ```
     /// # use batbox::prelude::*;
-    /// assert_eq!(AABB::<f32>::ZERO, AABB::point(Vec2::ZERO));
+    /// assert_eq!(Aabb2::<f32>::ZERO, Aabb2::point(Vec2::ZERO));
     /// ```
     pub fn point(point: Vec2<T>) -> Self {
         Self {
-            x_min: point.x,
-            x_max: point.x,
-            y_min: point.y,
-            y_max: point.y,
+            min: point,
+            max: point,
         }
     }
 
-    /// Extend boundaries of the AABB by a given value in each direction.
+    /// Extend boundaries of the [Aabb2] by a given value in each direction.
+    ///
     /// # Examples
     /// ```
     /// # use batbox::prelude::*;
-    /// let aabb = AABB::point(vec2(5.0, 5.0)).extend_uniform(10.0);
-    /// assert_eq!(aabb, AABB::from_corners(vec2(-5.0, -5.0), vec2(15.0, 15.0)));
+    /// let aabb = Aabb2::point(vec2(5, 5)).extend_uniform(10);
+    /// assert_eq!(aabb, Aabb2::from_corners(vec2(-5, -5), vec2(15, 15)));
     /// ```
     pub fn extend_uniform(self, extend: T) -> Self {
         Self {
-            x_min: self.x_min - extend,
-            x_max: self.x_max + extend,
-            y_min: self.y_min - extend,
-            y_max: self.y_max + extend,
+            min: self.min.map(|x| x - extend),
+            max: self.max.map(|x| x + extend),
         }
     }
 
     /// Extend the boundaries equally right and left and equally up and down
+    ///
     /// # Examples
     /// ```
     /// # use batbox::prelude::*;
-    /// let aabb = AABB::ZERO.extend_symmetric(vec2(10.0, 5.0));
-    /// let same = AABB::from_corners(vec2(-10.0, -5.0), vec2(10.0, 5.0));
+    /// let aabb = Aabb2::ZERO.extend_symmetric(vec2(10, 5));
+    /// let same = Aabb2::from_corners(vec2(-10, -5), vec2(10, 5));
     /// assert_eq!(aabb, same);
     /// ```
     pub fn extend_symmetric(self, extend: Vec2<T>) -> Self {
         Self {
-            x_min: self.x_min - extend.x,
-            x_max: self.x_max + extend.x,
-            y_min: self.y_min - extend.y,
-            y_max: self.y_max + extend.y,
+            min: self.min - extend,
+            max: self.max + extend,
         }
     }
 
     /// Extend the boundaries to the right and up by the given values
+    ///
     /// # Examples
     /// ```
     /// # use batbox::prelude::*;
-    /// let aabb = AABB::point(vec2(-10.0, -5.0)).extend_positive(vec2(20.0, 10.0));
-    /// let same = AABB::ZERO.extend_symmetric(vec2(10.0, 5.0));
+    /// let aabb = Aabb2::point(vec2(-10.0, -5.0)).extend_positive(vec2(20.0, 10.0));
+    /// let same = Aabb2::ZERO.extend_symmetric(vec2(10.0, 5.0));
     /// assert_eq!(aabb, same);
     /// ```
     pub fn extend_positive(self, extend: Vec2<T>) -> Self {
         Self {
-            x_max: self.x_max + extend.x,
-            y_max: self.y_max + extend.y,
-            ..self
+            min: self.min,
+            max: self.max + extend,
         }
     }
 
-    /// Extend the left edge of the AABB by a given value.
+    /// Extend the left edge of the [Aabb2] by a given value.
     pub fn extend_left(self, extend: T) -> Self {
-        Self {
-            x_min: self.x_min - extend,
-            ..self
-        }
+        let mut res = self;
+        res.min.x -= extend;
+        res
     }
 
-    /// Extend the right edge of the AABB by a given value.
+    /// Extend the right edge of the [Aabb2] by a given value.
     pub fn extend_right(self, extend: T) -> Self {
-        Self {
-            x_max: self.x_max + extend,
-            ..self
-        }
+        let mut res = self;
+        res.max.x += extend;
+        res
     }
 
-    /// Extend the top edge of the AABB by a given value.
+    /// Extend the top edge of the [Aabb2] by a given value.
     pub fn extend_up(self, extend: T) -> Self {
-        Self {
-            y_max: self.y_max + extend,
-            ..self
-        }
+        let mut res = self;
+        res.max.y += extend;
+        res
     }
 
-    /// Extend the bottom edge of the AABB by a given value.
+    /// Extend the bottom edge of the [Aabb2] by a given value.
     pub fn extend_down(self, extend: T) -> Self {
-        Self {
-            y_min: self.y_min - extend,
-            ..self
-        }
+        let mut res = self;
+        res.min.y -= extend;
+        res
     }
 
-    /// Ensure that the AABB has positive size
+    /// Ensure that the [Aabb2] has positive size
     /// # Examples
     /// ```
     /// # use batbox::prelude::*;
-    /// let original = AABB::point(vec2(10.0, 5.0)).extend_positive(vec2(-20.0, -10.0));
-    /// let normalized = AABB::ZERO.extend_symmetric(vec2(10.0, 5.0));
+    /// let original = Aabb2::point(vec2(10.0, 5.0)).extend_positive(vec2(-20.0, -10.0));
+    /// let normalized = Aabb2::ZERO.extend_symmetric(vec2(10.0, 5.0));
     /// assert_eq!(original.normalized(), normalized);
     /// ```
     pub fn normalized(self) -> Self {
         Self::from_corners(self.bottom_left(), self.top_right())
     }
 
-    /// Get the bottom-left corner of the AABB.
+    /// Get the bottom-left corner of the [Aabb2].
     pub fn bottom_left(&self) -> Vec2<T> {
-        vec2(self.x_min, self.y_min)
+        self.min
     }
 
-    /// Get the bottom-right corner of the AABB.
+    /// Get the bottom-right corner of the [Aabb2].
     pub fn bottom_right(&self) -> Vec2<T> {
-        vec2(self.x_max, self.y_min)
+        vec2(self.max.x, self.min.y)
     }
 
-    /// Get the top-left corner of the AABB.
+    /// Get the top-left corner of the [Aabb2].
     pub fn top_left(&self) -> Vec2<T> {
-        vec2(self.x_min, self.y_max)
+        vec2(self.min.x, self.max.y)
     }
 
-    /// Get the top-right corner of the AABB.
+    /// Get the top-right corner of the [Aabb2].
     pub fn top_right(&self) -> Vec2<T> {
-        vec2(self.x_max, self.y_max)
+        vec2(self.max.x, self.max.y)
     }
 
-    /// Get the center position of the AABB.
+    /// Get the center position of the [Aabb2].
     pub fn center(&self) -> Vec2<T> {
         let two: T = T::ONE + T::ONE;
         vec2(
-            (self.x_min + self.x_max) / two,
-            (self.y_min + self.y_max) / two,
+            (self.min.x + self.max.x) / two,
+            (self.min.y + self.max.y) / two,
         )
     }
 
+    /// Get an array of all four corner points
     pub fn corners(&self) -> [Vec2<T>; 4] {
         [
             self.bottom_left(),
@@ -183,109 +174,112 @@ impl<T: UNum> Aabb2<T> {
         ]
     }
 
-    /// Map every value (coordinate) of the AABB.
+    /// Map every value (coordinate) of the [Aabb2].
     pub fn map<U: UNum, F: Fn(T) -> U>(self, f: F) -> Aabb2<U> {
         Aabb2 {
-            x_min: f(self.x_min),
-            x_max: f(self.x_max),
-            y_min: f(self.y_min),
-            y_max: f(self.y_max),
+            min: self.min.map(&f),
+            max: self.max.map(&f),
         }
     }
 
-    /// Returns the width of the AABB.
+    /// Map bounds (min & max vectors)
+    pub fn map_bounds<U: UNum, F: Fn(Vec2<T>) -> Vec2<U>>(self, f: F) -> Aabb2<U> {
+        Aabb2 {
+            min: f(self.min),
+            max: f(self.max),
+        }
+    }
+
+    /// Returns the width of the [Aabb2].
     pub fn width(&self) -> T {
-        self.x_max - self.x_min
+        self.max.x - self.min.x
     }
 
-    /// Returns the height of the AABB.
+    /// Returns the height of the [Aabb2].
     pub fn height(&self) -> T {
-        self.y_max - self.y_min
+        self.max.y - self.min.y
     }
 
-    /// Return the size of the AABB.
+    /// Return the size of the [Aabb2].
     pub fn size(&self) -> Vec2<T> {
         vec2(self.width(), self.height())
     }
 
-    /// Check if a point is inside the AABB.
+    /// Check if a point is inside the [Aabb2].
     ///
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
-    /// let rect = AABB::from_corners(vec2(1, 2), vec2(3, 4));
+    /// let rect = Aabb2::from_corners(vec2(1, 2), vec2(3, 4));
     /// assert!(rect.contains(vec2(2, 3)));
     /// assert!(!rect.contains(vec2(5, 5)));
     /// ```
     pub fn contains(&self, point: Vec2<T>) -> bool {
-        self.x_min <= point.x
-            && point.x < self.x_max
-            && self.y_min <= point.y
-            && point.y < self.y_max
+        self.min.x <= point.x
+            && point.x < self.max.x
+            && self.min.y <= point.y
+            && point.y < self.max.y
     }
 
-    /// Checks whether two AABB's intersect.
+    /// Checks whether two [Aabb2]'s intersect.
     pub fn intersects(&self, other: &Self) -> bool {
-        self.x_max > other.x_min
-            && self.y_max > other.y_min
-            && self.x_min < other.x_max
-            && self.y_min < other.y_max
+        self.max.x > other.min.x
+            && self.max.y > other.min.y
+            && self.min.x < other.max.x
+            && self.min.y < other.max.y
     }
 
-    /// Moves the AABB by a given vector.
+    /// Moves the [Aabb2] by a given vector.
     pub fn translate(self, v: Vec2<T>) -> Self {
         Self {
-            x_min: self.x_min + v.x,
-            x_max: self.x_max + v.x,
-            y_min: self.y_min + v.y,
-            y_max: self.y_max + v.y,
+            min: self.min + v,
+            max: self.max + v,
         }
     }
 
-    /// Returns an iterator over points inside the AABB.
+    /// Returns an iterator over points inside the [Aabb2].
     pub fn points(self) -> impl Iterator<Item = Vec2<T>>
     where
         Range<T>: Iterator<Item = T>,
     {
-        (self.x_min..self.x_max)
-            .flat_map(move |x| (self.y_min..self.y_max).map(move |y| vec2(x, y)))
+        (self.min.x..self.max.x)
+            .flat_map(move |x| (self.min.y..self.max.y).map(move |y| vec2(x, y)))
     }
 
-    /// Returns the smallest possible AABB such that it contains all the points.
+    /// Returns the smallest possible [Aabb2] such that it contains all the points.
+    ///
+    /// # Examples
+    /// ```
+    /// use batbox::prelude::*;
+    ///
+    /// let aabb = Aabb2::points_bounding_box([
+    ///     vec2(3, 0),
+    ///     vec2(0, -2),
+    ///     vec2(1, 4),
+    ///     vec2(-1, -1),
+    ///     vec2(0, 3),
+    /// ]);
+    /// assert_eq!(aabb, Aabb2 { min: vec2(-1, -2), max: vec2(3, 4) });
+    /// ```
     pub fn points_bounding_box(points: impl IntoIterator<Item = Vec2<T>>) -> Self {
         let mut points = points.into_iter();
         let Vec2 {
-            x: mut x_min,
-            y: mut y_min,
+            x: mut min_x,
+            y: mut min_y,
         } = points.next().expect("At least one point expected");
-        let mut x_max = x_min;
-        let mut y_max = y_min;
+        let mut max_x = min_x;
+        let mut max_y = min_y;
         for Vec2 { x, y } in points {
             // TODO: disallow partials?
-            x_min = partial_min(x_min, x);
-            y_min = partial_min(y_min, y);
-            x_max = partial_max(x_max, x);
-            y_max = partial_max(y_max, y);
+            min_x = partial_min(min_x, x);
+            min_y = partial_min(min_y, y);
+            max_x = partial_max(max_x, x);
+            max_y = partial_max(max_y, y);
         }
         Aabb2 {
-            x_min,
-            x_max,
-            y_min,
-            y_max,
+            min: vec2(min_x, min_y),
+            max: vec2(max_x, max_y),
         }
-    }
-}
-
-impl<T: Float> Aabb2<T> {
-    /// Returns the distance between two AABB's.
-    pub fn distance_to(&self, other: &Self) -> T {
-        partial_max(
-            partial_max(
-                partial_max(self.x_min - other.x_max, other.x_min - self.x_max),
-                partial_max(self.y_min - other.y_max, other.y_min - self.y_max),
-            ),
-            T::ZERO,
-        )
     }
 }
 

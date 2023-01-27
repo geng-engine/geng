@@ -113,7 +113,7 @@ impl<'a> Widget for Slider<'a> {
         };
         if self.sense.is_captured() {
             if let Event::MouseDown { position, .. } | Event::MouseMove { position, .. } = &event {
-                let position = position.x - aabb.x_min;
+                let position = position.x - aabb.min.x;
                 let new_value = *self.range.start()
                     + ((position - aabb.height() / 6.0) / (aabb.width() - aabb.height() / 3.0))
                         .clamp(0.0, 1.0)

@@ -1,11 +1,16 @@
 use super::*;
 
+/// A 2d quad
 #[derive(Clone, Copy, Debug)]
 pub struct Quad<T: Float> {
+    /// Transformation matrix
+    ///
+    /// Get corners of the quad by transforming [Vec2] of -1/+1 by this
     pub transform: Mat3<T>,
 }
 
 impl<T: Float> Quad<T> {
+    /// A unit quad - one with corners at -1/+1
     pub fn unit() -> Self {
         Self {
             transform: Mat3::identity(),

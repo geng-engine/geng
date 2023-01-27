@@ -84,6 +84,7 @@ impl<T: Float> Mat4<T> {
         result
     }
 
+    /// Construct a rotational matrix around given axis
     pub fn rotate(v: Vec3<T>, angle: T) -> Self
     where
         T: SubAssign + AddAssign,

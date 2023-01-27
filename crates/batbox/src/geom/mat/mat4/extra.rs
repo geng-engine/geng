@@ -26,6 +26,23 @@ impl<T: Copy> Mat4<T> {
 }
 
 impl<T: Num> Mat4<T> {
+    /// Construct a transformation matrix with given orts
+    ///
+    /// # Examples
+    /// ```
+    /// use batbox::prelude::*;
+    ///
+    /// let e1 = vec3(1.0, 2.0, 3.0);
+    /// let e2 = vec3(3.0, 4.0, 5.0);
+    /// let e3 = vec3(5.0, 6.0, -1.0);
+    ///
+    /// let m = Mat4::from_orts(e1, e2, e3);
+    /// assert_eq!(vec3(1.0, 0.0, 0.0).transform(m), e1);
+    /// assert_eq!(vec3(0.0, 1.0, 0.0).transform(m), e2);
+    /// assert_eq!(vec3(0.0, 0.0, 1.0).transform(m), e3);
+    /// let v = vec3(2.0, 3.0, 4.0);
+    /// assert_eq!(v.transform(m), e1 * v.x + e2 * v.y + e3 * v.z);
+    /// ```
     pub fn from_orts(x: Vec3<T>, y: Vec3<T>, z: Vec3<T>) -> Self {
         Mat4::new([
             [x.x, y.x, z.x, T::ZERO],

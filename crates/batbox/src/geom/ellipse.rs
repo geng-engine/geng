@@ -1,20 +1,27 @@
 use super::*;
 
+/// [Generalizes a circle](https://en.wikipedia.org/wiki/Ellipse)
 pub struct Ellipse<T> {
+    /// Transformation from a [unit](Ellipse::unit)
     pub transform: Mat3<T>,
 }
 
 impl<T: Float> Ellipse<T> {
-    pub fn new(center: Vec2<T>, size: Vec2<T>) -> Self {
+    /// Create a new ellipse with given center and given half size
+    pub fn new(center: Vec2<T>, half_size: Vec2<T>) -> Self {
         Self {
-            transform: Mat3::translate(center) * Mat3::scale(size),
+            transform: Mat3::translate(center) * Mat3::scale(half_size),
         }
     }
+
+    /// Create a circle with given center and radius
     pub fn circle(center: Vec2<T>, radius: T) -> Self {
         Self {
             transform: Mat3::translate(center) * Mat3::scale_uniform(radius),
         }
     }
+
+    /// Create a unit ellipse - a circle with center at (0, 0) and radius of 1
     pub fn unit() -> Self {
         Self {
             transform: Mat3::identity(),

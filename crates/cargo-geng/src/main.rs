@@ -42,8 +42,7 @@ where
         let addr = format!("http://{addr}/");
         eprintln!("Server running on {addr}");
         if open {
-            open::that(format!("http://localhost:{SERVER_PORT}"))
-                .expect("Failed to open browser");
+            open::that(format!("http://localhost:{SERVER_PORT}")).expect("Failed to open browser");
         }
         server.await.expect("Server failed");
     });

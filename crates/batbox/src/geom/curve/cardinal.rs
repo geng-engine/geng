@@ -1,10 +1,12 @@
 use super::*;
 
-/// Represents a [cardinal spline](https://en.wikipedia.org/wiki/Cubic_Hermite_spline#Catmull%E2%80%93Rom_spline).
+/// Represents a [cardinal spline](https://en.wikipedia.org/wiki/Cubic_Hermite_spline#Cardinal_spline).
 #[derive(Debug)]
 pub struct CardinalSpline<T> {
     /// The key points
     pub points: Vec<Vec2<T>>,
+
+    /// Tension parameter
     pub tension: T,
 }
 

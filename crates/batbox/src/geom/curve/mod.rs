@@ -54,9 +54,13 @@ pub trait CubicHermiteCurve<T> {
 /// Represents a single interval of the curve.
 #[derive(Debug)]
 pub struct CurveInterval<T> {
+    /// Starting point
     pub point_start: Vec2<T>,
+    /// End point
     pub point_end: Vec2<T>,
+    /// Starting tangent
     pub tangent_start: Vec2<T>,
+    /// End tangent
     pub tangent_end: Vec2<T>,
 }
 

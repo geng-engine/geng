@@ -11,6 +11,7 @@ mod transform;
 pub struct Mat4<T>(pub(crate) [[T; 4]; 4]);
 
 impl<T> Mat4<T> {
+    /// Map every element
     pub fn map<U, F: Fn(T) -> U>(self, f: F) -> Mat4<U> {
         Mat4(self.0.map(|row| row.map(&f)))
     }
@@ -33,6 +34,7 @@ impl<T: Copy> Mat4<T> {
         Self(values).transpose()
     }
 
+    /// Get a row as a [Vec4]
     pub fn row(&self, row_index: usize) -> Vec4<T> {
         vec4(
             self[(row_index, 0)],
@@ -42,6 +44,7 @@ impl<T: Copy> Mat4<T> {
         )
     }
 
+    /// Get a column as a [Vec4]
     pub fn col(&self, col_index: usize) -> Vec4<T> {
         vec4(
             self[(0, col_index)],
@@ -66,9 +69,11 @@ impl<T> IndexMut<(usize, usize)> for Mat4<T> {
 }
 
 impl<T> Mat4<T> {
+    /// Get self as a flat array
     pub fn as_flat_array(&self) -> &[T; 16] {
         unsafe { mem::transmute(self) }
     }
+    /// Get self as a mutable flat array
     pub fn as_flat_array_mut(&mut self) -> &mut [T; 16] {
         unsafe { mem::transmute(self) }
     }

@@ -3,6 +3,7 @@ use super::*;
 /// A polygonal chain connecting a vector of points in space
 #[derive(Debug, Clone)]
 pub struct Chain<T> {
+    /// List of points
     pub vertices: Vec<Vec2<T>>,
 }
 
@@ -108,10 +109,7 @@ impl<T: Float> Chain<T> {
         let mut segments = Vec::with_capacity(length - 1);
         let mut prev = self.vertices[0];
         for &vertex in self.vertices.iter().skip(1) {
-            segments.push(Segment {
-                start: prev,
-                end: vertex,
-            });
+            segments.push(Segment(prev, vertex));
             prev = vertex;
         }
         segments
