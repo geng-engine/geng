@@ -168,7 +168,7 @@ pub fn run(geng: &Geng, state: impl State) {
             self.state.update(delta_time);
             self.ui_controller
                 .update(self.state.ui(&self.ui_controller).deref_mut(), delta_time);
-            self.next_fixed_update += delta_time;
+            self.next_fixed_update -= delta_time;
             while self.next_fixed_update <= 0.0 {
                 let delta_time = self.geng.inner.fixed_delta_time.get();
                 self.next_fixed_update += delta_time;
