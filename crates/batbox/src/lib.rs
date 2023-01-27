@@ -3,6 +3,8 @@
 //! Check out [prelude] which is supposed to be used like `use batbox::prelude::*`
 //! A lot of reexports of std and other [crates].
 
+#![warn(missing_docs)]
+
 #[allow(unused_imports)]
 use crate as batbox;
 

@@ -327,6 +327,7 @@ impl<T: Float> UNum for RealImpl<T> {
     const ONE: Self = Self(T::ONE);
 }
 
+/// Uniform [RealImpl] sampler
 pub struct UniformReal<T: rand::distributions::uniform::SampleUniform>(T::Sampler);
 
 impl<T: Float + rand::distributions::uniform::SampleUniform>
@@ -635,11 +636,18 @@ impl<T: Float> RealImpl<T> {
     }
 }
 
+/// Like [f32] but panics on NaN/Inf
 pub type R32 = RealImpl<f32>;
+
+/// Construct a new [R32] from an [f32]
 pub fn r32(value: f32) -> R32 {
     R32::new(value)
 }
+
+/// Like [f64] but panics on NaN/Inf
 pub type R64 = RealImpl<f64>;
+
+/// Construct a new [R64] from an [f64]
 pub fn r64(value: f64) -> R64 {
     R64::new(value)
 }

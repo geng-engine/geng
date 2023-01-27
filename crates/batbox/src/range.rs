@@ -23,7 +23,9 @@ pub trait FixedRangeBounds<T: ?Sized> {
 
 /// Same as [Bound] but without exclusive bounds
 pub enum FixedBound<T> {
+    /// An inclusive bound
     Included(T),
+    /// An infinite endpoint. Indicates that there is no bound in this direction
     Unbounded,
 }
 
@@ -63,7 +65,7 @@ impl<T> FixedRangeBounds<T> for RangeToInclusive<T> {
     }
 }
 
-// Convert any range into a `start..end` [Range] as if used for slicing
+/// Convert any range into a `start..end` [Range] as if used for slicing
 pub fn index_range<R>(len: usize, range: R) -> Range<usize>
 where
     R: RangeBounds<usize>,
