@@ -17,7 +17,7 @@ struct State {
     geng: Geng,
     assets: Assets,
     counter: i32,
-    vec2: Vec2<f32>,
+    vec: vec2<f32>,
 }
 
 impl State {
@@ -26,7 +26,7 @@ impl State {
             geng: geng.clone(),
             assets,
             counter: 0,
-            vec2: Vec2::ZERO,
+            vec: vec2::ZERO,
         }
     }
 }
@@ -85,11 +85,11 @@ impl geng::State for State {
             self.counter = (change * 100.0) as _;
         }
 
-        let vec2 = {
-            let text = format!("({:.2}, {:.2})", self.vec2.x, self.vec2.y);
-            let control = Vec2Slider::new(cx, self.vec2);
+        let vec = {
+            let text = format!("({:.2}, {:.2})", self.vec.x, self.vec.y);
+            let control = Vec2Slider::new(cx, self.vec);
             if let Some(change) = control.get_change() {
-                self.vec2 = change;
+                self.vec = change;
             }
             (text.center(), control.center()).column()
         };
@@ -105,7 +105,7 @@ impl geng::State for State {
             custom_widget
                 .center()
                 .uniform_padding(cx.theme().text_size as f64 * 0.3),
-            vec2.center()
+            vec.center()
                 .uniform_padding(cx.theme().text_size as f64 * 0.3),
         )
             .column()
@@ -126,7 +126,7 @@ fn main() {
         geng::LoadingScreen::new(
             &geng,
             geng::EmptyLoadingScreen,
-            <Assets as geng::LoadAsset>::load(&geng, &static_path()),
+            <Assets as geng::LoadAsset>::load(&geng, &run_dir().join("assets")),
             {
                 let geng = geng.clone();
                 move |assets| {

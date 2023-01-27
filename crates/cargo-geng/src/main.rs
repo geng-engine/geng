@@ -39,17 +39,16 @@ where
 
         let addr = ([0, 0, 0, 0], SERVER_PORT).into();
         let server = hyper::server::Server::bind(&addr).serve(make_service);
-        let addr = format!("http://{}/", addr);
-        eprintln!("Server running on {}", addr);
+        let addr = format!("http://{addr}/");
+        eprintln!("Server running on {addr}");
         if open {
-            open::that(format!("http://localhost:{}", SERVER_PORT))
-                .expect("Failed to open browser");
+            open::that(format!("http://localhost:{SERVER_PORT}")).expect("Failed to open browser");
         }
         server.await.expect("Server failed");
     });
 }
 
-#[derive(clap::Subcommand, PartialEq, Eq)]
+#[derive(clap::Subcommand, PartialEq, Eq, Clone)]
 enum Sub {
     Build,
     Run,
@@ -133,7 +132,7 @@ impl Opt {
             } else {
                 None
             })
-            .chain(self.jobs.map(|jobs| format!("--jobs={}", jobs)))
+            .chain(self.jobs.map(|jobs| format!("--jobs={jobs}")))
     }
     fn all_args(&self) -> impl Iterator<Item = String> {
         self.args_without_target()
@@ -195,15 +194,15 @@ fn main() -> Result<(), anyhow::Error> {
             if let Some(example) = &opt.example {
                 bin_root_dir = bin_root_dir.join("examples").join(example);
             }
-            let static_dir = bin_root_dir.join("static");
-            if static_dir.is_dir() {
-                fs_extra::dir::copy(static_dir, &out_dir, &{
+            let assets_dir = bin_root_dir.join("assets");
+            std::fs::create_dir_all(&out_dir)?;
+            if assets_dir.is_dir() {
+                fs_extra::dir::copy(assets_dir, &out_dir, &{
                     let mut options = fs_extra::dir::CopyOptions::new();
                     options.copy_inside = true;
                     options
                 })?;
             }
-            std::fs::create_dir_all(&out_dir)?;
 
             let mut command = Command::new("cargo")
                 .arg("build")
@@ -230,18 +229,26 @@ fn main() -> Result<(), anyhow::Error> {
             let executable = executable.ok_or_else(|| anyhow::anyhow!("executable not found"))?;
 
             if executable.extension() == Some("wasm") {
-                exec(
-                    Command::new("wasm-bindgen")
-                        .arg("--target=web")
-                        .arg("--no-typescript")
-                        .arg("--out-dir")
-                        .arg(&out_dir)
-                        .arg(&executable),
-                )?;
+                let stem = executable.file_stem().unwrap();
+                let mut wasm_bindgen = wasm_bindgen_cli_support::Bindgen::new();
+                wasm_bindgen
+                    .input_path(&executable)
+                    .web(true)?
+                    .typescript(false)
+                    .generate_output()?
+                    .emit(&out_dir)?;
+                let wasm_bg_path = out_dir.join(format!("{stem}_bg.wasm"));
+                let wasm_path = out_dir.join(format!("{stem}.wasm"));
+                if opt.release {
+                    wasm_opt::OptimizationOptions::new_optimize_for_size_aggressively()
+                        .run(&wasm_bg_path, &wasm_path)?;
+                } else {
+                    std::fs::copy(&wasm_bg_path, &wasm_path)?;
+                }
+                std::fs::remove_file(&wasm_bg_path)?;
                 std::fs::write(
                     out_dir.join(opt.index_file.as_deref().unwrap_or("index.html")),
-                    include_str!("index.html")
-                        .replace("<app-name>", executable.file_stem().unwrap()),
+                    include_str!("index.html").replace("<app-name>", stem),
                 )?;
                 if opt.sub == Sub::Run || opt.sub == Sub::Serve {
                     serve(&out_dir, opt.sub == Sub::Run);

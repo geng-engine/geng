@@ -87,13 +87,13 @@ impl Uniform for [[f32; 4]; 4] {
     }
 }
 
-impl Uniform for Mat3<f32> {
+impl Uniform for mat3<f32> {
     fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
         gl.uniform_matrix3fv(&info.location, 1, raw::FALSE, self.as_flat_array());
     }
 }
 
-impl Uniform for Mat4<f32> {
+impl Uniform for mat4<f32> {
     fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
         gl.uniform_matrix4fv(&info.location, 1, raw::FALSE, self.as_flat_array());
     }
@@ -135,7 +135,7 @@ impl<'a, U: Uniform> Uniform for Ref<'a, U> {
     }
 }
 
-impl<U> Uniform for Vec2<U>
+impl<U> Uniform for vec2<U>
 where
     [U; 2]: Uniform,
 {
@@ -144,7 +144,7 @@ where
     }
 }
 
-impl<U> Uniform for Vec3<U>
+impl<U> Uniform for vec3<U>
 where
     [U; 3]: Uniform,
 {
@@ -153,7 +153,7 @@ where
     }
 }
 
-impl<U> Uniform for Vec4<U>
+impl<U> Uniform for vec4<U>
 where
     [U; 4]: Uniform,
 {

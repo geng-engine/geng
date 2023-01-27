@@ -2,24 +2,24 @@ use super::*;
 
 /// Represents any curve given by a parametric function `f(t)`.
 pub struct Trajectory<T> {
-    function: Box<dyn Fn(T) -> Vec2<T>>,
+    function: Box<dyn Fn(T) -> vec2<T>>,
     interval: RangeInclusive<T>,
 }
 
 impl<T> Trajectory<T> {
     /// Construct a new trajectory with a function and an interval for the parameter.
-    pub fn new(function: Box<dyn Fn(T) -> Vec2<T>>, interval: RangeInclusive<T>) -> Self {
+    pub fn new(function: Box<dyn Fn(T) -> vec2<T>>, interval: RangeInclusive<T>) -> Self {
         Self { function, interval }
     }
 
     /// Get a point on the trajectory.
-    pub fn get(&self, t: T) -> Vec2<T> {
+    pub fn get(&self, t: T) -> vec2<T> {
         (self.function)(t)
     }
 
     /// Construct a parabolic trajectory passing through three points.
     /// The interval between the points is `-1.0..=1.0`
-    pub fn parabola(points: [Vec2<T>; 3], interval: RangeInclusive<T>) -> Self
+    pub fn parabola(points: [vec2<T>; 3], interval: RangeInclusive<T>) -> Self
     where
         T: Float + 'static,
     {

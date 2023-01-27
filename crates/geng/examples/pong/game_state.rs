@@ -18,7 +18,7 @@ const BOUNDARY_WIDTH: f32 = 5.0;
 
 const PLAYER_WIDTH: f32 = 10.0;
 const PLAYER_HEIGHT: f32 = 50.0;
-const PLAYER_SIZE: Vec2<f32> = vec2(PLAYER_WIDTH, PLAYER_HEIGHT);
+const PLAYER_SIZE: vec2<f32> = vec2(PLAYER_WIDTH, PLAYER_HEIGHT);
 const PLAYER_SPEED: f32 = 100.0;
 
 const BALL_RADIUS: f32 = 5.0;
@@ -30,7 +30,7 @@ const BALL_START_ANGLE_MAX: f32 = 0.7;
 pub struct GameState {
     geng: Geng,
     camera: geng::Camera2d,
-    boundary: AABB<f32>,
+    boundary: Aabb2<f32>,
     ball: Ball,
     players: [Player; 2],
     scores: [u32; 2],
@@ -45,7 +45,7 @@ impl GameState {
                 rotation: 0.0,
                 fov: 400.0,
             },
-            boundary: AABB::ZERO.extend_symmetric(vec2(ARENA_SIZE_X, ARENA_SIZE_Y) / 2.0),
+            boundary: Aabb2::ZERO.extend_symmetric(vec2(ARENA_SIZE_X, ARENA_SIZE_Y) / 2.0),
             ball: Self::new_ball(),
             players: {
                 // Distance from the arena edge to the player
@@ -95,13 +95,11 @@ impl GameState {
         // Check that values are correct
         debug_assert!(
             horizontal_mult.abs() == 1.0,
-            "generated wrong (not +-1) horizontal direction: {}",
-            horizontal_mult
+            "generated wrong (not +-1) horizontal direction: {horizontal_mult}"
         );
         debug_assert!(
             vertical_mult.abs() == 1.0,
-            "generated wrong (not +-1) vertical direction: {}",
-            vertical_mult
+            "generated wrong (not +-1) vertical direction: {vertical_mult}"
         );
 
         // Generate random direction
@@ -127,20 +125,20 @@ impl GameState {
             player.position.y = player
                 .position
                 .y
-                .clamp(self.boundary.y_min, self.boundary.y_max - player.size.y);
+                .clamp(self.boundary.min.y, self.boundary.max.y - player.size.y);
         }
 
         // Move, bounce, and bounce ball
         let ball = &mut self.ball;
         ball.movement(delta_time);
-        if ball.position.y - ball.radius <= self.boundary.y_min
-            || ball.position.y + ball.radius >= self.boundary.y_max
+        if ball.position.y - ball.radius <= self.boundary.min.y
+            || ball.position.y + ball.radius >= self.boundary.max.y
         {
             ball.velocity.y *= -1.0;
         }
         ball.position.y = ball.position.y.clamp(
-            self.boundary.y_min + ball.radius,
-            self.boundary.y_max - ball.radius,
+            self.boundary.min.y + ball.radius,
+            self.boundary.max.y - ball.radius,
         );
     }
 
@@ -153,7 +151,7 @@ impl GameState {
                 // Move and change velocity of the ball
                 ball.position += collision.normal * collision.penetration;
                 ball.velocity +=
-                    Vec2::dot(ball.velocity, -collision.normal) * collision.normal * 2.0;
+                    vec2::dot(ball.velocity, -collision.normal) * collision.normal * 2.0;
             }
         }
     }
@@ -161,11 +159,11 @@ impl GameState {
     /// Checks whether someone scored, adds the score, and resets the round
     fn check_round_end(&mut self) {
         let ball = &self.ball;
-        let score = if ball.position.x - ball.radius > self.boundary.x_max {
+        let score = if ball.position.x - ball.radius > self.boundary.max.x {
             // Left player scored
             self.scores[0] += 1;
             true
-        } else if ball.position.x + ball.radius < self.boundary.x_min {
+        } else if ball.position.x + ball.radius < self.boundary.min.x {
             // Right player scored
             self.scores[1] += 1;
             true
@@ -199,7 +197,7 @@ impl geng::State for GameState {
         ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
 
         // Draw boundaries
-        let boundary = AABB::point(self.boundary.center())
+        let boundary = Aabb2::point(self.boundary.center())
             .extend_symmetric(vec2(self.boundary.width(), BOUNDARY_WIDTH) / 2.0);
         let boundary_translate = self.boundary.height() / 2.0 + BOUNDARY_WIDTH / 2.0;
         self.geng.draw_2d_helper().quad(
@@ -238,7 +236,7 @@ impl geng::State for GameState {
             framebuffer,
             &self.camera,
             &scores,
-            vec2(0.0, self.boundary.y_max + 10.0), // Just above the top boundary
+            vec2(0.0, self.boundary.max.y + 10.0), // Just above the top boundary
             geng::TextAlign::CENTER,
             32.0,
             Rgba::WHITE,

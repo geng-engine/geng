@@ -1,4 +1,24 @@
+//! Logging
+//!
+//! Initialize the logger using one of the methods here, then just use the [log] crate stuff
+//!
+//! ```
+//! use batbox::prelude::*;
+//!
+//! logger::init();
+//! info!("This is a doctest");
+//! ```
 use super::*;
+
+pub mod prelude {
+    //! Items intended to always be available. Reexported from [crate::prelude]
+
+    #[doc(no_inline)]
+    pub use crate::logger;
+
+    #[doc(no_inline)]
+    pub use ::log::{debug, error, info, log_enabled, trace, warn};
+}
 
 struct Logger {
     inner: env_logger::Logger,
@@ -50,8 +70,9 @@ impl log::Log for Logger {
     }
 }
 
+/// Initialize with a custom config
 pub fn init_with(mut builder: env_logger::Builder) -> Result<(), log::SetLoggerError> {
-    let builder_info = format!("{:?}", builder);
+    let builder_info = format!("{builder:?}");
     let logger = Logger {
         inner: builder.build(),
     };
@@ -65,6 +86,7 @@ pub fn init_with(mut builder: env_logger::Builder) -> Result<(), log::SetLoggerE
     Ok(())
 }
 
+/// Get the default logger builder configuration
 pub fn builder() -> env_logger::Builder {
     let mut builder = env_logger::Builder::new();
     builder
@@ -80,16 +102,19 @@ pub fn builder() -> env_logger::Builder {
     builder
 }
 
+/// Initialize using default config
 pub fn init() -> Result<(), log::SetLoggerError> {
     init_with(builder())
 }
 
+/// Initialize for tests ([crates::env_logger::Builder::is_test])
 pub fn init_for_tests() {
     let mut builder = logger::builder();
     builder.is_test(true);
     let _ = init_with(builder);
 }
 
+/// Add another custom logger to use in addition to the main one
 pub fn add_logger(logger: Box<dyn log::Log>) {
     LOGGERS.lock().unwrap().push(logger);
 }

@@ -70,12 +70,11 @@ impl<T: Widget> Widget for Padding<T> {
     fn layout_children(&mut self, cx: &mut LayoutContext) {
         cx.set_position(
             &self.child,
-            AABB {
-                x_min: cx.position.x_min + self.left,
-                x_max: cx.position.x_max - self.right,
-                y_min: cx.position.y_min + self.bottom,
-                y_max: cx.position.y_max - self.top,
-            },
+            cx.position
+                .extend_left(-self.left)
+                .extend_right(-self.right)
+                .extend_down(-self.bottom)
+                .extend_up(-self.top),
         )
     }
     fn walk_children_mut<'a>(&mut self, mut f: Box<dyn FnMut(&mut dyn Widget) + 'a>) {

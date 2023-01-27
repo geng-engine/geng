@@ -3,8 +3,8 @@ use geng::prelude::*;
 struct State {
     geng: Geng,
     camera: geng::Camera2d,        // Store camera in the game state
-    framebuffer_size: Vec2<f32>,   // Save framebuffer size to access it outside of draw call
-    drag_start: Option<Vec2<f32>>, // Store location that needs to stay under cursor
+    framebuffer_size: vec2<f32>,   // Save framebuffer size to access it outside of draw call
+    drag_start: Option<vec2<f32>>, // Store location that needs to stay under cursor
     prev_touch_distance: f32,
     prev_touch_angle: f32,
 }
@@ -45,7 +45,7 @@ impl geng::State for State {
             framebuffer,
             &self.camera,
             "Scroll to zoom\nDrag LMB to move\nQ/E to rotate",
-            Vec2::ZERO,
+            vec2::ZERO,
             geng::TextAlign::CENTER,
             1.0,
             Rgba::WHITE,

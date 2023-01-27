@@ -1,14 +1,19 @@
 use super::*;
 
+/// A 2d quad
 #[derive(Clone, Copy, Debug)]
 pub struct Quad<T: Float> {
-    pub transform: Mat3<T>,
+    /// Transformation matrix
+    ///
+    /// Get corners of the quad by transforming [vec2] of -1/+1 by this
+    pub transform: mat3<T>,
 }
 
 impl<T: Float> Quad<T> {
+    /// A unit quad - one with corners at -1/+1
     pub fn unit() -> Self {
         Self {
-            transform: Mat3::identity(),
+            transform: mat3::identity(),
         }
     }
 }
@@ -17,7 +22,7 @@ impl<T: Float> Transform2d<T> for Quad<T> {
     fn bounding_quad(&self) -> Quad<T> {
         *self
     }
-    fn apply_transform(&mut self, transform: Mat3<T>) {
+    fn apply_transform(&mut self, transform: mat3<T>) {
         self.transform = transform * self.transform;
     }
 }
@@ -29,7 +34,7 @@ impl<T: Float> FitTarget2d<T> for Quad<T> {
             .bounding_quad()
             .transform(inversed_matrix)
             .transformed()
-            .fit_into(AABB::point(Vec2::ZERO).extend_uniform(T::ONE))
+            .fit_into(Aabb2::point(vec2::ZERO).extend_uniform(T::ONE))
             .transform;
         object.apply_transform(self.transform * local_transform * inversed_matrix)
     }

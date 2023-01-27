@@ -1,13 +1,13 @@
 use super::*;
 
 pub struct Polygon {
-    pub transform: Mat3<f32>,
+    pub transform: mat3<f32>,
     pub draw_mode: ugli::DrawMode,
     pub vertices: Vec<ColoredVertex>,
 }
 
 impl Polygon {
-    pub fn new(vertices: Vec<Vec2<f32>>, color: Rgba<f32>) -> Self {
+    pub fn new(vertices: Vec<vec2<f32>>, color: Rgba<f32>) -> Self {
         Self::new_gradient(
             vertices
                 .into_iter()
@@ -26,7 +26,7 @@ impl Polygon {
             draw_mode: ugli::DrawMode::TriangleFan,
         }
     }
-    pub fn strip(vertices: Vec<Vec2<f32>>, color: Rgba<f32>) -> Self {
+    pub fn strip(vertices: Vec<vec2<f32>>, color: Rgba<f32>) -> Self {
         Self::strip_gradient(
             vertices
                 .into_iter()
@@ -46,9 +46,9 @@ impl Polygon {
         }
     }
 
-    pub(super) fn normalize(mut vertices: Vec<ColoredVertex>) -> (Mat3<f32>, Vec<ColoredVertex>) {
-        let aabb = AABB::points_bounding_box(vertices.iter().map(|vertex| vertex.a_pos));
-        let transform = Mat3::translate(aabb.center()) * Mat3::scale(aabb.size() / 2.0);
+    pub(super) fn normalize(mut vertices: Vec<ColoredVertex>) -> (mat3<f32>, Vec<ColoredVertex>) {
+        let aabb = Aabb2::points_bounding_box(vertices.iter().map(|vertex| vertex.a_pos));
+        let transform = mat3::translate(aabb.center()) * mat3::scale(aabb.size() / 2.0);
         let inverse = transform.inverse();
         for vertex in &mut vertices {
             vertex.a_pos = (inverse * vertex.a_pos.extend(1.0)).xy();
@@ -63,7 +63,7 @@ impl Draw2d for Polygon {
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
-        transform: Mat3<f32>,
+        transform: mat3<f32>,
     ) {
         let framebuffer_size = framebuffer.size();
         ugli::draw(
@@ -93,13 +93,13 @@ impl Transform2d<f32> for Polygon {
             transform: self.transform,
         }
     }
-    fn apply_transform(&mut self, transform: Mat3<f32>) {
+    fn apply_transform(&mut self, transform: mat3<f32>) {
         self.transform = transform * self.transform;
     }
 }
 
 pub struct TexturedPolygon<T: std::borrow::Borrow<ugli::Texture>> {
-    transform: Mat3<f32>,
+    transform: mat3<f32>,
     texture: T,
     draw_mode: ugli::DrawMode,
     vertices: Vec<TexturedVertex>,
@@ -134,9 +134,9 @@ impl<T: std::borrow::Borrow<ugli::Texture>> TexturedPolygon<T> {
         }
     }
 
-    pub(super) fn normalize(mut vertices: Vec<TexturedVertex>) -> (Mat3<f32>, Vec<TexturedVertex>) {
-        let aabb = AABB::points_bounding_box(vertices.iter().map(|vertex| vertex.a_pos));
-        let transform = Mat3::translate(aabb.center()) * Mat3::scale(aabb.size() / 2.0);
+    pub(super) fn normalize(mut vertices: Vec<TexturedVertex>) -> (mat3<f32>, Vec<TexturedVertex>) {
+        let aabb = Aabb2::points_bounding_box(vertices.iter().map(|vertex| vertex.a_pos));
+        let transform = mat3::translate(aabb.center()) * mat3::scale(aabb.size() / 2.0);
         let inverse = transform.inverse();
         for vertex in &mut vertices {
             vertex.a_pos = (inverse * vertex.a_pos.extend(1.0)).xy();
@@ -151,7 +151,7 @@ impl<T: std::borrow::Borrow<ugli::Texture>> Draw2d for TexturedPolygon<T> {
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
-        transform: Mat3<f32>,
+        transform: mat3<f32>,
     ) {
         let framebuffer_size = framebuffer.size();
         ugli::draw(
@@ -182,7 +182,7 @@ impl<T: std::borrow::Borrow<ugli::Texture>> Transform2d<f32> for TexturedPolygon
             transform: self.transform,
         }
     }
-    fn apply_transform(&mut self, transform: Mat3<f32>) {
+    fn apply_transform(&mut self, transform: mat3<f32>) {
         self.transform = transform * self.transform;
     }
 }

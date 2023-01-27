@@ -30,9 +30,9 @@ pub struct ContextOptions {
     pub antialias: bool,
     pub transparency: bool,
     pub shader_prefix: Option<(String, String)>,
-    pub window_size: Option<Vec2<usize>>,
+    pub window_size: Option<vec2<usize>>,
     pub fullscreen: bool,
-    pub target_ui_resolution: Option<Vec2<f64>>,
+    pub target_ui_resolution: Option<vec2<f64>>,
 }
 
 impl Default for ContextOptions {
@@ -151,25 +151,28 @@ pub fn run(geng: &Geng, state: impl State) {
         state: T,
         ui_controller: ui::Controller,
         timer: Timer,
-        fixed_updater: FixedUpdater,
+        next_fixed_update: f64,
     }
     let state = Rc::new(RefCell::new(RunState {
         geng: geng.clone(),
         state,
         ui_controller: ui::Controller::new(geng),
         timer: Timer::new(),
-        fixed_updater: FixedUpdater::new(geng.inner.fixed_delta_time.get(), 0.0),
+        next_fixed_update: geng.inner.fixed_delta_time.get(),
     }));
 
     impl<T: State> RunState<T> {
         fn update(&mut self) {
-            let delta_time = self.timer.tick();
+            let delta_time = self.timer.tick().as_secs_f64();
             let delta_time = delta_time.min(self.geng.inner.max_delta_time.get());
             self.state.update(delta_time);
             self.ui_controller
                 .update(self.state.ui(&self.ui_controller).deref_mut(), delta_time);
-            for _ in 0..self.fixed_updater.update(delta_time) {
-                self.state.fixed_update(self.fixed_updater.fixed_delta_time);
+            self.next_fixed_update += delta_time;
+            while self.next_fixed_update <= 0.0 {
+                let delta_time = self.geng.inner.fixed_delta_time.get();
+                self.next_fixed_update += delta_time;
+                self.state.fixed_update(delta_time);
             }
         }
 

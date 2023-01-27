@@ -2,9 +2,9 @@ use super::*;
 
 #[derive(ugli::Vertex, Debug, Copy, Clone)]
 pub struct Vertex {
-    pub a_v: Vec3<f32>,
-    pub a_vt: Vec2<f32>,
-    pub a_vn: Vec3<f32>,
+    pub a_v: vec3<f32>,
+    pub a_vt: vec2<f32>,
+    pub a_vn: vec3<f32>,
 }
 
 pub fn parse(source: &str) -> HashMap<String, Vec<Vertex>> {
@@ -73,7 +73,7 @@ pub fn parse(source: &str) -> HashMap<String, Vec<Vertex>> {
 
 pub fn recalculate_normals(data: &mut [Vertex]) {
     for face in data.chunks_mut(3) {
-        let n = Vec3::cross(face[1].a_v - face[0].a_v, face[2].a_v - face[0].a_v).normalize();
+        let n = vec3::cross(face[1].a_v - face[0].a_v, face[2].a_v - face[0].a_v).normalize();
         for v in face {
             v.a_vn = n;
         }

@@ -1,12 +1,11 @@
 use super::*;
 
-impl<T: Float> Mat3<T> {
-    pub fn ortho(aabb: AABB<T>) -> Self {
-        let AABB {
-            x_min: l,
-            x_max: r,
-            y_min: b,
-            y_max: t,
+impl<T: Float> mat3<T> {
+    /// Get 2d part of the orthographic projection matrix
+    pub fn ortho(aabb: Aabb2<T>) -> Self {
+        let Aabb2 {
+            min: vec2(l, b),
+            max: vec2(r, t),
         } = aabb;
         let two = T::ONE + T::ONE;
         Self::new([

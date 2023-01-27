@@ -18,16 +18,16 @@ impl Default for Options {
 
 #[derive(Debug, Clone, ugli::Vertex)]
 pub struct GlyphInstance {
-    pub i_pos: Vec2<f32>,
-    pub i_size: Vec2<f32>,
-    pub i_uv_pos: Vec2<f32>,
-    pub i_uv_size: Vec2<f32>,
+    pub i_pos: vec2<f32>,
+    pub i_size: vec2<f32>,
+    pub i_uv_pos: vec2<f32>,
+    pub i_uv_size: vec2<f32>,
 }
 
 #[derive(Debug)]
 struct GlyphMetrics {
-    uv: AABB<f32>,
-    pos: AABB<f32>,
+    uv: Aabb2<f32>,
+    pos: Aabb2<f32>,
 }
 
 #[derive(Debug)]
@@ -61,7 +61,7 @@ impl Ttf {
         struct RawGlyph {
             id: ttf_parser::GlyphId,
             code_point: char,
-            bounding_box: Option<AABB<f32>>,
+            bounding_box: Option<Aabb2<f32>>,
         }
         let unit_scale = 1.0 / (face.ascender() - face.descender()) as f32;
         let scale = options.pixel_size * unit_scale;
@@ -85,11 +85,9 @@ impl Ttf {
                 }
                 found.insert(code_point);
                 let bounding_box = face.glyph_bounding_box(id).map(|rect| {
-                    AABB {
-                        x_min: rect.x_min,
-                        x_max: rect.x_max,
-                        y_min: rect.y_min,
-                        y_max: rect.y_max,
+                    Aabb2 {
+                        min: vec2(rect.x_min, rect.y_min),
+                        max: vec2(rect.x_max, rect.y_max),
                     }
                     .map(|x| x as f32 * scale)
                 });
@@ -139,8 +137,8 @@ impl Ttf {
                 y += row_height;
                 row_height = 0;
             }
-            let uv = AABB::point(vec2(x, y)).extend_positive(glyph_size);
-            x = uv.x_max;
+            let uv = Aabb2::point(vec2(x, y)).extend_positive(glyph_size);
+            x = uv.max.x;
             row_height = row_height.max(uv.height());
             width = width.max(x);
             glyphs.insert(
@@ -158,10 +156,7 @@ impl Ttf {
         let atlas_size = vec2(width, height);
         for glyph in glyphs.values_mut() {
             if let Some(metrics) = &mut glyph.metrics {
-                metrics.uv.x_min /= atlas_size.x as f32;
-                metrics.uv.x_max /= atlas_size.x as f32;
-                metrics.uv.y_min /= atlas_size.y as f32;
-                metrics.uv.y_max /= atlas_size.y as f32;
+                metrics.uv = metrics.uv.map_bounds(|b| b / atlas_size.map(|x| x as f32));
             }
         }
         let mut atlas = ugli::Texture::new_uninitialized(ugli, atlas_size);
@@ -182,21 +177,21 @@ impl Ttf {
 
             #[derive(ugli::Vertex, Copy, Clone)]
             struct Vertex {
-                a_pos: Vec3<f32>,
+                a_pos: vec3<f32>,
             }
-            fn v(a_pos: Vec3<f32>) -> Vertex {
+            fn v(a_pos: vec3<f32>) -> Vertex {
                 Vertex { a_pos }
             }
             struct Builder {
                 distance_mesh: Vec<Vertex>,
                 stencil_mesh: Vec<Vertex>,
-                pos: Vec2<f32>,
+                pos: vec2<f32>,
                 scale: f32,
-                offset: Vec2<f32>,
+                offset: vec2<f32>,
                 options: Options,
             }
             impl Builder {
-                fn new_glyph_at(&mut self, offset: Vec2<f32>) {
+                fn new_glyph_at(&mut self, offset: vec2<f32>) {
                     self.offset = offset;
                 }
                 fn add_triangle_fan(&mut self, mid: Vertex, vs: impl IntoIterator<Item = Vertex>) {
@@ -216,13 +211,13 @@ impl Ttf {
                     let v0 = vs.next();
                     self.add_triangle_fan(mid, itertools::chain![v0, vs, v0]);
                 }
-                fn add_line(&mut self, a: Vec2<f32>, b: Vec2<f32>) {
+                fn add_line(&mut self, a: vec2<f32>, b: vec2<f32>) {
                     self.stencil_mesh.push(v(self.offset.extend(0.0)));
                     self.stencil_mesh.push(v(a.extend(0.0)));
                     self.stencil_mesh.push(v(b.extend(0.0)));
-                    let a_quad = AABB::point(a)
+                    let a_quad = Aabb2::point(a)
                         .extend_uniform(self.options.max_distance * self.options.pixel_size);
-                    let b_quad = AABB::point(b)
+                    let b_quad = Aabb2::point(b)
                         .extend_uniform(self.options.max_distance * self.options.pixel_size);
                     self.add_triangle_fan_loop(
                         v(a.extend(0.0)),
@@ -273,9 +268,9 @@ impl Ttf {
             let mut builder = Builder {
                 distance_mesh: vec![],
                 stencil_mesh: vec![],
-                pos: Vec2::ZERO,
+                pos: vec2::ZERO,
                 scale,
-                offset: Vec2::ZERO,
+                offset: vec2::ZERO,
                 options: options.clone(),
             };
             for glyph in &raw_glyphs {
@@ -347,7 +342,7 @@ impl Ttf {
                 ugli::DrawMode::TriangleFan,
                 &ugli::VertexBuffer::new_static(
                     ugli,
-                    AABB::point(vec2(0, 0))
+                    Aabb2::point(vec2(0, 0))
                         .extend_positive(framebuffer.size())
                         .corners()
                         .into_iter()
@@ -402,17 +397,19 @@ impl Ttf {
         self.line_gap
     }
 
-    pub fn measure_bounding_box(&self, text: &str) -> Option<AABB<f32>> {
+    pub fn measure_bounding_box(&self, text: &str) -> Option<Aabb2<f32>> {
         self.draw_with(text, |glyphs, _| {
             if glyphs.is_empty() {
                 return None;
             }
-            Some(AABB::points_bounding_box(glyphs.iter().flat_map(|glyph| {
-                [
-                    glyph.i_pos + vec2(self.max_distance, self.max_distance),
-                    glyph.i_pos + glyph.i_size - vec2(self.max_distance, self.max_distance),
-                ]
-            })))
+            Some(Aabb2::points_bounding_box(glyphs.iter().flat_map(
+                |glyph| {
+                    [
+                        glyph.i_pos + vec2(self.max_distance, self.max_distance),
+                        glyph.i_pos + glyph.i_size - vec2(self.max_distance, self.max_distance),
+                    ]
+                },
+            )))
         })
     }
 
@@ -448,7 +445,7 @@ impl Ttf {
     }
 
     #[deprecated]
-    pub fn measure(&self, text: &str, size: f32) -> Option<AABB<f32>> {
+    pub fn measure(&self, text: &str, size: f32) -> Option<Aabb2<f32>> {
         self.measure_bounding_box(text)
             .map(|aabb| aabb.map(|x| x * size))
     }
@@ -458,15 +455,15 @@ impl Ttf {
         &self,
         framebuffer: &mut ugli::Framebuffer,
         camera: &(impl AbstractCamera2d + ?Sized),
-        transform: Mat3<f32>,
+        transform: mat3<f32>,
         text: &str,
-        pos: Vec2<f32>,
+        pos: vec2<f32>,
         size: f32,
         color: Rgba<f32>,
         outline_size: f32,
         outline_color: Rgba<f32>,
     ) {
-        let transform = transform * Mat3::translate(pos) * Mat3::scale_uniform(size);
+        let transform = transform * mat3::translate(pos) * mat3::scale_uniform(size);
         self.draw_with(text, |glyphs, texture| {
             let framebuffer_size = framebuffer.size();
             ugli::draw(
@@ -477,7 +474,7 @@ impl Ttf {
                 ugli::instanced(
                     &ugli::VertexBuffer::new_dynamic(
                         &self.ugli,
-                        AABB::point(Vec2::ZERO)
+                        Aabb2::point(vec2::ZERO)
                             .extend_positive(vec2(1.0, 1.0))
                             .corners()
                             .into_iter()
@@ -510,7 +507,7 @@ impl Ttf {
         framebuffer: &mut ugli::Framebuffer,
         camera: &impl AbstractCamera2d,
         text: &str,
-        pos: Vec2<f32>,
+        pos: vec2<f32>,
         align: TextAlign,
         size: f32,
         color: Rgba<f32>,
@@ -521,7 +518,7 @@ impl Ttf {
                 self.draw_impl(
                     framebuffer,
                     camera,
-                    Mat3::identity(),
+                    mat3::identity(),
                     line,
                     vec2(pos.x - aabb.width() * align.0, pos.y),
                     size,
@@ -539,7 +536,7 @@ impl Ttf {
         framebuffer: &mut ugli::Framebuffer,
         camera: &impl AbstractCamera2d,
         text: &str,
-        pos: Vec2<f32>,
+        pos: vec2<f32>,
         align: TextAlign,
         size: f32,
         color: Rgba<f32>,
@@ -552,7 +549,7 @@ impl Ttf {
                 self.draw_impl(
                     framebuffer,
                     camera,
-                    Mat3::identity(),
+                    mat3::identity(),
                     line,
                     vec2(pos.x - aabb.width() * align.0, pos.y),
                     size,

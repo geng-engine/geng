@@ -1,5 +1,3 @@
-use darling::FromDeriveInput;
-
 use super::*;
 
 #[derive(FromDeriveInput)]

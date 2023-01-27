@@ -1,6 +1,19 @@
+//! Retrieving program arguments
 use super::*;
 
-pub fn args() -> Vec<String> {
+pub mod prelude {
+    //! Items intended to always be available. Reexported from [crate::prelude]
+
+    #[doc(no_inline)]
+    pub use crate::program_args;
+}
+
+/// Returns a list of program arguments
+///
+/// On the web, program arguments are constructed from the query string:
+/// `?flag&key=value1&key=value2` turns into `--flag --key=value1 --key=value2`.
+/// Also, `args=something` just adds an arg to the list: `?args=test` turns into `test`.
+pub fn get() -> Vec<String> {
     #[cfg(target_arch = "wasm32")]
     return {
         let mut args = vec!["program".to_owned()]; // `Program` itself is the first arg
@@ -9,7 +22,9 @@ pub fn args() -> Vec<String> {
         for (key, value) in url.query_pairs() {
             let key: &str = &key;
             let value: &str = &value;
-            if value.is_empty() {
+            if key == "args" {
+                args.push(value.to_owned());
+            } else if value.is_empty() {
                 args.push("--".to_owned() + key);
             } else {
                 args.push("--".to_owned() + key + "=" + value);
@@ -22,6 +37,7 @@ pub fn args() -> Vec<String> {
     return std::env::args().collect();
 }
 
+/// Parse program arguments
 pub fn parse<T: clap::Parser>() -> T {
-    clap::Parser::parse_from(args())
+    clap::Parser::parse_from(get())
 }

@@ -1,19 +1,19 @@
 use geng::prelude::*;
 
 pub struct Ball {
-    pub position: Vec2<f32>,
+    pub position: vec2<f32>,
     pub radius: f32,
-    pub velocity: Vec2<f32>,
+    pub velocity: vec2<f32>,
     pub color: Rgba<f32>,
 }
 
 impl Ball {
-    pub fn new(position: Vec2<f32>, radius: f32, color: Rgba<f32>) -> Self {
+    pub fn new(position: vec2<f32>, radius: f32, color: Rgba<f32>) -> Self {
         Self {
             position,
             radius,
             color,
-            velocity: Vec2::ZERO,
+            velocity: vec2::ZERO,
         }
     }
 

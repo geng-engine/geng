@@ -1,15 +1,21 @@
 use super::*;
 
+/// A [quaternion](https://en.wikipedia.org/wiki/Quaternion)
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct Quat<T> {
+    /// First imaginary component
     pub i: T,
+    /// Second imaginary component
     pub j: T,
+    /// Third imaginary component
     pub k: T,
+    /// Real component
     pub w: T,
 }
 
 impl<T> Quat<T> {
+    /// Map every component
     pub fn map<U, F: Fn(T) -> U>(self, f: F) -> Quat<U> {
         Quat {
             i: f(self.i),
@@ -21,6 +27,7 @@ impl<T> Quat<T> {
 }
 
 impl<T: Float> Quat<T> {
+    /// Identity element - 1
     pub fn identity() -> Self {
         Self {
             i: T::ZERO,
@@ -30,7 +37,8 @@ impl<T: Float> Quat<T> {
         }
     }
 
-    pub fn from_axis_angle(axis: Vec3<T>, angle: T) -> Self {
+    /// Construct a quaternion representing rotation around given axis by given angle
+    pub fn from_axis_angle(axis: vec3<T>, angle: T) -> Self {
         let angle = angle / (T::ONE + T::ONE);
         let sin = angle.sin();
         let cos = angle.cos();
@@ -43,18 +51,22 @@ impl<T: Float> Quat<T> {
         }
     }
 
+    /// Calculate length of this quaternion
     pub fn len(self) -> T {
         self.len_sqr().sqrt()
     }
 
+    /// Calculate squared length of this quaternion
     pub fn len_sqr(self) -> T {
         self.i * self.i + self.j * self.j + self.k * self.k + self.w * self.w
     }
 
+    /// Normalize this quaternion
     pub fn normalize(self) -> Self {
         self / self.len()
     }
 
+    /// Lerp - calculate `v0 * (1 - t) + v1 * t`
     pub fn lerp(v0: Self, v1: Self, t: T) -> Self {
         v0 * (T::ONE - t) + v1 * t
     }
@@ -138,7 +150,7 @@ impl<T: Neg<Output = T>> Neg for Quat<T> {
     }
 }
 
-impl<T: Float> From<Quat<T>> for Mat4<T> {
+impl<T: Float> From<Quat<T>> for mat4<T> {
     fn from(quat: Quat<T>) -> Self {
         let i = quat.i;
         let j = quat.j;
@@ -169,7 +181,7 @@ impl<T: Float> From<Quat<T>> for Mat4<T> {
 
 #[test]
 fn test_quat() {
-    let mat = Mat4::from(Quat::from_axis_angle(
+    let mat = mat4::from(Quat::from_axis_angle(
         vec3(0.0, 1.0, 0.0),
         std::f64::consts::PI / 2.0,
     ));

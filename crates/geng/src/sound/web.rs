@@ -18,11 +18,11 @@ impl AudioContext {
         }
     }
 
-    pub fn set_listener_position(&self, pos: Vec3<f64>) {
+    pub fn set_listener_position(&self, pos: vec3<f64>) {
         self.context.listener().set_position(pos.x, pos.y, pos.z);
     }
 
-    pub fn set_listener_orientation(&self, forward: Vec3<f64>, up: Vec3<f64>) {
+    pub fn set_listener_orientation(&self, forward: vec3<f64>, up: vec3<f64>) {
         self.context
             .listener()
             .set_orientation(forward.x, forward.y, forward.z, up.x, up.y, up.z);
@@ -98,7 +98,7 @@ impl SoundEffect {
     // pub fn pause(&mut self) {
     //     self.inner.pause().unwrap();
     // }
-    pub fn set_position(&mut self, position: Vec3<f64>) {
+    pub fn set_position(&mut self, position: vec3<f64>) {
         let panner_node = self.make_spatial();
         panner_node.set_position(position.x, position.y, position.z);
     }

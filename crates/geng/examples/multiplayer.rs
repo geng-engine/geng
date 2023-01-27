@@ -6,7 +6,7 @@ type PlayerId = usize;
 #[derive(Debug, Serialize, Deserialize, Diff, Clone, PartialEq)]
 struct Player {
     id: PlayerId,
-    position: Vec2<f32>,
+    position: vec2<f32>,
 }
 
 impl HasId for Player {
@@ -35,7 +35,7 @@ impl Model {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum Message {
-    UpdatePosition(Vec2<f32>),
+    UpdatePosition(vec2<f32>),
 }
 
 impl simple_net::Model for Model {
@@ -49,8 +49,8 @@ impl simple_net::Model for Model {
         self.players.insert(Player {
             id: player_id,
             position: vec2(
-                global_rng().gen_range(-5.0..=5.0),
-                global_rng().gen_range(-5.0..=5.0),
+                thread_rng().gen_range(-5.0..=5.0),
+                thread_rng().gen_range(-5.0..=5.0),
             ),
         });
         player_id

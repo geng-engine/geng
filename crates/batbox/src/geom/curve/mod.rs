@@ -54,15 +54,19 @@ pub trait CubicHermiteCurve<T> {
 /// Represents a single interval of the curve.
 #[derive(Debug)]
 pub struct CurveInterval<T> {
-    pub point_start: Vec2<T>,
-    pub point_end: Vec2<T>,
-    pub tangent_start: Vec2<T>,
-    pub tangent_end: Vec2<T>,
+    /// Starting point
+    pub point_start: vec2<T>,
+    /// End point
+    pub point_end: vec2<T>,
+    /// Starting tangent
+    pub tangent_start: vec2<T>,
+    /// End tangent
+    pub tangent_end: vec2<T>,
 }
 
 impl<F: Float> CurveInterval<F> {
     /// Returns a point on the curve interval
-    pub fn get(&self, t: F) -> Vec2<F> {
+    pub fn get(&self, t: F) -> vec2<F> {
         let p0 = self.point_start;
         let p1 = self.point_end;
         let m0 = self.tangent_start;

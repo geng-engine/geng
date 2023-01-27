@@ -17,22 +17,22 @@ pub enum MouseButton {
 
 #[derive(Debug, Copy, Clone)]
 pub struct TouchPoint {
-    pub position: Vec2<f64>,
+    pub position: vec2<f64>,
 }
 
 #[derive(Debug, Clone)]
 pub enum Event {
     MouseDown {
-        position: Vec2<f64>,
+        position: vec2<f64>,
         button: MouseButton,
     },
     MouseUp {
-        position: Vec2<f64>,
+        position: vec2<f64>,
         button: MouseButton,
     },
     MouseMove {
-        position: Vec2<f64>,
-        delta: Vec2<f64>,
+        position: vec2<f64>,
+        delta: vec2<f64>,
     },
     Wheel {
         delta: f64,
@@ -55,7 +55,7 @@ pub enum Event {
 }
 
 impl Event {
-    pub fn translate(&self, delta: Vec2<f64>) -> Self {
+    pub fn translate(&self, delta: vec2<f64>) -> Self {
         let mut result = self.clone();
         use Event::*;
         match result {

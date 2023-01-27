@@ -16,7 +16,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
             let field_names = &field_names;
             let field_names_copy = field_names.clone();
             let config_ident = syn::Ident::new(
-                &format!("{}Config", input_type),
+                &format!("{input_type}Config"),
                 proc_macro2::Span::call_site(),
             );
 

@@ -24,7 +24,7 @@ impl FpsCounter {
     }
 
     pub fn update(&mut self) {
-        let delta_time = self.timer.tick();
+        let delta_time = self.timer.tick().as_secs_f64();
         self.next_fps_update -= delta_time;
         self.frames += 1;
         if self.next_fps_update < 0.0 {
@@ -39,8 +39,8 @@ impl FpsCounter {
         use ui::*;
         ui::stack![
             ui::ColorBox::new(Rgba::BLACK).constraints_override(Constraints {
-                min_size: Vec2::ZERO,
-                flex: Vec2::ZERO
+                min_size: vec2::ZERO,
+                flex: vec2::ZERO
             }),
             ui::Text::new(&mut self.text, self.geng.default_font(), 16.0, Rgba::WHITE)
                 .uniform_padding(2.0),

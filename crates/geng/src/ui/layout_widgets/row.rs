@@ -14,32 +14,28 @@ pub fn row<'a>(widgets: Vec<Box<dyn Widget + 'a>>) -> Row<'a> {
 impl<'a> Widget for Row<'a> {
     fn calc_constraints(&mut self, children: &ConstraintsContext) -> Constraints {
         Constraints {
-            min_size: Vec2 {
-                x: self
-                    .children
+            min_size: vec2(
+                self.children
                     .iter()
                     .map(|child| children.get_constraints(child.deref()).min_size.x)
                     .sum(),
-                y: self
-                    .children
+                self.children
                     .iter()
                     .map(|child| children.get_constraints(child.deref()).min_size.y)
                     .max_by(|a, b| a.partial_cmp(b).unwrap())
                     .unwrap_or(0.0),
-            },
-            flex: Vec2 {
-                x: self
-                    .children
+            ),
+            flex: vec2(
+                self.children
                     .iter()
                     .map(|child| children.get_constraints(child.deref()).flex.x)
                     .sum(),
-                y: self
-                    .children
+                self.children
                     .iter()
                     .map(|child| children.get_constraints(child.deref()).flex.y)
                     .max_by(|a, b| a.partial_cmp(b).unwrap())
                     .unwrap_or(0.0),
-            },
+            ),
         }
     }
     fn layout_children(&mut self, cx: &mut LayoutContext) {
@@ -59,14 +55,14 @@ impl<'a> Widget for Row<'a> {
                     .sum::<f64>())
                 / total_flex
         };
-        let mut pos = cx.position.x_min;
+        let mut pos = cx.position.min.x;
         for child in &self.children {
             let child = child.deref();
             let width = cx.get_constraints(child).min_size.x
                 + cx.get_constraints(child).flex.x * size_per_flex;
             cx.set_position(
                 child,
-                AABB::point(vec2(pos, cx.position.y_min))
+                Aabb2::point(vec2(pos, cx.position.min.y))
                     .extend_positive(vec2(width, cx.position.height())),
             );
             pos += width;

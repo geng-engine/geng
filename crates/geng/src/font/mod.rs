@@ -7,8 +7,8 @@ pub use Ttf as Font;
 
 #[derive(ugli::Vertex, Debug)]
 pub struct Vertex {
-    pub a_pos: Vec2<f32>,
-    pub a_vt: Vec2<f32>,
+    pub a_pos: vec2<f32>,
+    pub a_vt: vec2<f32>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Copy, Clone)]

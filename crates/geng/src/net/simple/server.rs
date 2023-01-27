@@ -100,7 +100,7 @@ impl<T: Model> Server<T> {
             let mut unprocessed_time = 0.0;
             move || {
                 while running.load(std::sync::atomic::Ordering::Relaxed) {
-                    unprocessed_time += timer.tick() as f32;
+                    unprocessed_time += timer.tick().as_secs_f64() as f32;
                     unprocessed_time = unprocessed_time.min(1.0);
                     {
                         let mut state = state.lock().unwrap();

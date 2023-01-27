@@ -82,7 +82,7 @@ impl geng::State for State {
                 ugli::instanced(
                     &ugli::VertexBuffer::new_dynamic(
                         self.geng.ugli(),
-                        AABB::point(Vec2::ZERO)
+                        Aabb2::point(vec2::ZERO)
                             .extend_positive(vec2(1.0, 1.0))
                             .corners()
                             .into_iter()
@@ -104,14 +104,14 @@ impl geng::State for State {
             );
         });
 
-        let start = bb.x_min;
-        let end = bb.x_max;
+        let start = bb.min.x;
+        let end = bb.max.x;
         let line_width = 0.02;
         self.geng.draw_2d(
             framebuffer,
             &camera,
             &draw_2d::Segment::new(
-                Segment::new(vec2(start, 0.0), vec2(end, 0.0)),
+                Segment(vec2(start, 0.0), vec2(end, 0.0)),
                 line_width,
                 Rgba::new(1.0, 0.0, 0.0, 0.5),
             ),
@@ -120,7 +120,7 @@ impl geng::State for State {
             framebuffer,
             &camera,
             &draw_2d::Segment::new(
-                Segment::new(
+                Segment(
                     vec2(start, self.font.ascender()),
                     vec2(end, self.font.ascender()),
                 ),
@@ -132,7 +132,7 @@ impl geng::State for State {
             framebuffer,
             &camera,
             &draw_2d::Segment::new(
-                Segment::new(
+                Segment(
                     vec2(start, self.font.descender()),
                     vec2(end, self.font.descender()),
                 ),

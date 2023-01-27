@@ -62,15 +62,15 @@ impl Sense {
 
 #[derive(Debug, Copy, Clone)]
 pub struct Constraints {
-    pub min_size: Vec2<f64>,
-    pub flex: Vec2<f64>,
+    pub min_size: vec2<f64>,
+    pub flex: vec2<f64>,
 }
 
 impl Constraints {
     pub fn zero() -> Self {
         Self {
-            min_size: Vec2::ZERO,
-            flex: Vec2::ZERO,
+            min_size: vec2::ZERO,
+            flex: vec2::ZERO,
         }
     }
 }
@@ -87,7 +87,7 @@ impl Default for Constraints {
 pub struct DrawContext<'a, 'b> {
     pub geng: &'a Geng,
     pub theme: &'a Theme,
-    pub position: AABB<f64>,
+    pub position: Aabb2<f64>,
     pub framebuffer: &'a mut ugli::Framebuffer<'b>,
 }
 

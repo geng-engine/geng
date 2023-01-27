@@ -17,7 +17,7 @@ pub struct Rgba<T: ColorComponent> {
 
 impl<T: ColorComponent> From<Rgba<T>> for String {
     fn from(color: Rgba<T>) -> String {
-        format!("{}", color)
+        format!("{color}")
     }
 }
 
@@ -36,7 +36,7 @@ impl<T: ColorComponent> TryFrom<&str> for Rgba<T> {
                 x * 16 + x
             }
             return Ok(match hex.len() {
-                3 => Rgba::<u8>::from_rgb(
+                3 => Rgba::<u8>::opaque(
                     d(u8::from_str_radix(&hex[0..1], 16)?),
                     d(u8::from_str_radix(&hex[1..2], 16)?),
                     d(u8::from_str_radix(&hex[2..3], 16)?),
@@ -47,7 +47,7 @@ impl<T: ColorComponent> TryFrom<&str> for Rgba<T> {
                     d(u8::from_str_radix(&hex[2..3], 16)?),
                     d(u8::from_str_radix(&hex[3..4], 16)?),
                 ),
-                6 => Rgba::<u8>::from_rgb(
+                6 => Rgba::<u8>::opaque(
                     u8::from_str_radix(&hex[0..2], 16)?,
                     u8::from_str_radix(&hex[2..4], 16)?,
                     u8::from_str_radix(&hex[4..6], 16)?,
@@ -88,7 +88,7 @@ impl<T: ColorComponent> Display for Rgba<T> {
     }
 }
 
-impl<T: ColorComponent + ApproxEq> ApproxEq for Rgba<T> {
+impl<T: ColorComponent + Approx> Approx for Rgba<T> {
     fn approx_distance_to(&self, other: &Self) -> f32 {
         (self.r.approx_distance_to(&other.r)
             + self.g.approx_distance_to(&other.g)
@@ -104,7 +104,7 @@ fn test_display() {
         Rgba::<f32>::new(0.1, 0.2, 0.3, 0.4).to_string(),
         "#19334c66"
     );
-    assert_eq!(Rgba::<f32>::from_rgb(0.1, 0.2, 0.3).to_string(), "#19334c");
+    assert_eq!(Rgba::<f32>::opaque(0.1, 0.2, 0.3).to_string(), "#19334c");
 }
 
 impl<T: ColorComponent + PartialEq> PartialEq for Rgba<T> {
@@ -115,8 +115,8 @@ impl<T: ColorComponent + PartialEq> PartialEq for Rgba<T> {
 impl<T: ColorComponent + Eq> Eq for Rgba<T> {}
 
 impl<T: ColorComponent> Rgba<T> {
-    /// Construct `Rgba` from red, green, and blue components.
-    pub fn from_rgb(r: T, g: T, b: T) -> Self {
+    /// Construct `Rgba` from red, green, and blue components, fully opaque (max alpha).
+    pub fn opaque(r: T, g: T, b: T) -> Self {
         Self { r, g, b, a: T::MAX }
     }
 
@@ -186,18 +186,19 @@ impl<T: ColorComponent> Rgba<T> {
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
-    /// assert_eq!(Rgba::from_rgb(0, 255, 0).convert(), Rgba::from_rgb(0.0, 1.0, 0.0));
+    /// assert_eq!(Rgba::opaque(0, 255, 0).convert(), Rgba::opaque(0.0, 1.0, 0.0));
     /// ```
     pub fn convert<U: ColorComponent>(self) -> Rgba<U> {
         self.map(|component| component.convert())
     }
 
     /// Linearly interpolate between `start` and `end` values.
+    ///
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
-    /// let start = Rgba::from_rgb(0.0, 0.0, 0.0);
-    /// let end = Rgba::from_rgb(1.0, 1.0, 1.0);
+    /// let start = Rgba::opaque(0.0, 0.0, 0.0);
+    /// let end = Rgba::opaque(1.0, 1.0, 1.0);
     /// let interpolated = Rgba::lerp(start, end, 0.3);
     /// assert!(interpolated.r - 0.3 < 1e-5);
     /// assert!(interpolated.g - 0.3 < 1e-5);
@@ -212,8 +213,8 @@ impl<T: ColorComponent> Rgba<T> {
 #[test]
 fn test_convert() {
     assert_eq!(
-        Rgba::from_rgb(1.0, 0.0, 0.5).convert::<u8>(),
-        Rgba::from_rgb(0xff, 0, 0x7f)
+        Rgba::opaque(1.0, 0.0, 0.5).convert::<u8>(),
+        Rgba::opaque(0xff, 0, 0x7f)
     );
 }
 
@@ -232,7 +233,7 @@ impl<T: ColorComponent> DerefMut for Rgba<T> {
 
 #[test]
 fn test_deref() {
-    let color = Rgba::from_rgb(1, 2, 3);
+    let color = Rgba::opaque(1, 2, 3);
     assert_eq!(color[0], 1);
     assert_eq!(color[1], 2);
     assert_eq!(color[2], 3);
@@ -241,7 +242,7 @@ fn test_deref() {
 
 #[test]
 fn test_deref_mut() {
-    let mut color = Rgba::<f32>::from_rgb(0.0, 0.5, 1.0);
+    let mut color = Rgba::<f32>::opaque(0.0, 0.5, 1.0);
     color[0] = 1.0;
     color[1] = 0.3;
     color[2] = 0.7;

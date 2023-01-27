@@ -41,7 +41,7 @@ impl TrafficWatcher {
         }
     }
     pub fn update(&mut self, traffic: &Traffic) {
-        if self.timer.elapsed() > 1.0 {
+        if self.timer.elapsed().as_secs_f64() > 1.0 {
             self.timer = Timer::new();
             self.last_delta = Traffic {
                 inbound: traffic.inbound - self.start_value.inbound,

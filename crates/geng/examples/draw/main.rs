@@ -7,18 +7,18 @@ struct Assets {
 
 struct Grid<'a> {
     table: Vec<Vec<Option<&'a dyn geng::Draw2d>>>,
-    transform: Mat3<f32>,
+    transform: mat3<f32>,
 }
 
 impl<'a> Grid<'a> {
-    pub fn new(size: Vec2<usize>, objects: impl IntoIterator<Item = &'a dyn geng::Draw2d>) -> Self {
+    pub fn new(size: vec2<usize>, objects: impl IntoIterator<Item = &'a dyn geng::Draw2d>) -> Self {
         let mut table = vec![vec![None; size.y]; size.x];
         for (storage, object) in table.iter_mut().flat_map(|row| row.iter_mut()).zip(objects) {
             *storage = Some(object);
         }
         Self {
             table,
-            transform: Mat3::scale(size.map(|x| x as f32)),
+            transform: mat3::scale(size.map(|x| x as f32)),
         }
     }
 }
@@ -29,7 +29,7 @@ impl<'a> Transform2d<f32> for Grid<'a> {
             transform: self.transform,
         }
     }
-    fn apply_transform(&mut self, transform: Mat3<f32>) {
+    fn apply_transform(&mut self, transform: mat3<f32>) {
         self.transform = transform * self.transform;
     }
 }
@@ -40,7 +40,7 @@ impl<'a> geng::Draw2d for Grid<'a> {
         geng: &Geng,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn geng::AbstractCamera2d,
-        transform: Mat3<f32>,
+        transform: mat3<f32>,
     ) {
         for (x, column) in self.table.iter().enumerate() {
             for (y, object) in column.iter().enumerate() {
@@ -50,18 +50,18 @@ impl<'a> geng::Draw2d for Grid<'a> {
                         camera,
                         &object
                             .transformed()
-                            .fit_into(AABB::point(Vec2::ZERO).extend_uniform(0.9))
+                            .fit_into(Aabb2::point(vec2::ZERO).extend_uniform(0.9))
                             .transform(
                                 self.transform
-                                    * Mat3::translate(vec2(-1.0, -1.0))
-                                    * Mat3::scale_uniform(2.0)
-                                    * Mat3::scale(vec2(
+                                    * mat3::translate(vec2(-1.0, -1.0))
+                                    * mat3::scale_uniform(2.0)
+                                    * mat3::scale(vec2(
                                         1.0 / self.table.len() as f32,
                                         1.0 / self.table[0].len() as f32,
                                     ))
-                                    * Mat3::translate(vec2(x as f32, y as f32))
-                                    * Mat3::scale_uniform(0.5)
-                                    * Mat3::translate(vec2(1.0, 1.0)),
+                                    * mat3::translate(vec2(x as f32, y as f32))
+                                    * mat3::scale_uniform(0.5)
+                                    * mat3::translate(vec2(1.0, 1.0)),
                             ),
                         transform,
                     );
@@ -82,7 +82,7 @@ impl State {
         let mut result = Self {
             geng: geng.clone(),
             camera: geng::Camera2d {
-                center: Vec2::ZERO,
+                center: vec2::ZERO,
                 rotation: 0.0,
                 fov: 10.0,
             },
@@ -90,7 +90,7 @@ impl State {
         };
         result.add(
             draw_2d::Quad::unit(Rgba::WHITE)
-                .transform(Mat3::rotate(0.5) * Mat3::scale_uniform(0.5)),
+                .transform(mat3::rotate(0.5) * mat3::scale_uniform(0.5)),
         );
         result.add(draw_2d::TexturedQuad::unit(ugli::Texture::new_with(
             geng.ugli(),
@@ -138,7 +138,7 @@ impl State {
         result.add(draw_2d::Ellipse::unit(Rgba::RED));
         result.add(
             draw_2d::Ellipse::unit_with_cut(0.5, Rgba::RED)
-                .transform(Mat3::rotate(f32::PI / 4.0) * Mat3::scale(vec2(1.0, 0.5))),
+                .transform(mat3::rotate(f32::PI / 4.0) * mat3::scale(vec2(1.0, 0.5))),
         );
         result.add(draw_2d::Polygon::new_gradient(vec![
             draw_2d::ColoredVertex {
@@ -167,14 +167,14 @@ impl State {
         ));
         result.add(
             draw_2d::Text::unit(geng.default_font().clone(), "Hello!", Rgba::WHITE)
-                .transform(Mat3::rotate(f32::PI / 6.0)),
+                .transform(mat3::rotate(f32::PI / 6.0)),
         );
         result.add(
             draw_2d::Text::unit(geng.default_font().clone(), "", Rgba::WHITE)
-                .transform(Mat3::rotate(f32::PI / 6.0)),
+                .transform(mat3::rotate(f32::PI / 6.0)),
         );
         result.add(draw_2d::Segment::new(
-            Segment::new(vec2(-3.0, -5.0), vec2(3.0, 5.0)),
+            Segment(vec2(-3.0, -5.0), vec2(3.0, 5.0)),
             0.5,
             Rgba::GREEN,
         ));
@@ -285,22 +285,12 @@ impl geng::State for State {
 
 fn main() {
     logger::init().unwrap();
-    // Setup working directory
-    if let Some(dir) = std::env::var_os("CARGO_MANIFEST_DIR") {
-        std::env::set_current_dir(std::path::Path::new(&dir).join("examples/draw/static")).unwrap();
-    } else {
-        #[cfg(not(target_arch = "wasm32"))]
-        {
-            if let Some(path) = std::env::current_exe().unwrap().parent() {
-                std::env::set_current_dir(path).unwrap();
-            }
-        }
-    }
+    geng::setup_panic_handler();
     let geng = Geng::new("Let's draw!");
     let state = geng::LoadingScreen::new(
         &geng,
         geng::EmptyLoadingScreen,
-        geng::LoadAsset::load(&geng, &static_path()),
+        geng::LoadAsset::load(&geng, &run_dir().join("assets")),
         {
             let geng = geng.clone();
             move |assets| State::new(&geng, assets.unwrap())

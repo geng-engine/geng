@@ -3,16 +3,16 @@ use super::*;
 const EAR_OFFSET: f32 = 3.0;
 
 struct Listener {
-    pos: Vec3<f32>,
-    forward: Vec3<f32>, // should be normalized
-    up: Vec3<f32>,      // and orthogonal
-    left_ear: Vec3<f32>,
-    right_ear: Vec3<f32>,
+    pos: vec3<f32>,
+    forward: vec3<f32>, // should be normalized
+    up: vec3<f32>,      // and orthogonal
+    left_ear: vec3<f32>,
+    right_ear: vec3<f32>,
 }
 
 impl Listener {
     fn update_ears(&mut self) {
-        let v = Vec3::cross(self.forward, self.up).normalize_or_zero() * EAR_OFFSET;
+        let v = vec3::cross(self.forward, self.up).normalize_or_zero() * EAR_OFFSET;
         self.left_ear = self.pos - v;
         self.right_ear = self.pos + v;
     }
@@ -85,11 +85,11 @@ impl AudioContext {
             output_stream_handle: Arc::new(stream_handle),
             listener: Arc::new(Mutex::new({
                 let mut listener = Listener {
-                    pos: Vec3::ZERO,
+                    pos: vec3::ZERO,
                     forward: vec3(0.0, -1.0, 0.0),
                     up: vec3(0.0, 0.0, 1.0),
-                    left_ear: Vec3::ZERO,
-                    right_ear: Vec3::ZERO,
+                    left_ear: vec3::ZERO,
+                    right_ear: vec3::ZERO,
                 };
                 listener.update_ears();
                 listener
@@ -103,13 +103,13 @@ impl AudioContext {
             .store(volume as f32, std::sync::atomic::Ordering::SeqCst);
     }
 
-    pub fn set_listener_position(&self, pos: Vec3<f64>) {
+    pub fn set_listener_position(&self, pos: vec3<f64>) {
         let mut listener = self.listener.lock().unwrap();
         listener.pos = pos.map(|x| x as f32);
         listener.update_ears();
     }
 
-    pub fn set_listener_orientation(&self, forward: Vec3<f64>, up: Vec3<f64>) {
+    pub fn set_listener_orientation(&self, forward: vec3<f64>, up: vec3<f64>) {
         let mut listener = self.listener.lock().unwrap();
         listener.forward = forward.map(|x| x as f32);
         listener.up = up.map(|x| x as f32);
@@ -170,7 +170,7 @@ impl Sound {
 }
 
 struct SpatialParams {
-    pos: Vec3<f32>,
+    pos: vec3<f32>,
     ref_dist: f32,
     max_dist: f32,
 }
@@ -178,7 +178,7 @@ struct SpatialParams {
 impl Default for SpatialParams {
     fn default() -> Self {
         Self {
-            pos: Vec3::ZERO,
+            pos: vec3::ZERO,
             ref_dist: 1.0, // https://webaudio.github.io/web-audio-api/#dom-pannernode-refdistance
             max_dist: 10000.0, // https://webaudio.github.io/web-audio-api/#dom-pannernode-maxdistance
         }
@@ -229,13 +229,13 @@ where
 
             // https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html#Spatialization-panning-algorithm
             let delta_pos = spatial_params.pos - listener.pos;
-            let listener_right = Vec3::cross(listener.forward, listener.up);
+            let listener_right = vec3::cross(listener.forward, listener.up);
 
-            let plane_delta_pos = delta_pos - listener.up * Vec3::dot(delta_pos, listener.up);
+            let plane_delta_pos = delta_pos - listener.up * vec3::dot(delta_pos, listener.up);
 
             // kind of hack to skip atan, approximately correct
             let gain_right =
-                (Vec3::dot(listener_right, plane_delta_pos.normalize_or_zero()) + 1.0) / 2.0;
+                (vec3::dot(listener_right, plane_delta_pos.normalize_or_zero()) + 1.0) / 2.0;
             let gain_right = gain_right.clamp(0.0, 1.0); // just in case
             let gain_left = (1.0 - gain_right.sqr()).sqrt();
 
@@ -364,7 +364,7 @@ impl SoundEffect {
     fn sink(&mut self) -> &mut rodio::Sink {
         self.sink.as_mut().unwrap()
     }
-    pub fn set_position(&mut self, position: Vec3<f64>) {
+    pub fn set_position(&mut self, position: vec3<f64>) {
         self.make_spatial(|spatial| spatial.pos = position.map(|x| x as f32));
     }
     pub fn set_ref_distance(&mut self, distance: f64) {

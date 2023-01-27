@@ -55,7 +55,7 @@ impl<'a> Widget for Column<'a> {
                     .sum::<f64>())
                 / total_flex
         };
-        let mut pos = cx.position.y_max;
+        let mut pos = cx.position.max.y;
         for child in &self.children {
             let child = child.deref();
             let height = cx.get_constraints(child).min_size.y
@@ -63,7 +63,7 @@ impl<'a> Widget for Column<'a> {
             pos -= height;
             cx.set_position(
                 child,
-                AABB::point(vec2(cx.position.x_min, pos))
+                Aabb2::point(vec2(cx.position.min.x, pos))
                     .extend_positive(vec2(cx.position.width(), height)),
             );
         }

@@ -12,7 +12,7 @@ struct CrabRave {
     geng: Geng,
     assets: Assets,
     t: f32,
-    limb_offsets: [Vec2<f32>; 5],
+    limb_offsets: [vec2<f32>; 5],
 }
 
 impl CrabRave {
@@ -21,7 +21,7 @@ impl CrabRave {
             geng,
             assets,
             t: 0.0,
-            limb_offsets: [Vec2::ZERO; 5],
+            limb_offsets: [vec2::ZERO; 5],
         }
     }
 }
@@ -45,27 +45,27 @@ impl geng::State for CrabRave {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
         let camera = geng::Camera2d {
-            center: Vec2::ZERO,
+            center: vec2::ZERO,
             rotation: 0.0,
             fov: 3.0,
         };
         let x = (self.t / 10.0).cos();
         let body =
-            Mat3::translate(vec2(x, 0.0) + vec2(1.0, 0.0).rotate(self.t) * vec2(1.0, 0.5) * 0.1)
-                * Mat3::rotate(self.t.sin() * 0.2);
+            mat3::translate(vec2(x, 0.0) + vec2(1.0, 0.0).rotate(self.t) * vec2(1.0, 0.5) * 0.1)
+                * mat3::rotate(self.t.sin() * 0.2);
 
         let limb =
-            |attach_pos: Vec2<f32>, end_pos: Vec2<f32>, target_end_pos: Vec2<f32>| -> Mat3<f32> {
+            |attach_pos: vec2<f32>, end_pos: vec2<f32>, target_end_pos: vec2<f32>| -> mat3<f32> {
                 let attach_pos_world = (body * attach_pos.extend(1.0)).xy();
                 let (attach_pos, attach_pos_world, end_pos, target_end_pos) =
                     (end_pos, target_end_pos, attach_pos, attach_pos_world);
-                let m = |v: Vec2<f32>| -> Mat3<f32> {
+                let m = |v: vec2<f32>| -> mat3<f32> {
                     let v = v.normalize_or_zero();
-                    Mat3::from_orts(v, v.rotate_90())
+                    mat3::from_orts(v, v.rotate_90())
                 };
                 let m1 = m(attach_pos - end_pos);
                 let m2 = m(attach_pos_world - target_end_pos);
-                Mat3::translate(target_end_pos) * m2 * m1.inverse() * Mat3::translate(-end_pos)
+                mat3::translate(target_end_pos) * m2 * m1.inverse() * mat3::translate(-end_pos)
             };
 
         let front_left_leg = limb(
@@ -77,7 +77,7 @@ impl geng::State for CrabRave {
             vec2(0.5, -0.5),
             vec2(0.5, -1.0),
             vec2(0.5, -1.0) + self.limb_offsets[1],
-        ) * Mat3::scale(vec2(-1.0, 1.0));
+        ) * mat3::scale(vec2(-1.0, 1.0));
         let back_left_leg = limb(
             vec2(-0.4, -0.6),
             vec2(-0.4, -0.9),
@@ -87,7 +87,7 @@ impl geng::State for CrabRave {
             vec2(0.4, -0.6),
             vec2(0.4, -0.9),
             vec2(0.4, -0.9) + self.limb_offsets[3],
-        ) * Mat3::scale(vec2(-1.0, 1.0));
+        ) * mat3::scale(vec2(-1.0, 1.0));
         let left_hand = limb(
             vec2(-0.5, -0.5),
             vec2(-0.75, 0.0),
@@ -97,7 +97,7 @@ impl geng::State for CrabRave {
             vec2(0.5, -0.5),
             vec2(0.75, 0.0),
             vec2(0.75, 0.0) + self.limb_offsets[4],
-        ) * Mat3::scale(vec2(-1.0, 1.0));
+        ) * mat3::scale(vec2(-1.0, 1.0));
 
         for (texture, matrix) in [
             (&self.assets.back_leg, back_left_leg),
@@ -126,7 +126,7 @@ fn main() {
         geng::LoadingScreen::new(
             &geng,
             geng::EmptyLoadingScreen,
-            geng::LoadAsset::load(&geng, &static_path()),
+            geng::LoadAsset::load(&geng, &run_dir().join("assets")),
             {
                 let geng = geng.clone();
                 move |assets| {

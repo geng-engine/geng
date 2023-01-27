@@ -6,23 +6,25 @@ mod projection;
 mod transform;
 
 /// 4x4 matrix
+#[allow(non_camel_case_types)]
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
-pub struct Mat4<T>(pub(crate) [[T; 4]; 4]);
+pub struct mat4<T>(pub(crate) [[T; 4]; 4]);
 
-impl<T> Mat4<T> {
-    pub fn map<U, F: Fn(T) -> U>(self, f: F) -> Mat4<U> {
-        Mat4(self.0.map(|row| row.map(&f)))
+impl<T> mat4<T> {
+    /// Map every element
+    pub fn map<U, F: Fn(T) -> U>(self, f: F) -> mat4<U> {
+        mat4(self.0.map(|row| row.map(&f)))
     }
 }
 
-impl<T: Copy> Mat4<T> {
+impl<T: Copy> mat4<T> {
     /// Construct a matrix.
     ///
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
-    /// let matrix = Mat4::new([
+    /// let matrix = mat4::new([
     ///     [1, 2, 3, 4],
     ///     [3, 4, 5, 6],
     ///     [5, 6, 7, 8],
@@ -33,7 +35,8 @@ impl<T: Copy> Mat4<T> {
         Self(values).transpose()
     }
 
-    pub fn row(&self, row_index: usize) -> Vec4<T> {
+    /// Get a row as a [vec4]
+    pub fn row(&self, row_index: usize) -> vec4<T> {
         vec4(
             self[(row_index, 0)],
             self[(row_index, 1)],
@@ -42,7 +45,8 @@ impl<T: Copy> Mat4<T> {
         )
     }
 
-    pub fn col(&self, col_index: usize) -> Vec4<T> {
+    /// Get a column as a [vec4]
+    pub fn col(&self, col_index: usize) -> vec4<T> {
         vec4(
             self[(0, col_index)],
             self[(1, col_index)],
@@ -52,35 +56,37 @@ impl<T: Copy> Mat4<T> {
     }
 }
 
-impl<T> Index<(usize, usize)> for Mat4<T> {
+impl<T> Index<(usize, usize)> for mat4<T> {
     type Output = T;
     fn index(&self, (row, col): (usize, usize)) -> &T {
         &self.0[col][row]
     }
 }
 
-impl<T> IndexMut<(usize, usize)> for Mat4<T> {
+impl<T> IndexMut<(usize, usize)> for mat4<T> {
     fn index_mut(&mut self, (row, col): (usize, usize)) -> &mut T {
         &mut self.0[col][row]
     }
 }
 
-impl<T> Mat4<T> {
+impl<T> mat4<T> {
+    /// Get self as a flat array
     pub fn as_flat_array(&self) -> &[T; 16] {
         unsafe { mem::transmute(self) }
     }
+    /// Get self as a mutable flat array
     pub fn as_flat_array_mut(&mut self) -> &mut [T; 16] {
         unsafe { mem::transmute(self) }
     }
 }
 
-impl<T: Num + Copy> Mat4<T> {
+impl<T: Num + Copy> mat4<T> {
     /// Construct zero matrix.
     ///
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
-    /// let matrix = Mat4::<i32>::zero();
+    /// let matrix = mat4::<i32>::zero();
     /// for i in 0..4 {
     ///     for j in 0..4 {
     ///         assert_eq!(matrix[(i, j)], 0);
@@ -88,7 +94,7 @@ impl<T: Num + Copy> Mat4<T> {
     /// }
     /// ```
     pub fn zero() -> Self {
-        Mat4([[T::ZERO; 4]; 4])
+        mat4([[T::ZERO; 4]; 4])
     }
 
     /// Construct identity matrix.
@@ -96,7 +102,7 @@ impl<T: Num + Copy> Mat4<T> {
     /// # Examples
     /// ```
     /// use batbox::prelude::*;
-    /// let matrix = Mat4::<i32>::identity();
+    /// let matrix = mat4::<i32>::identity();
     /// for i in 0..4 {
     ///     for j in 0..4 {
     ///         assert_eq!(matrix[(i, j)], if i == j { 1 } else { 0 });
@@ -112,7 +118,7 @@ impl<T: Num + Copy> Mat4<T> {
     }
 }
 
-impl<T: Float> ApproxEq for Mat4<T> {
+impl<T: Float> Approx for mat4<T> {
     fn approx_distance_to(&self, other: &Self) -> f32 {
         let mut dist = 0.0;
         for i in 0..4 {

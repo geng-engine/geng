@@ -25,7 +25,7 @@ pub use texture::*;
 pub use uniform::*;
 pub use vertex::*;
 
-pub use raw;
+pub use ugli_raw as raw;
 
 #[derive(Debug, Copy, Clone, PartialOrd, PartialEq)]
 pub struct DepthComponent(raw::Float);

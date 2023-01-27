@@ -32,7 +32,7 @@ impl<T: RenderbufferPixel> Drop for Renderbuffer<T> {
 }
 
 impl<T: RenderbufferPixel> Renderbuffer<T> {
-    pub fn new(ugli: &Ugli, size: Vec2<usize>) -> Self {
+    pub fn new(ugli: &Ugli, size: vec2<usize>) -> Self {
         let gl = &ugli.inner.raw;
         let handle = gl.create_renderbuffer().unwrap();
         gl.bind_renderbuffer(raw::RENDERBUFFER, &handle);

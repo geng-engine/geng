@@ -7,38 +7,38 @@ struct Assets {
 
 #[derive(ugli::Vertex)]
 struct Vertex {
-    a_uv: Vec2<f32>,
-    a_mr_uv: Vec2<f32>,
-    a_pos: Vec3<f32>,
-    a_normal: Vec3<f32>,
+    a_uv: vec2<f32>,
+    a_mr_uv: vec2<f32>,
+    a_pos: vec3<f32>,
+    a_normal: vec3<f32>,
     a_color: Rgba<f32>,
 }
 
 pub struct Camera {
     pub fov: f32,
-    pub pos: Vec3<f32>,
+    pub pos: vec3<f32>,
     pub distance: f32,
     pub rot_h: f32,
     pub rot_v: f32,
 }
 
 impl Camera {
-    pub fn eye_pos(&self) -> Vec3<f32> {
+    pub fn eye_pos(&self) -> vec3<f32> {
         let v = vec2(self.distance, 0.0).rotate(self.rot_v);
         self.pos + vec3(0.0, -v.y, v.x)
     }
 }
 
 impl geng::AbstractCamera3d for Camera {
-    fn view_matrix(&self) -> Mat4<f32> {
-        Mat4::translate(vec3(0.0, 0.0, -self.distance))
-            * Mat4::rotate_x(-self.rot_v)
-            * Mat4::rotate_z(-self.rot_h)
-            * Mat4::translate(-self.pos)
+    fn view_matrix(&self) -> mat4<f32> {
+        mat4::translate(vec3(0.0, 0.0, -self.distance))
+            * mat4::rotate_x(-self.rot_v)
+            * mat4::rotate_z(-self.rot_h)
+            * mat4::translate(-self.pos)
     }
 
-    fn projection_matrix(&self, framebuffer_size: Vec2<f32>) -> Mat4<f32> {
-        Mat4::perspective(
+    fn projection_matrix(&self, framebuffer_size: vec2<f32>) -> mat4<f32> {
+        mat4::perspective(
             self.fov,
             framebuffer_size.x / framebuffer_size.y,
             0.1,
@@ -79,24 +79,25 @@ struct Example {
     time: f32,
     meshes: Vec<Mesh>,
     geng: Geng,
-    assets: Assets,
+    assets: Rc<Assets>,
     camera: Camera,
+    transition: Rc<RefCell<Option<geng::Transition>>>,
 }
 
 impl Example {
-    fn new(geng: Geng, assets: Assets) -> Self {
-        let (document, buffers, _images) = gltf::import_slice(include_bytes!("crab.glb")).unwrap();
+    fn new(geng: Geng, assets: Rc<Assets>, gltf: Vec<u8>) -> Self {
+        let (document, buffers, _images) = gltf::import_slice(&gltf).unwrap();
         let mut meshes = Vec::new();
         for mesh in document.meshes() {
             info!("{:?}", mesh.name());
             for primitive in mesh.primitives() {
                 let reader = primitive.reader(|buffer| buffers.get(buffer.index()).map(|x| &**x));
-                let positions: Vec<Vec3<f32>> = reader
+                let positions: Vec<vec3<f32>> = reader
                     .read_positions()
                     .expect("No positions for primitive mesh WAT")
                     .map(|[x, y, z]| vec3(x, y, z))
                     .collect();
-                let normals: Vec<Vec3<f32>> = reader
+                let normals: Vec<vec3<f32>> = reader
                     .read_normals()
                     .expect("Missing normals, this is not supported yet")
                     .map(|[x, y, z]| vec3(x, y, z))
@@ -117,8 +118,8 @@ impl Example {
                     geng.ugli(),
                     indices
                         .map(|index| Vertex {
-                            a_mr_uv: Vec2::ZERO, // TODO
-                            a_uv: Vec2::ZERO,    // TODO
+                            a_mr_uv: vec2::ZERO, // TODO
+                            a_uv: vec2::ZERO,    // TODO
                             a_pos: positions[index],
                             a_normal: normals[index], // TODO: optional
                             a_color: colors.as_ref().map_or(Rgba::WHITE, |colors| colors[index]),
@@ -156,6 +157,7 @@ impl Example {
                 rot_h: 0.0,
                 rot_v: f32::PI / 3.0,
             },
+            transition: default(),
         }
     }
 }
@@ -177,7 +179,7 @@ impl geng::State for Example {
                 (
                     mesh.material.uniforms(),
                     ugli::uniforms! {
-                        u_model_matrix: Mat4::rotate_z(self.time), // TODO
+                        u_model_matrix: mat4::rotate_z(self.time), // TODO
                         u_eye_pos: self.camera.eye_pos(),
                         u_light_dir: vec3(1.0, -2.0, 5.0),
                         u_light_color: Rgba::WHITE,
@@ -203,26 +205,79 @@ impl geng::State for Example {
                         (self.camera.rot_v + delta.y as f32 * sense).clamp(0.0, f32::PI);
                 }
             }
+
+            geng::Event::KeyDown { key: geng::Key::S }
+                if self.geng.window().is_key_pressed(geng::Key::LCtrl) =>
+            {
+                file::save("test.txt", "Hello, world!".as_bytes()).unwrap();
+            }
+            geng::Event::KeyDown { key: geng::Key::O }
+                if self.geng.window().is_key_pressed(geng::Key::LCtrl) =>
+            {
+                let geng = self.geng.clone();
+                let assets = self.assets.clone();
+                let transition = self.transition.clone();
+                file::select(move |file| {
+                    *transition.borrow_mut() = Some(geng::Transition::Switch(Box::new(load(
+                        geng,
+                        assets,
+                        async move {
+                            let mut reader = file.reader().unwrap();
+                            let mut buf = Vec::new();
+                            reader.read_to_end(&mut buf).await.unwrap();
+                            buf
+                        },
+                    ))))
+                });
+            }
             _ => {}
         }
     }
+    fn transition(&mut self) -> Option<geng::Transition> {
+        self.transition.borrow_mut().take()
+    }
+}
+
+fn load(
+    geng: Geng,
+    assets: Rc<Assets>,
+    gltf: impl Future<Output = Vec<u8>> + 'static,
+) -> impl geng::State {
+    geng::LoadingScreen::new(&geng.clone(), geng::EmptyLoadingScreen, gltf, move |gltf| {
+        Example::new(geng, assets, gltf)
+    })
+}
+
+#[derive(clap::Parser)]
+struct Opt {
+    path: Option<std::path::PathBuf>,
 }
 
 fn main() {
-    logger::init();
+    logger::init().unwrap();
     geng::setup_panic_handler();
+    let opt: Opt = program_args::parse();
     let geng = Geng::new("Example");
+    let path = opt
+        .path
+        .unwrap_or(run_dir().join("assets").join("crab.glb"));
     geng::run(
         &geng,
         geng::LoadingScreen::new(
             &geng,
             geng::EmptyLoadingScreen,
-            geng::LoadAsset::load(&geng, &static_path()),
+            geng::LoadAsset::load(&geng, &run_dir().join("assets")).map(|assets| {
+                let assets: Rc<Assets> = Rc::new(assets.unwrap());
+                assets
+            }),
             {
                 let geng = geng.clone();
                 move |assets| {
-                    let assets: Assets = assets.unwrap();
-                    Example::new(geng, assets)
+                    load(
+                        geng,
+                        assets,
+                        file::load_bytes(path).map(|result| result.unwrap()),
+                    )
                 }
             },
         ),

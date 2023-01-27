@@ -1,7 +1,7 @@
 use super::*;
 
 pub struct CustomWidget<'a> {
-    pub position: &'a mut AABB<f32>,          // Hidden
+    pub position: &'a mut Aabb2<f32>,         // Hidden
     pub animation_time: &'a mut f32,          // state
     pub sense: &'a mut geng::ui::Sense,       // Helper hidden state for interaction
     pub change: RefCell<&'a mut Option<f32>>, // Result of interaction is optionally a change that was made
@@ -12,7 +12,7 @@ pub struct CustomWidget<'a> {
 impl<'a> CustomWidget<'a> {
     pub fn new(cx: &'a geng::ui::Controller, assets: &'a Assets, ratio: f32) -> Self {
         Self {
-            position: cx.get_state_with(|| AABB::point(Vec2::ZERO)), // Specify default value for hidden state
+            position: cx.get_state_with(|| Aabb2::point(vec2::ZERO)), // Specify default value for hidden state
             animation_time: cx.get_state(),
             sense: cx.get_state(), // Or just use Default trait
             change: RefCell::new(cx.get_state()),
@@ -49,7 +49,7 @@ impl geng::ui::Widget for CustomWidget<'_> {
 
         #[derive(ugli::Vertex)]
         struct Vertex {
-            a_pos: Vec2<f32>,
+            a_pos: vec2<f32>,
         }
 
         ugli::draw(
@@ -97,7 +97,7 @@ impl geng::ui::Widget for CustomWidget<'_> {
             if let geng::Event::MouseDown { position, .. }
             | geng::Event::MouseMove { position, .. } = &event
             {
-                let new_value = ((position.y as f32 - self.position.y_min)
+                let new_value = ((position.y as f32 - self.position.min.y)
                     / self.position.height().max(0.1))
                 .clamp(0.0, 1.0);
                 **self.change.borrow_mut() = Some(new_value);

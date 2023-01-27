@@ -203,7 +203,7 @@ pub struct DrawParameters {
     pub blend_mode: Option<BlendMode>,
     pub stencil_mode: Option<StencilMode>,
     pub cull_face: Option<CullFace>,
-    pub viewport: Option<AABB<usize>>,
+    pub viewport: Option<Aabb2<usize>>,
     pub write_color: bool,
     pub write_depth: bool,
     pub reset_uniforms: bool,
@@ -225,7 +225,7 @@ impl Default for DrawParameters {
 }
 
 impl DrawParameters {
-    pub(crate) fn apply(&self, gl: &raw::Context, framebuffer_size: Vec2<usize>) {
+    pub(crate) fn apply(&self, gl: &raw::Context, framebuffer_size: vec2<usize>) {
         match self.depth_func {
             Some(depth_test) => gl.depth_func(depth_test as _),
             None => gl.depth_func(raw::ALWAYS),
@@ -241,8 +241,8 @@ impl DrawParameters {
         }
         if let Some(rect) = self.viewport {
             gl.viewport(
-                rect.x_min as _,
-                rect.y_min as _,
+                rect.min.x as _,
+                rect.min.y as _,
                 rect.width() as _,
                 rect.height() as _,
             );

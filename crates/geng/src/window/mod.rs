@@ -31,7 +31,7 @@ pub struct Window {
     pressed_keys: Rc<RefCell<HashSet<Key>>>,
     pressed_buttons: Rc<RefCell<HashSet<MouseButton>>>,
     should_close: Cell<bool>,
-    mouse_pos: Rc<Cell<Vec2<f64>>>,
+    mouse_pos: Rc<Cell<vec2<f64>>>,
     ugli: Ugli,
     #[cfg(not(target_arch = "wasm32"))]
     is_fullscreen: Cell<bool>,
@@ -172,7 +172,7 @@ impl Window {
         event: &Event,
         pressed_keys: &RefCell<HashSet<Key>>,
         pressed_buttons: &RefCell<HashSet<MouseButton>>,
-        mouse_pos: &Cell<Vec2<f64>>,
+        mouse_pos: &Cell<vec2<f64>>,
     ) {
         match *event {
             Event::KeyDown { key } => {
@@ -194,7 +194,7 @@ impl Window {
         }
     }
 
-    pub fn real_size(&self) -> Vec2<usize> {
+    pub fn real_size(&self) -> vec2<usize> {
         #[cfg(target_arch = "wasm32")]
         return {
             let width = self.canvas.width() as usize;
@@ -208,7 +208,7 @@ impl Window {
             vec2(width as usize, height as usize)
         };
     }
-    pub fn size(&self) -> Vec2<usize> {
+    pub fn size(&self) -> vec2<usize> {
         self.real_size().map(|x| x.max(1))
     }
 
@@ -237,7 +237,7 @@ impl Window {
         self.pressed_buttons.borrow().clone()
     }
 
-    pub fn mouse_pos(&self) -> Vec2<f64> {
+    pub fn mouse_pos(&self) -> vec2<f64> {
         self.mouse_pos.get()
     }
 
@@ -270,7 +270,7 @@ impl Window {
 
     #[cfg(not(target_arch = "wasm32"))]
     pub fn set_icon(&self, path: &std::path::Path) -> anyhow::Result<()> {
-        let image = image::open(path).context(format!("Failed to load {:?}", path))?;
+        let image = image::open(path).context(format!("Failed to load {path:?}"))?;
         let image = match image {
             image::DynamicImage::ImageRgba8(image) => image,
             _ => image.to_rgba8(),

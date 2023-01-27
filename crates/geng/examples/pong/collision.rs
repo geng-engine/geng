@@ -3,7 +3,7 @@ use geng::prelude::*;
 use crate::{ball::Ball, player::Player};
 
 pub struct Collision {
-    pub normal: Vec2<f32>,
+    pub normal: vec2<f32>,
     pub penetration: f32,
 }
 
