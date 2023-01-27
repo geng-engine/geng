@@ -104,7 +104,7 @@ pub trait Transform2dExt<F: Float>: Transform2d<F> {
 
     /// Create a reference to this object with additional transformation applied
     ///
-    /// TODO: bad naming
+    // TODO: bad naming
     fn transformed(&self) -> Transformed2d<F, Self> {
         Transformed2d::new(self, mat3::identity())
     }
