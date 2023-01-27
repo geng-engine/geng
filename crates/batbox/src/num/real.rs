@@ -469,7 +469,7 @@ impl<T: Float> Real for RealImpl<T> {
     }
 }
 
-/// TODO: basically duplicates the trait wtf
+// TODO: basically duplicates the trait wtf
 impl<T: Float> RealImpl<T> {
     /// Archimedes’ constant (π)
     pub const PI: Self = <Self as Real>::PI;
