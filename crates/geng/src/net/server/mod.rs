@@ -106,7 +106,7 @@ impl<T: App> Server<T> {
             Ok(ws) => ws,
             Err(e) => {
                 error!("Failed to bind server to {:?}: {}", addr, e);
-                panic!("{:?}", e);
+                panic!("{e:?}");
             }
         };
         Self { ws }
@@ -124,7 +124,7 @@ impl<T: App> Server<T> {
             }
             Err(e) => {
                 error!("Server shutdown with error: {}", e);
-                panic!("{:?}", e);
+                panic!("{e:?}");
             }
         }
     }

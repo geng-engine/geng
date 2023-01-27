@@ -17,7 +17,7 @@ pub struct Rgba<T: ColorComponent> {
 
 impl<T: ColorComponent> From<Rgba<T>> for String {
     fn from(color: Rgba<T>) -> String {
-        format!("{}", color)
+        format!("{color}")
     }
 }
 

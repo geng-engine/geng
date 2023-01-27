@@ -95,13 +95,11 @@ impl GameState {
         // Check that values are correct
         debug_assert!(
             horizontal_mult.abs() == 1.0,
-            "generated wrong (not +-1) horizontal direction: {}",
-            horizontal_mult
+            "generated wrong (not +-1) horizontal direction: {horizontal_mult}"
         );
         debug_assert!(
             vertical_mult.abs() == 1.0,
-            "generated wrong (not +-1) vertical direction: {}",
-            vertical_mult
+            "generated wrong (not +-1) vertical direction: {vertical_mult}"
         );
 
         // Generate random direction

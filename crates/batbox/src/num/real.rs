@@ -648,7 +648,7 @@ pub fn r64(value: f64) -> R64 {
 fn test_reals() {
     let a = r64(3.0);
     let b = r64(2.0);
-    println!("a = {:?}, b = {:?}", a, b);
+    println!("a = {a:?}, b = {b:?}");
     println!("a + b = {:?}", a + b);
     println!("a - b = {:?}", a - b);
     println!("a * b = {:?}", a * b);

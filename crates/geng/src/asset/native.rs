@@ -35,7 +35,7 @@ impl LoadAsset for ugli::Texture {
         let image_future = geng.inner.asset_manager.spawn(move || {
             debug!("Loading {:?}", path);
             fn load(path: &std::path::Path) -> anyhow::Result<image::RgbaImage> {
-                let image = image::open(path).context(format!("Failed to load {:?}", path))?;
+                let image = image::open(path).context(format!("Failed to load {path:?}"))?;
                 Ok(match image {
                     image::DynamicImage::ImageRgba8(image) => image,
                     _ => image.to_rgba8(),

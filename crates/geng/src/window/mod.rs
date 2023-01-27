@@ -270,7 +270,7 @@ impl Window {
 
     #[cfg(not(target_arch = "wasm32"))]
     pub fn set_icon(&self, path: &std::path::Path) -> anyhow::Result<()> {
-        let image = image::open(path).context(format!("Failed to load {:?}", path))?;
+        let image = image::open(path).context(format!("Failed to load {path:?}"))?;
         let image = match image {
             image::DynamicImage::ImageRgba8(image) => image,
             _ => image.to_rgba8(),

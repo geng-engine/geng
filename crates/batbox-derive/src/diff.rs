@@ -22,7 +22,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                 .collect();
             let field_names = &field_names;
             let delta_type = syn::Ident::new(
-                &format!("{}Delta", input_type),
+                &format!("{input_type}Delta"),
                 proc_macro2::Span::call_site(),
             );
 

@@ -72,7 +72,7 @@ impl log::Log for Logger {
 
 /// Initialize with a custom config
 pub fn init_with(mut builder: env_logger::Builder) -> Result<(), log::SetLoggerError> {
-    let builder_info = format!("{:?}", builder);
+    let builder_info = format!("{builder:?}");
     let logger = Logger {
         inner: builder.build(),
     };

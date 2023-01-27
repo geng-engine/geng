@@ -39,10 +39,10 @@ where
 
         let addr = ([0, 0, 0, 0], SERVER_PORT).into();
         let server = hyper::server::Server::bind(&addr).serve(make_service);
-        let addr = format!("http://{}/", addr);
-        eprintln!("Server running on {}", addr);
+        let addr = format!("http://{addr}/");
+        eprintln!("Server running on {addr}");
         if open {
-            open::that(format!("http://localhost:{}", SERVER_PORT))
+            open::that(format!("http://localhost:{SERVER_PORT}"))
                 .expect("Failed to open browser");
         }
         server.await.expect("Server failed");
@@ -133,7 +133,7 @@ impl Opt {
             } else {
                 None
             })
-            .chain(self.jobs.map(|jobs| format!("--jobs={}", jobs)))
+            .chain(self.jobs.map(|jobs| format!("--jobs={jobs}")))
     }
     fn all_args(&self) -> impl Iterator<Item = String> {
         self.args_without_target()
