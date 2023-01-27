@@ -34,7 +34,7 @@ pub trait HasId {
 /// A collection of identifiable entities
 ///
 /// This behaves kind of like a HashSet, but only entities' ids are used
-/// Another difference is that is allows for getting mutable references
+/// Another difference is that it allows for getting mutable references
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct Collection<T: HasId> {
     by_id: HashMap<T::Id, T>,
