@@ -78,6 +78,14 @@ pub trait Transform2dExt<F: Float>: Transform2d<F> {
         self.translate(-aabb.bottom_left() - aabb.size() * alignment)
     }
 
+    /// Rotate object around (0, 0) by given angle (in radians)
+    fn rotate(self, rot: F) -> Self
+    where
+        Self: Sized,
+    {
+        self.transform(mat3::rotate(rot))
+    }
+
     /// Translate object by given vector
     fn translate(self, delta: vec2<F>) -> Self
     where
