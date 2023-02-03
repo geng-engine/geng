@@ -75,3 +75,26 @@ impl<C1: ColorComponent, C2: ColorComponent> From<Hsva<C1>> for Rgba<C2> {
         Rgba::new(r, g, b, a).convert()
     }
 }
+
+impl<C1: ColorComponent, C2: ColorComponent> From<Rgba<C1>> for Hsva<C2> {
+    fn from(rgb: Rgba<C1>) -> Self {
+        let Rgba { r, g, b, a } = rgb.convert::<f32>();
+        let max = r.max(g).max(b);
+        let min = r.min(g).min(b);
+        let h = if max == min {
+            0.0 // Undefined really
+        } else if max == r && g >= b {
+            (g - b) / (max - min) / 6.0
+        } else if max == r && g < b {
+            (g - b) / (max - min) / 6.0 + 1.0
+        } else if max == g {
+            (b - r) / (max - min) / 6.0 + 1.0 / 3.0
+        } else {
+            // if max = b {
+            (r - g) / (max - min) / 6.0 + 2.0 / 3.0
+        };
+        let s = if max == 0.0 { 0.0 } else { 1.0 - min / max };
+        let v = max;
+        Hsva::new(h, s, v, a).convert()
+    }
+}
