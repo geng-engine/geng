@@ -52,6 +52,9 @@ float aa(float edge, float x) {
 }
 
 void main() {
+    //gl_FragColor = texture2D(u_texture, v_uv);
+    //gl_FragColor.a = 1.0;
+    //return;
     float dist = (texture2D(u_texture, v_uv).x - 0.5) * 2.0;
     float inside = aa(0.0, dist);
     float inside_border = aa(-0.15, dist);
@@ -60,7 +63,7 @@ void main() {
     vec4 outside_color = vec4(border_color.xyz, 0.0);
     //vec4 outside_color = vec4(0.0, 1.0, 0.0, 1.0);
     gl_FragColor = color * inside + (1.0 - inside) * (border_color * inside_border + outside_color * (1.0 - inside_border));
-    gl_FragColor = color * inside + (1.0 - inside) * vec4(border_color.rgb, -dist);
+    //gl_FragColor = color * inside + (1.0 - inside) * vec4(border_color.rgb, -dist);
 }
 #endif
 ";
@@ -148,7 +151,7 @@ impl geng::State for State {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
         let text = "� О, аутлайн!";
-        if let Some(texture) = self.create_text_sdf(text, &self.font, 128.0) {
+        if let Some(texture) = self.create_text_sdf(text, &self.font, 256.0) {
             ugli::draw(
                 framebuffer,
                 &self.program,

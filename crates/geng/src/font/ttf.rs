@@ -177,10 +177,8 @@ impl Ttf {
 
             #[derive(ugli::Vertex, Copy, Clone)]
             struct Vertex {
-                a_pos: vec3<f32>,
-            }
-            fn v(a_pos: vec3<f32>) -> Vertex {
-                Vertex { a_pos }
+                a_pos: vec2<f32>,
+                a_dist_pos: vec2<f32>,
             }
             struct Builder {
                 distance_mesh: Vec<Vertex>,
@@ -202,6 +200,11 @@ impl Ttf {
                         self.distance_mesh.push(b);
                     }
                 }
+                fn add_triangle_fan2(&mut self, vs: impl IntoIterator<Item = Vertex>) {
+                    let mut vs = vs.into_iter();
+                    let first = vs.next().unwrap();
+                    self.add_triangle_fan(first, vs);
+                }
                 fn add_triangle_fan_loop(
                     &mut self,
                     mid: Vertex,
@@ -212,32 +215,49 @@ impl Ttf {
                     self.add_triangle_fan(mid, itertools::chain![v0, vs, v0]);
                 }
                 fn add_line(&mut self, a: vec2<f32>, b: vec2<f32>) {
-                    self.stencil_mesh.push(v(self.offset.extend(0.0)));
-                    self.stencil_mesh.push(v(a.extend(0.0)));
-                    self.stencil_mesh.push(v(b.extend(0.0)));
-                    let a_quad = Aabb2::point(a)
-                        .extend_uniform(self.options.max_distance * self.options.pixel_size);
-                    let b_quad = Aabb2::point(b)
-                        .extend_uniform(self.options.max_distance * self.options.pixel_size);
-                    self.add_triangle_fan_loop(
-                        v(a.extend(0.0)),
-                        a_quad.corners().map(|p| v(p.extend(1.0))),
+                    let radius = self.options.max_distance * self.options.pixel_size;
+                    self.stencil_mesh.push(Vertex {
+                        a_pos: self.offset,
+                        a_dist_pos: vec2::ZERO,
+                    });
+                    self.stencil_mesh.push(Vertex {
+                        a_pos: a,
+                        a_dist_pos: vec2::ZERO,
+                    });
+                    self.stencil_mesh.push(Vertex {
+                        a_pos: b,
+                        a_dist_pos: vec2::ZERO,
+                    });
+                    let unit_quad = Aabb2::point(vec2::ZERO).extend_uniform(1.0);
+                    let a_quad = Aabb2::point(a).extend_uniform(radius);
+                    let b_quad = Aabb2::point(b).extend_uniform(radius);
+                    self.add_triangle_fan2(
+                        itertools::izip![a_quad.corners(), unit_quad.corners()]
+                            .map(|(a_pos, a_dist_pos)| Vertex { a_pos, a_dist_pos }),
                     );
-                    self.add_triangle_fan_loop(
-                        v(b.extend(0.0)),
-                        b_quad.corners().map(|p| v(p.extend(1.0))),
+                    self.add_triangle_fan2(
+                        itertools::izip![b_quad.corners(), unit_quad.corners()]
+                            .map(|(a_pos, a_dist_pos)| Vertex { a_pos, a_dist_pos }),
                     );
-                    for (a_corner, b_corner) in itertools::izip![a_quad.corners(), b_quad.corners()]
-                    {
-                        self.add_triangle_fan(
-                            v(a.extend(0.0)),
-                            [
-                                v(a_corner.extend(1.0)),
-                                v(b_corner.extend(1.0)),
-                                v(b.extend(0.0)),
-                            ],
-                        );
-                    }
+                    let n = (b - a).rotate_90().normalize_or_zero() * radius;
+                    self.add_triangle_fan2([
+                        Vertex {
+                            a_pos: a + n,
+                            a_dist_pos: vec2(0.0, 1.0),
+                        },
+                        Vertex {
+                            a_pos: b + n,
+                            a_dist_pos: vec2(0.0, 1.0),
+                        },
+                        Vertex {
+                            a_pos: b - n,
+                            a_dist_pos: vec2(0.0, -1.0),
+                        },
+                        Vertex {
+                            a_pos: a - n,
+                            a_dist_pos: vec2(0.0, -1.0),
+                        },
+                    ]);
                 }
             }
             impl ttf_parser::OutlineBuilder for Builder {
@@ -291,6 +311,7 @@ impl Ttf {
                 face.outline_glyph(glyph.id, &mut builder);
             }
             let line_shader = shader_lib.compile(include_str!("ttf_line.glsl")).unwrap();
+            let white_shader = shader_lib.compile(include_str!("white.glsl")).unwrap();
             ugli::draw(
                 framebuffer,
                 &line_shader,
@@ -319,7 +340,6 @@ impl Ttf {
                         },
                     }),
                     write_color: false,
-                    write_depth: false,
                     ..default()
                 },
             );
@@ -332,13 +352,18 @@ impl Ttf {
                     u_framebuffer_size: framebuffer.size(),
                 },
                 ugli::DrawParameters {
-                    depth_func: Some(ugli::DepthFunc::Less),
+                    blend_mode: Some(ugli::BlendMode::combined(ugli::ChannelBlendMode {
+                        src_factor: ugli::BlendFactor::One,
+                        dst_factor: ugli::BlendFactor::One,
+                        equation: ugli::BlendEquation::Max,
+                    })),
+                    // depth_func: Some(ugli::DepthFunc::Less),
                     ..default()
                 },
             );
             ugli::draw(
                 framebuffer,
-                &line_shader,
+                &white_shader,
                 ugli::DrawMode::TriangleFan,
                 &ugli::VertexBuffer::new_static(
                     ugli,
@@ -346,7 +371,10 @@ impl Ttf {
                         .extend_positive(framebuffer.size())
                         .corners()
                         .into_iter()
-                        .map(|p| v(p.map(|x| x as f32).extend(-1.0)))
+                        .map(|p| Vertex {
+                            a_pos: p.map(|x| x as f32),
+                            a_dist_pos: vec2::ZERO,
+                        })
                         .collect(),
                 ),
                 ugli::uniforms! {
