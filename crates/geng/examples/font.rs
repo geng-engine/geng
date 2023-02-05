@@ -58,8 +58,8 @@ void main() {
     float dist = (texture2D(u_texture, v_uv).x - 0.5) * 2.0;
     float inside = aa(0.0, dist);
     float inside_border = aa(-0.15, dist);
-    vec4 color = vec4(1.0, 0.0, 0.0, 1.0);
-    vec4 border_color = vec4(1.0, 1.0, 1.0, 1.0);
+    vec4 color = vec4(1.0, 1.0, 1.0, 1.0);
+    vec4 border_color = vec4(0.5, 0.5, 0.5, 1.0);
     vec4 outside_color = vec4(border_color.xyz, 0.0);
     //vec4 outside_color = vec4(0.0, 1.0, 0.0, 1.0);
     gl_FragColor = color * inside + (1.0 - inside) * (border_color * inside_border + outside_color * (1.0 - inside_border));
@@ -98,7 +98,7 @@ impl State {
 impl geng::State for State {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
-        let text = "� О, аутлайн!";
+        let text = "Hello, Crabs";
         if let Some(texture) = self.font.create_text_sdf(text, 256.0) {
             ugli::draw(
                 framebuffer,
