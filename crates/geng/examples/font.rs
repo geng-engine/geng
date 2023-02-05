@@ -93,65 +93,13 @@ impl State {
             program: geng.shader_lib().compile(SHADER_SOURCE).unwrap(),
         }
     }
-
-    fn create_text_sdf(
-        &self,
-        text: &str,
-        font: &geng::Font,
-        pixel_size: f32,
-    ) -> Option<ugli::Texture> {
-        let aabb = font.measure_bounding_box(text)?;
-        let texture_size = (vec2(
-            aabb.width() + 2.0 * font.max_distance(),
-            1.0 + 2.0 * font.max_distance(),
-        ) * pixel_size)
-            .map(|x| x.ceil() as usize);
-        let mut texture = ugli::Texture::new_uninitialized(self.geng.ugli(), texture_size);
-        let framebuffer = &mut ugli::Framebuffer::new_color(
-            self.geng.ugli(),
-            ugli::ColorAttachment::Texture(&mut texture),
-        );
-        ugli::clear(framebuffer, Some(Rgba::TRANSPARENT_BLACK), None, None);
-        font.draw_with(text, |glyphs, atlas| {
-            ugli::draw(
-                framebuffer,
-                &self.sdf_program,
-                ugli::DrawMode::TriangleFan,
-                ugli::instanced(
-                    &ugli::VertexBuffer::new_dynamic(
-                        self.geng.ugli(),
-                        Aabb2::point(vec2::ZERO)
-                            .extend_positive(vec2(1.0, 1.0))
-                            .corners()
-                            .into_iter()
-                            .map(|v| draw_2d::Vertex { a_pos: v })
-                            .collect(),
-                    ),
-                    &ugli::VertexBuffer::new_dynamic(self.geng.ugli(), glyphs.to_vec()),
-                ),
-                ugli::uniforms! {
-                    u_texture: atlas,
-                    u_matrix: mat3::ortho(aabb.extend_uniform(font.max_distance())),
-                },
-                ugli::DrawParameters {
-                    blend_mode: Some(ugli::BlendMode::combined(ugli::ChannelBlendMode {
-                        src_factor: ugli::BlendFactor::One,
-                        dst_factor: ugli::BlendFactor::One,
-                        equation: ugli::BlendEquation::Max,
-                    })),
-                    ..default()
-                },
-            );
-        });
-        Some(texture)
-    }
 }
 
 impl geng::State for State {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
         let text = "� О, аутлайн!";
-        if let Some(texture) = self.create_text_sdf(text, &self.font, 256.0) {
+        if let Some(texture) = self.font.create_text_sdf(text, 256.0) {
             ugli::draw(
                 framebuffer,
                 &self.program,

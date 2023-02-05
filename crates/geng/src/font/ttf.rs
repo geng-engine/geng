@@ -38,7 +38,8 @@ struct Glyph {
 
 pub struct Ttf {
     ugli: Ugli,
-    program: ugli::Program, // TODO: don't need to compile for each font?
+    sdf_program: Rc<ugli::Program>,
+    program: Rc<ugli::Program>,
     glyphs: HashMap<char, Glyph>,
     atlas: ugli::Texture,
     max_distance: f32,
@@ -398,9 +399,27 @@ impl Ttf {
                 },
             );
         }
+        thread_local! { pub static SHADERS: RefCell<Option<[Rc<ugli::Program>; 2]>> = default(); };
+        let [program, sdf_program] = SHADERS.with(|shaders| {
+            fn map<T, R>(a: &[T; 2], f: impl Fn(&T) -> R) -> [R; 2] {
+                let [a, b] = a;
+                [f(a), f(b)]
+            }
+            map(
+                shaders.borrow_mut().get_or_insert_with(|| {
+                    [
+                        shader_lib.compile(include_str!("shader.glsl")).unwrap(),
+                        shader_lib.compile(include_str!("sdf.glsl")).unwrap(),
+                    ]
+                    .map(Rc::new)
+                }),
+                |shader| Rc::clone(shader),
+            )
+        });
         Ok(Self {
             ugli: ugli.clone(),
-            program: shader_lib.compile(include_str!("shader.glsl")).unwrap(),
+            program,
+            sdf_program,
             glyphs,
             atlas,
             max_distance: options.max_distance,
@@ -589,5 +608,52 @@ impl Ttf {
             }
             pos.y += size;
         }
+    }
+
+    pub fn create_text_sdf(&self, text: &str, pixel_size: f32) -> Option<ugli::Texture> {
+        let aabb = self.measure_bounding_box(text)?;
+        let texture_size = (vec2(
+            aabb.width() + 2.0 * self.max_distance(),
+            1.0 + 2.0 * self.max_distance(),
+        ) * pixel_size)
+            .map(|x| x.ceil() as usize);
+        let mut texture = ugli::Texture::new_uninitialized(&self.ugli, texture_size);
+        let framebuffer = &mut ugli::Framebuffer::new_color(
+            &self.ugli,
+            ugli::ColorAttachment::Texture(&mut texture),
+        );
+        ugli::clear(framebuffer, Some(Rgba::TRANSPARENT_BLACK), None, None);
+        self.draw_with(text, |glyphs, atlas| {
+            ugli::draw(
+                framebuffer,
+                &self.sdf_program,
+                ugli::DrawMode::TriangleFan,
+                ugli::instanced(
+                    &ugli::VertexBuffer::new_dynamic(
+                        &self.ugli,
+                        Aabb2::point(vec2::ZERO)
+                            .extend_positive(vec2(1.0, 1.0))
+                            .corners()
+                            .into_iter()
+                            .map(|v| draw_2d::Vertex { a_pos: v })
+                            .collect(),
+                    ),
+                    &ugli::VertexBuffer::new_dynamic(&self.ugli, glyphs.to_vec()),
+                ),
+                ugli::uniforms! {
+                    u_texture: atlas,
+                    u_matrix: mat3::ortho(aabb.extend_uniform(self.max_distance())),
+                },
+                ugli::DrawParameters {
+                    blend_mode: Some(ugli::BlendMode::combined(ugli::ChannelBlendMode {
+                        src_factor: ugli::BlendFactor::One,
+                        dst_factor: ugli::BlendFactor::One,
+                        equation: ugli::BlendEquation::Max,
+                    })),
+                    ..default()
+                },
+            );
+        });
+        Some(texture)
     }
 }
