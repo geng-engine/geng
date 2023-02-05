@@ -14,6 +14,15 @@ impl Default for DepthFunc {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
+pub enum BlendEquation {
+    Add,
+    Subtract,
+    ReverseSubtract,
+    Min,
+    Max,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum BlendFactor {
     Zero,
     One,
@@ -36,6 +45,7 @@ pub enum BlendFactor {
 pub struct ChannelBlendMode {
     pub src_factor: BlendFactor,
     pub dst_factor: BlendFactor,
+    pub equation: BlendEquation,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -55,6 +65,7 @@ impl BlendMode {
         Self::combined(ChannelBlendMode {
             src_factor: BlendFactor::SrcAlpha,
             dst_factor: BlendFactor::OneMinusSrcAlpha,
+            equation: BlendEquation::Add,
         })
     }
     pub(crate) fn apply(mode: Option<&Self>, gl: &raw::Context) {
@@ -85,6 +96,16 @@ impl BlendMode {
                 raw(mode.alpha.src_factor),
                 raw(mode.alpha.dst_factor),
             );
+            let raw = |equation: BlendEquation| -> raw::Enum {
+                match equation {
+                    BlendEquation::Add => raw::FUNC_ADD,
+                    BlendEquation::Subtract => raw::FUNC_SUBTRACT,
+                    BlendEquation::ReverseSubtract => raw::FUNC_REVERSE_SUBTRACT,
+                    BlendEquation::Min => raw::MIN,
+                    BlendEquation::Max => raw::MAX,
+                }
+            };
+            gl.blend_equation_separate(raw(mode.rgb.equation), raw(mode.alpha.equation));
         } else {
             gl.disable(raw::BLEND);
         }

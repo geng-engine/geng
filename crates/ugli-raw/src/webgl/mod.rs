@@ -16,6 +16,7 @@ pub struct Context {
     inner: web_sys::WebGlRenderingContext,
     angle_instanced_arrays: web_sys::AngleInstancedArrays,
     oes_standard_derivatives: web_sys::OesStandardDerivatives,
+    blend_minmax: web_sys::ExtBlendMinmax,
 }
 
 impl Context {
@@ -29,15 +30,16 @@ impl Context {
             .get_extension("OES_standard_derivatives")
             .unwrap()
             .expect("OES_standard_derivatives not supported?");
-        // Unchecked casts here because the type is different in different browsers
-        let angle_instanced_arrays =
-            angle_instanced_arrays.unchecked_into::<web_sys::AngleInstancedArrays>();
-        let oes_standard_derivatives =
-            oes_standard_derivatives.unchecked_into::<web_sys::OesStandardDerivatives>();
+        let blend_minmax = webgl_rendering_context
+            .get_extension("EXT_blend_minmax")
+            .unwrap()
+            .expect("EXT_blend_minmax not supported?");
         Self {
             inner: webgl_rendering_context,
-            angle_instanced_arrays,
-            oes_standard_derivatives,
+            // Unchecked casts here because the type is different in different browsers
+            angle_instanced_arrays: angle_instanced_arrays.unchecked_into(),
+            oes_standard_derivatives: oes_standard_derivatives.unchecked_into(),
+            blend_minmax: blend_minmax.unchecked_into(),
         }
     }
 }

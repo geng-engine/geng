@@ -364,6 +364,7 @@ impl Ttf {
                     blend_mode: Some(ugli::BlendMode::combined(ugli::ChannelBlendMode {
                         src_factor: ugli::BlendFactor::OneMinusDstColor,
                         dst_factor: ugli::BlendFactor::Zero,
+                        equation: ugli::BlendEquation::Add,
                     })),
                     ..default()
                 },

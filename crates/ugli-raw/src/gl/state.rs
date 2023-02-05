@@ -24,6 +24,12 @@ impl Context {
         }
     }
 
+    pub fn blend_equation_separate(&self, mode_rgb: Enum, mode_alpha: Enum) {
+        unsafe {
+            gl::BlendEquationSeparate(mode_rgb, mode_alpha);
+        }
+    }
+
     pub fn clear_color(
         &self,
         red: ClampedFloat,
