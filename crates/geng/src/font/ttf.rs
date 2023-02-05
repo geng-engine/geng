@@ -496,7 +496,7 @@ impl Ttf {
                 ),
                 ugli::DrawParameters {
                     depth_func: None,
-                    blend_mode: Some(ugli::BlendMode::default()),
+                    blend_mode: Some(ugli::BlendMode::straight_alpha()),
                     ..default()
                 },
             );

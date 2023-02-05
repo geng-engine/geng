@@ -61,7 +61,8 @@ impl BlendMode {
             alpha: mode,
         }
     }
-    pub fn default() -> Self {
+    /// https://en.wikipedia.org/wiki/Alpha_Blending
+    pub fn straight_alpha() -> Self {
         Self::combined(ChannelBlendMode {
             src_factor: BlendFactor::SrcAlpha,
             dst_factor: BlendFactor::OneMinusSrcAlpha,
