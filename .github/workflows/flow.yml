@@ -92,7 +92,7 @@ jobs:
           sed -i "s|\\[\"this-will-be-populated-in-ci\"\\]|$examples_list|g" website/content/examples.md
 
       - name: Deploy GitHub Pages
-        uses: shalzz/zola-deploy-action@v0.16.0
+        uses: shalzz/zola-deploy-action@v0.16.1-1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BUILD_DIR: website
