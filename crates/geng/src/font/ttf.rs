@@ -261,6 +261,19 @@ impl Ttf {
                     ]);
                 }
             }
+            fn quad_bezier(p0: vec2<f32>, p1: vec2<f32>, p2: vec2<f32>, t: f32) -> vec2<f32> {
+                (1.0 - t).sqr() * p0 + 2.0 * (1.0 - t) * t * p1 + t.sqr() * p2
+            }
+            fn cubic_bezier(
+                p0: vec2<f32>,
+                p1: vec2<f32>,
+                p2: vec2<f32>,
+                p3: vec2<f32>,
+                t: f32,
+            ) -> vec2<f32> {
+                (1.0 - t) * quad_bezier(p0, p1, p2, t) + t * quad_bezier(p1, p2, p3, t)
+            }
+            const N: usize = 10;
             impl ttf_parser::OutlineBuilder for Builder {
                 fn move_to(&mut self, x: f32, y: f32) {
                     self.pos = vec2(x, y) * self.scale + self.offset;
@@ -272,15 +285,29 @@ impl Ttf {
                     self.add_line(a, b);
                 }
                 fn quad_to(&mut self, x1: f32, y1: f32, x: f32, y: f32) {
-                    // TODO
-                    self.line_to(x1, y1);
-                    self.line_to(x, y)
+                    // TODO proper math stuff
+                    let p0 = self.pos;
+                    let p1 = vec2(x1, y1) * self.scale + self.offset;
+                    let p2 = vec2(x, y) * self.scale + self.offset;
+                    for i in 1..=N {
+                        let t = i as f32 / N as f32;
+                        let p = quad_bezier(p0, p1, p2, t);
+                        self.add_line(self.pos, p);
+                        self.pos = p;
+                    }
                 }
                 fn curve_to(&mut self, x1: f32, y1: f32, x2: f32, y2: f32, x: f32, y: f32) {
-                    // TODO
-                    self.line_to(x1, y1);
-                    self.line_to(x2, y2);
-                    self.line_to(x, y);
+                    // TODO proper math stuff
+                    let p0 = self.pos;
+                    let p1 = vec2(x1, y1) * self.scale + self.offset;
+                    let p2 = vec2(x2, y2) * self.scale + self.offset;
+                    let p3 = vec2(x, y) * self.scale + self.offset;
+                    for i in 1..=N {
+                        let t = i as f32 / N as f32;
+                        let p = cubic_bezier(p0, p1, p2, p3, t);
+                        self.add_line(self.pos, p);
+                        self.pos = p;
+                    }
                 }
                 fn close(&mut self) {
                     // TODO: hm?
