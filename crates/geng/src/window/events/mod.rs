@@ -141,6 +141,10 @@ pub enum Key {
 
     PageUp,
     PageDown,
+    End,
+    Home,
+    Insert,
+    Delete,
 
     F1,
     F2,

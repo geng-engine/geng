@@ -20,6 +20,10 @@ impl Context {
         );
     }
 
+    pub fn blend_equation_separate(&self, mode_rgb: Enum, mode_alpha: Enum) {
+        self.inner.blend_equation_separate(mode_rgb, mode_alpha);
+    }
+
     pub fn clear_color(
         &self,
         red: ClampedFloat,

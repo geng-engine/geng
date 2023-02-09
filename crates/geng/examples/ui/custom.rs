@@ -86,7 +86,7 @@ impl geng::ui::Widget for CustomWidget<'_> {
                 ),
             ),
             ugli::DrawParameters {
-                blend_mode: Some(ugli::BlendMode::default()),
+                blend_mode: Some(ugli::BlendMode::straight_alpha()),
                 ..default()
             },
         );

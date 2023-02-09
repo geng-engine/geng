@@ -138,6 +138,10 @@ fn from_glutin_key(key: glutin::event::VirtualKeyCode) -> Key {
 
         GKey::PageUp => Key::PageUp,
         GKey::PageDown => Key::PageDown,
+        GKey::Insert => Key::Insert,
+        GKey::Delete => Key::Delete,
+        GKey::Home => Key::Home,
+        GKey::End => Key::End,
 
         GKey::F1 => Key::F1,
         GKey::F2 => Key::F2,

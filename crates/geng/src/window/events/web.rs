@@ -68,6 +68,10 @@ impl Convert<String> for Key {
 
             "PageUp" => PageUp,
             "PageDown" => PageDown,
+            "Insert" => Insert,
+            "Delete" => Delete,
+            "Home" => Home,
+            "End" => End,
 
             "F1" => F1,
             "F2" => F2,

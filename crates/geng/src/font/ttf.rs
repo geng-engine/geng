@@ -38,7 +38,8 @@ struct Glyph {
 
 pub struct Ttf {
     ugli: Ugli,
-    program: ugli::Program, // TODO: don't need to compile for each font?
+    sdf_program: Rc<ugli::Program>,
+    program: Rc<ugli::Program>,
     glyphs: HashMap<char, Glyph>,
     atlas: ugli::Texture,
     max_distance: f32,
@@ -177,10 +178,8 @@ impl Ttf {
 
             #[derive(ugli::Vertex, Copy, Clone)]
             struct Vertex {
-                a_pos: vec3<f32>,
-            }
-            fn v(a_pos: vec3<f32>) -> Vertex {
-                Vertex { a_pos }
+                a_pos: vec2<f32>,
+                a_dist_pos: vec2<f32>,
             }
             struct Builder {
                 distance_mesh: Vec<Vertex>,
@@ -202,6 +201,11 @@ impl Ttf {
                         self.distance_mesh.push(b);
                     }
                 }
+                fn add_triangle_fan2(&mut self, vs: impl IntoIterator<Item = Vertex>) {
+                    let mut vs = vs.into_iter();
+                    let first = vs.next().unwrap();
+                    self.add_triangle_fan(first, vs);
+                }
                 fn add_triangle_fan_loop(
                     &mut self,
                     mid: Vertex,
@@ -212,34 +216,64 @@ impl Ttf {
                     self.add_triangle_fan(mid, itertools::chain![v0, vs, v0]);
                 }
                 fn add_line(&mut self, a: vec2<f32>, b: vec2<f32>) {
-                    self.stencil_mesh.push(v(self.offset.extend(0.0)));
-                    self.stencil_mesh.push(v(a.extend(0.0)));
-                    self.stencil_mesh.push(v(b.extend(0.0)));
-                    let a_quad = Aabb2::point(a)
-                        .extend_uniform(self.options.max_distance * self.options.pixel_size);
-                    let b_quad = Aabb2::point(b)
-                        .extend_uniform(self.options.max_distance * self.options.pixel_size);
-                    self.add_triangle_fan_loop(
-                        v(a.extend(0.0)),
-                        a_quad.corners().map(|p| v(p.extend(1.0))),
+                    let radius = self.options.max_distance * self.options.pixel_size;
+                    self.stencil_mesh.push(Vertex {
+                        a_pos: self.offset,
+                        a_dist_pos: vec2::ZERO,
+                    });
+                    self.stencil_mesh.push(Vertex {
+                        a_pos: a,
+                        a_dist_pos: vec2::ZERO,
+                    });
+                    self.stencil_mesh.push(Vertex {
+                        a_pos: b,
+                        a_dist_pos: vec2::ZERO,
+                    });
+                    let unit_quad = Aabb2::point(vec2::ZERO).extend_uniform(1.0);
+                    let a_quad = Aabb2::point(a).extend_uniform(radius);
+                    let b_quad = Aabb2::point(b).extend_uniform(radius);
+                    self.add_triangle_fan2(
+                        itertools::izip![a_quad.corners(), unit_quad.corners()]
+                            .map(|(a_pos, a_dist_pos)| Vertex { a_pos, a_dist_pos }),
                     );
-                    self.add_triangle_fan_loop(
-                        v(b.extend(0.0)),
-                        b_quad.corners().map(|p| v(p.extend(1.0))),
+                    self.add_triangle_fan2(
+                        itertools::izip![b_quad.corners(), unit_quad.corners()]
+                            .map(|(a_pos, a_dist_pos)| Vertex { a_pos, a_dist_pos }),
                     );
-                    for (a_corner, b_corner) in itertools::izip![a_quad.corners(), b_quad.corners()]
-                    {
-                        self.add_triangle_fan(
-                            v(a.extend(0.0)),
-                            [
-                                v(a_corner.extend(1.0)),
-                                v(b_corner.extend(1.0)),
-                                v(b.extend(0.0)),
-                            ],
-                        );
-                    }
+                    let n = (b - a).rotate_90().normalize_or_zero() * radius;
+                    self.add_triangle_fan2([
+                        Vertex {
+                            a_pos: a + n,
+                            a_dist_pos: vec2(0.0, 1.0),
+                        },
+                        Vertex {
+                            a_pos: b + n,
+                            a_dist_pos: vec2(0.0, 1.0),
+                        },
+                        Vertex {
+                            a_pos: b - n,
+                            a_dist_pos: vec2(0.0, -1.0),
+                        },
+                        Vertex {
+                            a_pos: a - n,
+                            a_dist_pos: vec2(0.0, -1.0),
+                        },
+                    ]);
                 }
             }
+            fn quad_bezier(p0: vec2<f32>, p1: vec2<f32>, p2: vec2<f32>, t: f32) -> vec2<f32> {
+                (1.0 - t).sqr() * p0 + 2.0 * (1.0 - t) * t * p1 + t.sqr() * p2
+            }
+            fn cubic_bezier(
+                p0: vec2<f32>,
+                p1: vec2<f32>,
+                p2: vec2<f32>,
+                p3: vec2<f32>,
+                t: f32,
+            ) -> vec2<f32> {
+                (1.0 - t) * quad_bezier(p0, p1, p2, t) + t * quad_bezier(p1, p2, p3, t)
+            }
+            const N: usize = 10;
             impl ttf_parser::OutlineBuilder for Builder {
                 fn move_to(&mut self, x: f32, y: f32) {
                     self.pos = vec2(x, y) * self.scale + self.offset;
@@ -251,15 +285,29 @@ impl Ttf {
                     self.add_line(a, b);
                 }
                 fn quad_to(&mut self, x1: f32, y1: f32, x: f32, y: f32) {
-                    // TODO
-                    self.line_to(x1, y1);
-                    self.line_to(x, y)
+                    // TODO proper math stuff
+                    let p0 = self.pos;
+                    let p1 = vec2(x1, y1) * self.scale + self.offset;
+                    let p2 = vec2(x, y) * self.scale + self.offset;
+                    for i in 1..=N {
+                        let t = i as f32 / N as f32;
+                        let p = quad_bezier(p0, p1, p2, t);
+                        self.add_line(self.pos, p);
+                        self.pos = p;
+                    }
                 }
                 fn curve_to(&mut self, x1: f32, y1: f32, x2: f32, y2: f32, x: f32, y: f32) {
-                    // TODO
-                    self.line_to(x1, y1);
-                    self.line_to(x2, y2);
-                    self.line_to(x, y);
+                    // TODO proper math stuff
+                    let p0 = self.pos;
+                    let p1 = vec2(x1, y1) * self.scale + self.offset;
+                    let p2 = vec2(x2, y2) * self.scale + self.offset;
+                    let p3 = vec2(x, y) * self.scale + self.offset;
+                    for i in 1..=N {
+                        let t = i as f32 / N as f32;
+                        let p = cubic_bezier(p0, p1, p2, p3, t);
+                        self.add_line(self.pos, p);
+                        self.pos = p;
+                    }
                 }
                 fn close(&mut self) {
                     // TODO: hm?
@@ -291,6 +339,7 @@ impl Ttf {
                 face.outline_glyph(glyph.id, &mut builder);
             }
             let line_shader = shader_lib.compile(include_str!("ttf_line.glsl")).unwrap();
+            let white_shader = shader_lib.compile(include_str!("white.glsl")).unwrap();
             ugli::draw(
                 framebuffer,
                 &line_shader,
@@ -319,7 +368,6 @@ impl Ttf {
                         },
                     }),
                     write_color: false,
-                    write_depth: false,
                     ..default()
                 },
             );
@@ -332,13 +380,18 @@ impl Ttf {
                     u_framebuffer_size: framebuffer.size(),
                 },
                 ugli::DrawParameters {
-                    depth_func: Some(ugli::DepthFunc::Less),
+                    blend_mode: Some(ugli::BlendMode::combined(ugli::ChannelBlendMode {
+                        src_factor: ugli::BlendFactor::One,
+                        dst_factor: ugli::BlendFactor::One,
+                        equation: ugli::BlendEquation::Max,
+                    })),
+                    // depth_func: Some(ugli::DepthFunc::Less),
                     ..default()
                 },
             );
             ugli::draw(
                 framebuffer,
-                &line_shader,
+                &white_shader,
                 ugli::DrawMode::TriangleFan,
                 &ugli::VertexBuffer::new_static(
                     ugli,
@@ -346,7 +399,10 @@ impl Ttf {
                         .extend_positive(framebuffer.size())
                         .corners()
                         .into_iter()
-                        .map(|p| v(p.map(|x| x as f32).extend(-1.0)))
+                        .map(|p| Vertex {
+                            a_pos: p.map(|x| x as f32),
+                            a_dist_pos: vec2::ZERO,
+                        })
                         .collect(),
                 ),
                 ugli::uniforms! {
@@ -364,14 +420,33 @@ impl Ttf {
                     blend_mode: Some(ugli::BlendMode::combined(ugli::ChannelBlendMode {
                         src_factor: ugli::BlendFactor::OneMinusDstColor,
                         dst_factor: ugli::BlendFactor::Zero,
+                        equation: ugli::BlendEquation::Add,
                     })),
                     ..default()
                 },
             );
         }
+        thread_local! { pub static SHADERS: RefCell<Option<[Rc<ugli::Program>; 2]>> = default(); };
+        let [program, sdf_program] = SHADERS.with(|shaders| {
+            fn map<T, R>(a: &[T; 2], f: impl Fn(&T) -> R) -> [R; 2] {
+                let [a, b] = a;
+                [f(a), f(b)]
+            }
+            map(
+                shaders.borrow_mut().get_or_insert_with(|| {
+                    [
+                        shader_lib.compile(include_str!("shader.glsl")).unwrap(),
+                        shader_lib.compile(include_str!("sdf.glsl")).unwrap(),
+                    ]
+                    .map(Rc::new)
+                }),
+                |shader| Rc::clone(shader),
+            )
+        });
         Ok(Self {
             ugli: ugli.clone(),
-            program: shader_lib.compile(include_str!("shader.glsl")).unwrap(),
+            program,
+            sdf_program,
             glyphs,
             atlas,
             max_distance: options.max_distance,
@@ -495,7 +570,7 @@ impl Ttf {
                 ),
                 ugli::DrawParameters {
                     depth_func: None,
-                    blend_mode: Some(ugli::BlendMode::default()),
+                    blend_mode: Some(ugli::BlendMode::straight_alpha()),
                     ..default()
                 },
             );
@@ -560,5 +635,52 @@ impl Ttf {
             }
             pos.y += size;
         }
+    }
+
+    pub fn create_text_sdf(&self, text: &str, pixel_size: f32) -> Option<ugli::Texture> {
+        let aabb = self.measure_bounding_box(text)?;
+        let texture_size = (vec2(
+            aabb.width() + 2.0 * self.max_distance(),
+            1.0 + 2.0 * self.max_distance(),
+        ) * pixel_size)
+            .map(|x| x.ceil() as usize);
+        let mut texture = ugli::Texture::new_uninitialized(&self.ugli, texture_size);
+        let framebuffer = &mut ugli::Framebuffer::new_color(
+            &self.ugli,
+            ugli::ColorAttachment::Texture(&mut texture),
+        );
+        ugli::clear(framebuffer, Some(Rgba::TRANSPARENT_BLACK), None, None);
+        self.draw_with(text, |glyphs, atlas| {
+            ugli::draw(
+                framebuffer,
+                &self.sdf_program,
+                ugli::DrawMode::TriangleFan,
+                ugli::instanced(
+                    &ugli::VertexBuffer::new_dynamic(
+                        &self.ugli,
+                        Aabb2::point(vec2::ZERO)
+                            .extend_positive(vec2(1.0, 1.0))
+                            .corners()
+                            .into_iter()
+                            .map(|v| draw_2d::Vertex { a_pos: v })
+                            .collect(),
+                    ),
+                    &ugli::VertexBuffer::new_dynamic(&self.ugli, glyphs.to_vec()),
+                ),
+                ugli::uniforms! {
+                    u_texture: atlas,
+                    u_matrix: mat3::ortho(aabb.extend_uniform(self.max_distance())),
+                },
+                ugli::DrawParameters {
+                    blend_mode: Some(ugli::BlendMode::combined(ugli::ChannelBlendMode {
+                        src_factor: ugli::BlendFactor::One,
+                        dst_factor: ugli::BlendFactor::One,
+                        equation: ugli::BlendEquation::Max,
+                    })),
+                    ..default()
+                },
+            );
+        });
+        Some(texture)
     }
 }

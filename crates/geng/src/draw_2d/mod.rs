@@ -196,7 +196,7 @@ impl Helper {
                 camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
             ),
             ugli::DrawParameters {
-                blend_mode: Some(ugli::BlendMode::default()),
+                blend_mode: Some(ugli::BlendMode::straight_alpha()),
                 ..default()
             },
         )
@@ -237,7 +237,7 @@ impl Helper {
                 camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
             ),
             ugli::DrawParameters {
-                blend_mode: Some(ugli::BlendMode::default()),
+                blend_mode: Some(ugli::BlendMode::straight_alpha()),
                 ..default()
             },
         )
@@ -328,7 +328,7 @@ impl Helper {
                 camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
             ),
             ugli::DrawParameters {
-                blend_mode: Some(ugli::BlendMode::default()),
+                blend_mode: Some(ugli::BlendMode::straight_alpha()),
                 ..default()
             },
         )
