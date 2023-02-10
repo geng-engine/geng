@@ -1,6 +1,6 @@
 use super::*;
 
-/// [HSLA color](https://ru.wikipedia.org/wiki/HSL).
+/// [HSLA color](https://en.wikipedia.org/wiki/HSL_and_HSV).
 /// Convert into/from [Rgba] via the [From] and [Into] traits.
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
