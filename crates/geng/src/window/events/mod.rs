@@ -15,12 +15,12 @@ pub enum MouseButton {
     Right,
 }
 
-#[derive(Debug, Copy, Clone, Serialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct TouchPoint {
     pub position: vec2<f64>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Event {
     MouseDown {
         position: vec2<f64>,
