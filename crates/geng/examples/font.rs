@@ -98,8 +98,11 @@ impl State {
 impl geng::State for State {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
-        let text = "Hello, Crabs";
-        if let Some(texture) = self.font.create_text_sdf(text, 256.0) {
+        let text = "Hello, Crabs\nline2";
+        if let Some(texture) = self
+            .font
+            .create_text_sdf(text, geng::TextAlign::CENTER, 256.0)
+        {
             ugli::draw(
                 framebuffer,
                 &self.program,

@@ -16,6 +16,8 @@ pub struct TextAlign(pub f32);
 
 impl TextAlign {
     pub const LEFT: Self = Self(0.0);
+    pub const BOTTOM: Self = Self(0.0);
+    pub const TOP: Self = Self(1.0);
     pub const CENTER: Self = Self(0.5);
     pub const RIGHT: Self = Self(1.0);
 }

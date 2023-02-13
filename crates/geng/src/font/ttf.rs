@@ -472,8 +472,8 @@ impl Ttf {
         self.line_gap
     }
 
-    pub fn measure_bounding_box(&self, text: &str) -> Option<Aabb2<f32>> {
-        self.draw_with(text, |glyphs, _| {
+    pub fn measure_bounding_box(&self, text: &str, align: vec2<TextAlign>) -> Option<Aabb2<f32>> {
+        self.draw_with(text, align, |glyphs, _| {
             if glyphs.is_empty() {
                 return None;
             }
@@ -500,28 +500,53 @@ impl Ttf {
     pub fn draw_with<R>(
         &self,
         text: &str,
+        align: vec2<TextAlign>,
         f: impl FnOnce(&[GlyphInstance], &ugli::Texture) -> R,
     ) -> R {
-        let mut vs = Vec::new();
-        let mut x = 0.0;
-        for glyph in text.chars().filter_map(move |c| self.glyphs.get(&c)) {
+        let mut vs = Vec::<GlyphInstance>::new();
+        let mut pos = vec2::ZERO;
+        let mut size_x: f32 = 0.0;
+        let mut line_width: f32 = 0.0;
+        let mut line_start = 0;
+        for c in text.chars() {
+            if c == '\n' {
+                for v in &mut vs[line_start..] {
+                    v.i_pos.x -= line_width * align.x.0;
+                }
+                pos.x = 0.0;
+                pos.y -= 1.0;
+                line_width = 0.0;
+                line_start = vs.len();
+                continue;
+            }
+            let Some(glyph) = self.glyphs.get(&c) else { continue };
             // TODO: kerning
             if let Some(metrics) = &glyph.metrics {
-                vs.push(GlyphInstance {
-                    i_pos: vec2(x, 0.0) + metrics.pos.bottom_left(),
+                let instance = GlyphInstance {
+                    i_pos: pos + metrics.pos.bottom_left(),
                     i_size: metrics.pos.size(),
                     i_uv_pos: metrics.uv.bottom_left(),
                     i_uv_size: metrics.uv.size(),
-                });
+                };
+                line_width =
+                    line_width.max(instance.i_pos.x + instance.i_size.x - self.max_distance);
+                size_x = size_x.max(line_width);
+                vs.push(instance);
             }
-            x += glyph.advance_x;
+            pos.x += glyph.advance_x;
+        }
+        for v in &mut vs[line_start..] {
+            v.i_pos.x -= line_width * align.x.0;
+        }
+        for v in &mut vs {
+            v.i_pos.y += pos.y * align.y.0;
         }
         f(&vs, &self.atlas)
     }
 
     #[deprecated]
     pub fn measure(&self, text: &str, size: f32) -> Option<Aabb2<f32>> {
-        self.measure_bounding_box(text)
+        self.measure_bounding_box(text, vec2(TextAlign::LEFT, TextAlign::LEFT))
             .map(|aabb| aabb.map(|x| x * size))
     }
 
@@ -539,42 +564,46 @@ impl Ttf {
         outline_color: Rgba<f32>,
     ) {
         let transform = transform * mat3::translate(pos) * mat3::scale_uniform(size);
-        self.draw_with(text, |glyphs, texture| {
-            let framebuffer_size = framebuffer.size();
-            ugli::draw(
-                framebuffer,
-                &self.program,
-                ugli::DrawMode::TriangleFan,
-                // TODO: don't create VBs each time
-                ugli::instanced(
-                    &ugli::VertexBuffer::new_dynamic(
-                        &self.ugli,
-                        Aabb2::point(vec2::ZERO)
-                            .extend_positive(vec2(1.0, 1.0))
-                            .corners()
-                            .into_iter()
-                            .map(|v| draw_2d::Vertex { a_pos: v })
-                            .collect(),
+        self.draw_with(
+            text,
+            vec2(TextAlign::LEFT, TextAlign::LEFT),
+            |glyphs, texture| {
+                let framebuffer_size = framebuffer.size();
+                ugli::draw(
+                    framebuffer,
+                    &self.program,
+                    ugli::DrawMode::TriangleFan,
+                    // TODO: don't create VBs each time
+                    ugli::instanced(
+                        &ugli::VertexBuffer::new_dynamic(
+                            &self.ugli,
+                            Aabb2::point(vec2::ZERO)
+                                .extend_positive(vec2(1.0, 1.0))
+                                .corners()
+                                .into_iter()
+                                .map(|v| draw_2d::Vertex { a_pos: v })
+                                .collect(),
+                        ),
+                        &ugli::VertexBuffer::new_dynamic(&self.ugli, glyphs.to_vec()),
                     ),
-                    &ugli::VertexBuffer::new_dynamic(&self.ugli, glyphs.to_vec()),
-                ),
-                (
-                    ugli::uniforms! {
-                        u_texture: texture,
-                        u_model_matrix: transform,
-                        u_color: color,
-                        u_outline_dist: outline_size / size / self.max_distance,
-                        u_outline_color: outline_color,
+                    (
+                        ugli::uniforms! {
+                            u_texture: texture,
+                            u_model_matrix: transform,
+                            u_color: color,
+                            u_outline_dist: outline_size / size / self.max_distance,
+                            u_outline_color: outline_color,
+                        },
+                        camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
+                    ),
+                    ugli::DrawParameters {
+                        depth_func: None,
+                        blend_mode: Some(ugli::BlendMode::straight_alpha()),
+                        ..default()
                     },
-                    camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
-                ),
-                ugli::DrawParameters {
-                    depth_func: None,
-                    blend_mode: Some(ugli::BlendMode::straight_alpha()),
-                    ..default()
-                },
-            );
-        });
+                );
+            },
+        );
     }
 
     pub fn draw(
@@ -637,11 +666,17 @@ impl Ttf {
         }
     }
 
-    pub fn create_text_sdf(&self, text: &str, pixel_size: f32) -> Option<ugli::Texture> {
-        let aabb = self.measure_bounding_box(text)?;
+    pub fn create_text_sdf(
+        &self,
+        text: &str,
+        line_align: TextAlign,
+        pixel_size: f32,
+    ) -> Option<ugli::Texture> {
+        let align = vec2(line_align, TextAlign::BOTTOM);
+        let aabb = self.measure_bounding_box(text, align)?;
         let texture_size = (vec2(
             aabb.width() + 2.0 * self.max_distance(),
-            1.0 + 2.0 * self.max_distance(),
+            text.chars().filter(|c| *c == '\n').count() as f32 + 2.0 * self.max_distance(),
         ) * pixel_size)
             .map(|x| x.ceil() as usize);
         let mut texture = ugli::Texture::new_uninitialized(&self.ugli, texture_size);
@@ -650,7 +685,7 @@ impl Ttf {
             ugli::ColorAttachment::Texture(&mut texture),
         );
         ugli::clear(framebuffer, Some(Rgba::TRANSPARENT_BLACK), None, None);
-        self.draw_with(text, |glyphs, atlas| {
+        self.draw_with(text, align, |glyphs, atlas| {
             ugli::draw(
                 framebuffer,
                 &self.sdf_program,
