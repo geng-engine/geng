@@ -73,3 +73,9 @@ impl LoadAsset for Vec<u8> {
     }
     const DEFAULT_EXT: Option<&'static str> = None;
 }
+
+impl Geng {
+    pub fn load_asset<T: LoadAsset>(&self, path: impl AsRef<std::path::Path>) -> AssetFuture<T> {
+        T::load(self, path.as_ref())
+    }
+}
