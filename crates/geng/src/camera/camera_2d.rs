@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 /// 2-dimensional camera.
 pub struct Camera2d {
     pub center: vec2<f32>,
