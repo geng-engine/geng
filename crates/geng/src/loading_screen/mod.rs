@@ -12,36 +12,33 @@ pub trait ProgressScreen: State {
 
 impl ProgressScreen for EmptyState {}
 
-pub struct LoadingScreen<T: 'static, L, G>
+pub struct LoadingScreen<L, G>
 where
     L: ProgressScreen,
     G: State,
 {
-    future: Pin<Box<dyn Future<Output = T>>>,
-    f: Option<Box<dyn FnOnce(T) -> G>>,
+    future: Pin<Box<dyn Future<Output = G>>>,
     state: L,
 }
 
-impl<T, L, G> LoadingScreen<T, L, G>
+impl<L, G> LoadingScreen<L, G>
 where
     L: ProgressScreen,
     G: State,
 {
-    pub fn new<F: FnOnce(T) -> G + 'static>(
+    pub fn new<F: Future<Output = G> + 'static>(
         #[allow(unused_variables)] geng: &Geng,
         state: L,
-        future: impl Future<Output = T> + 'static,
-        f: F,
+        future: F,
     ) -> Self {
         LoadingScreen {
             future: future.boxed_local(),
-            f: Some(Box::new(f)),
             state,
         }
     }
 }
 
-impl<T, L, G> State for LoadingScreen<T, L, G>
+impl<L, G> State for LoadingScreen<L, G>
 where
     L: ProgressScreen,
     G: State,
@@ -60,17 +57,14 @@ where
         self.state.handle_event(event);
     }
     fn transition(&mut self) -> Option<Transition> {
-        if self.f.is_some() {
-            if let std::task::Poll::Ready(assets) =
-                self.future
-                    .as_mut()
-                    .poll(&mut std::task::Context::from_waker(
-                        futures::task::noop_waker_ref(),
-                    ))
-            {
-                let state = (self.f.take().unwrap())(assets);
-                return Some(Transition::Switch(Box::new(state)));
-            }
+        if let std::task::Poll::Ready(state) =
+            self.future
+                .as_mut()
+                .poll(&mut std::task::Context::from_waker(
+                    futures::task::noop_waker_ref(),
+                ))
+        {
+            return Some(Transition::Switch(Box::new(state)));
         }
         None
     }
