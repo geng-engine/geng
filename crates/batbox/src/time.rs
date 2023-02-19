@@ -64,6 +64,15 @@ pub struct Duration {
     secs: f64,
 }
 
+impl Add for Duration {
+    type Output = Self;
+    fn add(self, rhs: Self) -> Self {
+        Self {
+            secs: self.secs + rhs.secs,
+        }
+    }
+}
+
 impl Debug for Duration {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         std::time::Duration::from(*self).fmt(f)
