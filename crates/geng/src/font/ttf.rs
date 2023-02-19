@@ -676,7 +676,7 @@ impl Ttf {
         let aabb = self.measure_bounding_box(text, align)?;
         let texture_size = (vec2(
             aabb.width() + 2.0 * self.max_distance(),
-            text.chars().filter(|c| *c == '\n').count() as f32 + 2.0 * self.max_distance(),
+            text.chars().filter(|c| *c == '\n').count() as f32 + 1.0 + 2.0 * self.max_distance(),
         ) * pixel_size)
             .map(|x| x.ceil() as usize);
         let mut texture = ugli::Texture::new_uninitialized(&self.ugli, texture_size);

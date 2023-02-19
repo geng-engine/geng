@@ -98,11 +98,12 @@ impl State {
 impl geng::State for State {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
-        let text = "Hello, Crabs\nline2";
-        if let Some(texture) = self
+        let text = "Hello, Crabs";
+        if let Some(mut texture) = self
             .font
-            .create_text_sdf(text, geng::TextAlign::CENTER, 256.0)
+            .create_text_sdf(text, geng::TextAlign::CENTER, 10.0)
         {
+            texture.set_filter(ugli::Filter::Nearest);
             ugli::draw(
                 framebuffer,
                 &self.program,
@@ -126,7 +127,7 @@ impl geng::State for State {
                 ),
                 (
                     ugli::uniforms! {
-                        u_model_matrix: mat3::scale(texture.size().map(|x| x as f32)),
+                        u_model_matrix: mat3::scale(texture.size().map(|x| x as f32) * 10.0),
                         u_texture: texture,
                     },
                     geng::camera2d_uniforms(
