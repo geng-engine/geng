@@ -52,6 +52,9 @@ impl Sound {
             looped: false,
         }
     }
+    pub fn duration(&self) -> Duration {
+        Duration::from_secs_f64(self.inner().duration)
+    }
     pub fn effect(&self) -> SoundEffect {
         let buffer_node =
             web_sys::AudioBufferSourceNode::new(&self.geng.inner.audio.context).unwrap();
@@ -89,7 +92,13 @@ impl SoundEffect {
         self.gain_node.gain().set_value(volume as f32);
     }
     pub fn play(&mut self) {
-        let _ = self.inner.start().unwrap();
+        self.play_from(0.0);
+    }
+    pub fn play_from(&mut self, offset: f64) {
+        let _ = self
+            .inner
+            .start_with_when_and_grain_offset(0.0, offset)
+            .unwrap();
     }
     pub fn stop(&mut self) {
         self.inner.stop().unwrap();

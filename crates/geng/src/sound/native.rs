@@ -137,6 +137,9 @@ impl Sound {
             looped: false,
         }
     }
+    pub fn duration(&self) -> Duration {
+        rodio::Source::total_duration(&self.source).unwrap().into()
+    }
     pub fn effect(&self) -> SoundEffect {
         let spatial_params = Arc::new(Mutex::new(None));
         SoundEffect {
@@ -144,20 +147,20 @@ impl Sound {
             sink: Some({
                 let sink = rodio::Sink::try_new(&self.geng.audio().output_stream_handle).unwrap();
                 sink.pause();
-                if self.looped {
-                    sink.append(Source::new(
-                        self.geng.audio(),
-                        spatial_params.clone(),
-                        &rodio::Source::repeat_infinite(self.source.clone()),
-                    ));
-                } else {
-                    sink.append(Source::new(
-                        self.geng.audio(),
-                        spatial_params.clone(),
-                        &self.source,
-                    ));
-                }
                 sink
+            }),
+            source: Some(if self.looped {
+                Box::new(Source::new(
+                    self.geng.audio(),
+                    spatial_params.clone(),
+                    &rodio::Source::repeat_infinite(self.source.clone()),
+                ))
+            } else {
+                Box::new(Source::new(
+                    self.geng.audio(),
+                    spatial_params.clone(),
+                    &self.source,
+                ))
             }),
             spatial_params,
         }
@@ -345,6 +348,7 @@ pub struct SoundEffect {
     geng: Geng,
     spatial_params: Arc<Mutex<Option<SpatialParams>>>,
     sink: Option<rodio::Sink>,
+    source: Option<Box<dyn rodio::Source<Item = i16> + Send>>,
 }
 
 impl SoundEffect {
@@ -352,6 +356,12 @@ impl SoundEffect {
         self.sink().set_volume(volume as f32);
     }
     pub fn play(&mut self) {
+        self.play_from(Duration::from_secs_f64(0.0));
+    }
+    pub fn play_from(&mut self, offset: Duration) {
+        let source = self.source.take().expect("Already playing");
+        let source = rodio::Source::skip_duration(source, offset.into());
+        self.sink().append(source);
         self.sink().play();
     }
     pub fn stop(&mut self) {
