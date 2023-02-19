@@ -53,7 +53,7 @@ impl Sound {
         }
     }
     pub fn duration(&self) -> Duration {
-        Duration::from_secs_f64(self.inner().duration)
+        Duration::from_secs_f64(self.inner.duration())
     }
     pub fn effect(&self) -> SoundEffect {
         let buffer_node =
