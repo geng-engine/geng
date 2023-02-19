@@ -59,8 +59,15 @@ impl Instant {
 /// Represents a span of time.
 ///
 /// Alternative of [std::time::Duration]
+#[derive(Copy, Clone)]
 pub struct Duration {
     secs: f64,
+}
+
+impl Debug for Duration {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        std::time::Duration::from(*self).fmt(f)
+    }
 }
 
 impl Duration {
@@ -72,6 +79,18 @@ impl Duration {
     /// Returns the number of seconds contained by this Duration as f64
     pub fn as_secs_f64(&self) -> f64 {
         self.secs
+    }
+}
+
+impl From<Duration> for std::time::Duration {
+    fn from(value: Duration) -> Self {
+        std::time::Duration::from_secs_f64(value.as_secs_f64())
+    }
+}
+
+impl From<std::time::Duration> for Duration {
+    fn from(value: std::time::Duration) -> Self {
+        Duration::from_secs_f64(value.as_secs_f64())
     }
 }
 
