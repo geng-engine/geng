@@ -94,10 +94,10 @@ impl SoundEffect {
     pub fn play(&mut self) {
         self.play_from(0.0);
     }
-    pub fn play_from(&mut self, offset: f64) {
+    pub fn play_from(&mut self, offset: Duration) {
         let _ = self
             .inner
-            .start_with_when_and_grain_offset(0.0, offset)
+            .start_with_when_and_grain_offset(0.0, offset.as_secs_f64())
             .unwrap();
     }
     pub fn stop(&mut self) {
