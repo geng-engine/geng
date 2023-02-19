@@ -123,17 +123,15 @@ fn main() {
     let geng = Geng::new("Geng UI Demo!");
     geng::run(
         &geng,
-        geng::LoadingScreen::new(
-            &geng,
-            geng::EmptyLoadingScreen,
-            <Assets as geng::LoadAsset>::load(&geng, &run_dir().join("assets")),
-            {
-                let geng = geng.clone();
-                move |assets| {
-                    let assets = assets.unwrap();
-                    State::new(&geng, assets)
-                }
-            },
-        ),
+        geng::LoadingScreen::new(&geng, geng::EmptyLoadingScreen, {
+            let geng = geng.clone();
+            async move {
+                let assets = geng
+                    .load_asset(run_dir().join("assets"))
+                    .await
+                    .expect("Failed to load assets");
+                State::new(&geng, assets)
+            }
+        }),
     );
 }

@@ -92,7 +92,7 @@ impl SoundEffect {
         self.gain_node.gain().set_value(volume as f32);
     }
     pub fn play(&mut self) {
-        self.play_from(0.0);
+        self.play_from(Duration::from_secs_f64(0.0));
     }
     pub fn play_from(&mut self, offset: Duration) {
         let _ = self

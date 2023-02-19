@@ -118,26 +118,24 @@ impl geng::State for CrabRave {
 }
 
 fn main() {
-    logger::init();
+    logger::init().unwrap();
     geng::setup_panic_handler();
     let geng = Geng::new("CrabRave");
     geng::run(
         &geng,
-        geng::LoadingScreen::new(
-            &geng,
-            geng::EmptyLoadingScreen,
-            geng::LoadAsset::load(&geng, &run_dir().join("assets")),
-            {
-                let geng = geng.clone();
-                move |assets| {
-                    let mut assets: Assets = assets.unwrap();
-                    assets.body.set_filter(ugli::Filter::Nearest);
-                    assets.back_leg.set_filter(ugli::Filter::Nearest);
-                    assets.front_leg.set_filter(ugli::Filter::Nearest);
-                    assets.hand.set_filter(ugli::Filter::Nearest);
-                    CrabRave::new(geng, assets)
-                }
-            },
-        ),
+        geng::LoadingScreen::new(&geng, geng::EmptyLoadingScreen, {
+            let geng = geng.clone();
+            async move {
+                let mut assets: Assets = geng
+                    .load_asset(run_dir().join("assets"))
+                    .await
+                    .expect("Failed to load assets");
+                assets.body.set_filter(ugli::Filter::Nearest);
+                assets.back_leg.set_filter(ugli::Filter::Nearest);
+                assets.front_leg.set_filter(ugli::Filter::Nearest);
+                assets.hand.set_filter(ugli::Filter::Nearest);
+                CrabRave::new(geng, assets)
+            }
+        }),
     );
 }
