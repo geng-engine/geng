@@ -74,6 +74,20 @@ impl LoadAsset for Vec<u8> {
     const DEFAULT_EXT: Option<&'static str> = None;
 }
 
+impl LoadAsset for Font {
+    fn load(geng: &Geng, path: &std::path::Path) -> AssetFuture<Self> {
+        let path = path.to_owned();
+        let geng = geng.clone();
+        async move {
+            let data = file::load_bytes(path).await?;
+            Ok(Font::new(&geng, &data, default())?)
+        }
+        .boxed_local()
+    }
+
+    const DEFAULT_EXT: Option<&'static str> = Some("ttf");
+}
+
 impl Geng {
     pub fn load_asset<T: LoadAsset>(&self, path: impl AsRef<std::path::Path>) -> AssetFuture<T> {
         T::load(self, path.as_ref())
