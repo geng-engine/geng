@@ -364,6 +364,11 @@ impl SoundEffect {
         self.sink().append(source);
         self.sink().play();
     }
+    pub fn set_speed(&mut self, speed: f64) {
+        if let Some(sink) = &mut self.sink {
+            sink.set_speed(speed as f32);
+        }
+    }
     pub fn stop(&mut self) {
         self.sink().stop();
     }

@@ -100,6 +100,9 @@ impl SoundEffect {
             .start_with_when_and_grain_offset(0.0, offset.as_secs_f64())
             .unwrap();
     }
+    pub fn set_speed(&mut self, speed: f64) {
+        self.inner.playback_rate().set_value(speed as f32);
+    }
     pub fn stop(&mut self) {
         self.inner.stop().unwrap();
     }
