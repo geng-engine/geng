@@ -20,6 +20,8 @@ struct Field {
     #[darling(default)]
     path: Option<String>,
     #[darling(default)]
+    ext: Option<String>,
+    #[darling(default)]
     postprocess: Option<syn::Path>,
     #[darling(default, map = "parse_syn")]
     load_with: Option<syn::Expr>,
@@ -77,6 +79,10 @@ impl DeriveInput {
             if let Some(expr) = &field.load_with {
                 return quote!(#expr);
             }
+            let ext = match &field.ext {
+                Some(ext) => quote!(Some(#ext)),
+                None => quote!(None),
+            };
             let ident = field.ident.as_ref().unwrap();
             let ty = &field.ty;
             let mut loader =  if let Some(range) = &field.range {
@@ -91,7 +97,7 @@ impl DeriveInput {
                     Some(path) => quote! { #path },
                     None => quote! {{
                         let mut path = stringify!(#ident).to_owned();
-                        if let Some(ext) = <#ty as geng::LoadAsset>::DEFAULT_EXT {
+                        if let Some(ext) = #ext.or(<#ty as geng::LoadAsset>::DEFAULT_EXT) {
                             path.push('.');
                             path.push_str(ext);
                         }
