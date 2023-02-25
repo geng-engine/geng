@@ -81,7 +81,7 @@ pub fn connect<S: Message, C: Message>(addr: &str) -> impl Future<Output = Conne
             )
             .to_vec();
             traffic.lock().unwrap().inbound += data.len();
-            let message = deserialize_message(&data);
+            let message = deserialize_message(&data).unwrap();
             recv_sender.unbounded_send(message).unwrap();
         }) as Box<dyn FnMut(web_sys::MessageEvent)>);
     ws.add_event_listener_with_callback("message", message_handler.as_ref().unchecked_ref())
