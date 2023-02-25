@@ -67,7 +67,7 @@ impl<T: Message> ws::Handler for Handler<T> {
     fn on_message(&mut self, message: ws::Message) -> ws::Result<()> {
         let data = message.into_data();
         self.traffic.lock().unwrap().inbound += data.len();
-        let message = deserialize_message(&data);
+        let message = deserialize_message(&data).expect("Failed to deserize message");
         trace!("Got message from server: {:?}", message);
         self.recv_sender.unbounded_send(message).unwrap();
         Ok(())

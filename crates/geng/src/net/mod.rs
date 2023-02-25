@@ -21,9 +21,9 @@ fn serialize_message<T: Message>(message: T) -> Vec<u8> {
     buf
 }
 
-fn deserialize_message<T: Message>(data: &[u8]) -> T {
+fn deserialize_message<T: Message>(data: &[u8]) -> anyhow::Result<T> {
     let reader = flate2::read::GzDecoder::new(data);
-    bincode::deserialize_from(reader).expect("Failed to deserialize message")
+    bincode::deserialize_from(reader).context("Failed to deserialize message")
 }
 
 #[cfg(target_arch = "wasm32")]
