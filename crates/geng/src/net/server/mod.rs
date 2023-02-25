@@ -101,7 +101,22 @@ impl ServerHandle {
 impl<T: App> Server<T> {
     pub fn new(app: T, addr: impl std::net::ToSocketAddrs + Debug + Copy) -> Self {
         let factory = Factory::new(app);
-        let ws = ws::WebSocket::new(factory).unwrap();
+        let ws = ws::Builder::new()
+            .with_settings(ws::Settings {
+                max_connections: 10000,
+                // fragments_capacity: todo!(),
+                // fragments_grow: todo!(),
+                // max_fragment_size: todo!(),
+                // in_buffer_capacity: todo!(),
+                // in_buffer_grow: todo!(),
+                // out_buffer_capacity: todo!(),
+                // out_buffer_grow: todo!(),
+                panic_on_internal: false,
+                tcp_nodelay: true,
+                ..default()
+            })
+            .build(factory)
+            .unwrap();
         let ws = match ws.bind(addr) {
             Ok(ws) => ws,
             Err(e) => {
