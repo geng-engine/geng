@@ -14,14 +14,14 @@ pub trait Message: Debug + Serialize + for<'de> Deserialize<'de> + Send + 'stati
 
 impl<T: Debug + Serialize + for<'de> Deserialize<'de> + Send + 'static + Unpin> Message for T {}
 
-fn serialize_message<T: Message>(message: T) -> Vec<u8> {
+pub fn serialize_message<T: Message>(message: T) -> Vec<u8> {
     let mut buf = Vec::new();
     let writer = flate2::write::GzEncoder::new(&mut buf, flate2::Compression::best());
     bincode::serialize_into(writer, &message).unwrap();
     buf
 }
 
-fn deserialize_message<T: Message>(data: &[u8]) -> anyhow::Result<T> {
+pub fn deserialize_message<T: Message>(data: &[u8]) -> anyhow::Result<T> {
     let reader = flate2::read::GzDecoder::new(data);
     bincode::deserialize_from(reader).context("Failed to deserialize message")
 }
@@ -33,7 +33,13 @@ pub trait Sender<T> {
 
 #[cfg(not(target_arch = "wasm32"))]
 pub trait Sender<T>: Send {
-    fn send(&mut self, message: T);
+    fn send(&mut self, message: T)
+    where
+        T: Message,
+    {
+        self.send_serialized(Arc::new(serialize_message(message)))
+    }
+    fn send_serialized(&mut self, data: Arc<Vec<u8>>);
 }
 
 pub trait Receiver<T> {

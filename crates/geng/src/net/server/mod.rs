@@ -13,17 +13,17 @@ struct Handler<T: App> {
     client: Option<T::Client>,
 }
 
-struct BackgroundSender<T> {
-    sender: std::sync::mpsc::Sender<T>,
+struct BackgroundSender {
+    sender: std::sync::mpsc::Sender<Arc<Vec<u8>>>,
 }
 
-impl<T: Message> BackgroundSender<T> {
+impl BackgroundSender {
     fn new(ws_sender: ws::Sender) -> Self {
-        let (sender, receiver) = std::sync::mpsc::channel();
+        let (sender, receiver) = std::sync::mpsc::channel::<Arc<Vec<u8>>>();
         std::thread::spawn(move || {
-            while let Ok(message) = receiver.recv() {
+            while let Ok(data) = receiver.recv() {
                 ws_sender
-                    .send(ws::Message::Binary(serialize_message(message)))
+                    .send(ws::Message::Binary(data.deref().clone()))
                     .expect("Failed to send message");
             }
         });
@@ -31,9 +31,9 @@ impl<T: Message> BackgroundSender<T> {
     }
 }
 
-impl<T: Message> Sender<T> for BackgroundSender<T> {
-    fn send(&mut self, message: T) {
-        self.sender.send(message).expect("Failed to send message");
+impl<T: Message> Sender<T> for BackgroundSender {
+    fn send_serialized(&mut self, data: Arc<Vec<u8>>) {
+        self.sender.send(data).expect("Failed to send message");
     }
 }
 

@@ -52,6 +52,9 @@ impl<S: Message, C: Message> Sender<C> for Connection<S, C> {
     fn send(&mut self, message: C) {
         self.send(message);
     }
+    fn send_serialized(&mut self, data: Arc<Vec<u8>>) {
+        unimplemented!()
+    }
 }
 
 pub fn connect<S: Message, C: Message>(addr: &str) -> impl Future<Output = Connection<S, C>> {
