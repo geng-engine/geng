@@ -28,7 +28,13 @@ pub fn deserialize_message<T: Message>(data: &[u8]) -> anyhow::Result<T> {
 
 #[cfg(target_arch = "wasm32")]
 pub trait Sender<T> {
-    fn send(&mut self, message: T);
+    fn send(&mut self, message: T)
+    where
+        T: Message,
+    {
+        self.send_serialized(Arc::new(serialize_message(message)))
+    }
+    fn send_serialized(&mut self, data: Arc<Vec<u8>>);
 }
 
 #[cfg(not(target_arch = "wasm32"))]
