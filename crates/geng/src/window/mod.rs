@@ -57,6 +57,7 @@ impl Window {
                 ugli::WebGLContextOptions {
                     antialias: options.antialias,
                     alpha: options.transparency,
+                    stencil: true,
                     ..default()
                 },
             );
