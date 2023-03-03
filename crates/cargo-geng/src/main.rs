@@ -187,22 +187,51 @@ fn main() -> Result<(), anyhow::Error> {
             if out_dir.exists() {
                 std::fs::remove_dir_all(&out_dir)?;
             }
-            let mut bin_root_dir = std::path::Path::new(&package.manifest_path)
-                .parent()
-                .unwrap()
-                .to_owned();
-            if let Some(example) = &opt.example {
-                bin_root_dir = bin_root_dir.join("examples").join(example);
-            }
-            let assets_dir = bin_root_dir.join("assets");
             std::fs::create_dir_all(&out_dir)?;
-            if assets_dir.is_dir() {
-                fs_extra::dir::copy(assets_dir, &out_dir, &{
-                    let mut options = fs_extra::dir::CopyOptions::new();
-                    options.copy_inside = true;
-                    options
-                })?;
-            }
+            let assets: Vec<std::path::PathBuf> = {
+                fn package_assets(
+                    package: &cargo_metadata::Package,
+                    example: Option<&str>,
+                ) -> Vec<std::path::PathBuf> {
+                    let mut bin_root_dir = std::path::Path::new(&package.manifest_path)
+                        .parent()
+                        .unwrap()
+                        .to_owned();
+                    if let Some(example) = example {
+                        bin_root_dir = bin_root_dir.join("examples").join(example);
+                    }
+                    let mut result = Vec::new();
+                    #[derive(serde::Deserialize)]
+                    struct GengMetadata {
+                        assets: Option<Vec<std::path::PathBuf>>,
+                    }
+                    #[derive(serde::Deserialize)]
+                    struct Metadata {
+                        geng: Option<GengMetadata>,
+                    }
+                    if let Ok(Metadata {
+                        geng:
+                            Some(GengMetadata {
+                                assets: Some(assets),
+                            }),
+                    }) = serde_json::from_value::<Metadata>(package.metadata.clone())
+                    {
+                        result.extend(assets);
+                    } else {
+                        let assets_dir = bin_root_dir.join("assets");
+                        if assets_dir.is_dir() {
+                            result.push(assets_dir);
+                        }
+                    }
+                    result
+                }
+                package_assets(package, opt.example.as_deref())
+            };
+            fs_extra::copy_items(&assets, &out_dir, &{
+                let mut options = fs_extra::dir::CopyOptions::new();
+                options.copy_inside = true;
+                options
+            })?;
 
             let mut command = Command::new("cargo")
                 .arg("build")
