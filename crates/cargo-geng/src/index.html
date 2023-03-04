@@ -45,6 +45,40 @@
             transform: translate(-50%, -50%);
             text-align: center;
         }
+
+
+        #geng-progress-screen {
+            width: 100%;
+            height: 100%;
+            background-color: black;
+        }
+
+        #geng-progress-container {
+            width: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -webkit-transform: translate(-50%, -50%);
+            -moz-transform: translate(-50%, -50%);
+            -ms-transform: translate(-50%, -50%);
+            -o-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        #geng-progress-bar {
+            height: 1em;
+            border-radius: 1em;
+            overflow: hidden;
+            background-color: gray;
+        }
+
+        #geng-progress-fill {
+            height: 100%;
+            border-radius: 1em;
+            background-color: white;
+            transition: width 0.5s;
+        }
     </style>
 </head>
 
@@ -55,10 +89,62 @@
             <pre id="error-message">Something went wrong</pre>
         </div>
     </div>
-    <canvas id="geng-canvas"></canvas>
+    <canvas id="geng-canvas" style="display: none"></canvas>
+    <div id="geng-progress-screen">
+        <div id="geng-progress-container">
+            <h2>LOADING</h2>
+            <div id="geng-progress-bar">
+                <div id="geng-progress-fill" style="width: 0%"></div>
+            </div>
+            <span id="geng-progress-text"></span>
+        </div>
+    </div>
     <script type="module">
         import init from "./<app-name>.js";
-        init("<app-name>.wasm");
+
+        async function load_wasm(url, onProgress) {
+            let response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(response.status.toString());
+            }
+            const contentLengthString = response.headers.get("Content-Length");
+            const contentLength = contentLengthString === null ? void 0 : Number(contentLengthString);
+            const reader = response.body.getReader();
+            let chunks = [];
+            let receivedLength = 0;
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) {
+                    break;
+                }
+                chunks.push(value);
+                receivedLength += value.length;
+                onProgress(receivedLength, contentLength);
+            }
+            let chunksAll = new Uint8Array(receivedLength);
+            let position = 0;
+            for (let chunk of chunks) {
+                chunksAll.set(chunk, position);
+                position += chunk.length;
+            }
+            return chunksAll.buffer;
+        }
+
+        let progressFill = document.getElementById("geng-progress-fill");
+        let progressText = document.getElementById("geng-progress-text");
+
+        init(load_wasm("<app-name>.wasm", (progress, total) => {
+            if (total === void 0) {
+                return;
+            }
+            const width = `${Math.round(100 * progress / total)}%`;
+            progressFill.style.width = width;
+            progressText.innerText = width;
+        }).then((wasm) => {
+            document.getElementById("geng-progress-screen").style.display = "none";
+            document.getElementById("geng-canvas").style.display = "block";
+            return wasm;
+        }));
     </script>
 </body>
 
