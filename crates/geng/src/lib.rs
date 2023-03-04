@@ -22,7 +22,7 @@
 //!     geng::setup_panic_handler();
 //!     let geng = Geng::new("Application Name");
 //!     let state = State;
-//!     geng::run(&geng, state)
+//!     geng.run(state);
 //! }
 //! ```
 //!
