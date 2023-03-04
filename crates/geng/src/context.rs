@@ -14,6 +14,7 @@ pub(crate) struct GengImpl {
     max_delta_time: Cell<f64>,
     ui_theme: RefCell<Option<ui::Theme>>,
     pub(crate) options: ContextOptions,
+    pub(crate) load_progress: RefCell<LoadProgress>,
 }
 
 #[derive(Clone)]
@@ -97,6 +98,7 @@ impl Geng {
                 max_delta_time: Cell::new(options.max_delta_time),
                 ui_theme: RefCell::new(None),
                 options,
+                load_progress: RefCell::new(LoadProgress::new()),
             }),
         }
     }
@@ -141,91 +143,101 @@ impl Geng {
     }
 }
 
-/// Run the application
-pub fn run(geng: &Geng, state: impl State) {
-    let mut state_manager = StateManager::new();
-    state_manager.push(Box::new(state));
-    let state = DebugOverlay::new(geng, state_manager);
-    struct RunState<T> {
-        geng: Geng,
-        state: T,
-        ui_controller: ui::Controller,
-        timer: Timer,
-        next_fixed_update: f64,
+impl Geng {
+    pub fn run_loading<S: State>(self, state: impl Future<Output = S> + 'static) {
+        self.clone().run(LoadingScreen::new(
+            &self,
+            EmptyLoadingScreen::new(&self),
+            state,
+        ));
     }
-    let state = Rc::new(RefCell::new(RunState {
-        geng: geng.clone(),
-        state,
-        ui_controller: ui::Controller::new(geng),
-        timer: Timer::new(),
-        next_fixed_update: geng.inner.fixed_delta_time.get(),
-    }));
 
-    impl<T: State> RunState<T> {
-        fn update(&mut self) {
-            let delta_time = self.timer.tick().as_secs_f64();
-            let delta_time = delta_time.min(self.geng.inner.max_delta_time.get());
-            self.state.update(delta_time);
-            self.ui_controller
-                .update(self.state.ui(&self.ui_controller).deref_mut(), delta_time);
-            self.next_fixed_update -= delta_time;
-            while self.next_fixed_update <= 0.0 {
-                let delta_time = self.geng.inner.fixed_delta_time.get();
-                self.next_fixed_update += delta_time;
-                self.state.fixed_update(delta_time);
+    /// Run the application
+    pub fn run(self, state: impl State) {
+        let geng = &self;
+        let mut state_manager = StateManager::new();
+        state_manager.push(Box::new(state));
+        let state = DebugOverlay::new(geng, state_manager);
+        struct RunState<T> {
+            geng: Geng,
+            state: T,
+            ui_controller: ui::Controller,
+            timer: Timer,
+            next_fixed_update: f64,
+        }
+        let state = Rc::new(RefCell::new(RunState {
+            geng: geng.clone(),
+            state,
+            ui_controller: ui::Controller::new(geng),
+            timer: Timer::new(),
+            next_fixed_update: geng.inner.fixed_delta_time.get(),
+        }));
+
+        impl<T: State> RunState<T> {
+            fn update(&mut self) {
+                let delta_time = self.timer.tick().as_secs_f64();
+                let delta_time = delta_time.min(self.geng.inner.max_delta_time.get());
+                self.state.update(delta_time);
+                self.ui_controller
+                    .update(self.state.ui(&self.ui_controller).deref_mut(), delta_time);
+                self.next_fixed_update -= delta_time;
+                while self.next_fixed_update <= 0.0 {
+                    let delta_time = self.geng.inner.fixed_delta_time.get();
+                    self.next_fixed_update += delta_time;
+                    self.state.fixed_update(delta_time);
+                }
+            }
+
+            fn handle_event(&mut self, event: Event) {
+                if self.ui_controller.handle_event(
+                    self.state.ui(&self.ui_controller).deref_mut(),
+                    event.clone(),
+                ) {
+                    return;
+                }
+                self.state.handle_event(event);
+            }
+
+            fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
+                self.state.draw(framebuffer);
+                self.ui_controller
+                    .draw(self.state.ui(&self.ui_controller).deref_mut(), framebuffer);
+            }
+
+            fn need_to_quit(&mut self) -> bool {
+                match self.state.transition() {
+                    None => false,
+                    Some(Transition::Pop) => true,
+                    _ => unreachable!(),
+                }
             }
         }
-
-        fn handle_event(&mut self, event: Event) {
-            if self.ui_controller.handle_event(
-                self.state.ui(&self.ui_controller).deref_mut(),
-                event.clone(),
-            ) {
-                return;
+        geng.inner.window.set_event_handler(Box::new({
+            let state = state.clone();
+            move |event| {
+                state.borrow_mut().handle_event(event);
             }
-            self.state.handle_event(event);
-        }
+        }));
+        let main_loop = {
+            let geng = geng.clone();
+            // TODO: remove the busy loop to not use any resources?
+            move || {
+                state.borrow_mut().update();
+                let window_size = geng.inner.window.real_size();
+                // This means window is minimized?
+                if window_size.x != 0 && window_size.y != 0 {
+                    let mut framebuffer = ugli::Framebuffer::default(geng.ugli());
+                    state.borrow_mut().draw(&mut framebuffer);
+                }
+                geng.inner.window.swap_buffers();
 
-        fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
-            self.state.draw(framebuffer);
-            self.ui_controller
-                .draw(self.state.ui(&self.ui_controller).deref_mut(), framebuffer);
-        }
-
-        fn need_to_quit(&mut self) -> bool {
-            match self.state.transition() {
-                None => false,
-                Some(Transition::Pop) => true,
-                _ => unreachable!(),
+                !state.borrow_mut().need_to_quit()
             }
-        }
-    }
-    geng.inner.window.set_event_handler(Box::new({
-        let state = state.clone();
-        move |event| {
-            state.borrow_mut().handle_event(event);
-        }
-    }));
-    let main_loop = {
-        let geng = geng.clone();
-        // TODO: remove the busy loop to not use any resources?
-        move || {
-            state.borrow_mut().update();
-            let window_size = geng.inner.window.real_size();
-            // This means window is minimized?
-            if window_size.x != 0 && window_size.y != 0 {
-                let mut framebuffer = ugli::Framebuffer::default(geng.ugli());
-                state.borrow_mut().draw(&mut framebuffer);
-            }
-            geng.inner.window.swap_buffers();
+        };
 
-            !state.borrow_mut().need_to_quit()
-        }
-    };
-
-    #[cfg(target_arch = "wasm32")]
-    {
-        #[wasm_bindgen(inline_js = r#"
+        #[cfg(target_arch = "wasm32")]
+        {
+            #[wasm_bindgen(inline_js = r#"
         export function run(main_loop) {
             function main_loop_wrapper() {
                 main_loop();
@@ -234,25 +246,27 @@ pub fn run(geng: &Geng, state: impl State) {
             main_loop_wrapper();
         }
         "#)]
-        extern "C" {
-            fn run(main_loop: &wasm_bindgen::JsValue);
-        }
-        let main_loop = wasm_bindgen::closure::Closure::wrap(Box::new(move || {
-            main_loop();
-        }) as Box<dyn FnMut()>);
-        run(main_loop.as_ref());
-        main_loop.forget();
-    }
-
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        while !geng.inner.window.should_close() {
-            if !main_loop() {
-                break;
+            extern "C" {
+                fn run(main_loop: &wasm_bindgen::JsValue);
             }
+            let main_loop = wasm_bindgen::closure::Closure::wrap(Box::new(move || {
+                main_loop();
+            })
+                as Box<dyn FnMut()>);
+            run(main_loop.as_ref());
+            main_loop.forget();
         }
 
-        // Needed to drop state
-        geng.inner.window.clear_event_handler();
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            while !geng.inner.window.should_close() {
+                if !main_loop() {
+                    break;
+                }
+            }
+
+            // Needed to drop state
+            geng.inner.window.clear_event_handler();
+        }
     }
 }

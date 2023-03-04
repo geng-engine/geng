@@ -121,17 +121,11 @@ impl geng::State for State {
 fn main() {
     logger::init().unwrap();
     let geng = Geng::new("Geng UI Demo!");
-    geng::run(
-        &geng,
-        geng::LoadingScreen::new(&geng, geng::EmptyLoadingScreen, {
-            let geng = geng.clone();
-            async move {
-                let assets = geng
-                    .load_asset(run_dir().join("assets"))
-                    .await
-                    .expect("Failed to load assets");
-                State::new(&geng, assets)
-            }
-        }),
-    );
+    geng.clone().run_loading(async move {
+        let assets = geng
+            .load_asset(run_dir().join("assets"))
+            .await
+            .expect("Failed to load assets");
+        State::new(&geng, assets)
+    });
 }

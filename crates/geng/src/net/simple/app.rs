@@ -49,7 +49,7 @@ pub fn run<T: Model, G: State>(
             let geng = geng.clone();
             move |player_id, model| game_constructor(&geng, player_id, model)
         });
-        geng::run(&geng, state);
+        geng.run(state);
 
         #[cfg(not(target_arch = "wasm32"))]
         if let Some((server_handle, server_thread)) = server {

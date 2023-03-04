@@ -287,17 +287,11 @@ fn main() {
     logger::init().unwrap();
     geng::setup_panic_handler();
     let geng = Geng::new("Let's draw!");
-    geng::run(
-        &geng,
-        geng::LoadingScreen::new(&geng, geng::EmptyLoadingScreen, {
-            let geng = geng.clone();
-            async move {
-                let assets = geng
-                    .load_asset(run_dir().join("assets"))
-                    .await
-                    .expect("Failed to load assets");
-                State::new(&geng, assets)
-            }
-        }),
-    )
+    geng.clone().run_loading(async move {
+        let assets = geng
+            .load_asset(run_dir().join("assets"))
+            .await
+            .expect("Failed to load assets");
+        State::new(&geng, assets)
+    });
 }

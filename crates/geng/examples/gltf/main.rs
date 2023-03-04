@@ -243,9 +243,11 @@ fn load(
     assets: Rc<Assets>,
     gltf: impl Future<Output = Vec<u8>> + 'static,
 ) -> impl geng::State {
-    geng::LoadingScreen::new(&geng.clone(), geng::EmptyLoadingScreen, async move {
-        Example::new(geng, assets, gltf.await)
-    })
+    geng::LoadingScreen::new(
+        &geng.clone(),
+        geng::EmptyLoadingScreen::new(&geng.clone()),
+        async move { Example::new(geng, assets, gltf.await) },
+    )
 }
 
 #[derive(clap::Parser)]
@@ -261,22 +263,16 @@ fn main() {
     let path = opt
         .path
         .unwrap_or(run_dir().join("assets").join("crab.glb"));
-    geng::run(
-        &geng,
-        geng::LoadingScreen::new(&geng, geng::EmptyLoadingScreen, {
-            let geng = geng.clone();
-            async move {
-                let assets = geng
-                    .load_asset(run_dir().join("assets"))
-                    .await
-                    .expect("Failed to load assets");
-                let assets = Rc::new(assets);
-                load(
-                    geng,
-                    assets,
-                    file::load_bytes(path).map(|result| result.unwrap()),
-                )
-            }
-        }),
-    );
+    geng.clone().run_loading(async move {
+        let assets = geng
+            .load_asset(run_dir().join("assets"))
+            .await
+            .expect("Failed to load assets");
+        let assets = Rc::new(assets);
+        load(
+            geng,
+            assets,
+            file::load_bytes(path).map(|result| result.unwrap()),
+        )
+    });
 }

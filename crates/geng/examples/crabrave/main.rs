@@ -121,21 +121,15 @@ fn main() {
     logger::init().unwrap();
     geng::setup_panic_handler();
     let geng = Geng::new("CrabRave");
-    geng::run(
-        &geng,
-        geng::LoadingScreen::new(&geng, geng::EmptyLoadingScreen, {
-            let geng = geng.clone();
-            async move {
-                let mut assets: Assets = geng
-                    .load_asset(run_dir().join("assets"))
-                    .await
-                    .expect("Failed to load assets");
-                assets.body.set_filter(ugli::Filter::Nearest);
-                assets.back_leg.set_filter(ugli::Filter::Nearest);
-                assets.front_leg.set_filter(ugli::Filter::Nearest);
-                assets.hand.set_filter(ugli::Filter::Nearest);
-                CrabRave::new(geng, assets)
-            }
-        }),
-    );
+    geng.clone().run_loading(async move {
+        let mut assets: Assets = geng
+            .load_asset(run_dir().join("assets"))
+            .await
+            .expect("Failed to load assets");
+        assets.body.set_filter(ugli::Filter::Nearest);
+        assets.back_leg.set_filter(ugli::Filter::Nearest);
+        assets.front_leg.set_filter(ugli::Filter::Nearest);
+        assets.hand.set_filter(ugli::Filter::Nearest);
+        CrabRave::new(geng, assets)
+    });
 }

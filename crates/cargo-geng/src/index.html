@@ -46,11 +46,11 @@
             text-align: center;
         }
 
-
         #geng-progress-screen {
             width: 100%;
             height: 100%;
             background-color: black;
+            color: white;
         }
 
         #geng-progress-container {
@@ -92,7 +92,7 @@
     <canvas id="geng-canvas" style="display: none"></canvas>
     <div id="geng-progress-screen">
         <div id="geng-progress-container">
-            <h2>LOADING</h2>
+            <h2 id="geng-progress-title">Loading wasm</h2>
             <div id="geng-progress-bar">
                 <div id="geng-progress-fill" style="width: 0%"></div>
             </div>
@@ -130,21 +130,24 @@
             return chunksAll.buffer;
         }
 
+        let progressTitle = document.getElementById("geng-progress-title");
         let progressFill = document.getElementById("geng-progress-fill");
         let progressText = document.getElementById("geng-progress-text");
 
-        init(load_wasm("<app-name>.wasm", (progress, total) => {
-            if (total === void 0) {
+        window.gengUpdateProgressTitle = (title) => {
+            progressTitle.innerText = title;
+        }
+        window.gengUpdateProgress = (progress, total) => {
+            if (!total) {
+                progressText.innerText = "";
                 return;
             }
             const width = `${Math.round(100 * progress / total)}%`;
             progressFill.style.width = width;
             progressText.innerText = width;
-        }).then((wasm) => {
-            document.getElementById("geng-progress-screen").style.display = "none";
-            document.getElementById("geng-canvas").style.display = "block";
-            return wasm;
-        }));
+        };
+
+        init(load_wasm("<app-name>.wasm", window.gengUpdateProgress));
     </script>
 </body>
 

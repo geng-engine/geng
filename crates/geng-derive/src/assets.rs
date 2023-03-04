@@ -48,7 +48,7 @@ impl DeriveInput {
             return quote! {
                 impl #impl_generics geng::LoadAsset #ty_generics for #ident #where_clause {
                     fn load(geng: &Geng, path: &std::path::Path) -> geng::AssetFuture<Self> {
-                        let json = <String as geng::LoadAsset>::load(geng, path);
+                        let json = geng.load_asset::<String>(path);
                         async move {
                             let json = json.await?;
                             Ok(serde_json::from_str(&json)?)
@@ -85,11 +85,14 @@ impl DeriveInput {
             };
             let ident = field.ident.as_ref().unwrap();
             let ty = &field.ty;
-            let mut loader =  if let Some(range) = &field.range {
-                let path = field.path.as_ref().expect("Path needs to be specified for ranged assets");
+            let mut loader = if let Some(range) = &field.range {
+                let path = field
+                    .path
+                    .as_ref()
+                    .expect("Path needs to be specified for ranged assets");
                 quote! {
                     futures::future::try_join_all((#range).map(|i| {
-                        geng::LoadAsset::load(geng, &base_path.join(#path.replace("*", &i.to_string())))
+                        geng.load_asset::<#ty>(base_path.join(#path.replace("*", &i.to_string())))
                     }))
                 }
             } else {
@@ -105,7 +108,7 @@ impl DeriveInput {
                     }},
                 };
                 quote! {
-                    <#ty as geng::LoadAsset>::load(geng, &base_path.join(#path))
+                    geng.load_asset::<#ty>(base_path.join(#path))
                 }
             };
             if let Some(postprocess) = &field.postprocess {

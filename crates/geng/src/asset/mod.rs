@@ -12,7 +12,7 @@ pub(crate) use _impl::*;
 
 pub type AssetFuture<T> = Pin<Box<dyn Future<Output = Result<T, anyhow::Error>>>>;
 
-pub trait LoadAsset: Sized {
+pub trait LoadAsset: Sized + 'static {
     fn load(geng: &Geng, path: &std::path::Path) -> AssetFuture<Self>;
     const DEFAULT_EXT: Option<&'static str>;
 }
@@ -88,8 +88,78 @@ impl LoadAsset for Font {
     const DEFAULT_EXT: Option<&'static str> = Some("ttf");
 }
 
+#[derive(Debug)]
+pub(crate) struct LoadProgress {
+    pub progress: usize,
+    pub total: usize,
+}
+
+impl LoadProgress {
+    pub fn new() -> Self {
+        Self {
+            progress: 0,
+            total: 0,
+        }
+    }
+}
+
 impl Geng {
     pub fn load_asset<T: LoadAsset>(&self, path: impl AsRef<std::path::Path>) -> AssetFuture<T> {
+        let geng = self.clone();
+        geng.inner.load_progress.borrow_mut().total += 1;
         T::load(self, path.as_ref())
+            .map(move |result| {
+                geng.inner.load_progress.borrow_mut().progress += 1;
+                result
+            })
+            .boxed_local()
+    }
+
+    pub fn set_loading_progress_title(&self, title: &str) {
+        // TODO: native
+        #[cfg(target_arch = "wasm32")]
+        {
+            #[wasm_bindgen(inline_js = r#"
+            export function set_progress_title(title) {
+                window.gengUpdateProgressTitle(title);
+            }
+            "#)]
+            extern "C" {
+                fn set_progress_title(title: &str);
+            }
+            set_progress_title(title);
+        }
+    }
+
+    pub fn set_loading_progress(&self, progress: f64, total: Option<f64>) {
+        // TODO: native
+        #[cfg(target_arch = "wasm32")]
+        {
+            #[wasm_bindgen(inline_js = r#"
+            export function set_progress(progress, total) {
+                window.gengUpdateProgress(progress, total);
+            }
+            "#)]
+            extern "C" {
+                fn set_progress(progress: f64, total: Option<f64>);
+            }
+            set_progress(progress, total);
+        }
+    }
+
+    pub fn finish_loading(&self) {
+        #[cfg(target_arch = "wasm32")]
+        {
+            #[wasm_bindgen(inline_js = r#"
+            export function finish_loading() {
+                document.getElementById("geng-progress-screen").style.display = "none";
+                document.getElementById("geng-canvas").style.display = "block";
+            }
+            "#)]
+            extern "C" {
+                fn finish_loading();
+            }
+            finish_loading();
+        }
     }
 }
