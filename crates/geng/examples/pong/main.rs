@@ -15,5 +15,5 @@ fn main() {
         ..default()
     });
     let state = GameState::new(&geng);
-    geng::run(&geng, state);
+    geng.run(state);
 }

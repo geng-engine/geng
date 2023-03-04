@@ -33,5 +33,5 @@ fn main() {
         ..default()
     });
     let state = State::new(&geng);
-    geng::run(&geng, state)
+    geng.run(state);
 }

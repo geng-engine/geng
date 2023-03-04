@@ -148,5 +148,5 @@ fn main() {
     logger::init().unwrap();
     let geng = Geng::new("Font");
     let state = State::new(&geng);
-    geng::run(&geng, state);
+    geng.run(state);
 }

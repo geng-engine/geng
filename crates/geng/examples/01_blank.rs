@@ -31,5 +31,5 @@ fn main() {
     let state = State;
 
     // Run the game
-    geng::run(&geng, state)
+    geng.run(state);
 }
