@@ -92,7 +92,7 @@ impl DeriveInput {
                     .expect("Path needs to be specified for ranged assets");
                 quote! {
                     futures::future::try_join_all((#range).map(|i| {
-                        geng.load_asset::<#ty>(base_path.join(#path.replace("*", &i.to_string())))
+                        geng.load_asset(base_path.join(#path.replace("*", &i.to_string())))
                     }))
                 }
             } else {
