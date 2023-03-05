@@ -3,7 +3,7 @@ use super::*;
 pub struct Connection<S: Message, C: Message> {
     sender: ws::Sender,
     broadcaster: ws::Sender,
-    recv: futures::channel::mpsc::UnboundedReceiver<S>,
+    recv: futures::channel::mpsc::UnboundedReceiver<anyhow::Result<S>>,
     thread_handle: Option<std::thread::JoinHandle<()>>,
     phantom_data: PhantomData<(S, C)>,
     traffic: Arc<Mutex<Traffic>>,
@@ -13,11 +13,11 @@ impl<S: Message, C: Message> Connection<S, C> {
     pub fn traffic(&self) -> Traffic {
         self.traffic.lock().unwrap().clone()
     }
-    pub fn try_recv(&mut self) -> Option<S> {
+    pub fn try_recv(&mut self) -> Option<anyhow::Result<S>> {
         match self.recv.try_next() {
             Ok(Some(message)) => Some(message),
             Err(_) => None,
-            Ok(None) => panic!("Disconnected from server"),
+            Ok(None) => Some(Err(anyhow!("Disconnected from server"))),
         }
     }
     pub fn send(&mut self, message: C) {
@@ -31,7 +31,7 @@ impl<S: Message, C: Message> Connection<S, C> {
 }
 
 impl<S: Message, C: Message> Stream for Connection<S, C> {
-    type Item = S;
+    type Item = anyhow::Result<S>;
     fn poll_next(
         self: Pin<&mut Self>,
         cx: &mut std::task::Context,
@@ -49,7 +49,7 @@ impl<S: Message, C: Message> Drop for Connection<S, C> {
 
 struct Handler<T: Message> {
     connection_sender: Option<futures::channel::oneshot::Sender<ws::Sender>>,
-    recv_sender: futures::channel::mpsc::UnboundedSender<T>,
+    recv_sender: futures::channel::mpsc::UnboundedSender<anyhow::Result<T>>,
     sender: ws::Sender,
     traffic: Arc<Mutex<Traffic>>,
 }
@@ -67,7 +67,7 @@ impl<T: Message> ws::Handler for Handler<T> {
     fn on_message(&mut self, message: ws::Message) -> ws::Result<()> {
         let data = message.into_data();
         self.traffic.lock().unwrap().inbound += data.len();
-        let message = deserialize_message(&data).expect("Failed to deserize message");
+        let message = deserialize_message(&data);
         trace!("Got message from server: {:?}", message);
         self.recv_sender.unbounded_send(message).unwrap();
         Ok(())
@@ -76,7 +76,7 @@ impl<T: Message> ws::Handler for Handler<T> {
 
 struct Factory<T: Message> {
     connection_sender: Option<futures::channel::oneshot::Sender<ws::Sender>>,
-    recv_sender: Option<futures::channel::mpsc::UnboundedSender<T>>,
+    recv_sender: Option<futures::channel::mpsc::UnboundedSender<anyhow::Result<T>>>,
     traffic: Arc<Mutex<Traffic>>,
 }
 
@@ -92,28 +92,33 @@ impl<T: Message> ws::Factory for Factory<T> {
     }
 }
 
-pub fn connect<S: Message, C: Message>(addr: &str) -> impl Future<Output = Connection<S, C>> {
-    let (connection_sender, connection_receiver) = futures::channel::oneshot::channel();
-    let (recv_sender, recv) = futures::channel::mpsc::unbounded();
-    let traffic = Arc::new(Mutex::new(Traffic::new()));
-    let factory = Factory {
-        connection_sender: Some(connection_sender),
-        recv_sender: Some(recv_sender),
-        traffic: traffic.clone(),
-    };
-    let mut ws = ws::WebSocket::new(factory).unwrap();
-    let mut broadcaster = Some(ws.broadcaster());
-    ws.connect(addr.parse().unwrap()).unwrap();
-    let mut thread_handle = Some(std::thread::spawn(move || {
-        ws.run().unwrap();
-    }));
-    let mut recv = Some(recv);
-    connection_receiver.map(move |sender| Connection {
-        sender: sender.unwrap(),
-        broadcaster: broadcaster.take().unwrap(),
-        recv: recv.take().unwrap(),
-        thread_handle: thread_handle.take(),
-        phantom_data: PhantomData,
-        traffic,
-    })
+pub fn connect<S: Message, C: Message>(
+    addr: &str,
+) -> impl Future<Output = anyhow::Result<Connection<S, C>>> {
+    let addr = addr.to_owned();
+    async move {
+        let (connection_sender, connection_receiver) = futures::channel::oneshot::channel();
+        let (recv_sender, recv) = futures::channel::mpsc::unbounded();
+        let traffic = Arc::new(Mutex::new(Traffic::new()));
+        let factory = Factory {
+            connection_sender: Some(connection_sender),
+            recv_sender: Some(recv_sender),
+            traffic: traffic.clone(),
+        };
+        let mut ws = ws::WebSocket::new(factory)?;
+        let broadcaster = ws.broadcaster();
+        ws.connect(addr.parse().context("Failed to parse addr")?)?;
+        let thread_handle = std::thread::spawn(move || {
+            ws.run().unwrap();
+        });
+        let sender = connection_receiver.await;
+        Ok(Connection {
+            sender: sender?,
+            broadcaster,
+            recv,
+            thread_handle: Some(thread_handle),
+            phantom_data: PhantomData,
+            traffic,
+        })
+    }
 }

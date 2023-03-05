@@ -18,14 +18,15 @@ impl<T: Model, G: State> ConnectingState<T, G> {
         f: impl FnOnce(T::PlayerId, Remote<T>) -> G + 'static,
     ) -> Self {
         let connection = Box::pin(net::client::connect(addr).then(|connection| async move {
+            let connection = connection.unwrap();
             let (message, connection) = connection.into_future().await;
-            let player_id = match message {
-                Some(ServerMessage::PlayerId(id)) => id,
+            let player_id = match message.unwrap().unwrap() {
+                ServerMessage::PlayerId(id) => id,
                 _ => unreachable!(),
             };
             let (message, connection) = connection.into_future().await;
-            let initial_state = match message {
-                Some(ServerMessage::Full(state)) => state,
+            let initial_state = match message.unwrap().unwrap() {
+                ServerMessage::Full(state) => state,
                 _ => unreachable!(),
             };
             (player_id, initial_state, connection)

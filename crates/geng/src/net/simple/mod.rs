@@ -44,7 +44,7 @@ impl<T: Model> Remote<T> {
         let mut model = self.model.borrow_mut();
         let mut events = Vec::new();
         for message in self.connection.borrow_mut().new_messages() {
-            match message {
+            match message.unwrap() {
                 ServerMessage::Full(state) => *model = state,
                 ServerMessage::Delta(delta) => model.update(&delta),
                 ServerMessage::PlayerId(_) => unreachable!(),
