@@ -8,8 +8,5 @@ You can see examples in [examples directory of the main crate](crates/geng/examp
 
 ## Games made using geng
 
-These are some games made by myself:
-
-- [Getting Farted On](https://github.com/kuviman/getting-farted-on)
-- [Extremely Extreme Sports](https://github.com/kuviman/extremely-extreme-sports)
-- [LD 45 - Egg Farm](https://github.com/kuviman/egg-farm)
+The engine is used by me and friends to mostly make little game jam games.
+You can check out some on [my itch page](https://kuviman.itch.io).
