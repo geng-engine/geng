@@ -2,21 +2,29 @@ use geng::prelude::*;
 
 #[derive(geng::Assets)]
 struct Assets {
+    #[asset(postprocess = "pixelate")]
     body: ugli::Texture,
+    #[asset(postprocess = "pixelate")]
     front_leg: ugli::Texture,
+    #[asset(postprocess = "pixelate")]
     back_leg: ugli::Texture,
+    #[asset(postprocess = "pixelate")]
     hand: ugli::Texture,
+}
+
+fn pixelate(texture: &mut ugli::Texture) {
+    texture.set_filter(ugli::Filter::Nearest);
 }
 
 struct CrabRave {
     geng: Geng,
-    assets: Assets,
+    assets: Hot<Assets>,
     t: f32,
     limb_offsets: [vec2<f32>; 5],
 }
 
 impl CrabRave {
-    fn new(geng: Geng, assets: Assets) -> Self {
+    fn new(geng: Geng, assets: Hot<Assets>) -> Self {
         Self {
             geng,
             assets,
@@ -99,14 +107,15 @@ impl geng::State for CrabRave {
             vec2(0.75, 0.0) + self.limb_offsets[4],
         ) * mat3::scale(vec2(-1.0, 1.0));
 
+        let assets = self.assets.get();
         for (texture, matrix) in [
-            (&self.assets.back_leg, back_left_leg),
-            (&self.assets.back_leg, back_right_leg),
-            (&self.assets.body, body),
-            (&self.assets.front_leg, front_left_leg),
-            (&self.assets.front_leg, front_right_leg),
-            (&self.assets.hand, left_hand),
-            (&self.assets.hand, right_hand),
+            (&assets.back_leg, back_left_leg),
+            (&assets.back_leg, back_right_leg),
+            (&assets.body, body),
+            (&assets.front_leg, front_left_leg),
+            (&assets.front_leg, front_right_leg),
+            (&assets.hand, left_hand),
+            (&assets.hand, right_hand),
         ] {
             self.geng.draw_2d(
                 framebuffer,
@@ -122,14 +131,10 @@ fn main() {
     geng::setup_panic_handler();
     let geng = Geng::new("CrabRave");
     geng.clone().run_loading(async move {
-        let mut assets: Assets = geng
+        let assets: Hot<Assets> = geng
             .load_asset(run_dir().join("assets"))
             .await
             .expect("Failed to load assets");
-        assets.body.set_filter(ugli::Filter::Nearest);
-        assets.back_leg.set_filter(ugli::Filter::Nearest);
-        assets.front_leg.set_filter(ugli::Filter::Nearest);
-        assets.hand.set_filter(ugli::Filter::Nearest);
         CrabRave::new(geng, assets)
     });
 }

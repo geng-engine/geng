@@ -163,3 +163,72 @@ impl Geng {
         }
     }
 }
+
+pub struct Hot<T> {
+    current: RefCell<T>,
+    updates: RefCell<Pin<Box<dyn Stream<Item = T>>>>,
+    #[cfg(not(target_arch = "wasm32"))]
+    watcher: notify::RecommendedWatcher,
+}
+
+impl<T> Hot<T> {
+    pub fn get(&self) -> Ref<T> {
+        let mut updates = self.updates.borrow_mut();
+        if let std::task::Poll::Ready(Some(new)) = updates.poll_next_unpin(
+            &mut std::task::Context::from_waker(futures::task::noop_waker_ref()),
+        ) {
+            *self.current.borrow_mut() = new;
+        }
+        self.current.borrow()
+    }
+}
+
+impl<T: LoadAsset> LoadAsset for Hot<T> {
+    fn load(geng: &Geng, path: &std::path::Path) -> AssetFuture<Self> {
+        let geng = geng.clone();
+        let path = path.to_owned();
+        async move {
+            let (mut sender, receiver) = futures::channel::mpsc::channel::<()>(1);
+            #[cfg(not(target_arch = "wasm32"))]
+            let watcher = {
+                use notify::Watcher;
+                let mut watcher =
+                    notify::recommended_watcher(move |result: notify::Result<notify::Event>| {
+                        let event = result.unwrap();
+                        info!("update: {event:?}");
+                        if event.kind.is_modify() {
+                            let _ = futures::executor::block_on(sender.send(()));
+                        }
+                    })
+                    .unwrap();
+                watcher
+                    .watch(&path, notify::RecursiveMode::Recursive)
+                    .unwrap();
+                info!("watching {path:?}");
+                watcher
+            };
+            let initial = geng.load_asset(&path).await?;
+            let updates =
+                receiver
+                    .then(move |()| geng.load_asset(&path))
+                    .filter_map(|result| async move {
+                        match result {
+                            Ok(value) => Some(value),
+                            Err(e) => {
+                                error!("{e}");
+                                None
+                            }
+                        }
+                    });
+            Ok(Self {
+                current: RefCell::new(initial),
+                updates: RefCell::new(updates.boxed_local()),
+                #[cfg(not(target_arch = "wasm32"))]
+                watcher,
+            })
+        }
+        .boxed_local()
+    }
+
+    const DEFAULT_EXT: Option<&'static str> = T::DEFAULT_EXT;
+}

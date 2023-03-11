@@ -30,7 +30,7 @@
 pub use geng_derive::*;
 
 pub mod prelude {
-    pub use crate::{draw_2d, Geng};
+    pub use crate::{draw_2d, Geng, Hot};
     pub use crate::{Camera2dExt as _, Camera3dExt as _};
     pub use ::batbox;
     pub use ::batbox::prelude::*;
