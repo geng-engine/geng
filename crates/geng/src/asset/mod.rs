@@ -168,16 +168,19 @@ pub struct Hot<T> {
     current: RefCell<T>,
     updates: RefCell<Pin<Box<dyn Stream<Item = T>>>>,
     #[cfg(not(target_arch = "wasm32"))]
+    #[allow(dead_code)] // This is here for delaying the drop of the watcher
     watcher: notify::RecommendedWatcher,
 }
 
 impl<T> Hot<T> {
     pub fn get(&self) -> Ref<T> {
-        let mut updates = self.updates.borrow_mut();
-        if let std::task::Poll::Ready(Some(new)) = updates.poll_next_unpin(
-            &mut std::task::Context::from_waker(futures::task::noop_waker_ref()),
-        ) {
-            *self.current.borrow_mut() = new;
+        if let Ok(mut current) = self.current.try_borrow_mut() {
+            let mut updates = self.updates.borrow_mut();
+            if let std::task::Poll::Ready(Some(new)) = updates.poll_next_unpin(
+                &mut std::task::Context::from_waker(futures::task::noop_waker_ref()),
+            ) {
+                *current = new;
+            }
         }
         self.current.borrow()
     }
