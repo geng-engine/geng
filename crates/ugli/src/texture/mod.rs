@@ -94,11 +94,28 @@ impl<P: TexturePixel> Texture2d<P> {
         texture
     }
     pub fn set_wrap_mode(&mut self, wrap_mode: WrapMode) {
-        assert!(self.is_pot() || wrap_mode == WrapMode::Clamp);
+        self.set_wrap_mode_separate(wrap_mode, wrap_mode);
+    }
+
+    pub fn set_wrap_mode_separate(&mut self, wrap_mode_x: WrapMode, wrap_mode_y: WrapMode) {
+        if wrap_mode_x == WrapMode::Repeat || wrap_mode_y == WrapMode::Repeat {
+            assert!(
+                self.is_pot(),
+                "Repeat wrap mode only supported for power of two textures"
+            ); // Because of webgl
+        }
         let gl = &self.ugli.inner.raw;
         gl.bind_texture(raw::TEXTURE_2D, &self.handle);
-        gl.tex_parameteri(raw::TEXTURE_2D, raw::TEXTURE_WRAP_S, wrap_mode as raw::Int);
-        gl.tex_parameteri(raw::TEXTURE_2D, raw::TEXTURE_WRAP_T, wrap_mode as raw::Int);
+        gl.tex_parameteri(
+            raw::TEXTURE_2D,
+            raw::TEXTURE_WRAP_S,
+            wrap_mode_x as raw::Int,
+        );
+        gl.tex_parameteri(
+            raw::TEXTURE_2D,
+            raw::TEXTURE_WRAP_T,
+            wrap_mode_y as raw::Int,
+        );
         self.ugli.debug_check();
     }
 
