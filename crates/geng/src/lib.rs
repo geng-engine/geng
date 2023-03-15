@@ -18,7 +18,7 @@
 //! }
 //!
 //! fn main() {
-//!     logger::init().unwrap();
+//!     logger::init();
 //!     geng::setup_panic_handler();
 //!     let geng = Geng::new("Application Name");
 //!     let state = State;
