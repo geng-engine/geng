@@ -1,2 +1,2 @@
 [alias]
-geng = "run --release --package cargo-geng --"
+geng-local = "run --release --package cargo-geng --"
