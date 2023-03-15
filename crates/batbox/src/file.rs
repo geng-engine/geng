@@ -102,6 +102,30 @@ pub async fn load_string(path: impl AsRef<std::path::Path>) -> anyhow::Result<St
     Ok(buf)
 }
 
+/// Load file and deserialize into given type using deserializer based on extension
+///
+/// Supports:
+/// - json
+/// - toml
+/// - ron
+pub async fn load_detect<T: DeserializeOwned>(
+    path: impl AsRef<std::path::Path>,
+) -> anyhow::Result<T> {
+    let path = path.as_ref();
+    let ext = path
+        .extension()
+        .ok_or(anyhow!("Expected to have extension"))?;
+    let ext = ext.to_str().ok_or(anyhow!("Extension is not valid str"))?;
+    let data = load_bytes(path).await?;
+    let value = match ext {
+        "json" => serde_json::from_reader(data.as_slice())?,
+        "toml" => toml::from_slice(&data)?,
+        "ron" => ron::de::from_bytes(&data)?,
+        _ => anyhow::bail!("{ext:?} is unsupported"),
+    };
+    Ok(value)
+}
+
 /// Load json file and deserialize into given type
 pub async fn load_json<T: DeserializeOwned>(
     path: impl AsRef<std::path::Path>,
