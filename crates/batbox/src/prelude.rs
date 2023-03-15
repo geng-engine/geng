@@ -8,27 +8,30 @@
 pub use crate::crates::*;
 
 #[doc(no_inline)]
-pub use ::anyhow::{anyhow, Context as _};
+pub use crate::crates::anyhow::{anyhow, Context as _};
 #[doc(no_inline)]
-pub use ::async_trait::async_trait;
+pub use crate::crates::async_trait::async_trait;
 #[doc(no_inline)]
-pub use ::derivative::Derivative;
+pub use crate::crates::derivative::Derivative;
 #[doc(no_inline)]
-pub use ::derive_more::{Constructor, Deref, DerefMut};
+pub use crate::crates::derive_more::{Constructor, Deref, DerefMut};
 #[doc(no_inline)]
-pub use ::dyn_clone::{clone_box, DynClone};
+pub use crate::crates::dyn_clone::{clone_box, DynClone};
 #[doc(no_inline)]
-pub use ::futures::prelude::*;
+pub use crate::crates::futures::prelude::*;
 #[doc(no_inline)]
-pub use ::itertools::izip;
+pub use crate::crates::itertools::izip;
 #[doc(no_inline)]
-pub use ::maplit::{btreemap, btreeset, hashmap, hashset};
+pub use crate::crates::maplit::{btreemap, btreeset, hashmap, hashset};
 #[doc(no_inline)]
-pub use ::pin_utils::pin_mut;
+pub use crate::crates::pin_utils::pin_mut;
 #[doc(no_inline)]
-pub use ::serde::{de::DeserializeOwned, Deserialize, Serialize};
+pub use crate::crates::serde::{de::DeserializeOwned, Deserialize, Serialize};
 #[doc(no_inline)]
-pub use ::serde_json;
+pub use crate::crates::serde_json;
+#[cfg(not(target_arch = "wasm32"))]
+#[doc(no_inline)]
+pub use crate::crates::threadpool::ThreadPool;
 #[doc(no_inline)]
 pub use ::std::{
     cell::{Cell, Ref, RefCell, RefMut},
@@ -48,14 +51,11 @@ pub use ::std::{
     rc::Rc,
     sync::{Arc, Mutex},
 };
-#[cfg(not(target_arch = "wasm32"))]
-#[doc(no_inline)]
-pub use ::threadpool::ThreadPool;
 
 #[cfg(target_arch = "wasm32")]
-pub use ::wasm_bindgen::{prelude::*, JsCast as _};
+pub use crate::crates::wasm_bindgen::{prelude::*, JsCast as _};
 #[cfg(target_arch = "wasm32")]
-pub use ::wasm_bindgen_futures::{future_to_promise, JsFuture};
+pub use crate::crates::wasm_bindgen_futures::{future_to_promise, JsFuture};
 
 #[doc(no_inline)]
 pub use ::batbox_derive::*;

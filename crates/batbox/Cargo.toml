@@ -22,6 +22,7 @@ batbox-derive.workspace = true
 rand.workspace = true
 getrandom.workspace = true # https://github.com/rust-random/rand#wasm-support
 
+toml.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 ron.workspace = true

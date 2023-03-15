@@ -15,7 +15,9 @@ pub mod crates {
     pub use ::async_trait;
     pub use ::bincode;
     pub use ::clap;
+    pub use ::derivative;
     pub use ::derive_more;
+    pub use ::dyn_clone;
     pub use ::env_logger;
     pub use ::futures;
     pub use ::itertools;
@@ -26,9 +28,11 @@ pub mod crates {
     pub use ::once_cell;
     pub use ::pin_utils;
     pub use ::serde;
+    pub use ::serde_json;
     pub use ::thiserror;
     #[cfg(not(target_arch = "wasm32"))]
     pub use ::threadpool;
+    pub use ::toml;
     #[cfg(target_arch = "wasm32")]
     pub use ::wasm_bindgen;
     #[cfg(target_arch = "wasm32")]
