@@ -127,7 +127,7 @@ impl geng::State for CrabRave {
 }
 
 fn main() {
-    logger::init().unwrap();
+    logger::init();
     geng::setup_panic_handler();
     let geng = Geng::new("CrabRave");
     geng.clone().run_loading(async move {

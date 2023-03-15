@@ -103,7 +103,12 @@ pub fn builder() -> env_logger::Builder {
 }
 
 /// Initialize using default config
-pub fn init() -> Result<(), log::SetLoggerError> {
+pub fn init() {
+    try_init().expect("Failed to initialize logger");
+}
+
+/// Initialize using default config, or return error
+pub fn try_init() -> Result<(), log::SetLoggerError> {
     init_with(builder())
 }
 

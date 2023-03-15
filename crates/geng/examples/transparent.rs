@@ -26,7 +26,8 @@ impl geng::State for State {
 }
 
 fn main() {
-    logger::init().unwrap();
+    logger::init();
+    geng::setup_panic_handler();
     let geng = Geng::new_with(geng::ContextOptions {
         title: "Transparent".to_owned(),
         transparency: true,

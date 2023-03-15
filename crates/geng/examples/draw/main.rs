@@ -284,7 +284,7 @@ impl geng::State for State {
 }
 
 fn main() {
-    logger::init().unwrap();
+    logger::init();
     geng::setup_panic_handler();
     let geng = Geng::new("Let's draw!");
     geng.clone().run_loading(async move {

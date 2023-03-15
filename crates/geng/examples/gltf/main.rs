@@ -256,7 +256,7 @@ struct Opt {
 }
 
 fn main() {
-    logger::init().unwrap();
+    logger::init();
     geng::setup_panic_handler();
     let opt: Opt = program_args::parse();
     let geng = Geng::new("Example");

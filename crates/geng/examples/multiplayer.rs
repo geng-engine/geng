@@ -194,7 +194,7 @@ impl geng::State for Game {
 }
 
 fn main() {
-    logger::init().unwrap();
-
+    logger::init();
+    geng::setup_panic_handler();
     geng::net::simple::run("Multiplayer", Model::new, Game::new);
 }

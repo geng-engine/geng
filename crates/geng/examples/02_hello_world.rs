@@ -31,7 +31,8 @@ impl geng::State for State {
 }
 
 fn main() {
-    logger::init().unwrap();
+    logger::init();
+    geng::setup_panic_handler();
     let geng = Geng::new("Hello, World!");
     let state = State::new(&geng);
     geng.run(state);

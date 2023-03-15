@@ -22,7 +22,8 @@ impl geng::State for State {
 
 fn main() {
     // Initialize logger
-    logger::init().unwrap();
+    logger::init();
+    geng::setup_panic_handler();
 
     // Initialize the engine using default options
     let geng = Geng::new("Blank");
