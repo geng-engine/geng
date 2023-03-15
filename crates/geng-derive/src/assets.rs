@@ -26,7 +26,9 @@ struct Field {
     #[darling(default, map = "parse_syn")]
     load_with: Option<syn::Expr>,
     #[darling(default, map = "parse_syn")]
-    range: Option<syn::Expr>,
+    list: Option<syn::Expr>,
+    #[darling(default)]
+    listed_in: Option<String>,
 }
 
 fn parse_syn<T: syn::parse::Parse>(value: Option<String>) -> Option<T> {
@@ -76,6 +78,8 @@ impl DeriveInput {
             })
             .collect::<Vec<_>>();
         let field_loaders = data.fields.iter().map(|field| {
+            let ident = field.ident.as_ref().unwrap();
+            let ty = &field.ty;
             if let Some(expr) = &field.load_with {
                 return quote!(#expr);
             }
@@ -83,29 +87,61 @@ impl DeriveInput {
                 Some(ext) => quote!(Some(#ext)),
                 None => quote!(None),
             };
-            let ident = field.ident.as_ref().unwrap();
-            let ty = &field.ty;
-            let mut loader = if let Some(range) = &field.range {
-                let path = field
-                    .path
-                    .as_ref()
-                    .expect("Path needs to be specified for ranged assets");
+            let list = match (&field.listed_in, &field.list) {
+                (None, None) => None,
+                (None, Some(range)) => Some(quote! {
+                    (#range).map(|item| item.to_string())
+                }),
+                (Some(listed_in), None) => Some({
+                    let base_path = match &field.path {
+                        Some(_) => quote! { base_path },
+                        None => quote! {
+                            base_path.join(stringify!(#ident))
+                        },
+                    };
+                    quote! {
+                        file::load_detect::<Vec<String>>(
+                            #base_path.join(#listed_in)
+                        ).await?.into_iter()
+                    }
+                }),
+                (Some(_), Some(_)) => panic!("Can't specify both list and listed_in"),
+            };
+            let mut loader = if let Some(list) = list {
+                let ext = quote! {{
+                    fn vec_ext<T: geng::LoadAsset>(_: PhantomData<Vec<T>>) -> Option<&'static str> {
+                        T::DEFAULT_EXT
+                    }
+                    if let Some(ext) = #ext.or(vec_ext(PhantomData::<#ty>)) {
+                        format!(".{}", ext)
+                    } else {
+                        "".to_owned()
+                    }
+                }};
+                let path = match &field.path {
+                    Some(path) => quote! { #path },
+                    None => quote! {
+                        format!("{}/*{}", stringify!(#ident), #ext)
+                    },
+                };
                 quote! {
-                    futures::future::try_join_all((#range).map(|i| {
-                        geng.load_asset(base_path.join(#path.replace("*", &i.to_string())))
+                    futures::future::try_join_all((#list).map(|item| {
+                        geng.load_asset(base_path.join(#path.replace("*", &item)))
                     }))
                 }
             } else {
+                let ext = quote! {
+                    if let Some(ext) = #ext.or(<#ty as geng::LoadAsset>::DEFAULT_EXT) {
+                        format!(".{}", ext)
+                    } else {
+                        "".to_owned()
+                    }
+                };
                 let path = match &field.path {
                     Some(path) => quote! { #path },
-                    None => quote! {{
-                        let mut path = stringify!(#ident).to_owned();
-                        if let Some(ext) = #ext.or(<#ty as geng::LoadAsset>::DEFAULT_EXT) {
-                            path.push('.');
-                            path.push_str(ext);
-                        }
-                        path
-                    }},
+                    None => quote! {
+                        format!("{}{}", stringify!(#ident), #ext)
+                    },
                 };
                 quote! {
                     geng.load_asset::<#ty>(base_path.join(#path))
