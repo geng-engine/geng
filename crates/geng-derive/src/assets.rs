@@ -29,6 +29,8 @@ struct Field {
     list: Option<syn::Expr>,
     #[darling(default)]
     listed_in: Option<String>,
+    #[darling(default, rename = "if")]
+    condition: Option<syn::Expr>,
 }
 
 fn parse_syn<T: syn::parse::Parse>(value: Option<String>) -> Option<T> {
@@ -79,13 +81,12 @@ impl DeriveInput {
             .collect::<Vec<_>>();
         let field_loaders = data.fields.iter().map(|field| {
             let ident = field.ident.as_ref().unwrap();
-            let ty = &field.ty;
             if let Some(expr) = &field.load_with {
                 return quote!(#expr);
             }
             let ext = match &field.ext {
                 Some(ext) => quote!(Some(#ext)),
-                None => quote!(None),
+                None => quote!(None::<&str>),
             };
             let list = match (&field.listed_in, &field.list) {
                 (None, None) => None,
@@ -108,43 +109,25 @@ impl DeriveInput {
                 (Some(_), Some(_)) => panic!("Can't specify both list and listed_in"),
             };
             let mut loader = if let Some(list) = list {
-                let ext = quote! {{
-                    fn vec_ext<T: geng::LoadAsset>(_: PhantomData<Vec<T>>) -> Option<&'static str> {
-                        T::DEFAULT_EXT
-                    }
-                    if let Some(ext) = #ext.or(vec_ext(PhantomData::<#ty>)) {
-                        format!(".{}", ext)
-                    } else {
-                        "".to_owned()
-                    }
-                }};
-                let path = match &field.path {
-                    Some(path) => quote! { #path },
+                let loader = match &field.path {
+                    Some(path) => quote! {
+                        geng.load_asset(base_path.join(#path.replace("*", &item)))
+                    },
                     None => quote! {
-                        format!("{}/*{}", stringify!(#ident), #ext)
+                        geng.load_asset_ext(base_path.join(stringify!(#ident)).join(item), #ext)
                     },
                 };
                 quote! {
-                    futures::future::try_join_all((#list).map(|item| {
-                        geng.load_asset(base_path.join(#path.replace("*", &item)))
-                    }))
+                    futures::future::try_join_all((#list).map(|item| { #loader }))
                 }
             } else {
-                let ext = quote! {
-                    if let Some(ext) = #ext.or(<#ty as geng::LoadAsset>::DEFAULT_EXT) {
-                        format!(".{}", ext)
-                    } else {
-                        "".to_owned()
-                    }
-                };
-                let path = match &field.path {
-                    Some(path) => quote! { #path },
-                    None => quote! {
-                        format!("{}{}", stringify!(#ident), #ext)
+                match &field.path {
+                    Some(path) => quote! {
+                       geng.load_asset(base_path.join(#path))
                     },
-                };
-                quote! {
-                    geng.load_asset::<#ty>(base_path.join(#path))
+                    None => quote! {
+                        geng.load_asset_ext(base_path.join(stringify!(#ident)), #ext)
+                    },
                 }
             };
             if let Some(postprocess) = &field.postprocess {
@@ -159,6 +142,32 @@ impl DeriveInput {
             }
             loader
         });
+        let field_loaders = data
+            .fields
+            .iter()
+            .zip(field_loaders)
+            .map(|(field, loader)| {
+                let loader = if let Some(expr) = &field.condition {
+                    quote! {
+                        async {
+                            Ok::<_, anyhow::Error>(if #expr {
+                                Some(#loader.await?)
+                            } else {
+                                None
+                            })
+                        }
+                    }
+                } else {
+                    loader
+                };
+                let ty = &field.ty;
+                quote! {
+                    async {
+                        let value = #loader.await?;
+                        Ok::<#ty, anyhow::Error>(value)
+                    }
+                }
+            });
         let load_fields = if sequential {
             quote! {
                 #(
@@ -170,7 +179,8 @@ impl DeriveInput {
             }
         } else {
             quote! {
-                let (#(#field_names,)*) = futures::join!(#(#field_loaders,)*);
+                #(let #field_names = #field_loaders;)*
+                let (#(#field_names,)*) = futures::join!(#(#field_names,)*);
                 #(
                     let #field_names = anyhow::Context::context(
                         #field_names,

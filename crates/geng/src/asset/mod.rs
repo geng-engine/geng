@@ -115,6 +115,17 @@ impl Geng {
             .boxed_local()
     }
 
+    pub fn load_asset_ext<T: LoadAsset>(
+        &self,
+        path: impl AsRef<std::path::Path>,
+        ext: Option<impl AsRef<str>>,
+    ) -> AssetFuture<T> {
+        match ext.as_ref().map(|s| s.as_ref()).or(T::DEFAULT_EXT) {
+            Some(ext) => self.load_asset(path.as_ref().with_extension(ext)),
+            None => self.load_asset(path),
+        }
+    }
+
     pub fn set_loading_progress_title(&self, title: &str) {
         // TODO: native
         #[cfg(target_arch = "wasm32")]
