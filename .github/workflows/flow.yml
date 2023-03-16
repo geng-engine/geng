@@ -83,7 +83,7 @@ jobs:
           for example in crates/geng/examples/*; do
             example=$(basename $example)
             example=${example%.rs}
-            cargo geng build --release --target wasm32-unknown-unknown -p geng --example $example
+            cargo geng-local build --release --target wasm32-unknown-unknown -p geng --example $example
             mv target/geng website/static/examples/$example
             examples_list="$examples_list\"$example\","
           done
