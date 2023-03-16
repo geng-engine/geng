@@ -250,6 +250,11 @@ impl<T: Float> vec2<T> {
     pub fn transform(self, transform: mat3<T>) -> Self {
         (transform * self.extend(T::ONE)).into_2d()
     }
+
+    /// Calculate aspect ratio (x / y)
+    pub fn aspect(self) -> T {
+        self.x / self.y
+    }
 }
 
 #[test]
