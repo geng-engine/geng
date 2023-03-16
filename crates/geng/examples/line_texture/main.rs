@@ -115,10 +115,3 @@ fn main() {
         Example::new(geng, assets)
     });
 }
-
-async fn foo() -> Option<impl geng::State> {
-    if true {
-        return None;
-    }
-    Some(None::<Example>.unwrap())
-}
