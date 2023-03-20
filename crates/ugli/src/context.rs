@@ -72,12 +72,12 @@ impl Ugli {
 
 #[cfg(not(target_arch = "wasm32"))]
 impl Ugli {
-    pub fn create_from_glutin(glutin_context: &glutin::Context<glutin::PossiblyCurrent>) -> Self {
+    pub fn create_from_glutin<F: Fn(&str) -> *const std::os::raw::c_void>(
+        get_proc_address: F,
+    ) -> Self {
         let ugli = Ugli {
             inner: Rc::new(UgliImpl {
-                raw: raw::Context::new(|symbol| {
-                    glutin_context.get_proc_address(symbol) as *const c_void
-                }),
+                raw: raw::Context::new(get_proc_address),
                 size: Cell::new(vec2(1, 1)),
                 phantom_data: PhantomData,
             }),
@@ -94,8 +94,6 @@ impl Ugli {
         gl.enable(raw::DEPTH_TEST);
         #[cfg(not(target_arch = "wasm32"))]
         gl.enable(raw::PROGRAM_POINT_SIZE);
-        #[cfg(target_os = "windows")]
-        gl.enable(raw::POINT_SPRITE);
         gl.pixel_store(raw::UNPACK_ALIGNMENT, 1);
         self.check();
     }

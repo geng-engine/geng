@@ -23,9 +23,13 @@ pub struct Window {
     #[cfg(target_arch = "wasm32")]
     canvas: web_sys::HtmlCanvasElement,
     #[cfg(not(target_arch = "wasm32"))]
-    glutin_window: glutin::WindowedContext<glutin::PossiblyCurrent>,
+    window: winit::window::Window,
     #[cfg(not(target_arch = "wasm32"))]
-    glutin_event_loop: RefCell<glutin::event_loop::EventLoop<()>>,
+    gl_ctx: glutin::context::PossiblyCurrentContext,
+    #[cfg(not(target_arch = "wasm32"))]
+    gl_surface: glutin::surface::Surface<glutin::surface::WindowSurface>,
+    #[cfg(not(target_arch = "wasm32"))]
+    event_loop: RefCell<winit::event_loop::EventLoop<()>>,
     #[allow(clippy::type_complexity)]
     event_handler: Rc<RefCell<Option<Box<dyn FnMut(Event)>>>>,
     pressed_keys: Rc<RefCell<HashSet<Key>>>,
@@ -85,32 +89,94 @@ impl Window {
         };
         #[cfg(not(target_arch = "wasm32"))]
         let window = {
-            let glutin_event_loop = glutin::event_loop::EventLoop::<()>::new();
-            // glutin::ContextBuilder::new(),
-            let glutin_window = glutin::ContextBuilder::new()
-                .with_vsync(options.vsync)
-                .with_multisampling(if options.antialias { 8 } else { 0 })
-                .build_windowed(
-                    {
-                        let mut window_builder = glutin::window::WindowBuilder::new();
-                        if let Some(size) = options.window_size {
-                            window_builder =
-                                window_builder.with_inner_size(glutin::dpi::PhysicalSize {
-                                    width: size.x as u32,
-                                    height: size.y as u32,
-                                });
-                        }
-                        window_builder.with_title(&options.title)
-                    },
-                    &glutin_event_loop,
-                )
+            let event_loop = winit::event_loop::EventLoop::<()>::new();
+            let (window, gl_config) = glutin_winit::DisplayBuilder::new()
+                .with_window_builder(Some({
+                    let mut builder = winit::window::WindowBuilder::new();
+                    if let Some(size) = options.window_size {
+                        builder = builder.with_inner_size(winit::dpi::PhysicalSize {
+                            width: size.x as u32,
+                            height: size.y as u32,
+                        });
+                    }
+                    builder = builder.with_title(&options.title);
+                    builder
+                }))
+                .build(&event_loop, default(), |configs| {
+                    if options.vsync {}
+                    if options.antialias {
+                        configs
+                            .into_iter()
+                            .max_by_key(|config| glutin::config::GlConfig::num_samples(config))
+                    } else {
+                        configs
+                            .into_iter()
+                            .min_by_key(|config| glutin::config::GlConfig::num_samples(config))
+                    }
+                    .expect("Could not find fitting config")
+                })
                 .unwrap();
-            let glutin_window = unsafe { glutin_window.make_current() }.unwrap();
-            let ugli = Ugli::create_from_glutin(&glutin_window);
+            let window = window.unwrap();
+            // .with_vsync(options.vsync)
+            // .with_multisampling(if options.antialias { 8 } else { 0 })
+            let raw_window_handle =
+                raw_window_handle::HasRawWindowHandle::raw_window_handle(&window);
+
+            let gl_display = glutin::display::GetGlDisplay::display(&gl_config);
+            let context_attributes = glutin::context::ContextAttributesBuilder::new()
+                // TODO
+                // .with_profile(glutin::context::GlProfile::Core)
+                // .with_context_api(glutin::context::ContextApi::OpenGl(Some(
+                //     glutin::context::Version::new(3, 3),
+                // )))
+                .build(Some(raw_window_handle));
+
+            let (gl_surface, gl_ctx) = {
+                let attrs =
+                    glutin_winit::GlWindow::build_surface_attributes(&window, <_>::default());
+                let surface = unsafe {
+                    glutin::display::GlDisplay::create_window_surface(
+                        &gl_display,
+                        &gl_config,
+                        &attrs,
+                    )
+                    .expect("Failed to create window surface")
+                };
+                let context = glutin::prelude::NotCurrentGlContextSurfaceAccessor::make_current(
+                    unsafe {
+                        glutin::display::GlDisplay::create_context(
+                            &gl_display,
+                            &gl_config,
+                            &context_attributes,
+                        )
+                        .expect("Failed to create context")
+                    },
+                    &surface,
+                )
+                .expect("Failed to make context current");
+                (surface, context)
+            };
+            glutin::surface::GlSurface::set_swap_interval(
+                &gl_surface,
+                &gl_ctx,
+                match options.vsync {
+                    true => glutin::surface::SwapInterval::Wait(1.try_into().unwrap()),
+                    false => glutin::surface::SwapInterval::DontWait,
+                },
+            )
+            .expect("Failed to setup vsync");
+            let ugli = Ugli::create_from_glutin(|symbol| {
+                glutin::display::GlDisplay::get_proc_address(
+                    &gl_display,
+                    &std::ffi::CString::new(symbol).unwrap(),
+                ) as *const c_void
+            });
             Self {
                 lock_cursor: Cell::new(false),
-                glutin_window,
-                glutin_event_loop: RefCell::new(glutin_event_loop),
+                window,
+                gl_surface,
+                gl_ctx,
+                event_loop: RefCell::new(event_loop),
                 event_handler: Rc::new(RefCell::new(None)),
                 ugli,
                 should_close: Cell::new(false),
@@ -144,7 +210,7 @@ impl Window {
         // ugli::sync();
         #[cfg(not(target_arch = "wasm32"))]
         {
-            self.glutin_window.swap_buffers().unwrap();
+            glutin::surface::GlSurface::swap_buffers(&self.gl_surface, &self.gl_ctx).unwrap();
         }
         #[cfg(not(target_arch = "wasm32"))]
         {
@@ -204,7 +270,7 @@ impl Window {
         };
         #[cfg(not(target_arch = "wasm32"))]
         return {
-            let size = self.glutin_window.window().inner_size();
+            let size = self.window.inner_size();
             let (width, height) = (size.width, size.height);
             vec2(width as usize, height as usize)
         };
@@ -247,10 +313,8 @@ impl Window {
         js::set_fullscreen(&self.canvas, fullscreen);
         #[cfg(not(target_arch = "wasm32"))]
         {
-            self.glutin_window.window().set_fullscreen(if fullscreen {
-                Some(glutin::window::Fullscreen::Borderless(
-                    self.glutin_window.window().current_monitor(),
-                ))
+            self.window.set_fullscreen(if fullscreen {
+                Some(winit::window::Fullscreen::Borderless(None))
             } else {
                 None
             });
@@ -278,8 +342,8 @@ impl Window {
         };
         let width = image.width();
         let height = image.height();
-        let icon = glutin::window::Icon::from_rgba(image.into_raw(), width, height)?;
-        self.glutin_window.window().set_window_icon(Some(icon));
+        let icon = winit::window::Icon::from_rgba(image.into_raw(), width, height)?;
+        self.window.set_window_icon(Some(icon));
         Ok(())
     }
 }

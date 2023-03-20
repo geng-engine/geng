@@ -31,17 +31,14 @@ impl Window {
         }
         #[cfg(not(target_arch = "wasm32"))]
         {
-            use glutin::window::CursorIcon as GC;
-            self.glutin_window
-                .window()
-                .set_cursor_icon(match cursor_type {
-                    CursorType::Default => GC::Default,
-                    CursorType::Pointer => GC::Hand,
-                    CursorType::Drag => GC::AllScroll,
-                    CursorType::None => GC::Default,
-                });
-            self.glutin_window
-                .window()
+            use winit::window::CursorIcon as GC;
+            self.window.set_cursor_icon(match cursor_type {
+                CursorType::Default => GC::Default,
+                CursorType::Pointer => GC::Hand,
+                CursorType::Drag => GC::AllScroll,
+                CursorType::None => GC::Default,
+            });
+            self.window
                 .set_cursor_visible(cursor_type != CursorType::None);
         };
     }
@@ -53,9 +50,8 @@ impl Window {
         unimplemented!();
         #[cfg(not(target_arch = "wasm32"))]
         if let Err(e) = self
-            .glutin_window
-            .window()
-            .set_cursor_position(glutin::dpi::PhysicalPosition::new(position.x, position.y))
+            .window
+            .set_cursor_position(winit::dpi::PhysicalPosition::new(position.x, position.y))
         {
             error!("Failed to set cursor position: {:?}", e);
         }

@@ -5,63 +5,65 @@ impl Window {
         let mut events = Vec::new();
         {
             let mut mouse_move = None;
-            let mut handle_event = |e: glutin::event::WindowEvent| match e {
-                glutin::event::WindowEvent::Focused(focus) => self.focused.set(focus),
-                glutin::event::WindowEvent::CloseRequested => self.should_close.set(true),
-                glutin::event::WindowEvent::MouseWheel { delta, .. } => {
+            let mut handle_event = |e: winit::event::WindowEvent| match e {
+                winit::event::WindowEvent::Focused(focus) => self.focused.set(focus),
+                winit::event::WindowEvent::CloseRequested => self.should_close.set(true),
+                winit::event::WindowEvent::MouseWheel { delta, .. } => {
                     events.push(Event::Wheel {
                         delta: match delta {
-                            glutin::event::MouseScrollDelta::PixelDelta(pos) => pos.y,
-                            glutin::event::MouseScrollDelta::LineDelta(_, dy) => dy as f64 * 51.0,
+                            winit::event::MouseScrollDelta::PixelDelta(pos) => pos.y,
+                            winit::event::MouseScrollDelta::LineDelta(_, dy) => dy as f64 * 51.0,
                         },
                     });
                 }
-                glutin::event::WindowEvent::CursorMoved { position, .. } => {
+                winit::event::WindowEvent::CursorMoved { position, .. } => {
                     let position = vec2(position.x, self.size().y as f64 - 1.0 - position.y);
                     mouse_move = Some(position);
                 }
-                glutin::event::WindowEvent::MouseInput { state, button, .. } => {
+                winit::event::WindowEvent::MouseInput { state, button, .. } => {
                     let button = match button {
-                        glutin::event::MouseButton::Left => Some(MouseButton::Left),
-                        glutin::event::MouseButton::Middle => Some(MouseButton::Middle),
-                        glutin::event::MouseButton::Right => Some(MouseButton::Right),
+                        winit::event::MouseButton::Left => Some(MouseButton::Left),
+                        winit::event::MouseButton::Middle => Some(MouseButton::Middle),
+                        winit::event::MouseButton::Right => Some(MouseButton::Right),
                         _ => None,
                     };
                     if let Some(button) = button {
                         let position = self.mouse_pos.get();
                         events.push(match state {
-                            glutin::event::ElementState::Pressed => {
+                            winit::event::ElementState::Pressed => {
                                 Event::MouseDown { position, button }
                             }
-                            glutin::event::ElementState::Released => {
+                            winit::event::ElementState::Released => {
                                 Event::MouseUp { position, button }
                             }
                         });
                     }
                 }
-                glutin::event::WindowEvent::KeyboardInput { input, .. } => {
+                winit::event::WindowEvent::KeyboardInput { input, .. } => {
                     if let Some(key) = input.virtual_keycode {
                         let key = from_glutin_key(key);
                         events.push(match input.state {
-                            glutin::event::ElementState::Pressed => Event::KeyDown { key },
-                            glutin::event::ElementState::Released => Event::KeyUp { key },
+                            winit::event::ElementState::Pressed => Event::KeyDown { key },
+                            winit::event::ElementState::Released => Event::KeyUp { key },
                         });
                     }
                 }
-                glutin::event::WindowEvent::Resized(new_size) => {
-                    self.glutin_window.resize(new_size);
+                winit::event::WindowEvent::Resized(new_size) => {
+                    glutin_winit::GlWindow::resize_surface(
+                        &self.window,
+                        &self.gl_surface,
+                        &self.gl_ctx,
+                    );
                 }
                 _ => {}
             };
-            use glutin::platform::run_return::EventLoopExtRunReturn;
-            self.glutin_event_loop
-                .borrow_mut()
-                .run_return(|e, _, flow| {
-                    if let glutin::event::Event::WindowEvent { event: e, .. } = e {
-                        handle_event(e)
-                    }
-                    *flow = glutin::event_loop::ControlFlow::Exit;
-                });
+            use winit::platform::run_return::EventLoopExtRunReturn;
+            self.event_loop.borrow_mut().run_return(|e, _, flow| {
+                if let winit::event::Event::WindowEvent { event: e, .. } = e {
+                    handle_event(e)
+                }
+                *flow = winit::event_loop::ControlFlow::Exit;
+            });
             if let Some(position) = mouse_move {
                 // This is here because of weird delta
                 events.push(Event::MouseMove {
@@ -75,8 +77,8 @@ impl Window {
     }
 }
 
-fn from_glutin_key(key: glutin::event::VirtualKeyCode) -> Key {
-    use glutin::event::VirtualKeyCode as GKey;
+fn from_glutin_key(key: winit::event::VirtualKeyCode) -> Key {
+    use winit::event::VirtualKeyCode as GKey;
     match key {
         GKey::Key0 => Key::Num0,
         GKey::Key1 => Key::Num1,
