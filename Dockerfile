@@ -12,4 +12,4 @@ COPY . /src
 RUN cargo install --path /src/crates/cargo-geng
 
 FROM base AS final
-COPY --from=intermediate /usr/local/bin/cargo-geng /usr/local/bin/cargo-geng
+COPY --from=intermediate /usr/local/cargo/bin/cargo-geng /usr/local/cargo/bin/cargo-geng
