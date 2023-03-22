@@ -1,10 +1,10 @@
-ARG TARGETS
 FROM debian:buster-slim AS base
 SHELL ["/bin/bash", "-c"]
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH
 COPY docker.sh /
+ARG TARGETS
 RUN ["/bin/bash", "/docker.sh", "setup"]
 
 FROM base AS intermediate
