@@ -111,7 +111,7 @@ jobs:
         uses: docker/build-push-action@v1
         with:
           path: .
-          build-args: TARGETS=web
+          build_args: TARGETS=web
           repository: kuviman/geng
           tags: latest
           username: ${{ secrets.DOCKER_USERNAME }}
