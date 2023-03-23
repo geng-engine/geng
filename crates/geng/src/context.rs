@@ -34,6 +34,7 @@ pub struct ContextOptions {
     pub window_size: Option<vec2<usize>>,
     pub fullscreen: bool,
     pub target_ui_resolution: Option<vec2<f64>>,
+    pub hot_reload: bool,
 }
 
 impl Default for ContextOptions {
@@ -59,6 +60,7 @@ impl Default for ContextOptions {
             window_size: None,
             fullscreen: false,
             target_ui_resolution: None,
+            hot_reload: cfg!(debug_assertions),
         }
     }
 }

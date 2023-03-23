@@ -17,6 +17,9 @@ pub struct CliArgs {
     /// Start in fullscreen
     #[clap(long, value_name = "BOOL")]
     pub fullscreen: Option<bool>,
+    /// Enable/disable hot reloading of assets
+    #[clap(long, value_name = "BOOL")]
+    pub hot_reload: Option<bool>,
 }
 
 impl ContextOptions {
@@ -33,6 +36,9 @@ impl ContextOptions {
         }
         if let Some(fullscreen) = args.fullscreen {
             options.fullscreen = fullscreen;
+        }
+        if let Some(hot_reload) = args.hot_reload {
+            options.hot_reload = hot_reload;
         }
         options
     }

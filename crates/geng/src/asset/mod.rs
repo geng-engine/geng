@@ -183,7 +183,7 @@ pub struct Hot<T> {
     update: RefCell<Option<AssetFuture<T>>>,
     #[cfg(not(target_arch = "wasm32"))]
     #[allow(dead_code)] // This is here for delaying the drop of the watcher
-    watcher: notify::RecommendedWatcher,
+    watcher: Option<notify::RecommendedWatcher>,
 }
 
 impl<T: LoadAsset> Hot<T> {
@@ -217,7 +217,7 @@ impl<T: LoadAsset> LoadAsset for Hot<T> {
         async move {
             let need_update = Arc::new(std::sync::atomic::AtomicBool::new(false));
             #[cfg(not(target_arch = "wasm32"))]
-            let watcher = {
+            let watcher = if geng.inner.options.hot_reload {
                 use notify::Watcher;
                 let need_update = need_update.clone();
                 let mut watcher =
@@ -232,7 +232,9 @@ impl<T: LoadAsset> LoadAsset for Hot<T> {
                     .watch(&path, notify::RecursiveMode::Recursive)
                     .unwrap();
                 info!("watching {path:?}");
-                watcher
+                Some(watcher)
+            } else {
+                None
             };
             let initial = geng.load_asset(&path).await?;
             Ok(Self {
