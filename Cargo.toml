@@ -50,7 +50,7 @@ maplit = "1"
 env_logger = "0.10"
 backtrace = "0.3"
 thiserror = "1"
-anyhow = "1" # TODO: eyre?
+anyhow = { version = "1", features = ["backtrace"] } # TODO: eyre?
 async-trait = "0.1"
 derive_more = "0.99"
 itertools = "0.10"
