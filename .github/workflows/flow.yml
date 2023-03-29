@@ -22,7 +22,7 @@ jobs:
 
       - name: Install things
         if: matrix.platform.channel == 'linux'
-        run: sudo apt-get update && sudo apt-get install -y libasound2-dev
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev libudev-dev
 
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
@@ -49,9 +49,6 @@ jobs:
           profile: minimal
           target: wasm32-unknown-unknown
 
-      - name: Install wasm-bindgen
-        run: cargo install wasm-bindgen-cli
-
       - name: Test
         run: cargo check --workspace --exclude cargo-geng --target wasm32-unknown-unknown
 
@@ -72,9 +69,6 @@ jobs:
           toolchain: stable
           profile: minimal
           target: wasm32-unknown-unknown
-
-      - name: Install wasm-bindgen
-        run: cargo install wasm-bindgen-cli
 
       - name: Build examples
         run: |
