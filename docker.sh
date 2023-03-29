@@ -22,6 +22,7 @@ function setup() {
     linux)
         install libasound2-dev
         install pkg-config
+        install libudev-dev
         ;;
     windows)
         install mingw-w64
