@@ -15,6 +15,7 @@ pub(crate) struct GengImpl {
     ui_theme: RefCell<Option<ui::Theme>>,
     pub(crate) options: ContextOptions,
     pub(crate) load_progress: RefCell<LoadProgress>,
+    pub(crate) gilrs: RefCell<gilrs::Gilrs>,
 }
 
 #[derive(Clone)]
@@ -101,6 +102,7 @@ impl Geng {
                 ui_theme: RefCell::new(None),
                 options,
                 load_progress: RefCell::new(LoadProgress::new()),
+                gilrs: RefCell::new(gilrs::Gilrs::new().unwrap()),
             }),
         }
     }
@@ -115,6 +117,10 @@ impl Geng {
 
     pub fn ugli(&self) -> &Ugli {
         self.inner.window.ugli()
+    }
+
+    pub fn gilrs(&self) -> Ref<Gilrs> {
+        self.inner.gilrs.borrow()
     }
 
     pub fn shader_lib(&self) -> &ShaderLib {
@@ -224,6 +230,13 @@ impl Geng {
             let geng = geng.clone();
             // TODO: remove the busy loop to not use any resources?
             move || {
+                {
+                    let mut gilrs = geng.inner.gilrs.borrow_mut();
+                    while let Some(gamepad_event) = gilrs.next_event() {
+                        geng.inner.window.send_event(Event::Gamepad(gamepad_event));
+                    }
+                }
+
                 state.borrow_mut().update();
                 let window_size = geng.inner.window.real_size();
                 // This means window is minimized?

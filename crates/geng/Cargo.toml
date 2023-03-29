@@ -33,6 +33,7 @@ serde.workspace = true
 lazy_static.workspace = true
 flate2.workspace = true
 atomic_float.workspace = true
+gilrs.workspace = true
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 console_error_panic_hook.workspace = true

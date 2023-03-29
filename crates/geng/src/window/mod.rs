@@ -193,6 +193,13 @@ impl Window {
         window
     }
 
+    pub(crate) fn send_event(&self, event: Event) {
+        let mut handler = self.event_handler.borrow_mut();
+        if let Some(handler) = &mut *handler {
+            handler(event);
+        }
+    }
+
     pub(crate) fn set_event_handler(&self, handler: Box<dyn FnMut(Event)>) {
         *self.event_handler.borrow_mut() = Some(handler);
     }

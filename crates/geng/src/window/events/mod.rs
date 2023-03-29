@@ -52,6 +52,7 @@ pub enum Event {
     KeyUp {
         key: Key,
     },
+    Gamepad(gilrs::Event),
 }
 
 impl Event {

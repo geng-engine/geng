@@ -34,6 +34,7 @@ pub mod prelude {
     pub use crate::{Camera2dExt as _, Camera3dExt as _};
     pub use ::batbox;
     pub use ::batbox::prelude::*;
+    pub use gilrs::{self, Gilrs};
     pub use ugli::{self, Ugli};
 }
 
