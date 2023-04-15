@@ -61,7 +61,6 @@ pub mod collection;
 pub mod diff;
 pub mod file;
 pub mod geom;
-pub mod i18n;
 pub mod logger;
 pub mod preferences;
 pub mod program_args;
