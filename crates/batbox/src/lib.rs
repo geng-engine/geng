@@ -44,6 +44,7 @@ pub mod crates {
     pub use ::batbox_color as color;
     pub use ::batbox_i18n as i18n;
     pub use ::batbox_num as num;
+    pub use ::batbox_time as time;
 }
 
 pub mod prelude;
@@ -64,5 +65,4 @@ pub mod preferences;
 pub mod program_args;
 pub mod range;
 pub mod rng;
-pub mod time;
 pub mod util;

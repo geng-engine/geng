@@ -20,6 +20,7 @@ batbox-num.workspace = true
 batbox-color.workspace = true
 batbox-approx.workspace = true
 batbox-tuple-macros.workspace = true
+batbox-time.workspace = true
 
 batbox-derive.workspace = true
 

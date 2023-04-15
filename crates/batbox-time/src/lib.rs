@@ -2,16 +2,6 @@
 //!
 //! [std::time] is not working on web so use this instead
 
-#[allow(unused_imports)]
-use super::*;
-
-pub mod prelude {
-    //! Items intended to always be available. Reexported from [crate::prelude]
-
-    #[doc(no_inline)]
-    pub use super::*;
-}
-
 /// A measurement of a monotonically nondecreasing clock.
 ///
 /// Alternative of [std::time::Instant]
@@ -64,7 +54,7 @@ pub struct Duration {
     secs: f64,
 }
 
-impl Add for Duration {
+impl std::ops::Add for Duration {
     type Output = Self;
     fn add(self, rhs: Self) -> Self {
         Self {
@@ -73,8 +63,8 @@ impl Add for Duration {
     }
 }
 
-impl Debug for Duration {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl std::fmt::Debug for Duration {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         std::time::Duration::from(*self).fmt(f)
     }
 }

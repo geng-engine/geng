@@ -137,7 +137,7 @@ impl Sound {
             looped: false,
         }
     }
-    pub fn duration(&self) -> Duration {
+    pub fn duration(&self) -> time::Duration {
         rodio::Source::total_duration(&self.source).unwrap().into()
     }
     pub fn effect(&self) -> SoundEffect {
@@ -356,9 +356,9 @@ impl SoundEffect {
         self.sink().set_volume(volume as f32);
     }
     pub fn play(&mut self) {
-        self.play_from(Duration::from_secs_f64(0.0));
+        self.play_from(time::Duration::from_secs_f64(0.0));
     }
-    pub fn play_from(&mut self, offset: Duration) {
+    pub fn play_from(&mut self, offset: time::Duration) {
         let source = self.source.take().expect("Already playing");
         let source = rodio::Source::skip_duration(source, offset.into());
         self.sink().append(source);

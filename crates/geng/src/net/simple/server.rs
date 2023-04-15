@@ -97,7 +97,7 @@ impl<T: Model> Server<T> {
             let state = self.state;
             let running = running.clone();
             let mut timer = Timer::new();
-            let mut unprocessed_time = 0.0;
+            let mut unprocessed_time: f32 = 0.0;
             move || {
                 while running.load(std::sync::atomic::Ordering::Relaxed) {
                     unprocessed_time += timer.tick().as_secs_f64() as f32;

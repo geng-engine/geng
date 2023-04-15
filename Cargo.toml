@@ -26,6 +26,7 @@ batbox-i18n-macro = { version = "0.14", path = "crates/batbox-i18n/macro" }
 batbox-num = { version = "0.14", path = "crates/batbox-num" }
 batbox-approx = { version = "0.14", path = "crates/batbox-approx" }
 batbox-color = { version = "0.14", path = "crates/batbox-color" }
+batbox-time = { version = "0.14", path = "crates/batbox-time" }
 
 # Geng
 geng = { version = "0.14", path = "crates/geng" }
