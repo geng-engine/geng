@@ -1,23 +1,23 @@
-use super::*;
+use proc_macro2::{Span, TokenStream};
+use quote::quote;
 
-pub struct Input {
+#[proc_macro]
+pub fn gen(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    process(syn::parse_macro_input!(input)).into()
+}
+
+struct Input {
     path: syn::LitStr,
-    // ident: syn::Ident,
+    mod_ident: syn::Ident,
 }
 
 impl syn::parse::Parse for Input {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        input.parse::<syn::Token!(mod)>()?;
+        let mod_ident = input.parse()?;
+        input.parse::<syn::Token!(:)>()?;
         let path = input.parse()?;
-        // let ident = if input.peek(syn::Token!(as)) {
-        //     input.parse::<syn::Token!(as)>()?;
-        //     input.parse()?
-        // } else {
-        //     syn::Ident::new("I18N", Span::call_site())
-        // };
-        Ok(Self {
-            path,
-            // ident,
-        })
+        Ok(Self { path, mod_ident })
     }
 }
 
@@ -31,7 +31,8 @@ fn parse_toml(path: impl AsRef<std::path::Path>) -> std::collections::HashMap<St
     toml::from_str(&toml).expect("Failed to parse toml")
 }
 
-pub fn process(input: Input) -> TokenStream {
+fn process(input: Input) -> TokenStream {
+    let mod_ident = input.mod_ident;
     let locales = parse_toml({
         let manifest_dir: std::path::PathBuf =
             std::env::var_os("CARGO_MANIFEST_DIR").unwrap().into();
@@ -88,7 +89,7 @@ pub fn process(input: Input) -> TokenStream {
     });
 
     quote! {
-        mod i18n {
+        mod #mod_ident {
             pub struct Locale {
                 #(#fields,)*
             }

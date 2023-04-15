@@ -1,6 +1,4 @@
-use batbox::prelude::*;
-
-i18n!("tests/i18n/translations.toml");
+batbox_i18n::gen!(mod i18n: "tests/translations.toml");
 
 #[test]
 fn main() {

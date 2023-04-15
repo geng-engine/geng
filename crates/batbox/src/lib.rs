@@ -39,6 +39,8 @@ pub mod crates {
     pub use ::wasm_bindgen_futures;
     #[cfg(target_arch = "wasm32")]
     pub use ::web_sys;
+
+    pub use ::batbox_i18n as i18n;
 }
 
 pub mod prelude;
