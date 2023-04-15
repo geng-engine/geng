@@ -48,8 +48,8 @@ impl Draw2d for Quad {
 }
 
 impl Transform2d<f32> for Quad {
-    fn bounding_quad(&self) -> batbox::geom::Quad<f32> {
-        batbox::geom::Quad {
+    fn bounding_quad(&self) -> batbox::lapp::Quad<f32> {
+        batbox::lapp::Quad {
             transform: self.transform,
         }
     }
@@ -116,8 +116,8 @@ impl<T: std::borrow::Borrow<ugli::Texture>> Draw2d for TexturedQuad<T> {
 }
 
 impl<T: std::borrow::Borrow<ugli::Texture>> Transform2d<f32> for TexturedQuad<T> {
-    fn bounding_quad(&self) -> batbox::geom::Quad<f32> {
-        batbox::geom::Quad {
+    fn bounding_quad(&self) -> batbox::lapp::Quad<f32> {
+        batbox::lapp::Quad {
             transform: self.transform,
         }
     }

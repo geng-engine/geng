@@ -58,16 +58,17 @@ pub use crate::crates::wasm_bindgen::{prelude::*, JsCast as _};
 pub use crate::crates::wasm_bindgen_futures::{future_to_promise, JsFuture};
 
 #[doc(no_inline)]
-pub use ::batbox_tuple_macros::call_for_tuples;
+pub use ::batbox_tuple_macros::*;
 
-pub use crate::approx::Approx;
-pub use crate::cmp::prelude::*;
-pub use crate::color::*;
-pub use crate::geom::prelude::*;
-pub use crate::range::prelude::*;
 pub use crate::rng::prelude::*;
 pub use crate::util::prelude::*;
+pub use approx::*;
+pub use cmp::*;
 pub use collection::*;
+pub use color::*;
 pub use diff::Diff;
+pub use la::*;
+pub use lapp::*;
 pub use num::*;
+pub use range::*;
 pub use time::Timer;

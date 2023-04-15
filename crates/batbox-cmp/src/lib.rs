@@ -1,18 +1,8 @@
 //! Extra utilities for [Ord] and [PartialOrd] types
-use super::*;
 
-pub mod prelude {
-    //! Items intended to always be available. Reexported from [crate::prelude]
+use batbox_range::*;
 
-    #[doc(no_inline)]
-    pub use super::*;
-
-    #[doc(no_inline)]
-    pub use std::cmp::{max, min};
-}
-
-#[allow(unused_imports)]
-use prelude::*;
+pub use std::cmp::{max, min};
 
 /// Extension trait for getting minimum/maximum of values grouped together
 pub trait MinMax: Sized {
@@ -124,7 +114,7 @@ pub trait Clamp: Sized + PartialOrd {
     /// Clamp the absolute value. Same as self.clamp_range(-max..=max)
     fn clamp_abs(self, max: Self) -> Self
     where
-        Self: Neg<Output = Self> + Copy,
+        Self: std::ops::Neg<Output = Self> + Copy,
     {
         self.clamp_range(-max..=max)
     }

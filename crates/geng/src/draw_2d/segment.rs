@@ -6,7 +6,7 @@ pub struct Segment {
 }
 
 impl Segment {
-    pub fn new(segment: batbox::geom::Segment<f32>, width: f32, color: Rgba<f32>) -> Self {
+    pub fn new(segment: batbox::lapp::Segment<f32>, width: f32, color: Rgba<f32>) -> Self {
         Self::new_gradient(
             ColoredVertex {
                 a_pos: segment.0,
@@ -49,8 +49,8 @@ impl Segment {
 }
 
 impl Transform2d<f32> for Segment {
-    fn bounding_quad(&self) -> batbox::geom::Quad<f32> {
-        batbox::geom::Quad {
+    fn bounding_quad(&self) -> batbox::lapp::Quad<f32> {
+        batbox::lapp::Quad {
             transform: self.transform,
         }
     }

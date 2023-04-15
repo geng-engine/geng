@@ -1,17 +1,9 @@
 //! Extra utilities for working with ranges
-use super::*;
 
-pub mod prelude {
-    //! Items intended to always be available. Reexported from [crate::prelude]
-
-    #[doc(no_inline)]
-    pub use super::*;
-
-    #[doc(no_inline)]
-    pub use std::ops::{
-        Bound, Range, RangeBounds, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive,
-    };
-}
+#[doc(no_inline)]
+pub use std::ops::{
+    Bound, Range, RangeBounds, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive,
+};
 
 /// Same as [RangeBounds] but without exclusive bounds
 pub trait FixedRangeBounds<T: ?Sized> {
@@ -65,21 +57,29 @@ impl<T> FixedRangeBounds<T> for RangeToInclusive<T> {
     }
 }
 
-/// Convert any range into a `start..end` [Range] as if used for slicing
-pub fn index_range<R>(len: usize, range: R) -> Range<usize>
-where
-    R: RangeBounds<usize>,
-{
-    Range {
-        start: match range.start_bound() {
-            Bound::Included(&i) => i,
-            Bound::Excluded(&i) => i + 1,
-            Bound::Unbounded => 0,
-        },
-        end: match range.end_bound() {
-            Bound::Included(&i) => i + 1,
-            Bound::Excluded(&i) => i,
-            Bound::Unbounded => len,
-        },
+pub trait IndexRangeExt {
+    /// Convert any range into a `start..end` [Range] as if used for slicing of a container of length equal to self
+    fn index_range<R>(self, range: R) -> Range<usize>
+    where
+        R: RangeBounds<usize>;
+}
+
+impl IndexRangeExt for usize {
+    fn index_range<R>(self, range: R) -> Range<usize>
+    where
+        R: RangeBounds<usize>,
+    {
+        Range {
+            start: match range.start_bound() {
+                Bound::Included(&i) => i,
+                Bound::Excluded(&i) => i + 1,
+                Bound::Unbounded => 0,
+            },
+            end: match range.end_bound() {
+                Bound::Included(&i) => i + 1,
+                Bound::Excluded(&i) => i,
+                Bound::Unbounded => self,
+            },
+        }
     }
 }

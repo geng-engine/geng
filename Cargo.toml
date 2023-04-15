@@ -34,6 +34,10 @@ batbox-diff = { version = "0.14", path = "crates/batbox-diff" }
 batbox-diff-derive = { version = "0.14", path = "crates/batbox-diff/derive" }
 batbox-collection = { version = "0.14", path = "crates/batbox-collection" }
 batbox-collection-derive = { version = "0.14", path = "crates/batbox-collection/derive" }
+batbox-range = { version = "0.14", path = "crates/batbox-range" }
+batbox-cmp = { version = "0.14", path = "crates/batbox-cmp" }
+batbox-la = { version = "0.14", path = "crates/batbox-la" }
+batbox-lapp = { version = "0.14", path = "crates/batbox-lapp" }
 
 # Geng
 geng = { version = "0.14", path = "crates/geng" }

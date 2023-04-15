@@ -6,8 +6,8 @@ use super::*;
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
 pub struct vec2<T>(pub T, pub T);
 
-impl<T: Display> Display for vec2<T> {
-    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> fmt::Result {
+impl<T: std::fmt::Display> std::fmt::Display for vec2<T> {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(fmt, "({}, {})", self.0, self.1)
     }
 }
@@ -30,26 +30,26 @@ pub struct XY<T> {
 impl<T> Deref for XY<T> {
     type Target = [T; 2];
     fn deref(&self) -> &[T; 2] {
-        unsafe { mem::transmute(self) }
+        unsafe { std::mem::transmute(self) }
     }
 }
 
 impl<T> DerefMut for XY<T> {
     fn deref_mut(&mut self) -> &mut [T; 2] {
-        unsafe { mem::transmute(self) }
+        unsafe { std::mem::transmute(self) }
     }
 }
 
 impl<T> Deref for vec2<T> {
     type Target = XY<T>;
     fn deref(&self) -> &XY<T> {
-        unsafe { mem::transmute(self) }
+        unsafe { std::mem::transmute(self) }
     }
 }
 
 impl<T> DerefMut for vec2<T> {
     fn deref_mut(&mut self) -> &mut XY<T> {
-        unsafe { mem::transmute(self) }
+        unsafe { std::mem::transmute(self) }
     }
 }
 

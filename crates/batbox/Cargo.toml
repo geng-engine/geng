@@ -28,6 +28,10 @@ batbox-cli.workspace = true
 batbox-logger.workspace = true
 batbox-diff.workspace = true
 batbox-collection.workspace = true
+batbox-cmp.workspace = true
+batbox-range.workspace = true
+batbox-la.workspace = true
+batbox-lapp.workspace = true
 
 # rng
 rand.workspace = true

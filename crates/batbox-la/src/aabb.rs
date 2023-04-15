@@ -279,20 +279,3 @@ impl<T: UNum> Aabb2<T> {
         }
     }
 }
-
-impl<T: Float> FitTarget2d<T> for Aabb2<T> {
-    fn make_fit(&self, object: &mut impl Transform2d<T>) {
-        let current_aabb = object.bounding_box();
-        let current_width = current_aabb.width();
-        let current_height = current_aabb.height();
-        if current_width == T::ZERO || current_height == T::ZERO {
-            return;
-        }
-        let scale = partial_min(self.height() / current_height, self.width() / current_width);
-        object.apply_transform(
-            mat3::translate(self.center())
-                * mat3::scale_uniform(scale)
-                * mat3::translate(-current_aabb.center()),
-        );
-    }
-}

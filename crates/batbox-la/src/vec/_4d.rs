@@ -6,8 +6,8 @@ use super::*;
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
 pub struct vec4<T>(pub T, pub T, pub T, pub T);
 
-impl<T: Display> Display for vec4<T> {
-    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> fmt::Result {
+impl<T: std::fmt::Display> std::fmt::Display for vec4<T> {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(fmt, "({}, {}, {}, {})", self.x, self.y, self.z, self.w)
     }
 }
@@ -20,6 +20,7 @@ impl<T> From<[T; 4]> for vec4<T> {
 }
 
 /// Data structure used to provide access to coordinates with the dot notation, e.g. `v.x`
+#[repr(C)]
 pub struct XYZW<T> {
     #[allow(missing_docs)]
     pub x: T,
@@ -34,26 +35,26 @@ pub struct XYZW<T> {
 impl<T> Deref for XYZW<T> {
     type Target = [T; 4];
     fn deref(&self) -> &[T; 4] {
-        unsafe { mem::transmute(self) }
+        unsafe { std::mem::transmute(self) }
     }
 }
 
 impl<T> DerefMut for XYZW<T> {
     fn deref_mut(&mut self) -> &mut [T; 4] {
-        unsafe { mem::transmute(self) }
+        unsafe { std::mem::transmute(self) }
     }
 }
 
 impl<T> Deref for vec4<T> {
     type Target = XYZW<T>;
     fn deref(&self) -> &XYZW<T> {
-        unsafe { mem::transmute(self) }
+        unsafe { std::mem::transmute(self) }
     }
 }
 
 impl<T> DerefMut for vec4<T> {
     fn deref_mut(&mut self) -> &mut XYZW<T> {
-        unsafe { mem::transmute(self) }
+        unsafe { std::mem::transmute(self) }
     }
 }
 

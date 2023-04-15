@@ -42,15 +42,19 @@ pub mod crates {
 
     pub use ::batbox_approx as approx;
     pub use ::batbox_cli as cli;
+    pub use ::batbox_cmp as cmp;
     pub use ::batbox_collection as collection;
     pub use ::batbox_color as color;
     pub use ::batbox_diff as diff;
     pub use ::batbox_file as file;
     pub use ::batbox_file_dialog as file_dialog;
     pub use ::batbox_i18n as i18n;
+    pub use ::batbox_la as la;
+    pub use ::batbox_lapp as lapp;
     pub use ::batbox_logger as logger;
     pub use ::batbox_num as num;
     pub use ::batbox_preferences as preferences;
+    pub use ::batbox_range as range;
     pub use ::batbox_time as time;
 }
 
@@ -59,8 +63,5 @@ pub mod prelude;
 pub use crates::*;
 use prelude::*;
 
-pub mod cmp;
-pub mod geom;
-pub mod range;
 pub mod rng;
 pub mod util;

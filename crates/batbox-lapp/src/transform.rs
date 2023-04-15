@@ -143,9 +143,3 @@ pub trait Transform2dExt<F: Float>: Transform2d<F> {
 }
 
 impl<F: Float, T: Transform2d<F> + ?Sized> Transform2dExt<F> for T {}
-
-/// Represents a type that can be used to fit [Transform2d] objects into
-pub trait FitTarget2d<F: Float> {
-    /// Make given object's bounding [Quad] fit into self
-    fn make_fit(&self, object: &mut impl Transform2d<F>);
-}

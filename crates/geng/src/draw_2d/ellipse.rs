@@ -70,8 +70,8 @@ impl Draw2d for Ellipse {
 }
 
 impl Transform2d<f32> for Ellipse {
-    fn bounding_quad(&self) -> batbox::geom::Quad<f32> {
-        batbox::geom::Quad {
+    fn bounding_quad(&self) -> batbox::lapp::Quad<f32> {
+        batbox::lapp::Quad {
             transform: self.transform,
         }
     }

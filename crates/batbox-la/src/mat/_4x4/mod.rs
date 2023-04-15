@@ -72,11 +72,11 @@ impl<T> IndexMut<(usize, usize)> for mat4<T> {
 impl<T> mat4<T> {
     /// Get self as a flat array
     pub fn as_flat_array(&self) -> &[T; 16] {
-        unsafe { mem::transmute(self) }
+        unsafe { std::mem::transmute(self) }
     }
     /// Get self as a mutable flat array
     pub fn as_flat_array_mut(&mut self) -> &mut [T; 16] {
-        unsafe { mem::transmute(self) }
+        unsafe { std::mem::transmute(self) }
     }
 }
 
