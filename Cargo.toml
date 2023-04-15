@@ -29,6 +29,7 @@ batbox-color = { version = "0.14", path = "crates/batbox-color" }
 batbox-time = { version = "0.14", path = "crates/batbox-time" }
 batbox-file = { version = "0.14", path = "crates/batbox-file" }
 batbox-file-dialog = { version = "0.14", path = "crates/batbox-file-dialog" }
+batbox-preferences = { version = "0.14", path = "crates/batbox-preferences" }
 
 # Geng
 geng = { version = "0.14", path = "crates/geng" }

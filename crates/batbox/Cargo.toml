@@ -23,6 +23,7 @@ batbox-tuple-macros.workspace = true
 batbox-time.workspace = true
 batbox-file.workspace = true
 batbox-file-dialog.workspace = true
+batbox-preferences.workspace = true
 
 batbox-derive.workspace = true
 

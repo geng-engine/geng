@@ -1,14 +1,8 @@
 //! Saving/loading preferences (small amounts of user data)
 //!
 //! Web implementation uses [local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)
-use super::*;
 
-pub mod prelude {
-    //! Items intended to always be available. Reexported from [crate::prelude]
-
-    #[doc(no_inline)]
-    pub use crate::preferences;
-}
+use serde::{de::DeserializeOwned, Serialize};
 
 /// Base path where preferences are going to be saved/loaded from
 pub fn base_path() -> std::path::PathBuf {
@@ -50,20 +44,21 @@ pub fn save<T: Serialize>(key: &str, value: &T) {
     }
     #[cfg(not(target_arch = "wasm32"))]
     {
+        use std::io::Write;
         if let Err(e) = std::fs::create_dir_all(&base_path) {
-            error!("Failed to create preferences base path: {}", e);
+            log::error!("Failed to create preferences base path: {}", e);
             return;
         }
         let path = &path;
         let mut file = match std::fs::File::create(path) {
             Ok(file) => file,
             Err(e) => {
-                error!("Failed to create {:?}: {}", path, e);
+                log::error!("Failed to create {:?}: {}", path, e);
                 return;
             }
         };
         if let Err(e) = file.write_all(serde_json::to_string_pretty(value).unwrap().as_bytes()) {
-            error!("Failed to save {:?}: {}", path, e);
+            log::error!("Failed to save {:?}: {}", path, e);
         }
     }
 }
@@ -84,7 +79,7 @@ pub fn load<T: DeserializeOwned>(key: &str) -> Option<T> {
             {
                 Some(Ok(value)) => Some(value),
                 Some(Err(e)) => {
-                    error!("Failed to deserialize {:?}: {}", path, e);
+                    log::error!("Failed to deserialize {:?}: {}", path, e);
                     None
                 }
                 None => None,
@@ -99,17 +94,17 @@ pub fn load<T: DeserializeOwned>(key: &str) -> Option<T> {
         let file = match std::fs::File::open(path) {
             Ok(file) => file,
             Err(e) => {
-                warn!("Failed to open {:?}: {}", path, e);
+                log::warn!("Failed to open {:?}: {}", path, e);
                 return None;
             }
         };
         match serde_json::from_reader(file) {
             Ok(value) => {
-                debug!("Successfully loaded {:?}", path);
+                log::debug!("Successfully loaded {:?}", path);
                 Some(value)
             }
             Err(e) => {
-                error!("Failed to deserialize {:?}: {}", path, e);
+                log::error!("Failed to deserialize {:?}: {}", path, e);
                 None
             }
         }

@@ -46,6 +46,7 @@ pub mod crates {
     pub use ::batbox_file_dialog as file_dialog;
     pub use ::batbox_i18n as i18n;
     pub use ::batbox_num as num;
+    pub use ::batbox_preferences as preferences;
     pub use ::batbox_time as time;
 }
 
@@ -62,7 +63,6 @@ pub mod collection;
 pub mod diff;
 pub mod geom;
 pub mod logger;
-pub mod preferences;
 pub mod program_args;
 pub mod range;
 pub mod rng;
