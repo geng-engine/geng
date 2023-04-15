@@ -53,7 +53,7 @@ impl Window {
             .window
             .set_cursor_position(winit::dpi::PhysicalPosition::new(position.x, position.y))
         {
-            error!("Failed to set cursor position: {:?}", e);
+            log::error!("Failed to set cursor position: {:?}", e);
         }
     }
 

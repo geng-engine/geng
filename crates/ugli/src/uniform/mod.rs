@@ -115,7 +115,7 @@ impl<U: Uniform> Uniform for Option<U> {
         if let Some(uniform) = self {
             uniform.apply(gl, info);
         } else if let Some(default) = &info.default {
-            warn!("{:?} reset to {:?}", info.name, default);
+            log::warn!("{:?} reset to {:?}", info.name, default);
             default.apply(gl, info);
         } else {
             panic!("Optional uniform with unknown default");

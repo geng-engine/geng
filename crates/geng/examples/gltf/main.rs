@@ -89,7 +89,7 @@ impl Example {
         let (document, buffers, _images) = gltf::import_slice(&gltf).unwrap();
         let mut meshes = Vec::new();
         for mesh in document.meshes() {
-            info!("{:?}", mesh.name());
+            log::info!("{:?}", mesh.name());
             for primitive in mesh.primitives() {
                 let reader = primitive.reader(|buffer| buffers.get(buffer.index()).map(|x| &**x));
                 let positions: Vec<vec3<f32>> = reader

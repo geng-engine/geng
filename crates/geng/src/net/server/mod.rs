@@ -58,7 +58,7 @@ impl<T: App> ws::Handler for Handler<T> {
         if let Some(client) = &mut self.client {
             client.handle(message);
         } else {
-            error!("WUT! received a message before handshake");
+            log::error!("WUT! received a message before handshake");
         }
         Ok(())
     }
@@ -80,7 +80,7 @@ impl<T: App> ws::Factory for Factory<T> {
     type Handler = Handler<T>;
 
     fn connection_made(&mut self, sender: ws::Sender) -> Handler<T> {
-        info!("New connection");
+        log::info!("New connection");
         Handler {
             app: self.app.clone(),
             sender,
@@ -126,7 +126,7 @@ impl<T: App> Server<T> {
         let ws = match ws.bind(addr) {
             Ok(ws) => ws,
             Err(e) => {
-                error!("Failed to bind server to {:?}: {}", addr, e);
+                log::error!("Failed to bind server to {:?}: {}", addr, e);
                 panic!("{e:?}");
             }
         };
@@ -138,13 +138,13 @@ impl<T: App> Server<T> {
         }
     }
     pub fn run(self) {
-        info!("Starting the server");
+        log::info!("Starting the server");
         match self.ws.run() {
             Ok(_) => {
-                info!("Server finished successfully");
+                log::info!("Server finished successfully");
             }
             Err(e) => {
-                error!("Server shutdown with error: {}", e);
+                log::error!("Server shutdown with error: {}", e);
                 panic!("{e:?}");
             }
         }

@@ -90,7 +90,7 @@ impl Ugli {
 impl Ugli {
     pub fn init(&self) {
         let gl = &self.inner.raw;
-        info!("GL version: {:?}", gl.get_version_string());
+        log::info!("GL version: {:?}", gl.get_version_string());
         gl.enable(raw::DEPTH_TEST);
         #[cfg(not(target_arch = "wasm32"))]
         gl.enable(raw::PROGRAM_POINT_SIZE);

@@ -56,7 +56,7 @@ struct Handler<T: Message> {
 
 impl<T: Message> ws::Handler for Handler<T> {
     fn on_open(&mut self, _: ws::Handshake) -> ws::Result<()> {
-        info!("Connected to the server");
+        log::info!("Connected to the server");
         self.connection_sender
             .take()
             .unwrap()

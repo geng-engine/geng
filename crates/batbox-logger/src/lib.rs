@@ -8,17 +8,10 @@
 //! logger::init();
 //! info!("This is a doctest");
 //! ```
-use super::*;
 
-pub mod prelude {
-    //! Items intended to always be available. Reexported from [crate::prelude]
-
-    #[doc(no_inline)]
-    pub use crate::logger;
-
-    #[doc(no_inline)]
-    pub use ::log::{debug, error, info, log_enabled, trace, warn};
-}
+use std::sync::Mutex;
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::prelude::*;
 
 struct Logger {
     inner: env_logger::Logger,
@@ -78,10 +71,10 @@ pub fn init_with(mut builder: env_logger::Builder) -> Result<(), log::SetLoggerE
     };
     log::set_max_level(logger.inner.filter());
     log::set_boxed_logger(Box::new(logger))?;
-    trace!("Logger initialized with {}", builder_info);
+    log::trace!("Logger initialized with {}", builder_info);
     std::panic::set_hook(Box::new(|info| {
-        error!("{}", info);
-        error!("{:?}", backtrace::Backtrace::new());
+        log::error!("{}", info);
+        log::error!("{:?}", backtrace::Backtrace::new());
     }));
     Ok(())
 }
@@ -114,7 +107,7 @@ pub fn try_init() -> Result<(), log::SetLoggerError> {
 
 /// Initialize for tests ([crates::env_logger::Builder::is_test])
 pub fn init_for_tests() {
-    let mut builder = logger::builder();
+    let mut builder = builder();
     builder.is_test(true);
     let _ = init_with(builder);
 }

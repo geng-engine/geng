@@ -197,7 +197,7 @@ impl<T: LoadAsset> Hot<T> {
                     *update = None;
                     match result {
                         Ok(new) => *current = new,
-                        Err(e) => error!("{e}"),
+                        Err(e) => log::error!("{e}"),
                     }
                     self.need_update
                         .store(false, std::sync::atomic::Ordering::SeqCst);
@@ -231,7 +231,7 @@ impl<T: LoadAsset> LoadAsset for Hot<T> {
                 watcher
                     .watch(&path, notify::RecursiveMode::Recursive)
                     .unwrap();
-                info!("watching {path:?}");
+                log::info!("watching {path:?}");
                 Some(watcher)
             } else {
                 None

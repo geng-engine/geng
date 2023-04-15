@@ -59,7 +59,7 @@ impl Console {
     pub fn new(geng: &Geng) -> Self {
         logger::add_logger(Box::new(logger()));
         let receiver = CHANNEL.lock().unwrap().receiver.take().unwrap();
-        debug!("Debug overlay initialized");
+        log::debug!("Debug overlay initialized");
         Self {
             geng: geng.clone(),
             receiver,

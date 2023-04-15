@@ -157,7 +157,7 @@ impl Convert<web_sys::WheelEvent> for Event {
                     web_sys::WheelEvent::DOM_DELTA_LINE => 51.0,
                     web_sys::WheelEvent::DOM_DELTA_PAGE => 800.0,
                     _ => {
-                        error!("Unexpected delta mode: {}", event.delta_mode());
+                        log::error!("Unexpected delta mode: {}", event.delta_mode());
                         return None;
                     }
                 },

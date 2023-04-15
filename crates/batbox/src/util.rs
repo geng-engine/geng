@@ -39,7 +39,7 @@ pub fn run_dir() -> std::path::PathBuf {
         if path.is_dir() {
             return path;
         } else {
-            warn!("run_dir was expected to be {path:?} but its not a valid directory path");
+            log::warn!("run_dir was expected to be {path:?} but its not a valid directory path");
         }
     } else {
         #[cfg(not(target_arch = "wasm32"))]

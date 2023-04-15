@@ -27,7 +27,7 @@ fn main() {
     let geng = Geng::new("derive assets example");
     geng.clone().run_loading(async move {
         let assets: Assets = geng.load_asset(run_dir().join("assets")).await.unwrap();
-        info!("{:?}", assets.list);
+        log::info!("{:?}", assets.list);
         Example
     })
 }

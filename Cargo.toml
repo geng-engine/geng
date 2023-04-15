@@ -31,6 +31,7 @@ batbox-file = { version = "0.14", path = "crates/batbox-file" }
 batbox-file-dialog = { version = "0.14", path = "crates/batbox-file-dialog" }
 batbox-preferences = { version = "0.14", path = "crates/batbox-preferences" }
 batbox-cli = { version = "0.14", path = "crates/batbox-cli" }
+batbox-logger = { version = "0.14", path = "crates/batbox-logger" }
 
 # Geng
 geng = { version = "0.14", path = "crates/geng" }

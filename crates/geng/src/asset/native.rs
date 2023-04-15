@@ -33,7 +33,7 @@ impl LoadAsset for ugli::Texture {
         let ugli = geng.ugli().clone();
         let path = path.to_owned();
         let image_future = geng.inner.asset_manager.spawn(move || {
-            debug!("Loading {:?}", path);
+            log::debug!("Loading {:?}", path);
             fn load(path: &std::path::Path) -> anyhow::Result<image::RgbaImage> {
                 let image = image::open(path).context(format!("Failed to load {path:?}"))?;
                 Ok(match image {
@@ -57,7 +57,7 @@ impl LoadAsset for Sound {
             .inner
             .asset_manager
             .spawn(move || -> Result<_, anyhow::Error> {
-                debug!("Loading {:?}", path);
+                log::debug!("Loading {:?}", path);
                 let mut data = Vec::new();
                 std::fs::File::open(path)?.read_to_end(&mut data)?;
                 Ok(data)
