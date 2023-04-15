@@ -53,8 +53,6 @@ use prelude::*;
 
 #[doc(no_inline)]
 pub use batbox_derive::*;
-#[doc(no_inline)]
-pub use batbox_macros::*;
 
 pub mod cmp;
 pub mod collection;

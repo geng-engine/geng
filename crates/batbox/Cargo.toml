@@ -19,8 +19,8 @@ batbox-i18n.workspace = true
 batbox-num.workspace = true
 batbox-color.workspace = true
 batbox-approx.workspace = true
+batbox-tuple-macros.workspace = true
 
-batbox-macros.workspace = true
 batbox-derive.workspace = true
 
 # rng

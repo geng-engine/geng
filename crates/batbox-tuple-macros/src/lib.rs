@@ -1,5 +1,5 @@
 #[macro_export]
-macro_rules! impl_tuples {
+macro_rules! call_for_tuples {
     ($macro:ident) => {
         $macro!();
         $macro!(a0);

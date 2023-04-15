@@ -88,7 +88,7 @@ mod ext {
             }
         };
     }
-    impl_tuples!(impl_for_tuple);
+    call_for_tuples!(impl_for_tuple);
 
     pub trait TupleExt<'a> {
         fn column(self) -> Column<'a>;

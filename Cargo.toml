@@ -19,8 +19,8 @@ version = "0.14.0"
 # Batbox
 batbox = { version = "0.14", path = "crates/batbox" }
 batbox-derive = { version = "0.14", path = "crates/batbox-derive" }
-batbox-macros = { version = "0.14", path = "crates/batbox-macros" }
 
+batbox-tuple-macros = { version = "0.14", path = "crates/batbox-tuple-macros" }
 batbox-i18n = { version = "0.14", path = "crates/batbox-i18n" }
 batbox-i18n-macro = { version = "0.14", path = "crates/batbox-i18n/macro" }
 batbox-num = { version = "0.14", path = "crates/batbox-num" }

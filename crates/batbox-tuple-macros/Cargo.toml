@@ -1,5 +1,5 @@
 [package]
-name = "batbox-macros"
+name = "batbox-tuple-macros"
 authors.workspace = true
 categories.workspace = true
 description.workspace = true

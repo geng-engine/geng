@@ -76,7 +76,7 @@ mod ext {
             }
         };
     }
-    impl_tuples!(impl_for_tuple);
+    call_for_tuples!(impl_for_tuple);
 
     pub trait TupleExt<'a> {
         fn stack(self) -> Stack<'a>;
