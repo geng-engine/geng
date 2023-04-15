@@ -47,22 +47,3 @@ impl LoadAsset for ugli::Texture {
     }
     const DEFAULT_EXT: Option<&'static str> = Some("png");
 }
-
-#[cfg(feature = "audio")]
-impl LoadAsset for Sound {
-    fn load(geng: &Geng, path: &std::path::Path) -> AssetFuture<Self> {
-        let geng = geng.clone();
-        let path = path.to_owned();
-        let data = geng
-            .inner
-            .asset_manager
-            .spawn(move || -> Result<_, anyhow::Error> {
-                log::debug!("Loading {:?}", path);
-                let mut data = Vec::new();
-                std::fs::File::open(path)?.read_to_end(&mut data)?;
-                Ok(data)
-            });
-        Box::pin(async move { Ok(Sound::new(&geng, data.await??)) })
-    }
-    const DEFAULT_EXT: Option<&'static str> = Some("wav");
-}

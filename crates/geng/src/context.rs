@@ -3,8 +3,7 @@ use super::*;
 pub(crate) struct GengImpl {
     window: Window,
     #[cfg(feature = "audio")]
-    #[allow(dead_code)]
-    pub(crate) audio: AudioContext,
+    audio: Audio,
     shader_lib: ShaderLib,
     pub(crate) draw_2d: Rc<draw_2d::Helper>,
     #[cfg(not(target_arch = "wasm32"))]
@@ -91,7 +90,7 @@ impl Geng {
             inner: Rc::new(GengImpl {
                 window,
                 #[cfg(feature = "audio")]
-                audio: AudioContext::new(),
+                audio: Audio::new(),
                 shader_lib,
                 draw_2d,
                 #[cfg(not(target_arch = "wasm32"))]
@@ -111,7 +110,7 @@ impl Geng {
         &self.inner.window
     }
 
-    pub fn audio(&self) -> &AudioContext {
+    pub fn audio(&self) -> &Audio {
         &self.inner.audio
     }
 

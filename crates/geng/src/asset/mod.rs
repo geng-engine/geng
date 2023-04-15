@@ -252,3 +252,13 @@ impl<T: LoadAsset> LoadAsset for Hot<T> {
 
     const DEFAULT_EXT: Option<&'static str> = T::DEFAULT_EXT;
 }
+
+#[cfg(feature = "audio")]
+impl LoadAsset for Sound {
+    fn load(geng: &Geng, path: &std::path::Path) -> AssetFuture<Self> {
+        let geng = geng.clone();
+        let path = path.to_owned();
+        Box::pin(async move { Ok(geng.audio().load(path).await?) })
+    }
+    const DEFAULT_EXT: Option<&'static str> = Some("wav"); // TODO change to mp3 since wav doesnt work in safari?
+}

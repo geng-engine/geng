@@ -54,12 +54,13 @@ mod loading_screen;
 pub mod net;
 pub mod obj;
 mod shader_lib;
-#[cfg(feature = "audio")]
-mod sound;
 mod state;
 mod texture_atlas;
 pub mod ui;
 mod window;
+
+#[cfg(feature = "audio")]
+pub use geng_audio::{self as audio, *};
 
 pub use asset::*;
 pub use camera::*;
@@ -70,8 +71,6 @@ pub use draw_2d::Draw2d;
 pub use font::*;
 pub use loading_screen::*;
 pub use shader_lib::*;
-#[cfg(feature = "audio")]
-pub use sound::*;
 pub use state::*;
 pub use texture_atlas::*;
 pub use window::*;

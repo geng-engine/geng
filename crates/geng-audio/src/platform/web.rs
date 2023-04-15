@@ -1,12 +1,17 @@
-use super::*;
+use anyhow::anyhow;
+use batbox_la::*;
+use batbox_time as time;
+use std::future::Future;
+use std::rc::Rc;
+use wasm_bindgen::prelude::*;
 
-pub struct AudioContext {
-    pub(crate) context: web_sys::AudioContext,
+pub struct Context {
+    pub context: web_sys::AudioContext,
     master_gain_node: web_sys::GainNode,
 }
 
-impl AudioContext {
-    pub(crate) fn new() -> Self {
+impl Context {
+    pub fn new() -> Self {
         let context = web_sys::AudioContext::new().expect("Failed to initialize audio context");
         let master_gain_node = web_sys::GainNode::new(&context).unwrap();
         master_gain_node
@@ -39,15 +44,79 @@ enum SpatialState {
 }
 
 pub struct Sound {
-    geng: Geng,
+    context: Rc<Context>,
     inner: web_sys::AudioBuffer,
     pub looped: bool,
 }
 
 impl Sound {
-    pub(crate) fn new(geng: &Geng, buffer: web_sys::AudioBuffer) -> Self {
+    pub async fn load(context: &Rc<Context>, path: &std::path::Path) -> anyhow::Result<Self> {
+        // TODO: batbox::load_file
+        fn load_arraybuffer(
+            path: &std::path::Path,
+        ) -> impl Future<Output = anyhow::Result<js_sys::ArrayBuffer>> {
+            let (sender, receiver) = futures::channel::oneshot::channel();
+            let request = web_sys::XmlHttpRequest::new().unwrap();
+            request.open("GET", path.to_str().unwrap()).unwrap();
+            request.set_response_type(web_sys::XmlHttpRequestResponseType::Arraybuffer);
+            let path = Rc::new(path.to_owned());
+            let handler = {
+                let request = request.clone();
+                move |success: bool| {
+                    match sender.send(if success {
+                        Ok(request.response().expect("1").into())
+                    } else {
+                        Err(anyhow!("Failed to load {:?}", path))
+                    }) {
+                        Ok(()) => {}
+                        Err(_) => {
+                            // Means that future was dropped
+                        }
+                    }
+                }
+            };
+            #[wasm_bindgen(inline_js = r#"
+            export function setup(request, handler) {
+                request.onreadystatechange = function () {
+                    if (request.readyState == 4) {
+                        handler(request.status == 200 || request.status == 206); // TODO why is there 206?
+                    }
+                };
+            }
+            "#)]
+            extern "C" {
+                fn setup(request: &web_sys::XmlHttpRequest, handler: wasm_bindgen::JsValue);
+            }
+            setup(
+                &request,
+                wasm_bindgen::closure::Closure::once_into_js(handler),
+            );
+            request.send().unwrap();
+            return async move { receiver.await.unwrap() };
+        }
+
+        let data = load_arraybuffer(path).await?;
+        Self::decode_arraybuffer(context, data).await
+    }
+    pub async fn decode_bytes(context: &Rc<Context>, data: Vec<u8>) -> anyhow::Result<Self> {
+        let arraybuffer = js_sys::Uint8Array::from(data.as_slice()).buffer(); // TODO hmm
+        Self::decode_arraybuffer(context, arraybuffer).await
+    }
+    pub async fn decode_arraybuffer(
+        context: &Rc<Context>,
+        data: js_sys::ArrayBuffer,
+    ) -> anyhow::Result<Self> {
+        let Ok(promise) = context.context.decode_audio_data(&data) else {
+            anyhow::bail!("whoops"); // TODO
+        };
+        let Ok(buffer) = wasm_bindgen_futures::JsFuture::from(promise).await else {
+            anyhow::bail!("whoops"); // TODO
+        };
+        Ok(Self::from_audio_buffer(context, buffer.into()))
+    }
+    pub fn from_audio_buffer(context: &Rc<Context>, buffer: web_sys::AudioBuffer) -> Self {
         Self {
-            geng: geng.clone(),
+            context: context.clone(),
             inner: buffer,
             looped: false,
         }
@@ -56,32 +125,26 @@ impl Sound {
         time::Duration::from_secs_f64(self.inner.duration())
     }
     pub fn effect(&self) -> SoundEffect {
-        let buffer_node =
-            web_sys::AudioBufferSourceNode::new(&self.geng.inner.audio.context).unwrap();
+        let buffer_node = web_sys::AudioBufferSourceNode::new(&self.context.context).unwrap();
         buffer_node.set_buffer(Some(&self.inner));
         buffer_node.set_loop(self.looped);
-        let gain_node = web_sys::GainNode::new(&self.geng.inner.audio.context).unwrap();
+        let gain_node = web_sys::GainNode::new(&self.context.context).unwrap();
         buffer_node.connect_with_audio_node(&gain_node).unwrap();
         let audio_node: web_sys::AudioNode = gain_node.clone().into();
         audio_node
-            .connect_with_audio_node(&self.geng.inner.audio.master_gain_node)
+            .connect_with_audio_node(&self.context.master_gain_node)
             .unwrap();
         SoundEffect {
-            geng: self.geng.clone(),
+            context: self.context.clone(),
             inner: buffer_node,
             gain_node,
             spatial_state: SpatialState::NotSpatial(audio_node),
         }
     }
-    pub fn play(&self) -> SoundEffect {
-        let mut effect = self.effect();
-        effect.play();
-        effect
-    }
 }
 
 pub struct SoundEffect {
-    geng: Geng,
+    context: Rc<Context>,
     inner: web_sys::AudioBufferSourceNode,
     gain_node: web_sys::GainNode,
     spatial_state: SpatialState,
@@ -124,13 +187,13 @@ impl SoundEffect {
     }
     fn make_spatial(&mut self) -> &web_sys::PannerNode {
         if let SpatialState::NotSpatial(audio_node) = &self.spatial_state {
-            let panner_node = web_sys::PannerNode::new(&self.geng.inner.audio.context).unwrap();
+            let panner_node = web_sys::PannerNode::new(&self.context.context).unwrap();
             panner_node.set_distance_model(web_sys::DistanceModelType::Linear);
             audio_node.disconnect().unwrap();
             audio_node
                 .connect_with_audio_node(&panner_node)
                 .unwrap()
-                .connect_with_audio_node(&self.geng.inner.audio.master_gain_node)
+                .connect_with_audio_node(&self.context.master_gain_node)
                 .unwrap();
             self.spatial_state = SpatialState::Spatial(panner_node);
         }

@@ -1,4 +1,10 @@
-use super::*;
+use anyhow::Context as _;
+use batbox_la::*;
+use batbox_num::*;
+use batbox_time as time;
+use std::rc::Rc;
+use std::sync::Arc;
+use std::sync::Mutex;
 
 const EAR_OFFSET: f32 = 3.0;
 
@@ -18,7 +24,7 @@ impl Listener {
     }
 }
 
-pub struct AudioContext {
+pub struct Context {
     config: rodio::SupportedStreamConfig,
     // output_stream: rodio::OutputStream,
     output_stream_handle: Arc<rodio::OutputStreamHandle>,
@@ -26,8 +32,8 @@ pub struct AudioContext {
     volume: Arc<atomic_float::AtomicF32>,
 }
 
-impl AudioContext {
-    pub(crate) fn new() -> Self {
+impl Context {
+    pub fn new() -> Self {
         fn create_rodio_output_stream() -> Result<
             (
                 rodio::SupportedStreamConfig,
@@ -75,7 +81,7 @@ impl AudioContext {
         // https://github.com/RustAudio/rodio/issues/214
         let (config, stream_handle) = std::thread::spawn(|| {
             let (config, stream, handle) = create_rodio_output_stream().unwrap();
-            mem::forget(stream);
+            std::mem::forget(stream);
             (config, handle)
         })
         .join()
@@ -118,7 +124,7 @@ impl AudioContext {
 }
 
 pub struct Sound {
-    geng: Geng,
+    context: Rc<Context>,
     source: rodio::source::Buffered<
         rodio::source::UniformSourceIterator<rodio::Decoder<std::io::Cursor<Vec<u8>>>, i16>,
     >,
@@ -126,16 +132,24 @@ pub struct Sound {
 }
 
 impl Sound {
-    pub(crate) fn new(geng: &Geng, data: Vec<u8>) -> Self {
-        Self {
-            geng: geng.clone(),
+    pub async fn load(context: &Rc<Context>, path: &std::path::Path) -> anyhow::Result<Self> {
+        // TODO non blocking
+        use std::io::Read;
+        let mut data = Vec::new();
+        std::fs::File::open(path)?.read_to_end(&mut data)?;
+        Self::decode_bytes(context, data).await
+    }
+    pub async fn decode_bytes(context: &Rc<Context>, data: Vec<u8>) -> anyhow::Result<Self> {
+        Ok(Self {
+            context: context.clone(),
             source: rodio::Source::buffered(rodio::source::UniformSourceIterator::new(
-                rodio::Decoder::new(std::io::Cursor::new(data)).expect("Failed to decode audio"),
-                geng.audio().config.channels(), // TODO: what if more than 2 channels? we are screwed? LUL
-                geng.audio().config.sample_rate().0,
+                rodio::Decoder::new(std::io::Cursor::new(data))
+                    .context("Failed to decode audio")?,
+                context.config.channels(), // TODO: what if more than 2 channels? we are screwed? LUL
+                context.config.sample_rate().0,
             )),
             looped: false,
-        }
+        })
     }
     pub fn duration(&self) -> time::Duration {
         rodio::Source::total_duration(&self.source).unwrap().into()
@@ -143,32 +157,26 @@ impl Sound {
     pub fn effect(&self) -> SoundEffect {
         let spatial_params = Arc::new(Mutex::new(None));
         SoundEffect {
-            geng: self.geng.clone(),
             sink: Some({
-                let sink = rodio::Sink::try_new(&self.geng.audio().output_stream_handle).unwrap();
+                let sink = rodio::Sink::try_new(&self.context.output_stream_handle).unwrap();
                 sink.pause();
                 sink
             }),
             source: Some(if self.looped {
                 Box::new(Source::new(
-                    self.geng.audio(),
+                    &self.context,
                     spatial_params.clone(),
                     &rodio::Source::repeat_infinite(self.source.clone()),
                 ))
             } else {
                 Box::new(Source::new(
-                    self.geng.audio(),
+                    &self.context,
                     spatial_params.clone(),
                     &self.source,
                 ))
             }),
             spatial_params,
         }
-    }
-    pub fn play(&self) -> SoundEffect {
-        let mut effect = self.effect();
-        effect.play();
-        effect
     }
 }
 
@@ -207,11 +215,7 @@ where
     I: rodio::Source,
     I::Item: rodio::Sample,
 {
-    fn new(
-        context: &AudioContext,
-        spatial_params: Arc<Mutex<Option<SpatialParams>>>,
-        source: &I,
-    ) -> Self
+    fn new(context: &Context, spatial_params: Arc<Mutex<Option<SpatialParams>>>, source: &I) -> Self
     where
         I: Clone,
     {
@@ -345,7 +349,6 @@ where
 }
 
 pub struct SoundEffect {
-    geng: Geng,
     spatial_params: Arc<Mutex<Option<SpatialParams>>>,
     sink: Option<rodio::Sink>,
     source: Option<Box<dyn rodio::Source<Item = i16> + Send>>,
@@ -391,7 +394,7 @@ impl SoundEffect {
     fn make_spatial(&mut self, f: impl FnOnce(&mut SpatialParams)) {
         let mut spatial = self.spatial_params.lock().unwrap();
         if spatial.is_none() {
-            *spatial = Some(default());
+            *spatial = Some(Default::default());
         }
         f(spatial.as_mut().unwrap())
     }

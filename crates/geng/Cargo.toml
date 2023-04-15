@@ -16,13 +16,14 @@ targets = ["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]
 
 [features]
 default = ["audio"]
-audio = ["dep:rodio"]
+audio = ["dep:geng-audio"]
 
 [dev-dependencies]
 gltf.workspace = true
 
 [dependencies]
 batbox.workspace = true
+geng-audio = { workspace = true, optional = true }
 geng-derive.workspace = true
 geng-ui-macros.workspace = true
 ugli.workspace = true
@@ -94,5 +95,4 @@ glutin.workspace = true
 threadpool.workspace = true
 num_cpus.workspace = true
 notify.workspace = true
-rodio = { workspace = true, optional = true }
 ws.workspace = true
