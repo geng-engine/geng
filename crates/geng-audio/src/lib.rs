@@ -28,6 +28,11 @@ impl Audio {
             inner: platform::Sound::load(&self.inner, path.as_ref()).await?,
         })
     }
+    pub async fn decode_bytes(&self, data: Vec<u8>) -> anyhow::Result<Sound> {
+        Ok(Sound {
+            inner: platform::Sound::decode_bytes(&self.inner, data).await?,
+        })
+    }
 }
 
 pub struct Sound {
