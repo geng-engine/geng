@@ -15,7 +15,9 @@ version.workspace = true
 batbox-i18n-macro.workspace = true
 once_cell.workspace = true
 log.workspace = true
-web-sys = { workspace = true, features = ["Window", "Navigator"] }
 
 [target.'cfg(not(target_arch="wasm32"))'.dependencies]
 libc.workspace = true
+
+[target.'cfg(target_arch="wasm32")'.dependencies]
+web-sys = { workspace = true, features = ["Window", "Navigator"] }
