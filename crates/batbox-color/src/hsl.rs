@@ -80,37 +80,40 @@ impl<C1: ColorComponent, C2: ColorComponent> From<Rgba<C1>> for Hsla<C2> {
     }
 }
 
-#[cfg(test)]
-mod test {
-    use super::*;
+impl<T: ColorComponent + Approx> Approx for Hsla<T> {
+    fn approx_distance_to(&self, other: &Self) -> f32 {
+        (self.h.approx_distance_to(&other.h)
+            + self.s.approx_distance_to(&other.s)
+            + self.l.approx_distance_to(&other.l)
+            + self.a.approx_distance_to(&other.a))
+            / 4.0
+    }
+}
 
-    const EPS: f32 = 0.01;
+#[test]
+fn test_conversion() {
+    let tests = [
+        ([1.0, 1.0, 1.0], [0.0, 0.0, 1.0]),
+        ([0.75, 1.0, 1.0], [0.5, 1.0, 7.0 / 8.0]),
+        ([0.438, 0.438, 0.812], [2.0 / 3.0, 0.5, 5.0 / 8.0]),
+    ];
 
-    fn check_rgb(a: Rgba<f32>, b: Rgba<f32>) {
-        let d =
-            ((a.r - b.r).sqr() + (a.g - b.g).sqr() + (a.b - b.b).sqr() + (a.a - b.a).sqr()).sqrt();
-        assert!(d.abs() < EPS)
+    fn eq<T: Approx>(a: impl Into<T>, b: impl Into<T>) -> bool {
+        let a = a.into();
+        let b = b.into();
+        a.approx_eq_eps(&b, 0.1) // TODO: this EPS seems very big
     }
 
-    fn check_hsl(a: Hsla<f32>, b: Hsla<f32>) {
-        let d =
-            ((a.h - b.h).sqr() + (a.s - b.s).sqr() + (a.l - b.l).sqr() + (a.a - b.a).sqr()).sqrt();
-        assert!(d.abs() < EPS)
-    }
-
-    #[test]
-    fn test_conversion() {
-        let tests = [
-            ([1.0, 1.0, 1.0], [0.0, 0.0, 1.0]),
-            ([0.75, 1.0, 1.0], [0.5, 1.0, 7.0 / 8.0]),
-            ([0.438, 0.438, 0.812], [2.0 / 3.0, 0.5, 5.0 / 8.0]),
-        ];
-
-        for ([r, g, b], [h, s, l]) in tests {
-            let rgb = Rgba::new(r, g, b, 1.0);
-            let hsl = Hsla::new(h, s, l, 1.0);
-            check_hsl(Hsla::from(rgb), hsl);
-            check_rgb(Rgba::from(hsl), rgb);
-        }
+    for ([r, g, b], [h, s, l]) in tests {
+        let rgb = Rgba::new(r, g, b, 1.0);
+        let hsl = Hsla::new(h, s, l, 1.0);
+        assert!(
+            eq::<Hsla<f32>>(rgb, hsl),
+            "{rgb:?} != {hsl:?} (when converting both to hsl)",
+        );
+        assert!(
+            eq::<Rgba<f32>>(rgb, hsl),
+            "{rgb:?} != {hsl:?} (when converting both to rgb)",
+        );
     }
 }

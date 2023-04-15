@@ -40,6 +40,8 @@ pub mod crates {
     #[cfg(target_arch = "wasm32")]
     pub use ::web_sys;
 
+    pub use ::batbox_approx as approx;
+    pub use ::batbox_color as color;
     pub use ::batbox_i18n as i18n;
     pub use ::batbox_num as num;
 }
@@ -54,10 +56,8 @@ pub use batbox_derive::*;
 #[doc(no_inline)]
 pub use batbox_macros::*;
 
-pub mod approx;
 pub mod cmp;
 pub mod collection;
-pub mod color;
 pub mod diff;
 pub mod file;
 pub mod geom;

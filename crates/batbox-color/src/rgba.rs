@@ -2,7 +2,7 @@ use super::*;
 
 /// RGBA Color
 #[repr(C)]
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(try_from = "String", into = "String")]
 pub struct Rgba<T: ColorComponent> {
     /// Red component
@@ -77,7 +77,7 @@ impl<T: ColorComponent> TryFrom<&str> for Rgba<T> {
     }
 }
 
-impl<T: ColorComponent> Display for Rgba<T> {
+impl<T: ColorComponent> std::fmt::Display for Rgba<T> {
     fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
         let color: Rgba<u8> = self.convert();
         write!(fmt, "#{:02x}{:02x}{:02x}", color.r, color.g, color.b)?;
@@ -129,7 +129,7 @@ impl<T: ColorComponent> Rgba<T> {
     /// The resulting alpha is calculated by applying ColorComponent::convert() method.
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// use batbox_color::*;
     /// let initial = Rgba::new(0.7, 0.4, 1.0, 1.0);
     /// let f = |component: f32| component / 2.0;
     /// assert_eq!(initial.map_rgb(f), Rgba::new(0.35, 0.2, 0.5, 1.0));
@@ -146,7 +146,7 @@ impl<T: ColorComponent> Rgba<T> {
     /// Convert `Rgba<T>` to `Rgba<U>` by applying a function to every color component.
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// use batbox_color::*;
     /// let initial = Rgba::new(0.7, 0.4, 1.0, 1.0);
     /// let f = |component: f32| component / 2.0;
     /// assert_eq!(initial.map(f), Rgba::new(0.35, 0.2, 0.5, 0.5));
@@ -163,7 +163,7 @@ impl<T: ColorComponent> Rgba<T> {
     /// Applies a function to every component of two colors and produces a new color.
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// use batbox_color::*;
     /// let a = Rgba::new(0.2, 0.1, 0.3, 0.6);
     /// let b = Rgba::new(0.5, 0.3, 0.2, 0.2);
     /// let f = |a: f32, b: f32| a + b;
@@ -185,7 +185,7 @@ impl<T: ColorComponent> Rgba<T> {
     /// Convert `Rgba<T>` to `Rgba<U>` by applying `ColorComponent::convert()` method.
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// use batbox_color::*;
     /// assert_eq!(Rgba::opaque(0, 255, 0).convert(), Rgba::opaque(0.0, 1.0, 0.0));
     /// ```
     pub fn convert<U: ColorComponent>(self) -> Rgba<U> {
@@ -196,7 +196,7 @@ impl<T: ColorComponent> Rgba<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// use batbox_color::*;
     /// let start = Rgba::opaque(0.0, 0.0, 0.0);
     /// let end = Rgba::opaque(1.0, 1.0, 1.0);
     /// let interpolated = Rgba::lerp(start, end, 0.3);
@@ -218,16 +218,16 @@ fn test_convert() {
     );
 }
 
-impl<T: ColorComponent> Deref for Rgba<T> {
+impl<T: ColorComponent> std::ops::Deref for Rgba<T> {
     type Target = [T; 4];
     fn deref(&self) -> &[T; 4] {
-        unsafe { mem::transmute(self) }
+        unsafe { std::mem::transmute(self) }
     }
 }
 
-impl<T: ColorComponent> DerefMut for Rgba<T> {
+impl<T: ColorComponent> std::ops::DerefMut for Rgba<T> {
     fn deref_mut(&mut self) -> &mut [T; 4] {
-        unsafe { mem::transmute(self) }
+        unsafe { std::mem::transmute(self) }
     }
 }
 

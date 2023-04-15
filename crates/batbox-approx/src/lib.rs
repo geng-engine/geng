@@ -1,12 +1,4 @@
 //! Approximate comparing of things
-use super::*;
-
-pub mod prelude {
-    //! Items intended to always be available. Reexported from [crate::prelude]
-
-    #[doc(no_inline)]
-    pub use crate::approx::{self, Approx};
-}
 
 /// Default EPS used for approx equality
 pub const DEFAULT_EPS: f32 = 1e-9;
@@ -27,7 +19,7 @@ pub trait Approx {
     }
 }
 
-impl<T: Float> Approx for T {
+impl<T: batbox_num::Float> Approx for T {
     fn approx_distance_to(&self, other: &T) -> f32 {
         (self.as_f32() - other.as_f32()).abs()
     }

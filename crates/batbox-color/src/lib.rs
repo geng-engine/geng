@@ -1,12 +1,6 @@
 //! Working with colors in various formats
-use super::*;
 
-pub mod prelude {
-    //! Items intended to always be available. Reexported from [crate::prelude]
-
-    #[doc(no_inline)]
-    pub use super::{ColorComponent, Hsva, Rgba};
-}
+use batbox_approx::Approx;
 
 mod component;
 mod consts;
