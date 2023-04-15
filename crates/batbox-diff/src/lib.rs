@@ -1,13 +1,7 @@
 //! Diffing structs
-use super::*;
 
-pub mod prelude {
-    //! Items intended to always be available. Reexported from [crate::prelude]
-
-    #[doc(no_inline)]
-    pub use super::Diff;
-    // pub use ::batbox_derive::Diff; // TODO previous use imports same thing???
-}
+use serde::{de::DeserializeOwned, Serialize};
+use std::fmt::Debug;
 
 /// A diffable type
 ///
@@ -18,17 +12,10 @@ pub mod prelude {
 /// Most of the trait bounds should not be here, but are because of
 /// <https://github.com/rust-lang/rust/issues/20671>
 pub trait Diff:
-    Debug + Serialize + for<'de> Deserialize<'de> + Sync + Send + Clone + PartialEq + 'static + Unpin
+    Debug + Serialize + DeserializeOwned + Sync + Send + Clone + PartialEq + 'static + Unpin
 {
     /// Object representing the difference between two states of Self
-    type Delta: Debug
-        + Serialize
-        + for<'de> Deserialize<'de>
-        + Sync
-        + Send
-        + Clone
-        + 'static
-        + Unpin;
+    type Delta: Debug + Serialize + DeserializeOwned + Sync + Send + Clone + 'static + Unpin;
 
     /// Calculate the difference between two states
     fn diff(&self, to: &Self) -> Self::Delta;
@@ -50,15 +37,7 @@ pub trait Diff:
 }
 
 impl<
-        T: Debug
-            + Serialize
-            + for<'de> Deserialize<'de>
-            + Sync
-            + Send
-            + Copy
-            + PartialEq
-            + 'static
-            + Unpin,
+        T: Debug + Serialize + DeserializeOwned + Sync + Send + Copy + PartialEq + 'static + Unpin,
     > Diff for T
 {
     type Delta = Self;

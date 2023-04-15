@@ -64,12 +64,12 @@ pub use ::batbox_tuple_macros::call_for_tuples;
 
 pub use crate::approx::Approx;
 pub use crate::cmp::prelude::*;
-pub use crate::collection::prelude::*;
 pub use crate::color::*;
-pub use crate::diff::prelude::*;
 pub use crate::geom::prelude::*;
 pub use crate::range::prelude::*;
 pub use crate::rng::prelude::*;
 pub use crate::util::prelude::*;
+pub use collection::*;
+pub use diff::Diff;
 pub use num::*;
 pub use time::Timer;

@@ -1,13 +1,10 @@
 //! A collection of identifiable entities
-use super::*;
 
-pub mod prelude {
-    //! Items intended to always be available. Reexported from [crate::prelude]
-
-    #[doc(no_inline)]
-    pub use super::{Collection, HasId};
-    // pub use ::batbox_derive::HasId; previous use imports same thing???
-}
+use batbox_diff::Diff;
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::fmt::Debug;
+use std::hash::Hash;
 
 /// An identifiable entity
 ///

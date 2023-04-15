@@ -26,6 +26,8 @@ batbox-file-dialog.workspace = true
 batbox-preferences.workspace = true
 batbox-cli.workspace = true
 batbox-logger.workspace = true
+batbox-diff.workspace = true
+batbox-collection.workspace = true
 
 batbox-derive.workspace = true
 
