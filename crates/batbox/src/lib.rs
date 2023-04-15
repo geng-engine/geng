@@ -41,6 +41,7 @@ pub mod crates {
     pub use ::web_sys;
 
     pub use ::batbox_approx as approx;
+    pub use ::batbox_cli as cli;
     pub use ::batbox_color as color;
     pub use ::batbox_file as file;
     pub use ::batbox_file_dialog as file_dialog;
@@ -63,7 +64,6 @@ pub mod collection;
 pub mod diff;
 pub mod geom;
 pub mod logger;
-pub mod program_args;
 pub mod range;
 pub mod rng;
 pub mod util;

@@ -70,7 +70,6 @@ pub use crate::diff::prelude::*;
 pub use crate::geom::prelude::*;
 pub use crate::logger::prelude::*;
 pub use crate::num::*;
-pub use crate::program_args::prelude::*;
 pub use crate::range::prelude::*;
 pub use crate::rng::prelude::*;
 pub use crate::time::{self, Timer};

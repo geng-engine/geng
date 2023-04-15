@@ -24,6 +24,7 @@ batbox-time.workspace = true
 batbox-file.workspace = true
 batbox-file-dialog.workspace = true
 batbox-preferences.workspace = true
+batbox-cli.workspace = true
 
 batbox-derive.workspace = true
 

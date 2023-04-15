@@ -30,6 +30,7 @@ batbox-time = { version = "0.14", path = "crates/batbox-time" }
 batbox-file = { version = "0.14", path = "crates/batbox-file" }
 batbox-file-dialog = { version = "0.14", path = "crates/batbox-file-dialog" }
 batbox-preferences = { version = "0.14", path = "crates/batbox-preferences" }
+batbox-cli = { version = "0.14", path = "crates/batbox-cli" }
 
 # Geng
 geng = { version = "0.14", path = "crates/geng" }
@@ -109,63 +110,7 @@ wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
 wasm-bindgen-futures = "0.4"
 console_error_panic_hook = "0.1"
 js-sys = "0.3"
-web-sys = { version = "0.3", features = [
-    # "Window",
-    # "Storage",
-    # "Navigator",
-    # "Location",
-    # "XmlHttpRequestResponseType",
-    # "ProgressEvent",
-    # "Document",
-    # "DistanceModelType",
-    # "CssStyleDeclaration",
-    # "HtmlAudioElement",
-    # "XmlHttpRequest",
-    # "XmlHttpRequestResponseType",
-    # "KeyboardEvent",
-    # "MouseEvent",
-    # "WheelEvent",
-    # "TouchEvent",
-    # "Touch",
-    # "TouchList",
-    # "DomRect",
-    # "DomRectReadOnly",
-    # "WebSocket",
-    # "BinaryType",
-    # "MessageEvent",
-    # "HtmlCanvasElement",
-    # "AngleInstancedArrays",
-    # "OesStandardDerivatives",
-    # "WebGlRenderingContext",
-    # "WebGlBuffer",
-    # "WebGlActiveInfo",
-    # "WebGlUniformLocation",
-    # "WebGlTexture",
-    # "WebGlRenderbuffer",
-    # "WebGlProgram",
-    # "WebGlFramebuffer",
-    # "WebGlShader",
-    # "HtmlImageElement",
-    # "HtmlInputElement",
-    # "MediaElementAudioSourceNode",
-    # "PannerNode",
-    # "AudioListener",
-    # "BaseAudioContext",
-    # "AudioContext",
-    # "AudioDestinationNode",
-    # "AudioBuffer",
-    # "AudioBufferSourceNode",
-    # "AudioParam",
-    # "GainNode",
-    # "Performance",
-    # "Response",
-    # "ReadableStream",
-    # "FileList",
-    # "File",
-    # "Url",
-    # "HtmlAnchorElement",
-    # "ExtBlendMinmax",
-] }
+web-sys = "0.3"
 wasm-streams = "0.3"
 
 # Proc macros

@@ -1,12 +1,6 @@
 //! Retrieving program arguments
-use super::*;
-
-pub mod prelude {
-    //! Items intended to always be available. Reexported from [crate::prelude]
-
-    #[doc(no_inline)]
-    pub use crate::program_args;
-}
+//!
+//! Works on web using query string
 
 /// Returns a list of program arguments
 ///
@@ -30,7 +24,7 @@ pub fn get() -> Vec<String> {
                 args.push("--".to_owned() + key + "=" + value);
             }
         }
-        trace!("href => args: {:?}", args);
+        log::trace!("href => args: {:?}", args);
         args
     };
     #[cfg(not(target_arch = "wasm32"))]

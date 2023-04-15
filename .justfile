@@ -1,6 +1,6 @@
 check *OPTIONS:
-    cargo check {{OPTIONS}}
-    cargo check --target wasm32-unknown-unknown {{OPTIONS}}
+    cargo check --all-targets {{OPTIONS}}
+    cargo check --all-targets --target wasm32-unknown-unknown {{OPTIONS}}
 
 prepare *OPTIONS:
     cargo check --all-targets {{OPTIONS}}

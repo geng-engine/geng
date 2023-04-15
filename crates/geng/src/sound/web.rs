@@ -52,8 +52,8 @@ impl Sound {
             looped: false,
         }
     }
-    pub fn duration(&self) -> Duration {
-        Duration::from_secs_f64(self.inner.duration())
+    pub fn duration(&self) -> time::Duration {
+        time::Duration::from_secs_f64(self.inner.duration())
     }
     pub fn effect(&self) -> SoundEffect {
         let buffer_node =
@@ -92,9 +92,9 @@ impl SoundEffect {
         self.gain_node.gain().set_value(volume as f32);
     }
     pub fn play(&mut self) {
-        self.play_from(Duration::from_secs_f64(0.0));
+        self.play_from(time::Duration::from_secs_f64(0.0));
     }
-    pub fn play_from(&mut self, offset: Duration) {
+    pub fn play_from(&mut self, offset: time::Duration) {
         let _ = self
             .inner
             .start_with_when_and_grain_offset(0.0, offset.as_secs_f64())

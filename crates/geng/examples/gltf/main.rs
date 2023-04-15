@@ -209,7 +209,7 @@ impl geng::State for Example {
             geng::Event::KeyDown { key: geng::Key::S }
                 if self.geng.window().is_key_pressed(geng::Key::LCtrl) =>
             {
-                file::save("test.txt", "Hello, world!".as_bytes()).unwrap();
+                file_dialog::save("test.txt", "Hello, world!".as_bytes()).unwrap();
             }
             geng::Event::KeyDown { key: geng::Key::O }
                 if self.geng.window().is_key_pressed(geng::Key::LCtrl) =>
@@ -217,7 +217,7 @@ impl geng::State for Example {
                 let geng = self.geng.clone();
                 let assets = self.assets.clone();
                 let transition = self.transition.clone();
-                file::select(move |file| {
+                file_dialog::select(move |file| {
                     *transition.borrow_mut() = Some(geng::Transition::Switch(Box::new(load(
                         geng,
                         assets,
@@ -258,7 +258,7 @@ struct Opt {
 fn main() {
     logger::init();
     geng::setup_panic_handler();
-    let opt: Opt = program_args::parse();
+    let opt: Opt = cli::parse();
     let geng = Geng::new("Example");
     let path = opt
         .path

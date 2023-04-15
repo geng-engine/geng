@@ -13,7 +13,7 @@ pub fn run<T: Model, G: State>(
     #[cfg_attr(target_arch = "wasm32", allow(unused_variables))] model_constructor: impl FnOnce() -> T,
     game_constructor: impl FnOnce(&Geng, T::PlayerId, Remote<T>) -> G + 'static,
 ) {
-    let mut opt: Opt = program_args::parse();
+    let mut opt: Opt = cli::parse();
 
     if opt.connect.is_none() && opt.server.is_none() {
         if cfg!(target_arch = "wasm32") {
