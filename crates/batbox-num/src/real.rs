@@ -201,18 +201,18 @@ impl<T: Real> Float for T {
 }
 
 /// Wrapper around T that checks for valid values (panics on NaN/Inf)
-#[derive(Copy, Clone, PartialEq, Serialize)]
+#[derive(Copy, Clone, PartialEq, serde::Serialize)]
 #[repr(transparent)]
 pub struct RealImpl<T: Float>(T);
 
 macro_rules! impl_for {
     ($t:ty) => {
-        impl<'de> Deserialize<'de> for RealImpl<$t> {
+        impl<'de> serde::Deserialize<'de> for RealImpl<$t> {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where
                 D: serde::Deserializer<'de>,
             {
-                <$t as Deserialize>::deserialize(deserializer)?
+                <$t as serde::Deserialize>::deserialize(deserializer)?
                     .try_into()
                     .map_err(serde::de::Error::custom)
             }
@@ -233,13 +233,13 @@ macro_rules! impl_for {
 impl_for!(f32);
 impl_for!(f64);
 
-impl<T: Float> Debug for RealImpl<T> {
+impl<T: Float> std::fmt::Debug for RealImpl<T> {
     fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
         <T as std::fmt::Debug>::fmt(&self.0, fmt)
     }
 }
 
-impl<T: Float> Display for RealImpl<T> {
+impl<T: Float> std::fmt::Display for RealImpl<T> {
     fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
         <T as std::fmt::Display>::fmt(&self.0, fmt)
     }
@@ -280,7 +280,7 @@ impl<T: Float> Ord for RealImpl<T> {
 macro_rules! impl_op {
     ($($op:ident: $fn:ident,)*) => {
         $(
-            impl<T: Float> $op for RealImpl<T> {
+            impl<T: Float> std::ops::$op for RealImpl<T> {
                 type Output = Self;
                 fn $fn(self, rhs: Self) -> Self {
                     Self::new(self.0 .$fn(rhs.0))
@@ -292,7 +292,7 @@ macro_rules! impl_op {
 macro_rules! impl_op_assign {
     ($($op:ident: $fn:ident,)*) => {
         $(
-            impl<T: Float> $op for RealImpl<T> {
+            impl<T: Float> std::ops::$op for RealImpl<T> {
                 fn $fn(&mut self, rhs: Self) {
                     self.0 .$fn(rhs.0);
                 }
@@ -315,7 +315,7 @@ impl_op_assign! {
     DivAssign: div_assign,
 }
 
-impl<T: Float> Neg for RealImpl<T> {
+impl<T: Float> std::ops::Neg for RealImpl<T> {
     type Output = Self;
     fn neg(self) -> Self {
         Self::new(-self.0)
@@ -351,11 +351,11 @@ impl<T: Float + rand::distributions::uniform::SampleUniform>
         Self(T::Sampler::new_inclusive(low.borrow().0, high.borrow().0))
     }
 
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Self::X {
+    fn sample<R: rand::Rng + ?Sized>(&self, rng: &mut R) -> Self::X {
         RealImpl(self.0.sample(rng))
     }
 
-    fn sample_single<R: Rng + ?Sized, B1, B2>(low: B1, high: B2, rng: &mut R) -> Self::X
+    fn sample_single<R: rand::Rng + ?Sized, B1, B2>(low: B1, high: B2, rng: &mut R) -> Self::X
     where
         B1: rand::distributions::uniform::SampleBorrow<Self::X> + Sized,
         B2: rand::distributions::uniform::SampleBorrow<Self::X> + Sized,
@@ -367,7 +367,11 @@ impl<T: Float + rand::distributions::uniform::SampleUniform>
         ))
     }
 
-    fn sample_single_inclusive<R: Rng + ?Sized, B1, B2>(low: B1, high: B2, rng: &mut R) -> Self::X
+    fn sample_single_inclusive<R: rand::Rng + ?Sized, B1, B2>(
+        low: B1,
+        high: B2,
+        rng: &mut R,
+    ) -> Self::X
     where
         B1: rand::distributions::uniform::SampleBorrow<Self::X> + Sized,
         B2: rand::distributions::uniform::SampleBorrow<Self::X> + Sized,
@@ -666,7 +670,7 @@ fn test_reals() {
     let mut arr = [r32(1.0), r32(0.0)];
     arr.sort();
 
-    let _random = thread_rng().gen_range(r32(0.0)..r32(1.0));
+    let _random = rand::Rng::gen_range(&mut rand::thread_rng(), r32(0.0)..r32(1.0));
 }
 
 #[test]

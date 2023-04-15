@@ -71,7 +71,7 @@ pub use crate::file::prelude::*;
 pub use crate::geom::prelude::*;
 pub use crate::i18n::prelude::*;
 pub use crate::logger::prelude::*;
-pub use crate::num::prelude::*;
+pub use crate::num::*;
 pub use crate::preferences::prelude::*;
 pub use crate::program_args::prelude::*;
 pub use crate::range::prelude::*;

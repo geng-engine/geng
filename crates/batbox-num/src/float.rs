@@ -119,49 +119,97 @@ pub trait Float: Num {
 }
 
 macro_rules! impl_float {
-    ($($t:ident),*) => {
-        $(
-            impl UNum for $t {
-                const ZERO: Self = 0.0;
-                const ONE: Self = 1.0;
+    ($t:ident) => {
+        impl UNum for $t {
+            const ZERO: Self = 0.0;
+            const ONE: Self = 1.0;
+        }
+        impl Float for $t {
+            const PI: Self = std::$t::consts::PI;
+            fn acos(self) -> Self {
+                $t::acos(self)
             }
-
-            impl Float for $t {
-                const PI: Self = std::$t::consts::PI;
-                fn acos(self) -> Self { $t::acos(self) }
-                fn asin(self) -> Self { $t::asin(self) }
-                fn atan(self) -> Self { $t::atan(self) }
-                fn atan2(y: Self, x: Self) -> Self { $t::atan2(y, x) }
-                fn ceil(self) -> Self { $t::ceil(self) }
-                fn cos(self) -> Self { $t::cos(self) }
-                fn div_euclid(self, other: Self) -> Self { $t::div_euclid(self, other) }
-                fn exp(self) -> Self { $t::exp(self) }
-                fn floor(self) -> Self { $t::floor(self) }
-                fn fract(self) -> Self { $t::fract(self) }
-                fn is_finite(self) -> bool { $t::is_finite(self) }
-                fn ln(self) -> Self { $t::ln(self) }
-                fn log(self, base: Self) -> Self { $t::log(self, base) }
-                fn log10(self) -> Self { $t::log10(self) }
-                fn log2(self) -> Self { $t::log2(self) }
-                fn powf(self, n: Self) -> Self { $t::powf(self, n) }
-                fn powi(self, n: i32) -> Self { $t::powi(self, n) }
-                fn recip(self) -> Self { $t::recip(self) }
-                fn rem_euclid(self, other: Self) -> Self { $t::rem_euclid(self, other) }
-                fn round(self) -> Self { $t::round(self) }
-                fn signum(self) -> Self { $t::signum(self) }
-                fn sin(self) -> Self { $t::sin(self) }
-                fn sin_cos(self) -> (Self, Self) { $t::sin_cos(self) }
-                fn sqrt(self) -> Self { $t::sqrt(self) }
-                fn tan(self) -> Self { $t::tan(self) }
-                fn from_f32(x: f32) -> Self {
-                    x as Self
-                }
-                fn as_f32(self) -> f32 {
-                    self as f32
-                }
+            fn asin(self) -> Self {
+                $t::asin(self)
             }
-        )*
+            fn atan(self) -> Self {
+                $t::atan(self)
+            }
+            fn atan2(y: Self, x: Self) -> Self {
+                $t::atan2(y, x)
+            }
+            fn ceil(self) -> Self {
+                $t::ceil(self)
+            }
+            fn cos(self) -> Self {
+                $t::cos(self)
+            }
+            fn div_euclid(self, other: Self) -> Self {
+                $t::div_euclid(self, other)
+            }
+            fn exp(self) -> Self {
+                $t::exp(self)
+            }
+            fn floor(self) -> Self {
+                $t::floor(self)
+            }
+            fn fract(self) -> Self {
+                $t::fract(self)
+            }
+            fn is_finite(self) -> bool {
+                $t::is_finite(self)
+            }
+            fn ln(self) -> Self {
+                $t::ln(self)
+            }
+            fn log(self, base: Self) -> Self {
+                $t::log(self, base)
+            }
+            fn log10(self) -> Self {
+                $t::log10(self)
+            }
+            fn log2(self) -> Self {
+                $t::log2(self)
+            }
+            fn powf(self, n: Self) -> Self {
+                $t::powf(self, n)
+            }
+            fn powi(self, n: i32) -> Self {
+                $t::powi(self, n)
+            }
+            fn recip(self) -> Self {
+                $t::recip(self)
+            }
+            fn rem_euclid(self, other: Self) -> Self {
+                $t::rem_euclid(self, other)
+            }
+            fn round(self) -> Self {
+                $t::round(self)
+            }
+            fn signum(self) -> Self {
+                $t::signum(self)
+            }
+            fn sin(self) -> Self {
+                $t::sin(self)
+            }
+            fn sin_cos(self) -> (Self, Self) {
+                $t::sin_cos(self)
+            }
+            fn sqrt(self) -> Self {
+                $t::sqrt(self)
+            }
+            fn tan(self) -> Self {
+                $t::tan(self)
+            }
+            fn from_f32(x: f32) -> Self {
+                x as Self
+            }
+            fn as_f32(self) -> f32 {
+                self as f32
+            }
+        }
     };
 }
 
-impl_float!(f32, f64);
+impl_float!(f32);
+impl_float!(f64);

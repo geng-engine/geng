@@ -1,12 +1,4 @@
 //! Numeric types and traits
-use super::*;
-
-pub mod prelude {
-    //! Items intended to always be available. Reexported from [crate::prelude]
-
-    #[doc(no_inline)]
-    pub use crate::num::{self, r32, r64, Float, Num, Real, UNum, R32, R64};
-}
 
 mod float;
 mod real;
@@ -18,16 +10,16 @@ pub use real::*;
 pub trait UNum:
     Sized
     + Copy
-    + Debug
-    + Display
-    + Add<Output = Self>
-    + AddAssign
-    + Sub<Output = Self>
-    + SubAssign
-    + Mul<Output = Self>
-    + MulAssign
-    + Div<Output = Self>
-    + DivAssign
+    + std::fmt::Debug
+    + std::fmt::Display
+    + std::ops::Add<Output = Self>
+    + std::ops::AddAssign
+    + std::ops::Sub<Output = Self>
+    + std::ops::SubAssign
+    + std::ops::Mul<Output = Self>
+    + std::ops::MulAssign
+    + std::ops::Div<Output = Self>
+    + std::ops::DivAssign
     + PartialEq
     + PartialOrd
     + ::rand::distributions::uniform::SampleUniform
@@ -45,7 +37,7 @@ pub trait UNum:
 }
 
 /// Generic signed number type
-pub trait Num: UNum + Neg<Output = Self> {
+pub trait Num: UNum + std::ops::Neg<Output = Self> {
     /// Calculate absolute value
     fn abs(self) -> Self {
         if self >= Self::ZERO {
@@ -56,7 +48,7 @@ pub trait Num: UNum + Neg<Output = Self> {
     }
 }
 
-impl<T: UNum + Neg<Output = T>> Num for T {}
+impl<T: UNum + std::ops::Neg<Output = T>> Num for T {}
 
 macro_rules! impl_int {
     ($($t:ty),*) => {

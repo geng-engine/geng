@@ -16,6 +16,8 @@ targets = ["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]
 
 [dependencies]
 batbox-i18n.workspace = true
+batbox-num.workspace = true
+
 batbox-macros.workspace = true
 batbox-derive.workspace = true
 
