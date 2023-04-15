@@ -1,13 +1,4 @@
 //! Utility stuff
-#[allow(unused_imports)]
-use super::*;
-
-pub mod prelude {
-    //! Items intended to always be available. Reexported from [crate::prelude]
-
-    #[doc(no_inline)]
-    pub use super::*;
-}
 
 /// Construct default value of a type
 pub fn default<T: Default>() -> T {

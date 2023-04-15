@@ -40,8 +40,8 @@ pub mod prelude {
 
 use crate as geng;
 use crate::prelude::*;
-#[allow(unused_imports)]
-use log::{trace, warn};
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::prelude::*;
 
 mod asset;
 mod camera;

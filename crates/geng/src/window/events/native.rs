@@ -159,7 +159,7 @@ fn from_glutin_key(key: winit::event::VirtualKeyCode) -> Key {
         GKey::F12 => Key::F12,
 
         _ => {
-            warn!("Unrecognized key: {:?}", key);
+            log::warn!("Unrecognized key: {:?}", key);
             Key::Unknown
         }
     }

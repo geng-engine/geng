@@ -1,5 +1,3 @@
-use batbox::{js_sys, web_sys};
-
 pub type BitField = u32;
 pub type Bool = bool;
 pub type ClampedFloat = f32;

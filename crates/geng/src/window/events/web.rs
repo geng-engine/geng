@@ -87,7 +87,7 @@ impl Convert<String> for Key {
             "F12" => F12,
 
             _ => {
-                warn!("Unrecognized key: {:?}", key);
+                log::warn!("Unrecognized key: {:?}", key);
                 return None;
             }
         })

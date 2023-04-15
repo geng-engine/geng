@@ -21,7 +21,7 @@ impl<S: Message, C: Message> Connection<S, C> {
         }
     }
     pub fn send(&mut self, message: C) {
-        trace!("Sending message to server: {:?}", message);
+        log::trace!("Sending message to server: {:?}", message);
         let data = serialize_message(message);
         self.traffic.lock().unwrap().outbound += data.len();
         self.sender
@@ -68,7 +68,7 @@ impl<T: Message> ws::Handler for Handler<T> {
         let data = message.into_data();
         self.traffic.lock().unwrap().inbound += data.len();
         let message = deserialize_message(&data);
-        trace!("Got message from server: {:?}", message);
+        log::trace!("Got message from server: {:?}", message);
         self.recv_sender.unbounded_send(message).unwrap();
         Ok(())
     }

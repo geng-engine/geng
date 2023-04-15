@@ -54,7 +54,7 @@ impl<T: App> ws::Handler for Handler<T> {
                 return Err(ws::Error::new(ws::ErrorKind::Protocol, e.to_string()));
             }
         };
-        trace!("Received message from client: {:?}", message);
+        log::trace!("Received message from client: {:?}", message);
         if let Some(client) = &mut self.client {
             client.handle(message);
         } else {

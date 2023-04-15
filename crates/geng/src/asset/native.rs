@@ -2,14 +2,14 @@ use super::*;
 
 #[derive(Clone)]
 pub(crate) struct AssetManager {
-    threadpool: ThreadPool,
+    threadpool: threadpool::ThreadPool,
 }
 
 impl AssetManager {
     pub fn new() -> Self {
         Self {
             #[cfg(debug_assertions)]
-            threadpool: ThreadPool::new(1),
+            threadpool: threadpool::ThreadPool::new(1),
             #[cfg(not(debug_assertions))]
             threadpool: default(),
         }

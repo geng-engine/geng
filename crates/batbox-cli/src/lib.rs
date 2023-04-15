@@ -2,6 +2,13 @@
 //!
 //! Works on web using query string
 
+pub mod prelude {
+    //! Items intended to be added to global namespace
+
+    pub use crate as cli;
+    pub use ::clap;
+}
+
 /// Returns a list of program arguments
 ///
 /// On the web, program arguments are constructed from the query string:

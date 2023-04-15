@@ -1,28 +1,17 @@
 //! Random number generation addons
 
-#[allow(unused_imports)]
 use super::*;
 
-pub mod prelude {
-    //! Items intended to always be available. Reexported from [crate::prelude]
-
-    #[doc(no_inline)]
-    pub use super::RngExt;
-
-    #[doc(no_inline)]
-    pub use ::rand::{
-        self,
-        rngs::StdRng,
-        seq::{IteratorRandom, SliceRandom},
-        Rng, RngCore, SeedableRng,
-    };
-    // Note for web support: https://github.com/rust-random/rand#wasm-support
-    #[doc(no_inline)]
-    pub use ::rand::{rngs::ThreadRng, thread_rng};
-}
-
-#[allow(unused_imports)]
-use prelude::*;
+#[doc(no_inline)]
+pub use ::rand::{
+    self,
+    rngs::StdRng,
+    seq::{IteratorRandom, SliceRandom},
+    Rng, RngCore, SeedableRng,
+};
+// Note for web support: https://github.com/rust-random/rand#wasm-support
+#[doc(no_inline)]
+pub use ::rand::{rngs::ThreadRng, thread_rng};
 
 /// Extends [Rng] with more methods
 pub trait RngExt: Rng {

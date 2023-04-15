@@ -1,6 +1,9 @@
 #![recursion_limit = "128"]
 
 use batbox::prelude::*;
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::prelude::*;
+
 pub use ugli_derive::*;
 
 mod context;
