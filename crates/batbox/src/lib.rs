@@ -59,9 +59,6 @@ pub mod prelude;
 pub use crates::*;
 use prelude::*;
 
-#[doc(no_inline)]
-pub use batbox_derive::*;
-
 pub mod cmp;
 pub mod geom;
 pub mod range;

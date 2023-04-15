@@ -58,8 +58,6 @@ pub use crate::crates::wasm_bindgen::{prelude::*, JsCast as _};
 pub use crate::crates::wasm_bindgen_futures::{future_to_promise, JsFuture};
 
 #[doc(no_inline)]
-pub use ::batbox_derive::*;
-#[doc(no_inline)]
 pub use ::batbox_tuple_macros::call_for_tuples;
 
 pub use crate::approx::Approx;

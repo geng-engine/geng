@@ -12,5 +12,6 @@ repository.workspace = true
 version.workspace = true
 
 [dependencies]
+batbox-collection-derive.workspace = true
 batbox-diff.workspace = true
 serde.workspace = true

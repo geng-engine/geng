@@ -18,8 +18,6 @@ version = "0.14.0"
 [workspace.dependencies]
 # Batbox
 batbox = { version = "0.14", path = "crates/batbox" }
-batbox-derive = { version = "0.14", path = "crates/batbox-derive" }
-
 batbox-tuple-macros = { version = "0.14", path = "crates/batbox-tuple-macros" }
 batbox-i18n = { version = "0.14", path = "crates/batbox-i18n" }
 batbox-i18n-macro = { version = "0.14", path = "crates/batbox-i18n/macro" }
@@ -35,6 +33,7 @@ batbox-logger = { version = "0.14", path = "crates/batbox-logger" }
 batbox-diff = { version = "0.14", path = "crates/batbox-diff" }
 batbox-diff-derive = { version = "0.14", path = "crates/batbox-diff/derive" }
 batbox-collection = { version = "0.14", path = "crates/batbox-collection" }
+batbox-collection-derive = { version = "0.14", path = "crates/batbox-collection/derive" }
 
 # Geng
 geng = { version = "0.14", path = "crates/geng" }

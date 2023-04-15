@@ -6,6 +6,8 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
 
+pub use batbox_collection_derive::*;
+
 /// An identifiable entity
 ///
 /// The contract here is to make sure entity's id stays the same for its lifetime

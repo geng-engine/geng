@@ -1,5 +1,5 @@
 [package]
-name = "batbox-derive"
+name = "batbox-collection-derive"
 authors.workspace = true
 categories.workspace = true
 description.workspace = true

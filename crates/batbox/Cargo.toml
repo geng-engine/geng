@@ -29,8 +29,6 @@ batbox-logger.workspace = true
 batbox-diff.workspace = true
 batbox-collection.workspace = true
 
-batbox-derive.workspace = true
-
 # rng
 rand.workspace = true
 getrandom.workspace = true # https://github.com/rust-random/rand#wasm-support

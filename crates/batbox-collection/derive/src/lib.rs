@@ -1,8 +1,24 @@
-use super::*;
+#![recursion_limit = "128"]
+#![allow(unused_imports)]
+
+extern crate proc_macro;
+
+use darling::{FromDeriveInput, FromField};
+use proc_macro2::{Span, TokenStream};
+use quote::quote;
+
+#[proc_macro_derive(HasId, attributes(has_id))]
+pub fn derive_has_id(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let input: syn::DeriveInput = syn::parse_macro_input!(input);
+    match DeriveInput::from_derive_input(&input) {
+        Ok(input) => input.derive().into(),
+        Err(e) => e.write_errors().into(),
+    }
+}
 
 #[derive(FromDeriveInput)]
 #[darling(supports(struct_any))]
-pub struct DeriveInput {
+struct DeriveInput {
     ident: syn::Ident,
     generics: syn::Generics,
     data: darling::ast::Data<(), Field>,
@@ -18,7 +34,7 @@ struct Field {
 }
 
 impl DeriveInput {
-    pub fn derive(self) -> TokenStream {
+    fn derive(self) -> TokenStream {
         let Self {
             ident,
             generics,

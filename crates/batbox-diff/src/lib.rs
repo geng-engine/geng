@@ -3,6 +3,8 @@
 use serde::{de::DeserializeOwned, Serialize};
 use std::fmt::Debug;
 
+pub use batbox_diff_derive::*;
+
 /// A diffable type
 ///
 /// [Can be derived](::batbox_derive::Diff)
