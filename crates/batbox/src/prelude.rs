@@ -67,7 +67,7 @@ pub use crate::cmp::prelude::*;
 pub use crate::collection::prelude::*;
 pub use crate::color::*;
 pub use crate::diff::prelude::*;
-pub use crate::file::prelude::*;
+pub use crate::file;
 pub use crate::geom::prelude::*;
 pub use crate::logger::prelude::*;
 pub use crate::num::*;

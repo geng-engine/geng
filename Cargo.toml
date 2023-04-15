@@ -27,6 +27,8 @@ batbox-num = { version = "0.14", path = "crates/batbox-num" }
 batbox-approx = { version = "0.14", path = "crates/batbox-approx" }
 batbox-color = { version = "0.14", path = "crates/batbox-color" }
 batbox-time = { version = "0.14", path = "crates/batbox-time" }
+batbox-file = { version = "0.14", path = "crates/batbox-file" }
+batbox-file-dialog = { version = "0.14", path = "crates/batbox-file-dialog" }
 
 # Geng
 geng = { version = "0.14", path = "crates/geng" }
