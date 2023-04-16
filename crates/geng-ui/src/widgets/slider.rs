@@ -1,34 +1,31 @@
 use super::*;
 
-use geng::ui::*;
-
 pub struct Slider<'a> {
-    cx: &'a Controller,
     sense: &'a mut Sense,
     pos: &'a mut Option<Aabb2<f64>>,
     tick_radius: &'a mut f32,
     value: f64,
     range: RangeInclusive<f64>,
-    change: RefCell<&'a mut Option<f64>>,
+    f: Box<dyn FnMut(f64) + 'a>,
 }
 
 impl<'a> Slider<'a> {
     const ANIMATION_SPEED: f32 = 5.0;
 
-    pub fn new(cx: &'a Controller, value: f64, range: RangeInclusive<f64>) -> Self {
+    pub fn new(
+        cx: &'a Controller,
+        value: f64,
+        range: RangeInclusive<f64>,
+        f: Box<dyn FnMut(f64) + 'a>,
+    ) -> Self {
         Slider {
-            cx,
             sense: cx.get_state(),
             tick_radius: cx.get_state(),
             pos: cx.get_state(),
             value,
             range,
-            change: RefCell::new(cx.get_state()),
+            f,
         }
-    }
-
-    pub fn get_change(&self) -> Option<f64> {
-        self.change.borrow_mut().take()
     }
 }
 
@@ -60,7 +57,7 @@ impl<'a> Widget for Slider<'a> {
         };
         draw_2d.draw_2d(
             cx.framebuffer,
-            &geng::PixelPerfectCamera,
+            &PixelPerfectCamera,
             &draw_2d::Quad::new(
                 Aabb2::from_corners(
                     position.bottom_left()
@@ -73,14 +70,14 @@ impl<'a> Widget for Slider<'a> {
         );
         draw_2d.circle(
             cx.framebuffer,
-            &geng::PixelPerfectCamera,
+            &PixelPerfectCamera,
             position.top_right() - vec2(line_width / 2.0, position.height() / 2.0),
             line_width / 2.0,
             cx.theme.usable_color,
         );
         draw_2d.draw_2d(
             cx.framebuffer,
-            &geng::PixelPerfectCamera,
+            &PixelPerfectCamera,
             &draw_2d::Quad::new(
                 Aabb2::from_corners(
                     position.bottom_left()
@@ -93,7 +90,7 @@ impl<'a> Widget for Slider<'a> {
         );
         draw_2d.draw_2d(
             cx.framebuffer,
-            &geng::PixelPerfectCamera,
+            &PixelPerfectCamera,
             &draw_2d::Ellipse::circle(
                 position.bottom_left() + vec2(line_width / 2.0, position.height() / 2.0),
                 line_width / 2.0,
@@ -102,35 +99,30 @@ impl<'a> Widget for Slider<'a> {
         );
         draw_2d.circle(
             cx.framebuffer,
-            &geng::PixelPerfectCamera,
+            &PixelPerfectCamera,
             position.bottom_left() + vec2(value_position, position.height() / 2.0),
             *self.tick_radius * position.height(),
             cx.theme.hover_color,
         );
     }
-    fn handle_event(&mut self, event: &geng::Event) {
+    fn handle_event(&mut self, event: &Event) {
         let aabb = match *self.pos {
             Some(pos) => pos,
             None => return,
         };
         if self.sense.is_captured() {
-            if let geng::Event::MouseDown { position, .. }
-            | geng::Event::MouseMove { position, .. } = &event
-            {
+            if let Event::MouseDown { position, .. } | Event::MouseMove { position, .. } = &event {
                 let position = position.x - aabb.min.x;
                 let new_value = *self.range.start()
                     + ((position - aabb.height() / 6.0) / (aabb.width() - aabb.height() / 3.0))
                         .clamp(0.0, 1.0)
                         * (*self.range.end() - *self.range.start());
-                **self.change.borrow_mut() = Some(new_value);
+                (self.f)(new_value);
             }
         }
     }
 
     fn calc_constraints(&mut self, _children: &ConstraintsContext) -> Constraints {
-        Constraints {
-            min_size: vec2(1.0, 1.0) * self.cx.theme().text_size as f64,
-            flex: vec2(1.0, 0.0),
-        }
+        Constraints::default()
     }
 }

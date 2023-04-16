@@ -10,7 +10,7 @@ pub trait ProgressScreen: State {
     }
 }
 
-impl ProgressScreen for EmptyState {}
+impl ProgressScreen for state::Empty {}
 
 pub struct LoadingScreen<L, G>
 where
@@ -56,7 +56,7 @@ where
     fn handle_event(&mut self, event: Event) {
         self.state.handle_event(event);
     }
-    fn transition(&mut self) -> Option<Transition> {
+    fn transition(&mut self) -> Option<state::Transition> {
         if let std::task::Poll::Ready(state) =
             self.future
                 .as_mut()
@@ -64,7 +64,7 @@ where
                     futures::task::noop_waker_ref(),
                 ))
         {
-            return Some(Transition::Switch(Box::new(state)));
+            return Some(state::Transition::Switch(Box::new(state)));
         }
         None
     }

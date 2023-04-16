@@ -30,8 +30,10 @@ geng-camera.workspace = true
 geng-shader.workspace = true
 geng-font.workspace = true
 geng-audio = { workspace = true, optional = true }
+geng-ui.workspace = true
+geng-state.workspace = true
+geng-draw2d.workspace = true
 geng-derive.workspace = true
-geng-ui-macros.workspace = true
 ugli.workspace = true
 
 rusttype.workspace = true

@@ -81,7 +81,7 @@ struct Example {
     geng: Geng,
     assets: Rc<Assets>,
     camera: Camera,
-    transition: Rc<RefCell<Option<geng::Transition>>>,
+    transition: Rc<RefCell<Option<geng::state::Transition>>>,
 }
 
 impl Example {
@@ -218,22 +218,20 @@ impl geng::State for Example {
                 let assets = self.assets.clone();
                 let transition = self.transition.clone();
                 file_dialog::select(move |file| {
-                    *transition.borrow_mut() = Some(geng::Transition::Switch(Box::new(load(
-                        geng,
-                        assets,
-                        async move {
+                    *transition.borrow_mut() = Some(geng::state::Transition::Switch(Box::new(
+                        load(geng, assets, async move {
                             let mut reader = file.reader().unwrap();
                             let mut buf = Vec::new();
                             reader.read_to_end(&mut buf).await.unwrap();
                             buf
-                        },
-                    ))))
+                        }),
+                    )))
                 });
             }
             _ => {}
         }
     }
-    fn transition(&mut self) -> Option<geng::Transition> {
+    fn transition(&mut self) -> Option<geng::state::Transition> {
         self.transition.borrow_mut().take()
     }
 }

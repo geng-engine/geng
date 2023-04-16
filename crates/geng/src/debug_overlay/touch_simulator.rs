@@ -92,7 +92,7 @@ impl TouchSimulator {
     }
     pub fn draw(&self, framebuffer: &mut ugli::Framebuffer) {
         for &touch in &self.touches {
-            self.geng.draw_2d(
+            self.geng.draw_2d().draw_2d(
                 framebuffer,
                 &PixelPerfectCamera,
                 &draw_2d::Ellipse::circle_with_cut(

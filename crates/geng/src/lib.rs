@@ -47,30 +47,28 @@ mod asset;
 mod cli_args;
 mod context;
 mod debug_overlay;
-pub mod draw_2d;
 mod loading_screen;
 pub mod obj;
-mod state;
 mod texture_atlas;
-pub mod ui;
 
 #[cfg(feature = "audio")]
 pub use geng_audio::{self as audio, *};
 pub use geng_camera::{
     self as camera, AbstractCamera2d, AbstractCamera3d, Camera2d, PixelPerfectCamera,
 };
+pub use geng_draw2d::{self as draw_2d, Draw2d};
 pub use geng_font::{self as font, Font, TextAlign};
 pub use geng_net as net;
 pub use geng_shader as shader;
+pub use geng_state::{self as state, State};
+pub use geng_ui as ui;
 pub use geng_window::{self as window, CursorType, Event, Key, MouseButton, TouchPoint, Window};
 
 pub use asset::*;
 pub use cli_args::*;
 pub use context::*;
 pub use debug_overlay::*;
-pub use draw_2d::Draw2d;
 pub use loading_screen::*;
-pub use state::*;
 pub use texture_atlas::*;
 
 #[cfg(not(target_arch = "wasm32"))]

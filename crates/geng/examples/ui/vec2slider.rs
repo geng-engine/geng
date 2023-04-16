@@ -50,7 +50,7 @@ impl geng::ui::Widget for Vec2Slider<'_> {
     fn draw(&mut self, cx: &mut geng::ui::DrawContext) {
         *self.position = cx.position.map(|x| x as f32); // Update hidden state to remember our widget's position
 
-        cx.geng.draw_2d(
+        cx.draw2d.draw_2d(
             cx.framebuffer,
             &geng::PixelPerfectCamera,
             &draw_2d::Ellipse {
@@ -60,7 +60,7 @@ impl geng::ui::Widget for Vec2Slider<'_> {
                 color: cx.theme.usable_color,
             },
         );
-        cx.geng.draw_2d(
+        cx.draw2d.draw_2d(
             cx.framebuffer,
             &geng::PixelPerfectCamera,
             &draw_2d::Ellipse::circle(

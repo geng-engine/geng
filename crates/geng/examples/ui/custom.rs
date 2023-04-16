@@ -57,7 +57,7 @@ impl geng::ui::Widget for CustomWidget<'_> {
             &self.assets.shader,
             ugli::DrawMode::TriangleFan,
             &ugli::VertexBuffer::new_dynamic(
-                cx.geng.ugli(),
+                cx.draw2d.ugli(),
                 vec![
                     Vertex {
                         a_pos: vec2(0.0, 0.0),

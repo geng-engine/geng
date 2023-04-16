@@ -72,7 +72,7 @@ impl geng::State for Example {
         }
         let assets = self.assets.get();
         let texture = &assets.texture;
-        self.geng.draw_2d(
+        self.geng.draw_2d().draw_2d(
             framebuffer,
             &geng::Camera2d {
                 center: vec2(0.0, 2.5),

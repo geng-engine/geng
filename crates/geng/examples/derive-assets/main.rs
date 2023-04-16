@@ -16,8 +16,8 @@ struct Example;
 
 impl geng::State for Example {
     fn draw(&mut self, _framebuffer: &mut ugli::Framebuffer) {}
-    fn transition(&mut self) -> Option<geng::Transition> {
-        Some(geng::Transition::Pop)
+    fn transition(&mut self) -> Option<geng::state::Transition> {
+        Some(geng::state::Transition::Pop)
     }
 }
 

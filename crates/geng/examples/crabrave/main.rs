@@ -117,7 +117,7 @@ impl geng::State for CrabRave {
             (&assets.hand, left_hand),
             (&assets.hand, right_hand),
         ] {
-            self.geng.draw_2d(
+            self.geng.draw_2d().draw_2d(
                 framebuffer,
                 &camera,
                 &draw_2d::TexturedQuad::unit(texture).transform(matrix),

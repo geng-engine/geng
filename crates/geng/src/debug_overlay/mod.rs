@@ -85,7 +85,7 @@ impl<T: State> State for DebugOverlay<T> {
     fn fixed_update(&mut self, delta_time: f64) {
         self.inner.fixed_update(delta_time);
     }
-    fn transition(&mut self) -> Option<Transition> {
+    fn transition(&mut self) -> Option<state::Transition> {
         self.inner.transition()
     }
 }

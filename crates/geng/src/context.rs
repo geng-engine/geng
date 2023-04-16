@@ -89,11 +89,8 @@ impl Geng {
         let ugli = window.ugli().clone();
         let shader_lib =
             shader::Library::new(&ugli, options.antialias, options.shader_prefix.clone());
-        let draw_2d = Rc::new(draw_2d::Helper::new(&shader_lib, &ugli));
-        let default_font = Rc::new({
-            let data = include_bytes!("font/default.ttf") as &[u8];
-            Font::new(window.ugli(), data, default()).unwrap()
-        });
+        let draw_2d = Rc::new(draw_2d::Helper::new(&ugli, options.antialias));
+        let default_font = Rc::new(Font::default(window.ugli()));
         Self {
             inner: Rc::new(GengImpl {
                 window,
@@ -142,7 +139,7 @@ impl Geng {
         match &mut *self.inner.ui_theme.borrow_mut() {
             Some(theme) => theme.clone(),
             theme @ None => {
-                *theme = Some(ui::Theme::dark(self));
+                *theme = Some(ui::Theme::dark(self.ugli()));
                 theme.clone().unwrap()
             }
         }
@@ -155,6 +152,10 @@ impl Geng {
     #[cfg(not(target_arch = "wasm32"))]
     pub fn set_icon(&self, path: &std::path::Path) -> anyhow::Result<()> {
         self.window().set_icon(path)
+    }
+
+    pub fn draw_2d(&self) -> &draw_2d::Helper {
+        &self.inner.draw_2d
     }
 }
 
@@ -170,7 +171,7 @@ impl Geng {
     /// Run the application
     pub fn run(self, state: impl State) {
         let geng = &self;
-        let mut state_manager = StateManager::new();
+        let mut state_manager = state::Manager::new();
         state_manager.push(Box::new(state));
         let state = DebugOverlay::new(geng, state_manager);
         struct RunState<T> {
@@ -183,7 +184,11 @@ impl Geng {
         let state = Rc::new(RefCell::new(RunState {
             geng: geng.clone(),
             state,
-            ui_controller: ui::Controller::new(geng),
+            ui_controller: ui::Controller::new(
+                geng.ugli(),
+                geng.ui_theme(),
+                geng.inner.options.target_ui_resolution,
+            ),
             timer: Timer::new(),
             next_fixed_update: geng.inner.fixed_delta_time.get(),
         }));
@@ -222,7 +227,7 @@ impl Geng {
             fn need_to_quit(&mut self) -> bool {
                 match self.state.transition() {
                     None => false,
-                    Some(Transition::Pop) => true,
+                    Some(state::Transition::Pop) => true,
                     _ => unreachable!(),
                 }
             }

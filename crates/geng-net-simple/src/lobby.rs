@@ -8,7 +8,7 @@ pub struct ConnectingState<T: Model, G: geng::State> {
     connection: Option<Pin<Box<dyn Future<Output = (T::PlayerId, T, Connection<T>)>>>>,
     #[allow(clippy::type_complexity)]
     f: Option<Box<dyn FnOnce(T::PlayerId, Remote<T>) -> G + 'static>>,
-    transition: Option<geng::Transition>,
+    transition: Option<geng::state::Transition>,
 }
 
 impl<T: Model, G: geng::State> ConnectingState<T, G> {
@@ -63,10 +63,10 @@ impl<T: Model, G: geng::State> geng::State for ConnectingState<T, G> {
                 key: geng::Key::Escape
             }
         ) {
-            self.transition = Some(geng::Transition::Pop);
+            self.transition = Some(geng::state::Transition::Pop);
         }
     }
-    fn transition(&mut self) -> Option<geng::Transition> {
+    fn transition(&mut self) -> Option<geng::state::Transition> {
         if let Some(connection) = &mut self.connection {
             if let std::task::Poll::Ready((player_id, initial_state, connection)) = connection
                 .as_mut()
@@ -74,7 +74,10 @@ impl<T: Model, G: geng::State> geng::State for ConnectingState<T, G> {
                     futures::task::noop_waker_ref(),
                 ))
             {
-                return Some(geng::Transition::Switch(Box::new(self.f.take().unwrap()(
+                return Some(geng::state::Transition::Switch(Box::new(self
+                    .f
+                    .take()
+                    .unwrap()(
                     player_id,
                     Remote {
                         connection: RefCell::new(connection),

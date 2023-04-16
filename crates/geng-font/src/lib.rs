@@ -59,6 +59,9 @@ pub struct Font {
 }
 
 impl Font {
+    pub fn default(ugli: &Ugli) -> Self {
+        Self::new(ugli, include_bytes!("default.ttf"), Options::default()).unwrap()
+    }
     pub fn new(ugli: &Ugli, data: &[u8], options: Options) -> anyhow::Result<Self> {
         let shader_lib = geng_shader::Library::new(ugli, options.antialias, None);
         let face = ttf_parser::Face::parse(data, 0)?;

@@ -37,7 +37,7 @@ impl<'a> Transform2d<f32> for Grid<'a> {
 impl<'a> geng::Draw2d for Grid<'a> {
     fn draw_2d_transformed(
         &self,
-        geng: &Geng,
+        helper: &draw_2d::Helper,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn geng::AbstractCamera2d,
         transform: mat3<f32>,
@@ -45,7 +45,7 @@ impl<'a> geng::Draw2d for Grid<'a> {
         for (x, column) in self.table.iter().enumerate() {
             for (y, object) in column.iter().enumerate() {
                 if let Some(object) = *object {
-                    geng.draw_2d_transformed(
+                    helper.draw_2d_transformed(
                         framebuffer,
                         camera,
                         &object
@@ -111,7 +111,7 @@ impl State {
                 geng.ugli(),
                 ugli::ColorAttachment::Texture(&mut texture),
             );
-            geng.draw_2d(
+            geng.draw_2d().draw_2d(
                 &mut framebuffer,
                 &geng::PixelPerfectCamera,
                 &draw_2d::Polygon::new_gradient(vec![
@@ -273,7 +273,7 @@ impl geng::State for State {
             self.objects.iter().map(|object| object.deref()),
         );
         let framebuffer_size = framebuffer.size();
-        self.geng.draw_2d(
+        self.geng.draw_2d().draw_2d(
             framebuffer,
             &self.camera,
             &grid
