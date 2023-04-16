@@ -47,7 +47,6 @@ mod cli_args;
 mod context;
 mod debug_overlay;
 mod loading_screen;
-pub mod obj;
 
 #[cfg(feature = "audio")]
 pub use geng_audio::{self as audio, *};

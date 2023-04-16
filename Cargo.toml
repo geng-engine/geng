@@ -51,6 +51,7 @@ geng-shader = { version = "0.14", path = "crates/geng-shader" }
 geng-state = { version = "0.14", path = "crates/geng-state" }
 geng-ui = { version = "0.14", path = "crates/geng-ui" }
 geng-draw2d = { version = "0.14", path = "crates/geng-draw2d" }
+geng-obj = { version = "0.14", path = "crates/geng-obj" }
 geng-derive = { version = "0.14", path = "crates/geng-derive" }
 
 # Ugli
