@@ -14,6 +14,7 @@ pub struct Assets {
 }
 
 struct State {
+    #[allow(dead_code)]
     geng: Geng,
     assets: Assets,
     counter: i32,
