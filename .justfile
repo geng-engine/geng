@@ -1,9 +1,9 @@
 check *OPTIONS:
-    cargo check --all-targets {{OPTIONS}}
-    cargo check --all-targets --target wasm32-unknown-unknown {{OPTIONS}}
+    cargo clippy --all-targets {{OPTIONS}}
+    cargo clippy --all-targets --target wasm32-unknown-unknown {{OPTIONS}}
 
 prepare *OPTIONS:
-    cargo check --all-targets {{OPTIONS}}
+    cargo clippy --all-targets {{OPTIONS}}
     cargo build --all-targets {{OPTIONS}}
 
 prepare-all:
