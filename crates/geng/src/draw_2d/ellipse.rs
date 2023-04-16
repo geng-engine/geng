@@ -59,7 +59,7 @@ impl Draw2d for Ellipse {
                     u_framebuffer_size: framebuffer_size,
                     u_inner_cut: self.cut,
                 },
-                camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
+                camera.uniforms(framebuffer_size.map(|x| x as f32)),
             ),
             ugli::DrawParameters {
                 blend_mode: Some(ugli::BlendMode::straight_alpha()),

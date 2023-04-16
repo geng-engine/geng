@@ -122,7 +122,7 @@ impl Geng {
 }
 
 impl Helper {
-    pub(crate) fn new(shader_lib: &ShaderLib, ugli: &Ugli) -> Self {
+    pub(crate) fn new(shader_lib: &shader::Library, ugli: &Ugli) -> Self {
         Self {
             geometry: RefCell::new(ugli::VertexBuffer::new_dynamic(ugli, Vec::new())),
             textured_geometry: RefCell::new(ugli::VertexBuffer::new_dynamic(ugli, Vec::new())),
@@ -193,7 +193,7 @@ impl Helper {
                     u_framebuffer_size: framebuffer_size,
                     u_model_matrix: mat3::<f32>::identity(),
                 },
-                camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
+                camera.uniforms(framebuffer_size.map(|x| x as f32)),
             ),
             ugli::DrawParameters {
                 blend_mode: Some(ugli::BlendMode::straight_alpha()),
@@ -234,7 +234,7 @@ impl Helper {
                     u_framebuffer_size: framebuffer_size,
                     u_model_matrix: mat3::<f32>::identity(),
                 },
-                camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
+                camera.uniforms(framebuffer_size.map(|x| x as f32)),
             ),
             ugli::DrawParameters {
                 blend_mode: Some(ugli::BlendMode::straight_alpha()),
@@ -325,7 +325,7 @@ impl Helper {
                     u_framebuffer_size: framebuffer_size,
                     u_inner_cut: inner_cut,
                 },
-                camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
+                camera.uniforms(framebuffer_size.map(|x| x as f32)),
             ),
             ugli::DrawParameters {
                 blend_mode: Some(ugli::BlendMode::straight_alpha()),

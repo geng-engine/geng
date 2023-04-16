@@ -45,6 +45,9 @@ geng-audio = { version = "0.14", path = "crates/geng-audio" }
 geng-window = { version = "0.14", path = "crates/geng-window" }
 geng-net = { version = "0.14", path = "crates/geng-net" }
 geng-net-simple = { version = "0.14", path = "crates/geng-net-simple" }
+geng-camera = { version = "0.14", path = "crates/geng-camera" }
+geng-font = { version = "0.14", path = "crates/geng-font" }
+geng-shader = { version = "0.14", path = "crates/geng-shader" }
 geng-derive = { version = "0.14", path = "crates/geng-derive" }
 geng-ui-macros = { version = "0.14", path = "crates/geng-ui-macros" }
 

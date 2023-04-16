@@ -37,7 +37,7 @@ impl Draw2d for Quad {
                     u_framebuffer_size: framebuffer_size,
                     u_model_matrix: transform * self.transform,
                 },
-                camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
+                camera.uniforms(framebuffer_size.map(|x| x as f32)),
             ),
             ugli::DrawParameters {
                 blend_mode: Some(ugli::BlendMode::straight_alpha()),
@@ -105,7 +105,7 @@ impl<T: std::borrow::Borrow<ugli::Texture>> Draw2d for TexturedQuad<T> {
                     u_framebuffer_size: framebuffer_size,
                     u_model_matrix: transform * self.transform,
                 },
-                camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
+                camera.uniforms(framebuffer_size.map(|x| x as f32)),
             ),
             ugli::DrawParameters {
                 blend_mode: Some(ugli::BlendMode::straight_alpha()),

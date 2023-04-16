@@ -1,9 +1,18 @@
-use super::*;
+use batbox_color::*;
+use batbox_la::*;
+use batbox_num::*;
+use geng_camera::*;
+use serde::{Deserialize, Serialize};
+use std::cell::RefCell;
+use std::collections::{HashMap, HashSet};
+use std::rc::Rc;
+use ugli::Ugli;
 
 #[derive(Clone)]
 pub struct Options {
     pub pixel_size: f32,
     pub max_distance: f32,
+    pub antialias: bool,
     // TODO: specify a set of glyphs
 }
 
@@ -12,6 +21,7 @@ impl Default for Options {
         Self {
             pixel_size: 64.0,
             max_distance: 0.25,
+            antialias: true,
         }
     }
 }
@@ -36,7 +46,7 @@ struct Glyph {
     advance_x: f32,
 }
 
-pub struct Ttf {
+pub struct Font {
     ugli: Ugli,
     sdf_program: Rc<ugli::Program>,
     program: Rc<ugli::Program>,
@@ -48,17 +58,10 @@ pub struct Ttf {
     line_gap: f32,
 }
 
-impl Ttf {
-    pub fn new(geng: &Geng, data: &[u8], options: Options) -> anyhow::Result<Self> {
-        Self::new_with(geng.ugli(), geng.shader_lib(), data, options)
-    }
-    pub(crate) fn new_with(
-        ugli: &Ugli,
-        shader_lib: &ShaderLib,
-        data: &[u8],
-        options: Options,
-    ) -> anyhow::Result<Self> {
-        let face = ttf_parser::Face::from_slice(data, 0)?;
+impl Font {
+    pub fn new(ugli: &Ugli, data: &[u8], options: Options) -> anyhow::Result<Self> {
+        let shader_lib = geng_shader::Library::new(ugli, options.antialias, None);
+        let face = ttf_parser::Face::parse(data, 0)?;
         struct RawGlyph {
             id: ttf_parser::GlyphId,
             code_point: char,
@@ -205,15 +208,6 @@ impl Ttf {
                     let mut vs = vs.into_iter();
                     let first = vs.next().unwrap();
                     self.add_triangle_fan(first, vs);
-                }
-                fn add_triangle_fan_loop(
-                    &mut self,
-                    mid: Vertex,
-                    vs: impl IntoIterator<Item = Vertex>,
-                ) {
-                    let mut vs = vs.into_iter();
-                    let v0 = vs.next();
-                    self.add_triangle_fan(mid, itertools::chain![v0, vs, v0]);
                 }
                 fn add_line(&mut self, a: vec2<f32>, b: vec2<f32>) {
                     let radius = self.options.max_distance * self.options.pixel_size;
@@ -368,7 +362,7 @@ impl Ttf {
                         },
                     }),
                     write_color: false,
-                    ..default()
+                    ..Default::default()
                 },
             );
             ugli::draw(
@@ -386,7 +380,7 @@ impl Ttf {
                         equation: ugli::BlendEquation::Max,
                     })),
                     // depth_func: Some(ugli::DepthFunc::Less),
-                    ..default()
+                    ..Default::default()
                 },
             );
             ugli::draw(
@@ -422,11 +416,11 @@ impl Ttf {
                         dst_factor: ugli::BlendFactor::Zero,
                         equation: ugli::BlendEquation::Add,
                     })),
-                    ..default()
+                    ..Default::default()
                 },
             );
         }
-        thread_local! { pub static SHADERS: RefCell<Option<[Rc<ugli::Program>; 2]>> = default(); };
+        thread_local! { pub static SHADERS: RefCell<Option<[Rc<ugli::Program>; 2]>> = Default::default(); };
         let [program, sdf_program] = SHADERS.with(|shaders| {
             fn map<T, R>(a: &[T; 2], f: impl Fn(&T) -> R) -> [R; 2] {
                 let [a, b] = a;
@@ -551,7 +545,7 @@ impl Ttf {
     }
 
     #[deprecated]
-    pub(crate) fn draw_impl(
+    pub fn draw_impl(
         &self,
         framebuffer: &mut ugli::Framebuffer,
         camera: &(impl AbstractCamera2d + ?Sized),
@@ -581,7 +575,7 @@ impl Ttf {
                                 .extend_positive(vec2(1.0, 1.0))
                                 .corners()
                                 .into_iter()
-                                .map(|v| draw_2d::Vertex { a_pos: v })
+                                .map(|v| Vertex { a_pos: v, a_vt: v })
                                 .collect(),
                         ),
                         &ugli::VertexBuffer::new_dynamic(&self.ugli, glyphs.to_vec()),
@@ -594,12 +588,12 @@ impl Ttf {
                             u_outline_dist: outline_size / size / self.max_distance,
                             u_outline_color: outline_color,
                         },
-                        camera2d_uniforms(camera, framebuffer_size.map(|x| x as f32)),
+                        camera.uniforms(framebuffer_size.map(|x| x as f32)),
                     ),
                     ugli::DrawParameters {
                         depth_func: None,
                         blend_mode: Some(ugli::BlendMode::straight_alpha()),
-                        ..default()
+                        ..Default::default()
                     },
                 );
             },
@@ -697,7 +691,7 @@ impl Ttf {
                             .extend_positive(vec2(1.0, 1.0))
                             .corners()
                             .into_iter()
-                            .map(|v| draw_2d::Vertex { a_pos: v })
+                            .map(|v| Vertex { a_pos: v, a_vt: v })
                             .collect(),
                     ),
                     &ugli::VertexBuffer::new_dynamic(&self.ugli, glyphs.to_vec()),
@@ -712,10 +706,27 @@ impl Ttf {
                         dst_factor: ugli::BlendFactor::One,
                         equation: ugli::BlendEquation::Max,
                     })),
-                    ..default()
+                    ..Default::default()
                 },
             );
         });
         Some(texture)
     }
+}
+
+#[derive(ugli::Vertex, Debug)]
+pub struct Vertex {
+    pub a_pos: vec2<f32>,
+    pub a_vt: vec2<f32>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
+pub struct TextAlign(pub f32);
+
+impl TextAlign {
+    pub const LEFT: Self = Self(0.0);
+    pub const BOTTOM: Self = Self(0.0);
+    pub const TOP: Self = Self(1.0);
+    pub const CENTER: Self = Self(0.5);
+    pub const RIGHT: Self = Self(1.0);
 }

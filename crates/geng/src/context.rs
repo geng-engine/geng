@@ -4,7 +4,7 @@ pub(crate) struct GengImpl {
     window: Window,
     #[cfg(feature = "audio")]
     audio: Audio,
-    shader_lib: ShaderLib,
+    shader_lib: shader::Library,
     pub(crate) draw_2d: Rc<draw_2d::Helper>,
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) asset_manager: AssetManager,
@@ -87,11 +87,12 @@ impl Geng {
             size: options.window_size,
         });
         let ugli = window.ugli().clone();
-        let shader_lib = ShaderLib::new_impl(&ugli, &options);
+        let shader_lib =
+            shader::Library::new(&ugli, options.antialias, options.shader_prefix.clone());
         let draw_2d = Rc::new(draw_2d::Helper::new(&shader_lib, &ugli));
         let default_font = Rc::new({
             let data = include_bytes!("font/default.ttf") as &[u8];
-            Font::new_with(window.ugli(), &shader_lib, data, default()).unwrap()
+            Font::new(window.ugli(), data, default()).unwrap()
         });
         Self {
             inner: Rc::new(GengImpl {
@@ -129,7 +130,7 @@ impl Geng {
         self.inner.gilrs.borrow()
     }
 
-    pub fn shader_lib(&self) -> &ShaderLib {
+    pub fn shader_lib(&self) -> &shader::Library {
         &self.inner.shader_lib
     }
 

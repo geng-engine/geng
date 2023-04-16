@@ -186,7 +186,7 @@ impl geng::State for Example {
                         u_ambient_light_color: Rgba::WHITE,
                         u_ambient_light_intensity: 0.1,
                     },
-                    geng::camera3d_uniforms(&self.camera, framebuffer_size),
+                    self.camera.uniforms(framebuffer_size),
                 ),
                 ugli::DrawParameters {
                     depth_func: Some(ugli::DepthFunc::Less),

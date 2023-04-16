@@ -26,6 +26,9 @@ geng-net-simple.workspace = true
 batbox.workspace = true
 geng-window.workspace = true
 geng-net.workspace = true
+geng-camera.workspace = true
+geng-shader.workspace = true
+geng-font.workspace = true
 geng-audio = { workspace = true, optional = true }
 geng-derive.workspace = true
 geng-ui-macros.workspace = true

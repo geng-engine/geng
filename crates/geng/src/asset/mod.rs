@@ -80,7 +80,7 @@ impl LoadAsset for Font {
         let geng = geng.clone();
         async move {
             let data = file::load_bytes(path).await?;
-            Ok(Font::new(&geng, &data, default())?)
+            Ok(Font::new(geng.ugli(), &data, default())?)
         }
         .boxed_local()
     }

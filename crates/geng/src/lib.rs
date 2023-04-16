@@ -31,7 +31,7 @@ pub use geng_derive::*;
 
 pub mod prelude {
     pub use crate::{draw_2d, Geng, Hot};
-    pub use crate::{Camera2dExt as _, Camera3dExt as _};
+    pub use crate::{AbstractCamera2d, AbstractCamera3d, Camera2d};
     pub use ::batbox;
     pub use ::batbox::prelude::*;
     pub use gilrs::{self, Gilrs};
@@ -44,33 +44,32 @@ use crate::prelude::*;
 use wasm_bindgen::prelude::*;
 
 mod asset;
-mod camera;
 mod cli_args;
 mod context;
 mod debug_overlay;
 pub mod draw_2d;
-pub mod font;
 mod loading_screen;
 pub mod obj;
-mod shader_lib;
 mod state;
 mod texture_atlas;
 pub mod ui;
 
 #[cfg(feature = "audio")]
 pub use geng_audio::{self as audio, *};
+pub use geng_camera::{
+    self as camera, AbstractCamera2d, AbstractCamera3d, Camera2d, PixelPerfectCamera,
+};
+pub use geng_font::{self as font, Font, TextAlign};
 pub use geng_net as net;
+pub use geng_shader as shader;
 pub use geng_window::{self as window, CursorType, Event, Key, MouseButton, TouchPoint, Window};
 
 pub use asset::*;
-pub use camera::*;
 pub use cli_args::*;
 pub use context::*;
 pub use debug_overlay::*;
 pub use draw_2d::Draw2d;
-pub use font::*;
 pub use loading_screen::*;
-pub use shader_lib::*;
 pub use state::*;
 pub use texture_atlas::*;
 
