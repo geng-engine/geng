@@ -1,13 +1,5 @@
 use super::*;
 
-#[cfg(target_arch = "wasm32")]
-#[path = "web.rs"]
-mod impl_web;
-
-#[cfg(not(target_arch = "wasm32"))]
-#[path = "native.rs"]
-mod _impl;
-
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum MouseButton {
     Left,
@@ -52,7 +44,7 @@ pub enum Event {
     KeyUp {
         key: Key,
     },
-    Gamepad(gilrs::Event),
+    Gamepad(gilrs::Event), // TODO window should not know about it?
 }
 
 impl Event {

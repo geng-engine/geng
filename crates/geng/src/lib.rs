@@ -57,10 +57,10 @@ mod shader_lib;
 mod state;
 mod texture_atlas;
 pub mod ui;
-mod window;
 
 #[cfg(feature = "audio")]
 pub use geng_audio::{self as audio, *};
+pub use geng_window::{self as window, CursorType, Event, Key, MouseButton, TouchPoint, Window};
 
 pub use asset::*;
 pub use camera::*;
@@ -73,7 +73,6 @@ pub use loading_screen::*;
 pub use shader_lib::*;
 pub use state::*;
 pub use texture_atlas::*;
-pub use window::*;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn setup_panic_handler() {

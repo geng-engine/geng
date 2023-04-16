@@ -78,7 +78,14 @@ impl Geng {
     /// Initialize with custom [ContextOptions].
     pub fn new_with(options: ContextOptions) -> Self {
         setup_panic_handler();
-        let window = Window::new(&options);
+        let window = Window::new(&window::Options {
+            fullscreen: options.fullscreen,
+            vsync: options.vsync,
+            title: options.title.clone(),
+            antialias: options.antialias,
+            transparency: options.transparency,
+            size: options.window_size,
+        });
         let ugli = window.ugli().clone();
         let shader_lib = ShaderLib::new_impl(&ugli, &options);
         let draw_2d = Rc::new(draw_2d::Helper::new(&shader_lib, &ugli));

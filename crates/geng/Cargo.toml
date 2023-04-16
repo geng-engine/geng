@@ -23,6 +23,7 @@ gltf.workspace = true
 
 [dependencies]
 batbox.workspace = true
+geng-window.workspace = true
 geng-audio = { workspace = true, optional = true }
 geng-derive.workspace = true
 geng-ui-macros.workspace = true
@@ -50,7 +51,6 @@ web-sys = { workspace = true, features = [
     "ProgressEvent",
     "Document",
     "DistanceModelType",
-    "CssStyleDeclaration",
     "HtmlAudioElement",
     "XmlHttpRequest",
     "XmlHttpRequestResponseType",
@@ -60,7 +60,6 @@ web-sys = { workspace = true, features = [
     "TouchEvent",
     "Touch",
     "TouchList",
-    "DomRect",
     "DomRectReadOnly",
     "WebSocket",
     "BinaryType",

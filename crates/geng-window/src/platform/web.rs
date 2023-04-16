@@ -1,5 +1,135 @@
 use super::*;
 
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen(module = "/src/platform/web.js")]
+extern "C" {
+    pub fn initialize_window(canvas: &web_sys::HtmlCanvasElement);
+    pub fn is_fullscreen() -> bool;
+    pub fn set_fullscreen(canvas: &web_sys::HtmlCanvasElement, fullscreen: bool);
+}
+
+pub struct Context {
+    canvas: web_sys::HtmlCanvasElement,
+    ugli: Ugli,
+    mouse_pos: Rc<Cell<vec2<f64>>>,
+    event_handler: Rc<RefCell<Box<dyn Fn(Event)>>>,
+}
+
+impl Context {
+    pub fn new(options: &Options) -> Self {
+        let canvas = web_sys::window()
+            .unwrap()
+            .document()
+            .unwrap()
+            .get_element_by_id("geng-canvas")
+            .expect("#geng-canvas not found")
+            .dyn_into::<web_sys::HtmlCanvasElement>()
+            .expect("#geng-canvas is not a canvas");
+        initialize_window(&canvas);
+        let ugli = Ugli::create_webgl(
+            &canvas,
+            ugli::WebGLContextOptions {
+                antialias: options.antialias,
+                alpha: options.transparency,
+                stencil: true,
+                ..Default::default()
+            },
+        );
+        let event_handler = Rc::new(RefCell::new(Box::new(|_| {}) as Box<_>));
+        let context = Self {
+            canvas,
+            ugli,
+            event_handler: event_handler.clone(),
+            mouse_pos: Rc::new(Cell::new(vec2::ZERO)),
+        };
+        context.subscribe_events(move |event| {
+            event_handler.borrow()(event);
+        });
+        context
+    }
+
+    pub fn real_size(&self) -> vec2<usize> {
+        let width = self.canvas.width() as usize;
+        let height = self.canvas.height() as usize;
+        vec2(width, height)
+    }
+
+    pub fn ugli(&self) -> &Ugli {
+        &self.ugli
+    }
+
+    pub fn should_close(&self) -> bool {
+        false
+    }
+
+    pub fn set_fullscreen(&self, fullscreen: bool) {
+        set_fullscreen(&self.canvas, fullscreen);
+    }
+
+    pub fn is_fullscreen(&self) -> bool {
+        is_fullscreen()
+    }
+
+    pub fn mouse_pos(&self) -> vec2<f64> {
+        self.mouse_pos.get()
+    }
+
+    pub fn set_cursor_position(&self, _: vec2<f64>) {
+        unimplemented!()
+    }
+
+    pub fn swap_buffers(&self, event_handler: impl Fn(Event) + 'static) {
+        let mouse_pos = self.mouse_pos.clone();
+        *self.event_handler.borrow_mut() = Box::new(move |event| {
+            if let Event::MouseMove { position, .. } = event {
+                mouse_pos.set(position);
+            }
+            event_handler(event);
+        });
+    }
+
+    pub fn set_cursor_type(&self, cursor_type: CursorType) {
+        let cursor_type = match cursor_type {
+            CursorType::Default => "initial",
+            CursorType::Pointer => "pointer",
+            CursorType::Drag => "all-scroll",
+            CursorType::None => "none",
+        };
+        // TODO: only canvas
+        web_sys::window()
+            .unwrap()
+            .document()
+            .unwrap()
+            .body()
+            .unwrap()
+            .style()
+            .set_property("cursor", cursor_type)
+            .unwrap();
+    }
+
+    pub fn cursor_locked(&self) -> bool {
+        web_sys::window()
+            .unwrap()
+            .document()
+            .unwrap()
+            .pointer_lock_element()
+            .is_some()
+    }
+
+    pub fn lock_cursor(&self) {
+        self.canvas.request_pointer_lock();
+    }
+
+    pub fn unlock_cursor(&self) {
+        web_sys::window()
+            .unwrap()
+            .document()
+            .unwrap()
+            .exit_pointer_lock();
+    }
+}
+
 trait Convert<T>: Sized {
     fn convert(value: T) -> Option<Self>;
 }
@@ -189,7 +319,7 @@ impl Convert<web_sys::TouchEvent> for Event {
     }
 }
 
-impl Window {
+impl Context {
     fn subscribe_to<T, F>(&self, handler: &Rc<F>, event_name: &str)
     where
         T: wasm_bindgen::convert::FromWasmAbi + 'static,
@@ -216,7 +346,7 @@ impl Window {
             .unwrap();
         handler.forget(); // TODO: not forget
     }
-    pub(crate) fn subscribe_events<F: Fn(Event) + 'static>(&self, handler: F) {
+    fn subscribe_events<F: Fn(Event) + 'static>(&self, handler: F) {
         let handler = Rc::new(handler);
         let handler = &handler;
         self.subscribe_to::<web_sys::KeyboardEvent, _>(handler, "keydown");
