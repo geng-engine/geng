@@ -18,7 +18,7 @@ impl Quad {
 }
 
 impl Draw2d for Quad {
-    fn draw_2d_transformed(
+    fn draw2d_transformed(
         &self,
         helper: &Helper,
         framebuffer: &mut ugli::Framebuffer,
@@ -85,7 +85,7 @@ impl<T: std::borrow::Borrow<ugli::Texture>> TexturedQuad<T> {
 }
 
 impl<T: std::borrow::Borrow<ugli::Texture>> Draw2d for TexturedQuad<T> {
-    fn draw_2d_transformed(
+    fn draw2d_transformed(
         &self,
         helper: &Helper,
         framebuffer: &mut ugli::Framebuffer,

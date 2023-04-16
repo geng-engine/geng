@@ -4,7 +4,7 @@ use batbox_la::*;
 use batbox_tuple_macros::*;
 use derive_more::{Deref, DerefMut};
 use geng_camera::PixelPerfectCamera;
-use geng_draw2d as draw_2d;
+use geng_draw2d as draw2d;
 use geng_font::{Font, TextAlign};
 use geng_window::Event;
 use std::cell::RefCell;

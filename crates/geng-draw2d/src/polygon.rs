@@ -58,7 +58,7 @@ impl Polygon {
 }
 
 impl Draw2d for Polygon {
-    fn draw_2d_transformed(
+    fn draw2d_transformed(
         &self,
         helper: &Helper,
         framebuffer: &mut ugli::Framebuffer,
@@ -146,7 +146,7 @@ impl<T: std::borrow::Borrow<ugli::Texture>> TexturedPolygon<T> {
 }
 
 impl<T: std::borrow::Borrow<ugli::Texture>> Draw2d for TexturedPolygon<T> {
-    fn draw_2d_transformed(
+    fn draw2d_transformed(
         &self,
         helper: &Helper,
         framebuffer: &mut ugli::Framebuffer,

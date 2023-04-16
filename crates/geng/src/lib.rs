@@ -30,7 +30,7 @@
 pub use geng_derive::*;
 
 pub mod prelude {
-    pub use crate::{draw_2d, Geng, Hot};
+    pub use crate::{draw2d, Geng, Hot};
     pub use crate::{AbstractCamera2d, AbstractCamera3d, Camera2d};
     pub use ::batbox;
     pub use ::batbox::prelude::*;
@@ -56,7 +56,7 @@ pub use geng_audio::{self as audio, *};
 pub use geng_camera::{
     self as camera, AbstractCamera2d, AbstractCamera3d, Camera2d, PixelPerfectCamera,
 };
-pub use geng_draw2d::{self as draw_2d, Draw2d};
+pub use geng_draw2d::{self as draw2d, Draw2d};
 pub use geng_font::{self as font, Font, TextAlign};
 pub use geng_net as net;
 pub use geng_shader as shader;

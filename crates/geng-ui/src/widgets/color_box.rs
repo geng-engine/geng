@@ -22,10 +22,10 @@ impl ColorBox {
 
 impl Widget for ColorBox {
     fn draw(&mut self, cx: &mut DrawContext) {
-        cx.draw2d.draw_2d(
+        cx.draw2d.draw2d(
             cx.framebuffer,
             &PixelPerfectCamera,
-            &draw_2d::Quad::new(cx.position.map(|x| x as f32), self.color),
+            &draw2d::Quad::new(cx.position.map(|x| x as f32), self.color),
         );
     }
 

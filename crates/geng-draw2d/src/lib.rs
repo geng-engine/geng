@@ -63,37 +63,37 @@ pub struct Helper {
 }
 
 pub trait Draw2d: Transform2d<f32> {
-    fn draw_2d_transformed(
+    fn draw2d_transformed(
         &self,
         helper: &Helper,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
         transform: mat3<f32>,
     );
-    fn draw_2d(
+    fn draw2d(
         &self,
         helper: &Helper,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
     ) {
-        self.draw_2d_transformed(helper, framebuffer, camera, mat3::identity());
+        self.draw2d_transformed(helper, framebuffer, camera, mat3::identity());
     }
 }
 
 impl<T: Draw2d + ?Sized> Draw2d for Box<T> {
-    fn draw_2d_transformed(
+    fn draw2d_transformed(
         &self,
         helper: &Helper,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
         transform: mat3<f32>,
     ) {
-        (**self).draw_2d_transformed(helper, framebuffer, camera, transform);
+        (**self).draw2d_transformed(helper, framebuffer, camera, transform);
     }
 }
 
 impl<'a, T: Draw2d + ?Sized> Draw2d for Transformed2d<'a, f32, T> {
-    fn draw_2d_transformed(
+    fn draw2d_transformed(
         &self,
         helper: &Helper,
         framebuffer: &mut ugli::Framebuffer,
@@ -101,7 +101,7 @@ impl<'a, T: Draw2d + ?Sized> Draw2d for Transformed2d<'a, f32, T> {
         transform: mat3<f32>,
     ) {
         self.inner
-            .draw_2d_transformed(helper, framebuffer, camera, transform * self.transform);
+            .draw2d_transformed(helper, framebuffer, camera, transform * self.transform);
     }
 }
 
@@ -153,22 +153,22 @@ impl Helper {
         &self.ugli
     }
 
-    pub fn draw_2d(
+    pub fn draw2d(
         &self,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
         drawable: &impl Draw2d,
     ) {
-        self.draw_2d_transformed(framebuffer, camera, drawable, mat3::identity());
+        self.draw2d_transformed(framebuffer, camera, drawable, mat3::identity());
     }
-    pub fn draw_2d_transformed(
+    pub fn draw2d_transformed(
         &self,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
         drawable: &impl Draw2d,
         transform: mat3<f32>,
     ) {
-        drawable.draw_2d_transformed(self, framebuffer, camera, transform);
+        drawable.draw2d_transformed(self, framebuffer, camera, transform);
     }
 
     pub fn draw<V>(

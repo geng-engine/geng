@@ -51,7 +51,7 @@ impl<F: std::borrow::Borrow<Font>, T: AsRef<str>> Transform2d<f32> for Text<F, T
 }
 
 impl<F: std::borrow::Borrow<Font>, T: AsRef<str>> Draw2d for Text<F, T> {
-    fn draw_2d_transformed(
+    fn draw2d_transformed(
         &self,
         _: &Helper,
         framebuffer: &mut ugli::Framebuffer,

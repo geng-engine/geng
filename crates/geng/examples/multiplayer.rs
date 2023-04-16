@@ -149,11 +149,11 @@ impl geng::State for Game {
         let model = self.model.get();
         for player in &model.players {
             self.geng
-                .draw_2d()
+                .draw2d()
                 .circle(framebuffer, &camera, player.position, 1.0, Rgba::GRAY);
         }
         self.geng
-            .draw_2d()
+            .draw2d()
             .circle(framebuffer, &camera, self.player.position, 1.0, Rgba::WHITE);
         self.geng.default_font().draw(
             framebuffer,

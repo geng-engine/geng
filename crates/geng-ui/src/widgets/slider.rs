@@ -44,7 +44,7 @@ impl<'a> Widget for Slider<'a> {
     }
     fn draw(&mut self, cx: &mut DrawContext) {
         *self.pos = Some(cx.position);
-        let draw_2d = cx.draw2d;
+        let draw2d = cx.draw2d;
         let position = cx.position.map(|x| x as f32);
         let line_width = position.height() / 3.0;
         let value_position = if self.range.end() == self.range.start() {
@@ -55,10 +55,10 @@ impl<'a> Widget for Slider<'a> {
                     as f32
                     * (position.width() - line_width)
         };
-        draw_2d.draw_2d(
+        draw2d.draw2d(
             cx.framebuffer,
             &PixelPerfectCamera,
-            &draw_2d::Quad::new(
+            &draw2d::Quad::new(
                 Aabb2::from_corners(
                     position.bottom_left()
                         + vec2(value_position, (position.height() - line_width) / 2.0),
@@ -68,17 +68,17 @@ impl<'a> Widget for Slider<'a> {
                 cx.theme.usable_color,
             ),
         );
-        draw_2d.circle(
+        draw2d.circle(
             cx.framebuffer,
             &PixelPerfectCamera,
             position.top_right() - vec2(line_width / 2.0, position.height() / 2.0),
             line_width / 2.0,
             cx.theme.usable_color,
         );
-        draw_2d.draw_2d(
+        draw2d.draw2d(
             cx.framebuffer,
             &PixelPerfectCamera,
-            &draw_2d::Quad::new(
+            &draw2d::Quad::new(
                 Aabb2::from_corners(
                     position.bottom_left()
                         + vec2(line_width / 2.0, (position.height() - line_width) / 2.0),
@@ -88,16 +88,16 @@ impl<'a> Widget for Slider<'a> {
                 cx.theme.hover_color,
             ),
         );
-        draw_2d.draw_2d(
+        draw2d.draw2d(
             cx.framebuffer,
             &PixelPerfectCamera,
-            &draw_2d::Ellipse::circle(
+            &draw2d::Ellipse::circle(
                 position.bottom_left() + vec2(line_width / 2.0, position.height() / 2.0),
                 line_width / 2.0,
                 cx.theme.hover_color,
             ),
         );
-        draw_2d.circle(
+        draw2d.circle(
             cx.framebuffer,
             &PixelPerfectCamera,
             position.bottom_left() + vec2(value_position, position.height() / 2.0),

@@ -56,7 +56,7 @@ impl LayoutContext<'_> {
 
 pub struct Controller {
     target_ui_resolution: Option<vec2<f64>>,
-    draw2d: draw_2d::Helper,
+    draw2d: draw2d::Helper,
     theme: Theme,
     state: RefCell<State>,
 }
@@ -65,7 +65,7 @@ impl Controller {
     pub fn new(ugli: &Ugli, theme: Theme, target_ui_resolution: Option<vec2<f64>>) -> Self {
         Self {
             target_ui_resolution,
-            draw2d: draw_2d::Helper::new(ugli, true),
+            draw2d: draw2d::Helper::new(ugli, true),
             theme,
             state: RefCell::new(State {
                 size: vec2(1.0, 1.0),
@@ -78,7 +78,7 @@ impl Controller {
         }
     }
 
-    pub fn draw2d(&self) -> &draw_2d::Helper {
+    pub fn draw2d(&self) -> &draw2d::Helper {
         &self.draw2d
     }
     pub fn theme(&self) -> &Theme {

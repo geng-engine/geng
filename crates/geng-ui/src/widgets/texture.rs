@@ -26,7 +26,7 @@ impl<'a> Widget for Texture<'a> {
         &mut self.core
     }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
-        self.geng.draw_2d_helper().textured_quad(
+        self.geng.draw2d_helper().textured_quad(
             framebuffer,
             &PixelPerfectCamera,
             self.core().position.map(|x| x as f32),

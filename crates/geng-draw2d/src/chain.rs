@@ -229,7 +229,7 @@ impl Transform2d<f32> for Chain {
 }
 
 impl Draw2d for Chain {
-    fn draw_2d_transformed(
+    fn draw2d_transformed(
         &self,
         helper: &Helper,
         framebuffer: &mut ugli::Framebuffer,

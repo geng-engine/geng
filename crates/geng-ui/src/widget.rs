@@ -85,7 +85,7 @@ impl Default for Constraints {
 }
 
 pub struct DrawContext<'a, 'b> {
-    pub draw2d: &'a draw_2d::Helper,
+    pub draw2d: &'a draw2d::Helper,
     pub theme: &'a Theme,
     pub position: Aabb2<f64>,
     pub framebuffer: &'a mut ugli::Framebuffer<'b>,
