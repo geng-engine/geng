@@ -38,7 +38,6 @@ pub mod prelude {
     pub use ugli::{self, Ugli};
 }
 
-use crate as geng;
 use crate::prelude::*;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
@@ -49,7 +48,6 @@ mod context;
 mod debug_overlay;
 mod loading_screen;
 pub mod obj;
-mod texture_atlas;
 
 #[cfg(feature = "audio")]
 pub use geng_audio::{self as audio, *};
@@ -69,7 +67,6 @@ pub use cli_args::*;
 pub use context::*;
 pub use debug_overlay::*;
 pub use loading_screen::*;
-pub use texture_atlas::*;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn setup_panic_handler() {

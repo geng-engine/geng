@@ -1,4 +1,5 @@
-use super::*;
+use batbox_la::*;
+use ugli::Ugli;
 
 pub struct TextureAtlas {
     texture: ugli::Texture,
