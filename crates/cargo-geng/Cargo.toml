@@ -11,7 +11,11 @@ readme.workspace = true
 repository.workspace = true
 version.workspace = true
 
-[dependencies]
+[features]
+default = []
+wast-opt = ["dep:wasm-opt"]
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 open.workspace = true
 tokio.workspace = true
 futures.workspace = true
@@ -22,6 +26,6 @@ cargo_metadata.workspace = true
 clap.workspace = true
 anyhow.workspace = true
 wasm-bindgen-cli-support.workspace = true
-wasm-opt.workspace = true
+wasm-opt = { workspace = true, optional = true }
 serde.workspace = true
 serde_json.workspace = true
