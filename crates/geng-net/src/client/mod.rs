@@ -1,15 +1,9 @@
 use super::*;
 
-#[cfg(target_arch = "wasm32")]
-#[path = "web.rs"]
-mod _impl;
-
-#[cfg(not(target_arch = "wasm32"))]
-#[path = "native.rs"]
-mod _impl;
+mod platform;
 
 pub struct Connection<S: Message, C: Message> {
-    inner: _impl::Connection<S, C>,
+    inner: platform::Connection<S, C>,
 }
 
 impl<S: Message, C: Message> Connection<S, C> {
@@ -52,7 +46,7 @@ impl<S: Message, C: Message> Sender<C> for Connection<S, C> {
     fn send(&mut self, message: C) {
         self.send(message);
     }
-    fn send_serialized(&mut self, data: Arc<Vec<u8>>) {
+    fn send_serialized(&mut self, _data: Arc<Vec<u8>>) {
         unimplemented!()
     }
 }
@@ -60,5 +54,5 @@ impl<S: Message, C: Message> Sender<C> for Connection<S, C> {
 pub fn connect<S: Message, C: Message>(
     addr: &str,
 ) -> impl Future<Output = anyhow::Result<Connection<S, C>>> {
-    _impl::connect(addr).map(|result| result.map(|inner| Connection { inner }))
+    platform::connect(addr).map(|result| result.map(|inner| Connection { inner }))
 }

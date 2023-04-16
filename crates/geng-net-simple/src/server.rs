@@ -1,7 +1,7 @@
 use super::*;
 
 struct ClientState<T: Model> {
-    sender: Box<dyn Sender<ServerMessage<T>>>,
+    sender: Box<dyn geng::net::Sender<ServerMessage<T>>>,
 }
 
 struct ServerState<T: Model> {
@@ -36,7 +36,7 @@ struct Client<T: Model> {
     server_state: Arc<Mutex<ServerState<T>>>,
 }
 
-impl<T: Model> Receiver<T::Message> for Client<T> {
+impl<T: Model> geng::net::Receiver<T::Message> for Client<T> {
     fn handle(&mut self, message: T::Message) {
         let mut state = self.server_state.lock().unwrap();
         let state: &mut ServerState<T> = &mut state;
@@ -71,7 +71,7 @@ struct ServerApp<T: Model> {
 
 pub struct Server<T: Model> {
     state: Arc<Mutex<ServerState<T>>>,
-    inner: net::Server<ServerApp<T>>,
+    inner: geng::net::Server<ServerApp<T>>,
 }
 
 impl<T: Model> Server<T> {
@@ -85,10 +85,10 @@ impl<T: Model> Server<T> {
         }));
         Self {
             state: state.clone(),
-            inner: net::Server::new(ServerApp { state }, addr),
+            inner: geng::net::Server::new(ServerApp { state }, addr),
         }
     }
-    pub fn handle(&self) -> ServerHandle {
+    pub fn handle(&self) -> geng::net::ServerHandle {
         self.inner.handle()
     }
     pub fn run(self) {
@@ -123,11 +123,11 @@ impl<T: Model> Server<T> {
     }
 }
 
-impl<T: Model> net::server::App for ServerApp<T> {
+impl<T: Model> geng::net::server::App for ServerApp<T> {
     type Client = Client<T>;
     type ServerMessage = ServerMessage<T>;
     type ClientMessage = T::Message;
-    fn connect(&mut self, mut sender: Box<dyn Sender<ServerMessage<T>>>) -> Client<T> {
+    fn connect(&mut self, mut sender: Box<dyn geng::net::Sender<ServerMessage<T>>>) -> Client<T> {
         let mut state = self.state.lock().unwrap();
         let state: &mut ServerState<T> = &mut state;
         let player_id = state.current.new_player(&mut state.events);

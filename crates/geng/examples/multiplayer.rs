@@ -1,5 +1,5 @@
-use geng::net::simple as simple_net;
 use geng::{prelude::*, TextAlign};
+use geng_net_simple as simple_net;
 
 type PlayerId = usize;
 
@@ -196,5 +196,5 @@ impl geng::State for Game {
 fn main() {
     logger::init();
     geng::setup_panic_handler();
-    geng::net::simple::run("Multiplayer", Model::new, Game::new);
+    simple_net::run("Multiplayer", Model::new, Game::new);
 }

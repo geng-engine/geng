@@ -1,4 +1,11 @@
-use super::*;
+use crate::Message;
+use crate::Traffic;
+use crate::{deserialize_message, serialize_message};
+use anyhow::{anyhow, Context as _};
+use futures::prelude::*;
+use std::marker::PhantomData;
+use std::pin::Pin;
+use std::sync::{Arc, Mutex};
 
 pub struct Connection<S: Message, C: Message> {
     sender: ws::Sender,

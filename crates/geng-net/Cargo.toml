@@ -1,0 +1,36 @@
+[package]
+name = "geng-net"
+authors.workspace = true
+categories.workspace = true
+description.workspace = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]
+
+[dependencies]
+batbox-time.workspace = true
+serde.workspace = true
+bincode.workspace = true
+flate2.workspace = true
+anyhow.workspace = true
+futures.workspace = true
+log.workspace = true
+
+[target.'cfg(target_arch="wasm32")'.dependencies]
+web-sys = { workspace = true, features = [
+    "BinaryType",
+    "MessageEvent",
+    "WebSocket",
+] }
+wasm-bindgen.workspace = true
+js-sys.workspace = true
+
+[target.'cfg(not(target_arch="wasm32"))'.dependencies]
+ws.workspace = true

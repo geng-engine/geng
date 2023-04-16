@@ -1,5 +1,7 @@
 use super::*;
 
+use std::sync::Mutex;
+
 pub trait App: Send + 'static {
     type Client: Receiver<Self::ClientMessage>;
     type ServerMessage: Message;
@@ -23,7 +25,7 @@ impl BackgroundSender {
         std::thread::spawn(move || {
             while let Ok(data) = receiver.recv() {
                 ws_sender
-                    .send(ws::Message::Binary(data.deref().clone()))
+                    .send(ws::Message::Binary((*data).clone()))
                     .expect("Failed to send message");
             }
         });
@@ -119,7 +121,7 @@ impl<T: App> Server<T> {
                 // out_buffer_grow: todo!(),
                 panic_on_internal: false,
                 tcp_nodelay: true,
-                ..default()
+                ..Default::default()
             })
             .build(factory)
             .unwrap();

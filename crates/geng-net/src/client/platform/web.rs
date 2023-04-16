@@ -1,4 +1,10 @@
-use super::*;
+use crate::{deserialize_message, serialize_message, Message, Traffic};
+use anyhow::anyhow;
+use futures::prelude::*;
+use std::marker::PhantomData;
+use std::pin::Pin;
+use std::sync::{Arc, Mutex};
+use wasm_bindgen::prelude::*;
 
 pub struct Connection<S: Message, C: Message> {
     ws: web_sys::WebSocket,
@@ -47,7 +53,7 @@ pub fn connect<S: Message, C: Message>(
     addr: &str,
 ) -> impl Future<Output = anyhow::Result<Connection<S, C>>> {
     let ws = web_sys::WebSocket::new(addr).unwrap();
-    let (mut connection_sender, mut connection_receiver) =
+    let (mut connection_sender, connection_receiver) =
         futures::channel::mpsc::channel::<anyhow::Result<Connection<S, C>>>(1);
     let (recv_sender, recv) = futures::channel::mpsc::unbounded();
     let traffic = Arc::new(Mutex::new(Traffic::new()));

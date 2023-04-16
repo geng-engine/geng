@@ -51,7 +51,6 @@ mod debug_overlay;
 pub mod draw_2d;
 pub mod font;
 mod loading_screen;
-pub mod net;
 pub mod obj;
 mod shader_lib;
 mod state;
@@ -60,6 +59,7 @@ pub mod ui;
 
 #[cfg(feature = "audio")]
 pub use geng_audio::{self as audio, *};
+pub use geng_net as net;
 pub use geng_window::{self as window, CursorType, Event, Key, MouseButton, TouchPoint, Window};
 
 pub use asset::*;

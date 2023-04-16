@@ -21,7 +21,7 @@ pub struct TrafficWatcher {
     last_delta: Traffic,
 }
 
-impl Display for TrafficWatcher {
+impl std::fmt::Display for TrafficWatcher {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
             f,

@@ -43,6 +43,8 @@ batbox-lapp = { version = "0.14", path = "crates/batbox-lapp" }
 geng = { version = "0.14", path = "crates/geng" }
 geng-audio = { version = "0.14", path = "crates/geng-audio" }
 geng-window = { version = "0.14", path = "crates/geng-window" }
+geng-net = { version = "0.14", path = "crates/geng-net" }
+geng-net-simple = { version = "0.14", path = "crates/geng-net-simple" }
 geng-derive = { version = "0.14", path = "crates/geng-derive" }
 geng-ui-macros = { version = "0.14", path = "crates/geng-ui-macros" }
 

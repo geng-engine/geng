@@ -1,4 +1,5 @@
-use super::*;
+use geng::net::{Message, Traffic};
+use geng::prelude::*;
 
 mod app;
 mod lobby;
@@ -35,7 +36,7 @@ pub enum ServerMessage<T: Model> {
 }
 
 pub struct Remote<T: Model> {
-    connection: RefCell<client::Connection<ServerMessage<T>, T::Message>>,
+    connection: RefCell<geng::net::client::Connection<ServerMessage<T>, T::Message>>,
     model: RefCell<T>,
 }
 

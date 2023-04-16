@@ -20,10 +20,12 @@ audio = ["dep:geng-audio"]
 
 [dev-dependencies]
 gltf.workspace = true
+geng-net-simple.workspace = true
 
 [dependencies]
 batbox.workspace = true
 geng-window.workspace = true
+geng-net.workspace = true
 geng-audio = { workspace = true, optional = true }
 geng-derive.workspace = true
 geng-ui-macros.workspace = true
@@ -63,7 +65,6 @@ web-sys = { workspace = true, features = [
     "DomRectReadOnly",
     "WebSocket",
     "BinaryType",
-    "MessageEvent",
     "HtmlImageElement",
     "HtmlInputElement",
     "MediaElementAudioSourceNode",
