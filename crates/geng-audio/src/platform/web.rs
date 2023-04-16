@@ -63,16 +63,13 @@ impl Sound {
             let handler = {
                 let request = request.clone();
                 move |success: bool| {
-                    match sender.send(if success {
+                    let result = if success {
                         Ok(request.response().expect("1").into())
                     } else {
                         Err(anyhow!("Failed to load {:?}", path))
-                    }) {
-                        Ok(()) => {}
-                        Err(_) => {
-                            // Means that future was dropped
-                        }
-                    }
+                    };
+                    // Err means that future was dropped
+                    let (Ok(()) | Err(_)) = sender.send(result);
                 }
             };
             #[wasm_bindgen(inline_js = r#"
@@ -92,7 +89,7 @@ impl Sound {
                 wasm_bindgen::closure::Closure::once_into_js(handler),
             );
             request.send().unwrap();
-            return async move { receiver.await.unwrap() };
+            async move { receiver.await.unwrap() }
         }
 
         let data = load_arraybuffer(path).await?;
@@ -158,8 +155,7 @@ impl SoundEffect {
         self.play_from(time::Duration::from_secs_f64(0.0));
     }
     pub fn play_from(&mut self, offset: time::Duration) {
-        let _ = self
-            .inner
+        self.inner
             .start_with_when_and_grain_offset(0.0, offset.as_secs_f64())
             .unwrap();
     }
