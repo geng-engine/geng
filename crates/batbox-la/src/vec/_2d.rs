@@ -58,7 +58,7 @@ impl<T> vec2<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// assert_eq!(vec2(1, 2).extend(3), vec3(1, 2, 3));
     /// ```
     pub fn extend(self, z: T) -> vec3<T> {
@@ -87,7 +87,7 @@ impl<T: Num> vec2<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// assert_eq!(vec2::dot(vec2(1, 2), vec2(3, 4)), 11);
     /// ```
     pub fn dot(a: Self, b: Self) -> T {
@@ -98,7 +98,7 @@ impl<T: Num> vec2<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// assert_eq!(vec2::skew(vec2(1, 2), vec2(3, 4)), -2);
     /// ```
     pub fn skew(a: Self, b: Self) -> T {
@@ -110,7 +110,7 @@ impl<T: Neg<Output = T>> vec2<T> {
     /// Rotate a vector by 90 degrees counter clockwise.
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let v = vec2(3.0, 4.0);
     /// assert_eq!(v.rotate_90(), vec2(-4.0, 3.0));
     /// ```
@@ -125,7 +125,7 @@ impl<T: Float> vec2<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let v: vec2<f64> = vec2(1.0, 2.0);
     /// assert!((v.normalize().len() - 1.0).abs() < 1e-5);
     /// ```
@@ -138,7 +138,7 @@ impl<T: Float> vec2<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let v = vec2(1.0, 2.0);
     /// assert_eq!(v.normalize_or_zero(), v.normalize());
     /// let v = vec2(1e-10, 1e-10);
@@ -157,7 +157,7 @@ impl<T: Float> vec2<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let v = vec2(3.0, 4.0);
     /// assert_eq!(v.len(), 5.0);
     /// ```
@@ -174,7 +174,7 @@ impl<T: Float> vec2<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let v = vec2(1.0, 2.0);
     /// assert!((v.rotate(std::f32::consts::FRAC_PI_2) - vec2(-2.0, 1.0)).len() < 1e-5);
     /// ```
@@ -187,7 +187,7 @@ impl<T: Float> vec2<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let v = vec2(1.0, 2.0);
     /// assert_eq!(v.clamp_len(..=1.0), v.normalize());
     /// ```
@@ -205,7 +205,7 @@ impl<T: Float> vec2<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let v = vec2(1.0, 2.0);
     /// assert_eq!(v.clamp_coordinates(.., 0.0..=1.0), vec2(1.0, 1.0));
     /// ```
@@ -221,7 +221,7 @@ impl<T: Float> vec2<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let v = vec2(0.5, 2.0);
     /// let min = vec2(0.0, 0.0);
     /// let max = vec2(1.0, 1.0);
@@ -238,7 +238,7 @@ impl<T: Float> vec2<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let v = vec2(0.0, 1.0);
     /// assert_eq!(v.arg(), std::f32::consts::FRAC_PI_2);
     /// ```

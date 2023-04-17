@@ -5,7 +5,7 @@ impl<T: Copy> mat3<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let matrix = mat3::translate(vec2(1, 2));
     /// let matrix_transposed = matrix.transpose();
     /// for i in 0..3 {
@@ -30,11 +30,9 @@ impl<T: Num> mat3<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
-    ///
+    /// # use batbox_la::*;
     /// let e1 = vec2(1.0, 2.0);
     /// let e2 = vec2(3.0, 4.0);
-    ///
     /// let m = mat3::from_orts(e1, e2);
     /// assert_eq!(vec2(1.0, 0.0).transform(m), e1);
     /// assert_eq!(vec2(0.0, 1.0).transform(m), e2);
@@ -66,7 +64,7 @@ impl<T: Float> mat3<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let matrix = mat3::<f64>::rotate(0.123);
     /// let matrix_inv = matrix.inverse();
     /// let mult = matrix * matrix_inv;

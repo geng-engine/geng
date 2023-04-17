@@ -5,7 +5,7 @@ impl<T: Num + Copy> mat3<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let matrix = mat3::scale_uniform(2);
     /// assert_eq!(matrix * vec3(1, 2, 1), vec3(2, 4, 1));
     /// ```
@@ -17,7 +17,7 @@ impl<T: Num + Copy> mat3<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let matrix = mat3::scale(vec2(1, 2));
     /// assert_eq!(matrix * vec3(1, 2, 1), vec3(1, 4, 1));
     /// ```
@@ -33,7 +33,7 @@ impl<T: Num + Copy> mat3<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let matrix = mat3::translate(vec2(3, 2));
     /// assert_eq!(matrix * vec3(1, 2, 1), vec3(4, 4, 1));
     /// ```

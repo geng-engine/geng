@@ -91,7 +91,7 @@ impl<T: Copy + Num> vec3<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// assert_eq!(vec3::dot(vec3(1, 2, 3), vec3(3, 4, 5)), 26);
     /// ```
     pub fn dot(a: Self, b: Self) -> T {
@@ -102,7 +102,7 @@ impl<T: Copy + Num> vec3<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// assert_eq!(vec3::cross(vec3(1, 2, 3), vec3(3, 4, 5)), vec3(-2, 4, -2));
     /// ```
     pub fn cross(a: Self, b: Self) -> Self {
@@ -119,7 +119,7 @@ impl<T: Float> vec3<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let v: vec3<f64> = vec3(1.0, 2.0, 3.0);
     /// assert!((v.normalize().len() - 1.0).abs() < 1e-5);
     /// ```
@@ -134,7 +134,7 @@ impl<T: Float> vec3<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let v = vec3(1.0, 2.0, 3.0);
     /// assert_eq!(v.normalize_or_zero(), v.normalize());
     /// let v = vec3(1e-10, 1e-10, 1e-10);
@@ -169,7 +169,7 @@ impl<T: Float> vec3<T> {
     /// Clamp vector's length. Note that the range must be inclusive.
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let v = vec3(1.0, 2.0, 3.0);
     /// assert_eq!(v.clamp_len(..=1.0), v.normalize());
     /// ```
@@ -186,7 +186,7 @@ impl<T: Float> vec3<T> {
     /// Clamp vector in range. Note the range must be inclusive.
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let v = vec3(1.0, 2.0, 3.0);
     /// assert_eq!(v.clamp_coordinates(.., 0.0..=1.0, 5.0..), vec3(1.0, 1.0, 5.0));
     /// ```

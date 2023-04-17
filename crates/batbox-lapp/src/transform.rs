@@ -63,8 +63,8 @@ pub trait Transform2dExt<F: Float>: Transform2d<F> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
-    ///
+    /// # use batbox_la::*;
+    /// # use batbox_lapp::*;
     /// let quad = Quad::unit();
     /// assert_eq!(quad.bounding_box(), Aabb2::from_corners(vec2(-1.0, -1.0), vec2(1.0, 1.0)));
     /// let quad = quad.align_bounding_box(vec2(0.0, 1.0));

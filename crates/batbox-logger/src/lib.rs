@@ -3,10 +3,8 @@
 //! Initialize the logger using one of the methods here, then just use the [log] crate stuff
 //!
 //! ```
-//! use batbox::prelude::*;
-//!
-//! logger::init();
-//! info!("This is a doctest");
+//! batbox_logger::init();
+//! log::info!("This is a doctest");
 //! ```
 
 use std::sync::Mutex;

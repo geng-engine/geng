@@ -97,7 +97,7 @@ impl<T: Copy + Num> vec4<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// assert_eq!(vec4::dot(vec4(1, 2, 3, 4), vec4(3, 4, 5, 6)), 50);
     /// ```
     pub fn dot(a: Self, b: Self) -> T {

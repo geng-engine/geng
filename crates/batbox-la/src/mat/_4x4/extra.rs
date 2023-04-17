@@ -5,7 +5,7 @@ impl<T: Copy> mat4<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let matrix = mat4::translate(vec3(1, 2, 3));
     /// let matrix_transposed = matrix.transpose();
     /// for i in 0..4 {
@@ -30,12 +30,10 @@ impl<T: Num> mat4<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
-    ///
+    /// # use batbox_la::*;
     /// let e1 = vec3(1.0, 2.0, 3.0);
     /// let e2 = vec3(3.0, 4.0, 5.0);
     /// let e3 = vec3(5.0, 6.0, -1.0);
-    ///
     /// let m = mat4::from_orts(e1, e2, e3);
     /// assert_eq!(vec3(1.0, 0.0, 0.0).transform(m), e1);
     /// assert_eq!(vec3(0.0, 1.0, 0.0).transform(m), e2);
@@ -58,7 +56,7 @@ impl<T: Float> mat4<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let matrix = mat4::<f64>::rotate_x(0.123);
     /// let matrix_inv = matrix.inverse();
     /// let mult = matrix * matrix_inv;

@@ -25,8 +25,7 @@ pub trait Diff:
     /// Update the state using the delta
     ///
     /// ```
-    /// use batbox::prelude::*;
-    ///
+    /// # use batbox_diff::*;
     /// let a = 0_i32;
     /// let b = 1_i32;
     /// let delta = Diff::diff(&a, &b);

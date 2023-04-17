@@ -20,7 +20,7 @@ impl<T: UNum> Aabb2<T> {
     ///
     /// # Examples
     /// ```
-    /// # use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let aabb = Aabb2::from_corners(vec2(-5.0, -5.0), vec2(5.0, 5.0));
     /// let same = Aabb2::from_corners(vec2(5.0, -5.0), vec2(-5.0, 5.0));
     /// assert_eq!(aabb, same);
@@ -38,7 +38,7 @@ impl<T: UNum> Aabb2<T> {
     ///
     /// # Examples
     /// ```
-    /// # use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// assert_eq!(Aabb2::<f32>::ZERO, Aabb2::point(vec2::ZERO));
     /// ```
     pub fn point(point: vec2<T>) -> Self {
@@ -52,7 +52,7 @@ impl<T: UNum> Aabb2<T> {
     ///
     /// # Examples
     /// ```
-    /// # use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let aabb = Aabb2::point(vec2(5, 5)).extend_uniform(10);
     /// assert_eq!(aabb, Aabb2::from_corners(vec2(-5, -5), vec2(15, 15)));
     /// ```
@@ -67,7 +67,7 @@ impl<T: UNum> Aabb2<T> {
     ///
     /// # Examples
     /// ```
-    /// # use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let aabb = Aabb2::ZERO.extend_symmetric(vec2(10, 5));
     /// let same = Aabb2::from_corners(vec2(-10, -5), vec2(10, 5));
     /// assert_eq!(aabb, same);
@@ -83,7 +83,7 @@ impl<T: UNum> Aabb2<T> {
     ///
     /// # Examples
     /// ```
-    /// # use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let aabb = Aabb2::point(vec2(-10.0, -5.0)).extend_positive(vec2(20.0, 10.0));
     /// let same = Aabb2::ZERO.extend_symmetric(vec2(10.0, 5.0));
     /// assert_eq!(aabb, same);
@@ -126,7 +126,7 @@ impl<T: UNum> Aabb2<T> {
     /// Ensure that the [Aabb2] has positive size
     /// # Examples
     /// ```
-    /// # use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let original = Aabb2::point(vec2(10.0, 5.0)).extend_positive(vec2(-20.0, -10.0));
     /// let normalized = Aabb2::ZERO.extend_symmetric(vec2(10.0, 5.0));
     /// assert_eq!(original.normalized(), normalized);
@@ -209,7 +209,7 @@ impl<T: UNum> Aabb2<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let rect = Aabb2::from_corners(vec2(1, 2), vec2(3, 4));
     /// assert!(rect.contains(vec2(2, 3)));
     /// assert!(!rect.contains(vec2(5, 5)));
@@ -250,8 +250,7 @@ impl<T: UNum> Aabb2<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
-    ///
+    /// # use batbox_la::*;
     /// let aabb = Aabb2::points_bounding_box([
     ///     vec2(3, 0),
     ///     vec2(0, -2),

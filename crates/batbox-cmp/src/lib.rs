@@ -91,7 +91,7 @@ pub trait Clamp: Sized + PartialOrd {
     /// Clamps a value in range.
     /// # Examples
     /// ```
-    /// # use batbox::prelude::*;
+    /// # use batbox_cmp::*;
     /// assert_eq!(2.0.clamp_range(0.0..=1.0), 1.0);
     /// assert_eq!(2.0.clamp_range(3.0..), 3.0);
     /// assert_eq!(2.0.clamp_range(..=0.0), 0.0);

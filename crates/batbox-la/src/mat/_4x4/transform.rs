@@ -5,7 +5,7 @@ impl<T: Num + Copy> mat4<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let matrix = mat4::scale_uniform(2);
     /// assert_eq!(matrix * vec4(1, 2, 3, 1), vec4(2, 4, 6, 1));
     /// ```
@@ -17,7 +17,7 @@ impl<T: Num + Copy> mat4<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let matrix = mat4::scale(vec3(1, 2, 3));
     /// assert_eq!(matrix * vec4(1, 2, 3, 1), vec4(1, 4, 9, 1));
     /// ```
@@ -34,7 +34,7 @@ impl<T: Num + Copy> mat4<T> {
     ///
     /// # Examples
     /// ```
-    /// use batbox::prelude::*;
+    /// # use batbox_la::*;
     /// let matrix = mat4::translate(vec3(3, 2, 1));
     /// assert_eq!(matrix * vec4(1, 2, 3, 1), vec4(4, 4, 4, 1));
     /// ```
