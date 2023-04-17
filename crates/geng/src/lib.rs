@@ -45,7 +45,6 @@ use wasm_bindgen::prelude::*;
 mod asset;
 mod cli_args;
 mod context;
-mod debug_overlay;
 mod loading_screen;
 
 #[cfg(feature = "audio")]
@@ -64,7 +63,6 @@ pub use geng_window::{self as window, CursorType, Event, Key, MouseButton, Touch
 pub use asset::*;
 pub use cli_args::*;
 pub use context::*;
-pub use debug_overlay::*;
 pub use loading_screen::*;
 
 #[cfg(not(target_arch = "wasm32"))]

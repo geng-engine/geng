@@ -1,7 +1,7 @@
 use super::*;
 
 pub struct TouchSimulator {
-    geng: Geng,
+    draw2d: Rc<draw2d::Helper>,
     touches: Vec<vec2<f64>>,
     holding: Option<usize>,
 }
@@ -9,13 +9,14 @@ pub struct TouchSimulator {
 const RADIUS: f64 = 10.0;
 
 impl TouchSimulator {
-    pub fn new(geng: &Geng) -> Self {
+    pub fn new(draw2d: &Rc<draw2d::Helper>) -> Self {
         Self {
-            geng: geng.clone(),
+            draw2d: draw2d.clone(),
             touches: Vec::new(),
             holding: None,
         }
     }
+    pub fn update(&mut self, _delta_time: f64) {}
     pub fn handle_event(&mut self, event: &Event) -> Option<Vec<Event>> {
         match event {
             &Event::MouseDown {
@@ -92,9 +93,9 @@ impl TouchSimulator {
     }
     pub fn draw(&self, framebuffer: &mut ugli::Framebuffer) {
         for &touch in &self.touches {
-            self.geng.draw2d().draw2d(
+            self.draw2d.draw2d(
                 framebuffer,
-                &PixelPerfectCamera,
+                &geng_camera::PixelPerfectCamera,
                 &draw2d::Ellipse::circle_with_cut(
                     touch.map(|x| x as f32),
                     RADIUS as f32 - 2.0,

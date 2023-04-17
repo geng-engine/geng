@@ -1,5 +1,7 @@
 use super::*;
 
+use std::sync::Mutex;
+
 struct Record {
     message: String,
 }
@@ -49,24 +51,23 @@ fn logger() -> impl log::Log {
 }
 
 pub struct Console {
-    geng: Geng,
     receiver: std::sync::mpsc::Receiver<Record>,
     records: std::collections::VecDeque<Record>,
 }
 
 impl Console {
     const MAX_RECORDS: usize = 10;
-    pub fn new(geng: &Geng) -> Self {
-        logger::add_logger(Box::new(logger()));
+    pub fn new() -> Self {
+        batbox_logger::add_logger(Box::new(logger()));
         let receiver = CHANNEL.lock().unwrap().receiver.take().unwrap();
         log::debug!("Debug overlay initialized");
         Self {
-            geng: geng.clone(),
             receiver,
             records: std::collections::VecDeque::new(),
         }
     }
-    pub fn update(&mut self) {
+
+    pub fn update(&mut self, _delta_time: f64) {
         while let Ok(record) = self.receiver.try_recv() {
             self.records.push_back(record);
         }
@@ -74,16 +75,19 @@ impl Console {
             self.records.pop_front();
         }
     }
+
+    pub fn draw(&mut self, _framebuffer: &mut ugli::Framebuffer) {}
+
     #[allow(dead_code)]
-    pub fn ui(&mut self) -> impl ui::Widget + '_ {
+    pub fn ui<'a>(&'a mut self, cx: &'a ui::Controller) -> impl ui::Widget + 'a {
         use ui::*;
-        let font = self.geng.default_font();
         column(
             self.records
                 .iter()
                 .map(move |record| {
                     Box::new(
-                        Text::new(&record.message, font, 16.0, Rgba::WHITE).align(vec2(0.0, 0.5)),
+                        Text::new(&record.message, &cx.theme().font, 16.0, Rgba::WHITE)
+                            .align(vec2(0.0, 0.5)),
                     ) as Box<_>
                 })
                 .collect(),

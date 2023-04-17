@@ -22,7 +22,7 @@ pub struct Options {
     pub size: Option<vec2<usize>>,
 }
 
-pub struct Window {
+struct WindowImpl {
     platform: platform::Context,
     #[allow(clippy::type_complexity)]
     event_handler: Rc<RefCell<Option<Box<dyn FnMut(Event)>>>>,
@@ -30,13 +30,20 @@ pub struct Window {
     pressed_buttons: Rc<RefCell<HashSet<MouseButton>>>,
 }
 
+#[derive(Clone)]
+pub struct Window {
+    inner: Rc<WindowImpl>,
+}
+
 impl Window {
     pub fn new(options: &Options) -> Self {
         let window = Self {
-            platform: platform::Context::new(options),
-            event_handler: Rc::new(RefCell::new(None)),
-            pressed_keys: Rc::new(RefCell::new(HashSet::new())),
-            pressed_buttons: Rc::new(RefCell::new(HashSet::new())),
+            inner: Rc::new(WindowImpl {
+                platform: platform::Context::new(options),
+                event_handler: Rc::new(RefCell::new(None)),
+                pressed_keys: Rc::new(RefCell::new(HashSet::new())),
+                pressed_buttons: Rc::new(RefCell::new(HashSet::new())),
+            }),
         };
         if options.fullscreen {
             window.set_fullscreen(true);
@@ -46,7 +53,7 @@ impl Window {
 
     /// TODO internal?
     pub fn send_event(&self, event: Event) {
-        let mut handler = self.event_handler.borrow_mut();
+        let mut handler = self.inner.event_handler.borrow_mut();
         if let Some(handler) = &mut *handler {
             handler(event);
         }
@@ -54,12 +61,12 @@ impl Window {
 
     /// TODO internal?
     pub fn set_event_handler(&self, handler: Box<dyn FnMut(Event)>) {
-        *self.event_handler.borrow_mut() = Some(handler);
+        *self.inner.event_handler.borrow_mut() = Some(handler);
     }
 
     /// TODO internal?
     pub fn clear_event_handler(&self) {
-        self.event_handler.borrow_mut().take();
+        self.inner.event_handler.borrow_mut().take();
     }
 
     // #[cfg(not(target_arch = "wasm32"))]
@@ -70,10 +77,10 @@ impl Window {
     /// TODO internal
     pub fn swap_buffers(&self) {
         // ugli::sync();
-        let pressed_keys = self.pressed_keys.clone();
-        let pressed_buttons = self.pressed_buttons.clone();
-        let event_handler = self.event_handler.clone();
-        self.platform.swap_buffers(move |event| {
+        let pressed_keys = self.inner.pressed_keys.clone();
+        let pressed_buttons = self.inner.pressed_buttons.clone();
+        let event_handler = self.inner.event_handler.clone();
+        self.inner.platform.swap_buffers(move |event| {
             Self::default_handler(&event, &pressed_keys, &pressed_buttons);
             if let Some(ref mut handler) = *event_handler.borrow_mut() {
                 handler(event);
@@ -104,44 +111,44 @@ impl Window {
     }
 
     pub fn real_size(&self) -> vec2<usize> {
-        self.platform.real_size()
+        self.inner.platform.real_size()
     }
     pub fn size(&self) -> vec2<usize> {
         self.real_size().map(|x| x.max(1))
     }
 
     pub fn ugli(&self) -> &Ugli {
-        let ugli = self.platform.ugli();
+        let ugli = self.inner.platform.ugli();
         ugli._set_size(self.size());
         ugli
     }
 
     pub fn should_close(&self) -> bool {
-        self.platform.should_close()
+        self.inner.platform.should_close()
     }
 
     pub fn is_key_pressed(&self, key: Key) -> bool {
-        self.pressed_keys.borrow().contains(&key)
+        self.inner.pressed_keys.borrow().contains(&key)
     }
 
     pub fn is_button_pressed(&self, button: MouseButton) -> bool {
-        self.pressed_buttons.borrow().contains(&button)
+        self.inner.pressed_buttons.borrow().contains(&button)
     }
 
     pub fn pressed_keys(&self) -> HashSet<Key> {
-        self.pressed_keys.borrow().clone()
+        self.inner.pressed_keys.borrow().clone()
     }
 
     pub fn pressed_buttons(&self) -> HashSet<MouseButton> {
-        self.pressed_buttons.borrow().clone()
+        self.inner.pressed_buttons.borrow().clone()
     }
 
     pub fn set_fullscreen(&self, fullscreen: bool) {
-        self.platform.set_fullscreen(fullscreen);
+        self.inner.platform.set_fullscreen(fullscreen);
     }
 
     pub fn is_fullscreen(&self) -> bool {
-        self.platform.is_fullscreen()
+        self.inner.platform.is_fullscreen()
     }
 
     pub fn toggle_fullscreen(&self) {
@@ -150,6 +157,6 @@ impl Window {
 
     #[cfg(not(target_arch = "wasm32"))]
     pub fn set_icon(&self, path: impl AsRef<std::path::Path>) -> anyhow::Result<()> {
-        self.platform.set_icon(path.as_ref())
+        self.inner.platform.set_icon(path.as_ref())
     }
 }

@@ -171,19 +171,51 @@ impl Geng {
     /// Run the application
     pub fn run(self, state: impl State) {
         let geng = &self;
-        let mut state_manager = state::Manager::new();
-        state_manager.push(Box::new(state));
-        let state = DebugOverlay::new(geng, state_manager);
-        struct RunState<T> {
+        struct StateWrapper {
+            state_manager: state::Manager,
+            debug_overlay: geng_debug_overlay::DebugOverlay,
+        }
+        impl StateWrapper {
+            fn update(&mut self, delta_time: f64) {
+                self.state_manager.update(delta_time);
+                self.debug_overlay.update(delta_time);
+            }
+            fn fixed_update(&mut self, delta_time: f64) {
+                self.state_manager.fixed_update(delta_time);
+                self.debug_overlay.fixed_update(delta_time);
+            }
+            fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
+                self.state_manager.draw(framebuffer);
+                self.debug_overlay.draw(framebuffer);
+            }
+            fn handle_event(&mut self, event: Event) {
+                self.debug_overlay
+                    .handle_event(event, |event| self.state_manager.handle_event(event));
+            }
+            fn ui<'a>(&'a mut self, cx: &'a ui::Controller) -> impl ui::Widget + 'a {
+                ui::stack![self.state_manager.ui(cx), self.debug_overlay.ui(cx)]
+            }
+            fn transition(&mut self) -> Option<state::Transition> {
+                self.state_manager.transition()
+            }
+        }
+        struct Runner {
             geng: Geng,
-            state: T,
+            state: StateWrapper,
             ui_controller: ui::Controller,
             timer: Timer,
             next_fixed_update: f64,
         }
-        let state = Rc::new(RefCell::new(RunState {
+        let runner = Rc::new(RefCell::new(Runner {
             geng: geng.clone(),
-            state,
+            state: StateWrapper {
+                state_manager: {
+                    let mut state_manager = state::Manager::new();
+                    state_manager.push(Box::new(state));
+                    state_manager
+                },
+                debug_overlay: geng_debug_overlay::DebugOverlay::new(geng.window()),
+            },
             ui_controller: ui::Controller::new(
                 geng.ugli(),
                 geng.ui_theme(),
@@ -193,13 +225,13 @@ impl Geng {
             next_fixed_update: geng.inner.fixed_delta_time.get(),
         }));
 
-        impl<T: State> RunState<T> {
+        impl Runner {
             fn update(&mut self) {
                 let delta_time = self.timer.tick().as_secs_f64();
                 let delta_time = delta_time.min(self.geng.inner.max_delta_time.get());
                 self.state.update(delta_time);
                 self.ui_controller
-                    .update(self.state.ui(&self.ui_controller).deref_mut(), delta_time);
+                    .update(&mut self.state.ui(&self.ui_controller), delta_time);
                 self.next_fixed_update -= delta_time;
                 while self.next_fixed_update <= 0.0 {
                     let delta_time = self.geng.inner.fixed_delta_time.get();
@@ -209,10 +241,10 @@ impl Geng {
             }
 
             fn handle_event(&mut self, event: Event) {
-                if self.ui_controller.handle_event(
-                    self.state.ui(&self.ui_controller).deref_mut(),
-                    event.clone(),
-                ) {
+                if self
+                    .ui_controller
+                    .handle_event(&mut self.state.ui(&self.ui_controller), event.clone())
+                {
                     return;
                 }
                 self.state.handle_event(event);
@@ -221,7 +253,7 @@ impl Geng {
             fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
                 self.state.draw(framebuffer);
                 self.ui_controller
-                    .draw(self.state.ui(&self.ui_controller).deref_mut(), framebuffer);
+                    .draw(&mut self.state.ui(&self.ui_controller), framebuffer);
             }
 
             fn need_to_quit(&mut self) -> bool {
@@ -233,9 +265,9 @@ impl Geng {
             }
         }
         geng.inner.window.set_event_handler(Box::new({
-            let state = state.clone();
+            let runner = runner.clone();
             move |event| {
-                state.borrow_mut().handle_event(event);
+                runner.borrow_mut().handle_event(event);
             }
         }));
         let main_loop = {
@@ -249,16 +281,16 @@ impl Geng {
                     }
                 }
 
-                state.borrow_mut().update();
+                runner.borrow_mut().update();
                 let window_size = geng.inner.window.real_size();
                 // This means window is minimized?
                 if window_size.x != 0 && window_size.y != 0 {
                     let mut framebuffer = ugli::Framebuffer::default(geng.ugli());
-                    state.borrow_mut().draw(&mut framebuffer);
+                    runner.borrow_mut().draw(&mut framebuffer);
                 }
                 geng.inner.window.swap_buffers();
 
-                !state.borrow_mut().need_to_quit()
+                !runner.borrow_mut().need_to_quit()
             }
         };
 
