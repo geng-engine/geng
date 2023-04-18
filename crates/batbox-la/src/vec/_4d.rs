@@ -75,6 +75,13 @@ impl<T> vec4<T> {
     }
 }
 
+impl<T: Clone> vec4<T> {
+    /// Construct a vector with all components set to specified value
+    pub fn splat(value: T) -> Self {
+        Self(value.clone(), value.clone(), value.clone(), value.clone())
+    }
+}
+
 impl<T: UNum> vec4<T> {
     /// A zero 4-d vector
     pub const ZERO: Self = vec4(T::ZERO, T::ZERO, T::ZERO, T::ZERO);

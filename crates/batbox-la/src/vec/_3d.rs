@@ -72,6 +72,13 @@ impl<T> vec3<T> {
     }
 }
 
+impl<T: Clone> vec3<T> {
+    /// Construct a vector with all components set to specified value
+    pub fn splat(value: T) -> Self {
+        Self(value.clone(), value.clone(), value.clone())
+    }
+}
+
 impl<T: UNum> vec3<T> {
     /// A zero 3-d vector
     pub const ZERO: Self = vec3(T::ZERO, T::ZERO, T::ZERO);
