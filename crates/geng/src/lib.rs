@@ -27,8 +27,6 @@
 //! ```
 //!
 
-pub use geng_derive::*;
-
 pub mod prelude {
     pub use crate::{draw2d, Geng, Hot};
     pub use crate::{AbstractCamera2d, AbstractCamera3d, Camera2d};

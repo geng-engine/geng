@@ -36,7 +36,6 @@ geng-draw2d.workspace = true
 geng-obj.workspace = true
 geng-debug-overlay.workspace = true
 geng-asset.workspace = true
-geng-derive.workspace = true
 ugli.workspace = true
 
 rusttype.workspace = true
