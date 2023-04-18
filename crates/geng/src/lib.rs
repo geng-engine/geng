@@ -102,6 +102,7 @@ pub fn setup_panic_handler() {
 
 impl Geng {
     pub(crate) fn set_loading_progress_title(&self, title: &str) {
+        log::trace!("Set loading progress title to {title:?}");
         // TODO: native
         #[cfg(target_arch = "wasm32")]
         {
@@ -118,6 +119,7 @@ impl Geng {
     }
 
     pub(crate) fn set_loading_progress(&self, progress: f64, total: Option<f64>) {
+        log::trace!("Loading progress {progress:?}/{total:?}");
         // TODO: native
         #[cfg(target_arch = "wasm32")]
         {
