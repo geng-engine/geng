@@ -1,14 +1,14 @@
 use geng::prelude::*;
 
-#[derive(geng::Assets)]
+#[derive(geng::asset::Load)]
 struct Assets {
-    #[asset(postprocess = "pixelate")]
+    #[load(postprocess = "pixelate")]
     body: ugli::Texture,
-    #[asset(postprocess = "pixelate")]
+    #[load(postprocess = "pixelate")]
     front_leg: ugli::Texture,
-    #[asset(postprocess = "pixelate")]
+    #[load(postprocess = "pixelate")]
     back_leg: ugli::Texture,
-    #[asset(postprocess = "pixelate")]
+    #[load(postprocess = "pixelate")]
     hand: ugli::Texture,
 }
 
@@ -132,7 +132,8 @@ fn main() {
     let geng = Geng::new("CrabRave");
     geng.clone().run_loading(async move {
         let assets: Hot<Assets> = geng
-            .load_asset(run_dir().join("assets"))
+            .asset_manager()
+            .load(run_dir().join("assets"))
             .await
             .expect("Failed to load assets");
         CrabRave::new(geng, assets)

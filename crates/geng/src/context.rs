@@ -6,8 +6,7 @@ pub(crate) struct GengImpl {
     audio: Audio,
     shader_lib: shader::Library,
     pub(crate) draw2d: Rc<draw2d::Helper>,
-    #[cfg(not(target_arch = "wasm32"))]
-    pub(crate) asset_manager: AssetManager,
+    asset_manager: asset::Manager,
     default_font: Rc<Font>,
     fixed_delta_time: Cell<f64>,
     max_delta_time: Cell<f64>,
@@ -91,21 +90,27 @@ impl Geng {
             shader::Library::new(&ugli, options.antialias, options.shader_prefix.clone());
         let draw2d = Rc::new(draw2d::Helper::new(&ugli, options.antialias));
         let default_font = Rc::new(Font::default(window.ugli()));
+        #[cfg(feature = "audio")]
+        let audio = Audio::new();
         Self {
             inner: Rc::new(GengImpl {
                 window,
                 #[cfg(feature = "audio")]
-                audio: Audio::new(),
+                audio: audio.clone(),
                 shader_lib,
                 draw2d,
-                #[cfg(not(target_arch = "wasm32"))]
-                asset_manager: AssetManager::new(),
+                asset_manager: asset::Manager::new(
+                    &ugli,
+                    #[cfg(feature = "audio")]
+                    &audio,
+                    options.hot_reload,
+                ),
                 default_font,
                 fixed_delta_time: Cell::new(options.fixed_delta_time),
                 max_delta_time: Cell::new(options.max_delta_time),
                 ui_theme: RefCell::new(None),
                 options,
-                load_progress: RefCell::new(LoadProgress::new()),
+                load_progress: RefCell::new(asset::LoadProgress::new()),
                 gilrs: RefCell::new(gilrs::Gilrs::new().unwrap()),
             }),
         }
@@ -121,6 +126,10 @@ impl Geng {
 
     pub fn ugli(&self) -> &Ugli {
         self.inner.window.ugli()
+    }
+
+    pub fn asset_manager(&self) -> &asset::Manager {
+        &self.inner.asset_manager
     }
 
     pub fn gilrs(&self) -> Ref<Gilrs> {

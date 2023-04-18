@@ -1,8 +1,8 @@
 use geng::prelude::*;
 
-#[derive(geng::Assets)]
+#[derive(geng::asset::Load)]
 struct Assets {
-    #[asset(postprocess = "make_repeated")]
+    #[load(postprocess = "make_repeated")]
     texture: ugli::Texture,
 }
 
@@ -109,7 +109,8 @@ fn main() {
     let geng = Geng::new("Line Texture");
     geng.clone().run_loading(async move {
         let assets: Hot<Assets> = geng
-            .load_asset(run_dir().join("assets"))
+            .asset_manager()
+            .load(run_dir().join("assets"))
             .await
             .expect("Failed to load assets");
         Example::new(geng, assets)

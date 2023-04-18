@@ -1,6 +1,6 @@
 use geng::prelude::*;
 
-#[derive(geng::Assets)]
+#[derive(geng::asset::Load)]
 struct Assets {
     texture: ugli::Texture,
 }
@@ -288,7 +288,8 @@ fn main() {
     let geng = Geng::new("Let's draw!");
     geng.clone().run_loading(async move {
         let assets = geng
-            .load_asset(run_dir().join("assets"))
+            .asset_manager()
+            .load(run_dir().join("assets"))
             .await
             .expect("Failed to load assets");
         State::new(&geng, assets)

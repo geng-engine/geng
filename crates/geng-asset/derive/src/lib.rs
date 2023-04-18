@@ -1,8 +1,26 @@
-use super::*;
+#![recursion_limit = "128"]
+#![allow(unused_imports)]
+
+extern crate proc_macro;
+
+#[macro_use]
+extern crate quote;
+
+use darling::{FromDeriveInput, FromField, FromMeta};
+use proc_macro2::TokenStream;
+
+#[proc_macro_derive(Load, attributes(load))]
+pub fn derive_assets(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let input: syn::DeriveInput = syn::parse_macro_input!(input);
+    match DeriveInput::from_derive_input(&input) {
+        Ok(input) => input.derive().into(),
+        Err(e) => e.write_errors().into(),
+    }
+}
 
 #[derive(FromDeriveInput)]
-#[darling(attributes(asset))]
-pub struct DeriveInput {
+#[darling(attributes(load))]
+struct DeriveInput {
     ident: syn::Ident,
     generics: syn::Generics,
     data: darling::ast::Data<(), Field>,
@@ -13,7 +31,7 @@ pub struct DeriveInput {
 }
 
 #[derive(FromField)]
-#[darling(attributes(asset))]
+#[darling(attributes(load))]
 struct Field {
     ident: Option<syn::Ident>,
     ty: syn::Type,
@@ -50,9 +68,9 @@ impl DeriveInput {
 
         if json {
             return quote! {
-                impl #impl_generics geng::LoadAsset #ty_generics for #ident #where_clause {
-                    fn load(geng: &Geng, path: &std::path::Path) -> geng::AssetFuture<Self> {
-                        let json = geng.load_asset::<String>(path);
+                impl #impl_generics geng::asset::Load #ty_generics for #ident #where_clause {
+                    fn load(manager: &geng::asset::Manager, path: &std::path::Path) -> geng::asset::Future<Self> {
+                        let json = manager.load::<String>(path);
                         async move {
                             let json = json.await?;
                             Ok(serde_json::from_str(&json)?)
@@ -111,10 +129,10 @@ impl DeriveInput {
             let mut loader = if let Some(list) = list {
                 let loader = match &field.path {
                     Some(path) => quote! {
-                        geng.load_asset(base_path.join(#path.replace("*", &item)))
+                        manager.load(base_path.join(#path.replace("*", &item)))
                     },
                     None => quote! {
-                        geng.load_asset_ext(base_path.join(stringify!(#ident)).join(item), #ext)
+                        manager.load_ext(base_path.join(stringify!(#ident)).join(item), #ext)
                     },
                 };
                 quote! {
@@ -123,10 +141,10 @@ impl DeriveInput {
             } else {
                 match &field.path {
                     Some(path) => quote! {
-                       geng.load_asset(base_path.join(#path))
+                       manager.load(base_path.join(#path))
                     },
                     None => quote! {
-                        geng.load_asset_ext(base_path.join(stringify!(#ident)), #ext)
+                        manager.load_ext(base_path.join(stringify!(#ident)), #ext)
                     },
                 }
             };
@@ -190,13 +208,12 @@ impl DeriveInput {
             }
         };
         quote! {
-            impl geng::LoadAsset for #ident
+            impl geng::asset::Load for #ident
                 /* where #(#field_constraints),* */ {
-                fn load(geng: &geng::Geng, base_path: &std::path::Path) -> geng::AssetFuture<Self> {
-                    let geng = geng.clone();
+                fn load(manager: &geng::asset::Manager, base_path: &std::path::Path) -> geng::asset::Future<Self> {
+                    let manager = manager.clone();
                     let base_path = base_path.to_owned();
                     Box::pin(async move {
-                        let geng = &geng;
                         #load_fields
                         Ok(Self {
                             #(#field_names,)*

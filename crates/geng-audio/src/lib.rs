@@ -4,6 +4,7 @@ use std::rc::Rc;
 
 mod platform;
 
+#[derive(Clone)]
 pub struct Audio {
     inner: Rc<platform::Context>,
 }

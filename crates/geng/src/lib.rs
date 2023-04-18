@@ -42,11 +42,11 @@ use crate::prelude::*;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
-mod asset;
 mod cli_args;
 mod context;
 mod loading_screen;
 
+pub use geng_asset as asset;
 #[cfg(feature = "audio")]
 pub use geng_audio::{self as audio, *};
 pub use geng_camera::{
@@ -100,4 +100,54 @@ pub fn setup_panic_handler() {
         show_error(&error);
     }
     std::panic::set_hook(Box::new(panic_hook));
+}
+
+impl Geng {
+    pub(crate) fn set_loading_progress_title(&self, title: &str) {
+        // TODO: native
+        #[cfg(target_arch = "wasm32")]
+        {
+            #[wasm_bindgen(inline_js = r#"
+            export function set_progress_title(title) {
+                window.gengUpdateProgressTitle(title);
+            }
+            "#)]
+            extern "C" {
+                fn set_progress_title(title: &str);
+            }
+            set_progress_title(title);
+        }
+    }
+
+    pub(crate) fn set_loading_progress(&self, progress: f64, total: Option<f64>) {
+        // TODO: native
+        #[cfg(target_arch = "wasm32")]
+        {
+            #[wasm_bindgen(inline_js = r#"
+            export function set_progress(progress, total) {
+                window.gengUpdateProgress(progress, total);
+            }
+            "#)]
+            extern "C" {
+                fn set_progress(progress: f64, total: Option<f64>);
+            }
+            set_progress(progress, total);
+        }
+    }
+
+    pub(crate) fn finish_loading(&self) {
+        #[cfg(target_arch = "wasm32")]
+        {
+            #[wasm_bindgen(inline_js = r#"
+            export function finish_loading() {
+                document.getElementById("geng-progress-screen").style.display = "none";
+                document.getElementById("geng-canvas").style.display = "block";
+            }
+            "#)]
+            extern "C" {
+                fn finish_loading();
+            }
+            finish_loading();
+        }
+    }
 }
