@@ -50,9 +50,8 @@ impl<T: Model, G: geng::State> geng::State for ConnectingState<T, G> {
             framebuffer,
             &geng::PixelPerfectCamera,
             "Connecting to the server...",
-            framebuffer_size.map(|x| x as f32) / 2.0,
-            geng::TextAlign::CENTER,
-            40.0,
+            vec2::splat(geng::TextAlign::CENTER),
+            mat3::translate(framebuffer_size.map(|x| x as f32) / 2.0) * mat3::scale_uniform(40.0),
             Rgba::BLACK,
         );
     }

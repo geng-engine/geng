@@ -1,5 +1,6 @@
 use super::*;
 
+// TODO align?
 pub struct Text<F: std::borrow::Borrow<Font>, T: AsRef<str>> {
     pub font: F,
     pub text: T,
@@ -9,11 +10,12 @@ pub struct Text<F: std::borrow::Borrow<Font>, T: AsRef<str>> {
     pub true_transform: mat3<f32>, // TODO: only have this
 }
 
-const SIZE_HACK: f32 = 1000.0;
-
 impl<F: std::borrow::Borrow<Font>, T: AsRef<str>> Text<F, T> {
     pub fn unit(font: F, text: T, color: Rgba<f32>) -> Self {
-        if let Some(aabb) = font.borrow().measure(text.as_ref(), SIZE_HACK) {
+        if let Some(aabb) = font
+            .borrow()
+            .measure(text.as_ref(), vec2::splat(TextAlign::LEFT))
+        {
             let aspect = aabb.width() / aabb.height();
             Self {
                 font,
@@ -58,19 +60,13 @@ impl<F: std::borrow::Borrow<Font>, T: AsRef<str>> Draw2d for Text<F, T> {
         camera: &dyn AbstractCamera2d,
         transform: mat3<f32>,
     ) {
-        self.font.borrow().draw_impl(
+        self.font.borrow().draw(
             framebuffer,
             camera,
-            transform * self.transform * self.into_unit_transform,
             self.text.as_ref(),
-            vec2(0.0, 0.0),
-            SIZE_HACK,
+            vec2::splat(TextAlign::LEFT),
+            transform * self.transform * self.into_unit_transform,
             self.color,
-            0.0,
-            Rgba {
-                a: 0.0,
-                ..self.color
-            },
         );
     }
 }

@@ -46,9 +46,8 @@ impl geng::State for State {
                 fov: 15.0,
             },
             "Use arrow keys to move around\nPress Space to reset",
-            self.position,
-            geng::TextAlign::CENTER,
-            1.0,
+            vec2::splat(geng::TextAlign::CENTER),
+            mat3::translate(self.position),
             Rgba::WHITE,
         );
     }

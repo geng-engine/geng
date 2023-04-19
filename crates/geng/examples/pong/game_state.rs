@@ -236,9 +236,9 @@ impl geng::State for GameState {
             framebuffer,
             &self.camera,
             &scores,
-            vec2(0.0, self.boundary.max.y + 10.0), // Just above the top boundary
-            geng::TextAlign::CENTER,
-            32.0,
+            vec2::splat(geng::TextAlign::CENTER),
+            // Just above the top boundary
+            mat3::translate(vec2(0.0, self.boundary.max.y + 10.0)) * mat3::scale_uniform(32.0),
             Rgba::WHITE,
         );
     }

@@ -1,5 +1,7 @@
 use super::*;
 
+const TEXT_ALIGN: vec2<TextAlign> = vec2(TextAlign::LEFT, TextAlign::LEFT);
+
 pub(crate) fn calc_text_constraints(
     text: &str,
     font: &Font,
@@ -8,7 +10,7 @@ pub(crate) fn calc_text_constraints(
 ) -> Constraints {
     Constraints {
         min_size: vec2(
-            font.measure(text, size)
+            font.measure(text, TEXT_ALIGN)
                 .map_or(0.0, |aabb| aabb.width() as f64),
             size as f64,
         ),
@@ -28,17 +30,20 @@ pub(crate) fn draw_text(
     }
     let _size = partial_min(
         cx.position.height() as f32,
-        size * cx.position.width() as f32
-            / font.measure(text, size).map_or(0.0, |aabb| aabb.width()),
+        cx.position.width() as f32
+            / font
+                .measure(text, TEXT_ALIGN)
+                .map_or(0.0, |aabb| aabb.width()),
     );
     let size = cx.position.height() as f32;
     font.draw(
         cx.framebuffer,
         &PixelPerfectCamera,
         text,
-        cx.position.bottom_left().map(|x| x as f32) + vec2(0.0, -font.descender() * size),
-        TextAlign::LEFT,
-        size,
+        TEXT_ALIGN,
+        mat3::translate(
+            cx.position.bottom_left().map(|x| x as f32) + vec2(0.0, -font.descender() * size),
+        ) * mat3::scale_uniform(size),
         color,
     );
 }

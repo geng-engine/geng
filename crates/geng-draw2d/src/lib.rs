@@ -3,7 +3,7 @@ use batbox_color::*;
 use batbox_la::*;
 use batbox_lapp::*;
 use geng_camera::*;
-use geng_font::Font;
+use geng_font::{Font, TextAlign};
 use std::cell::RefCell;
 use ugli::Ugli;
 

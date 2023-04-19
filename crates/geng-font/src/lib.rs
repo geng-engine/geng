@@ -469,19 +469,19 @@ impl Font {
         self.line_gap
     }
 
-    pub fn measure_bounding_box(&self, text: &str, align: vec2<TextAlign>) -> Option<Aabb2<f32>> {
+    pub fn measure(&self, text: &str, align: vec2<TextAlign>) -> Option<Aabb2<f32>> {
         self.draw_with(text, align, |glyphs, _| {
             if glyphs.is_empty() {
                 return None;
             }
-            Some(Aabb2::points_bounding_box(glyphs.iter().flat_map(
-                |glyph| {
-                    [
-                        glyph.i_pos + vec2(self.max_distance, self.max_distance),
-                        glyph.i_pos + glyph.i_size - vec2(self.max_distance, self.max_distance),
-                    ]
-                },
-            )))
+            Some(
+                Aabb2::points_bounding_box(
+                    glyphs
+                        .iter()
+                        .flat_map(|glyph| [glyph.i_pos, glyph.i_pos + glyph.i_size]),
+                )
+                .extend_uniform(-self.max_distance),
+            )
         })
     }
 
@@ -541,126 +541,75 @@ impl Font {
         f(&vs, &self.atlas)
     }
 
-    #[deprecated]
-    pub fn measure(&self, text: &str, size: f32) -> Option<Aabb2<f32>> {
-        self.measure_bounding_box(text, vec2(TextAlign::LEFT, TextAlign::LEFT))
-            .map(|aabb| aabb.map(|x| x * size))
-    }
-
-    #[deprecated]
-    pub fn draw_impl(
-        &self,
-        framebuffer: &mut ugli::Framebuffer,
-        camera: &(impl AbstractCamera2d + ?Sized),
-        transform: mat3<f32>,
-        text: &str,
-        pos: vec2<f32>,
-        size: f32,
-        color: Rgba<f32>,
-        outline_size: f32,
-        outline_color: Rgba<f32>,
-    ) {
-        let transform = transform * mat3::translate(pos) * mat3::scale_uniform(size);
-        self.draw_with(
-            text,
-            vec2(TextAlign::LEFT, TextAlign::LEFT),
-            |glyphs, texture| {
-                let framebuffer_size = framebuffer.size();
-                ugli::draw(
-                    framebuffer,
-                    &self.program,
-                    ugli::DrawMode::TriangleFan,
-                    // TODO: don't create VBs each time
-                    ugli::instanced(
-                        &ugli::VertexBuffer::new_dynamic(
-                            &self.ugli,
-                            Aabb2::point(vec2::ZERO)
-                                .extend_positive(vec2(1.0, 1.0))
-                                .corners()
-                                .into_iter()
-                                .map(|v| Vertex { a_pos: v, a_vt: v })
-                                .collect(),
-                        ),
-                        &ugli::VertexBuffer::new_dynamic(&self.ugli, glyphs.to_vec()),
-                    ),
-                    (
-                        ugli::uniforms! {
-                            u_texture: texture,
-                            u_model_matrix: transform,
-                            u_color: color,
-                            u_outline_dist: outline_size / size / self.max_distance,
-                            u_outline_color: outline_color,
-                        },
-                        camera.uniforms(framebuffer_size.map(|x| x as f32)),
-                    ),
-                    ugli::DrawParameters {
-                        depth_func: None,
-                        blend_mode: Some(ugli::BlendMode::straight_alpha()),
-                        ..Default::default()
-                    },
-                );
-            },
-        );
-    }
-
     pub fn draw(
         &self,
         framebuffer: &mut ugli::Framebuffer,
-        camera: &impl AbstractCamera2d,
+        camera: &(impl AbstractCamera2d + ?Sized),
         text: &str,
-        pos: vec2<f32>,
-        align: TextAlign,
-        size: f32,
+        align: vec2<TextAlign>,
+        transform: mat3<f32>,
         color: Rgba<f32>,
     ) {
-        let mut pos = pos;
-        for line in text.lines().rev() {
-            if let Some(aabb) = self.measure(line, size) {
-                self.draw_impl(
-                    framebuffer,
-                    camera,
-                    mat3::identity(),
-                    line,
-                    vec2(pos.x - aabb.width() * align.0, pos.y),
-                    size,
-                    color,
-                    0.0,
-                    Rgba { a: 0.0, ..color },
-                );
-            }
-            pos.y += size;
-        }
+        self.draw_with_outline(
+            framebuffer,
+            camera,
+            text,
+            align,
+            transform,
+            color,
+            0.0,
+            Rgba { a: 0.0, ..color },
+        );
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn draw_with_outline(
         &self,
         framebuffer: &mut ugli::Framebuffer,
-        camera: &impl AbstractCamera2d,
+        camera: &(impl AbstractCamera2d + ?Sized),
         text: &str,
-        pos: vec2<f32>,
-        align: TextAlign,
-        size: f32,
+        align: vec2<TextAlign>,
+        transform: mat3<f32>,
         color: Rgba<f32>,
         outline_size: f32,
         outline_color: Rgba<f32>,
     ) {
-        let mut pos = pos;
-        for line in text.lines().rev() {
-            if let Some(aabb) = self.measure(line, size) {
-                self.draw_impl(
-                    framebuffer,
-                    camera,
-                    mat3::identity(),
-                    line,
-                    vec2(pos.x - aabb.width() * align.0, pos.y),
-                    size,
-                    color,
-                    outline_size,
-                    outline_color,
-                );
-            }
-            pos.y += size;
-        }
+        self.draw_with(text, align, |glyphs, texture| {
+            let framebuffer_size = framebuffer.size();
+            ugli::draw(
+                framebuffer,
+                &self.program,
+                ugli::DrawMode::TriangleFan,
+                // TODO: don't create VBs each time
+                ugli::instanced(
+                    &ugli::VertexBuffer::new_dynamic(
+                        &self.ugli,
+                        Aabb2::point(vec2::ZERO)
+                            .extend_positive(vec2(1.0, 1.0))
+                            .corners()
+                            .into_iter()
+                            .map(|v| Vertex { a_pos: v, a_vt: v })
+                            .collect(),
+                    ),
+                    &ugli::VertexBuffer::new_dynamic(&self.ugli, glyphs.to_vec()),
+                ),
+                (
+                    ugli::uniforms! {
+                        u_texture: texture,
+                        u_model_matrix: transform,
+                        u_color: color,
+                        u_outline_dist: outline_size / self.max_distance,
+                        u_outline_color: outline_color,
+                    },
+                    camera.uniforms(framebuffer_size.map(|x| x as f32)),
+                ),
+                ugli::DrawParameters {
+                    depth_func: None,
+                    blend_mode: Some(ugli::BlendMode::straight_alpha()),
+                    ..Default::default()
+                },
+            );
+        });
     }
 
     pub fn create_text_sdf(
@@ -670,7 +619,7 @@ impl Font {
         pixel_size: f32,
     ) -> Option<ugli::Texture> {
         let align = vec2(line_align, TextAlign::BOTTOM);
-        let aabb = self.measure_bounding_box(text, align)?;
+        let aabb = self.measure(text, align)?;
         let texture_size = (vec2(
             aabb.width() + 2.0 * self.max_distance(),
             text.chars().filter(|c| *c == '\n').count() as f32 + 1.0 + 2.0 * self.max_distance(),
