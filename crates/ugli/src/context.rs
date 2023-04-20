@@ -42,7 +42,7 @@ impl Default for WebGLContextOptions {
 #[cfg(target_arch = "wasm32")]
 impl Ugli {
     pub fn create_webgl(canvas: &web_sys::HtmlCanvasElement, options: WebGLContextOptions) -> Self {
-        let context_options = JsValue::from_serde(&options).unwrap();
+        let context_options = serde_wasm_bindgen::to_value(&options).unwrap();
         let webgl;
         if let Some(context) = canvas
             .get_context_with_context_options("webgl", &context_options)

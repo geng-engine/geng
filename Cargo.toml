@@ -128,6 +128,7 @@ wasm-opt = "0.110"
 wasm-bindgen-cli-support = "0.2"
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
 wasm-bindgen-futures = "0.4"
+serde-wasm-bindgen = "0.5"
 console_error_panic_hook = "0.1"
 js-sys = "0.3"
 web-sys = "0.3"
