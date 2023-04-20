@@ -5,6 +5,8 @@ pub enum AttributeType {
     Float = raw::FLOAT as _,
 }
 
+/// # Safety
+/// Don't implement yourself
 pub unsafe trait VertexAttributePrimitive {
     const SIZE: usize;
     const ROWS: usize;
