@@ -104,7 +104,7 @@ impl<T: Widget> Widget for Align<T> {
             .extend_positive(child_size),
         );
     }
-    fn walk_children_mut<'a>(&mut self, mut f: Box<dyn FnMut(&mut dyn Widget) + 'a>) {
+    fn walk_children_mut<'a>(&mut self, f: &mut dyn FnMut(&mut dyn Widget)) {
         f(&mut self.child);
     }
 }

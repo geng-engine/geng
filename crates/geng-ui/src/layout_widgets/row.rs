@@ -75,7 +75,7 @@ impl<'a> Widget for Row<'a> {
             pos += width;
         }
     }
-    fn walk_children_mut<'b>(&mut self, mut f: Box<dyn FnMut(&mut dyn Widget) + 'b>) {
+    fn walk_children_mut<'b>(&mut self, f: &mut dyn FnMut(&mut dyn Widget)) {
         for child in &mut self.children {
             f(child.deref_mut());
         }

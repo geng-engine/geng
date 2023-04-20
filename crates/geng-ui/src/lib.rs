@@ -35,6 +35,6 @@ fn traverse_mut(
     on_leave: &mut dyn FnMut(&mut dyn Widget),
 ) {
     on_enter(widget);
-    widget.walk_children_mut(Box::new(|widget| traverse_mut(widget, on_enter, on_leave)));
+    widget.walk_children_mut(&mut |widget| traverse_mut(widget, on_enter, on_leave));
     on_leave(widget);
 }

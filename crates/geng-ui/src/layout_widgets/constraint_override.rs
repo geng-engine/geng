@@ -24,7 +24,7 @@ impl<T: Widget> Widget for ConstraintOverride<T> {
     fn layout_children(&mut self, cx: &mut LayoutContext) {
         cx.set_position(&self.child, cx.position);
     }
-    fn walk_children_mut<'a>(&mut self, mut f: Box<dyn FnMut(&mut dyn Widget) + 'a>) {
+    fn walk_children_mut<'a>(&mut self, f: &mut dyn FnMut(&mut dyn Widget)) {
         f(&mut self.child);
     }
 }

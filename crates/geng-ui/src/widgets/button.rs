@@ -55,7 +55,7 @@ impl Widget for Button<'_> {
     fn calc_constraints(&mut self, cx: &ConstraintsContext) -> Constraints {
         cx.get_constraints(&self.inner)
     }
-    fn walk_children_mut(&mut self, mut f: Box<dyn FnMut(&mut dyn Widget) + '_>) {
+    fn walk_children_mut(&mut self, f: &mut dyn FnMut(&mut dyn Widget)) {
         f(&mut self.inner);
     }
     fn layout_children(&mut self, cx: &mut LayoutContext) {

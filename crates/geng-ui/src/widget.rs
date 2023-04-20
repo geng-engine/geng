@@ -104,12 +104,12 @@ pub trait Widget {
     fn handle_event(&mut self, event: &Event) {
         #![allow(unused_variables)]
     }
-    fn walk_children_mut(&mut self, f: Box<dyn FnMut(&mut dyn Widget) + '_>) {
+    fn walk_children_mut(&mut self, f: &mut dyn FnMut(&mut dyn Widget)) {
         #![allow(unused_variables)]
     }
     fn calc_constraints(&mut self, children: &ConstraintsContext) -> Constraints;
     fn layout_children(&mut self, cx: &mut LayoutContext) {
-        self.walk_children_mut(Box::new(|child| cx.set_position(child, cx.position)));
+        self.walk_children_mut(&mut |child| cx.set_position(child, cx.position));
     }
 }
 
@@ -117,7 +117,7 @@ impl<T: Widget> Widget for Box<T> {
     fn calc_constraints(&mut self, children: &ConstraintsContext) -> Constraints {
         children.get_constraints(&**self)
     }
-    fn walk_children_mut(&mut self, mut f: Box<dyn FnMut(&mut dyn Widget) + '_>) {
+    fn walk_children_mut(&mut self, f: &mut dyn FnMut(&mut dyn Widget)) {
         f(&mut **self);
     }
 }
@@ -126,7 +126,7 @@ impl Widget for Box<dyn Widget + '_> {
     fn calc_constraints(&mut self, cx: &ConstraintsContext) -> Constraints {
         cx.get_constraints(&**self)
     }
-    fn walk_children_mut(&mut self, mut f: Box<dyn FnMut(&mut dyn Widget) + '_>) {
+    fn walk_children_mut(&mut self, f: &mut dyn FnMut(&mut dyn Widget)) {
         f(&mut **self);
     }
 }

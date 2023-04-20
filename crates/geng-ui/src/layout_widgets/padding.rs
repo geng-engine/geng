@@ -77,7 +77,7 @@ impl<T: Widget> Widget for Padding<T> {
                 .extend_up(-self.top),
         )
     }
-    fn walk_children_mut<'a>(&mut self, mut f: Box<dyn FnMut(&mut dyn Widget) + 'a>) {
+    fn walk_children_mut<'a>(&mut self, f: &mut dyn FnMut(&mut dyn Widget)) {
         f(&mut self.child);
     }
 }
