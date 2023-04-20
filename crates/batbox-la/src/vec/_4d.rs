@@ -78,7 +78,7 @@ impl<T> vec4<T> {
 impl<T: Clone> vec4<T> {
     /// Construct a vector with all components set to specified value
     pub fn splat(value: T) -> Self {
-        Self(value.clone(), value.clone(), value.clone(), value.clone())
+        Self(value.clone(), value.clone(), value.clone(), value)
     }
 }
 
