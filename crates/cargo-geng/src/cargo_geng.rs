@@ -271,9 +271,9 @@ pub fn run() -> anyhow::Result<()> {
                 if opt.release && cfg!(feature = "wasm-opt") {
                     #[cfg(feature = "wasm-opt")]
                     wasm_opt::OptimizationOptions::new_optimize_for_size_aggressively()
-                        .run(&wasm_bg_path, &wasm_path)?;
+                        .run(&wasm_bg_path, wasm_path)?;
                 } else {
-                    std::fs::copy(&wasm_bg_path, &wasm_path)?;
+                    std::fs::copy(&wasm_bg_path, wasm_path)?;
                 }
                 std::fs::remove_file(&wasm_bg_path)?;
                 std::fs::write(
