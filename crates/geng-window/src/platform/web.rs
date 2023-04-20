@@ -13,6 +13,7 @@ pub struct Context {
     canvas: web_sys::HtmlCanvasElement,
     ugli: Ugli,
     mouse_pos: Rc<Cell<vec2<f64>>>,
+    #[allow(clippy::type_complexity)]
     event_handler: Rc<RefCell<Box<dyn Fn(Event)>>>,
 }
 
