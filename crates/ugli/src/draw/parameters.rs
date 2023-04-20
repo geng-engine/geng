@@ -1,16 +1,11 @@
 use super::*;
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Default, Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum DepthFunc {
+    #[default]
     Less = raw::LESS as _,
     LessOrEqual = raw::LEQUAL as _,
     Greater = raw::GREATER as _,
-}
-
-impl Default for DepthFunc {
-    fn default() -> DepthFunc {
-        DepthFunc::Less
-    }
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
