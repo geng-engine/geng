@@ -18,13 +18,7 @@ pub(crate) fn calc_text_constraints(
     }
 }
 
-pub(crate) fn draw_text(
-    text: &str,
-    font: &Font,
-    size: f32,
-    color: Rgba<f32>,
-    cx: &mut DrawContext,
-) {
+pub(crate) fn draw_text(text: &str, font: &Font, color: Rgba<f32>, cx: &mut DrawContext) {
     if text.is_empty() {
         return;
     }
@@ -53,13 +47,7 @@ impl Widget for String {
         calc_text_constraints(self.as_str(), &cx.theme.font, cx.theme.text_size, cx)
     }
     fn draw(&mut self, cx: &mut DrawContext) {
-        draw_text(
-            self.as_str(),
-            &cx.theme.font,
-            cx.theme.text_size,
-            cx.theme.text_color,
-            cx,
-        );
+        draw_text(self.as_str(), &cx.theme.font, cx.theme.text_color, cx);
     }
 }
 
@@ -68,12 +56,6 @@ impl Widget for &'_ str {
         calc_text_constraints(self, &cx.theme.font, cx.theme.text_size, cx)
     }
     fn draw(&mut self, cx: &mut DrawContext) {
-        draw_text(
-            self,
-            &cx.theme.font,
-            cx.theme.text_size,
-            cx.theme.text_color,
-            cx,
-        );
+        draw_text(self, &cx.theme.font, cx.theme.text_color, cx);
     }
 }

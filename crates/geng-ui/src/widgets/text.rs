@@ -23,12 +23,6 @@ impl<T: AsRef<str>, F: AsRef<Font>> Widget for Text<T, F> {
         calc_text_constraints(self.text.as_ref(), self.font.as_ref(), self.size, cx)
     }
     fn draw(&mut self, cx: &mut DrawContext) {
-        draw_text(
-            self.text.as_ref(),
-            self.font.as_ref(),
-            self.size,
-            self.color,
-            cx,
-        );
+        draw_text(self.text.as_ref(), self.font.as_ref(), self.color, cx);
     }
 }
