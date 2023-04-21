@@ -38,68 +38,9 @@ geng-debug-overlay.workspace = true
 geng-asset.workspace = true
 ugli.workspace = true
 
-rusttype.workspace = true
-ttf-parser.workspace = true
-serde.workspace = true
-lazy_static.workspace = true
-flate2.workspace = true
-atomic_float.workspace = true
 gilrs.workspace = true
+serde.workspace = true
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 console_error_panic_hook.workspace = true
 wasm-bindgen.workspace = true
-js-sys.workspace = true
-wasm-bindgen-futures.workspace = true
-web-sys = { workspace = true, features = [
-    "Window",
-    "Storage",
-    "Navigator",
-    "Location",
-    "XmlHttpRequestResponseType",
-    "ProgressEvent",
-    "Document",
-    "DistanceModelType",
-    "HtmlAudioElement",
-    "XmlHttpRequest",
-    "XmlHttpRequestResponseType",
-    "KeyboardEvent",
-    "MouseEvent",
-    "WheelEvent",
-    "TouchEvent",
-    "Touch",
-    "TouchList",
-    "DomRectReadOnly",
-    "WebSocket",
-    "BinaryType",
-    "HtmlImageElement",
-    "HtmlInputElement",
-    "MediaElementAudioSourceNode",
-    "PannerNode",
-    "AudioListener",
-    "BaseAudioContext",
-    "AudioContext",
-    "AudioDestinationNode",
-    "AudioBuffer",
-    "AudioBufferSourceNode",
-    "AudioParam",
-    "GainNode",
-    "Performance",
-    "Response",
-    "ReadableStream",
-    "FileList",
-    "File",
-    "Url",
-    "HtmlAnchorElement",
-] }
-
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-image.workspace = true
-winit.workspace = true
-raw-window-handle.workspace = true
-glutin-winit.workspace = true
-glutin.workspace = true
-threadpool.workspace = true
-num_cpus.workspace = true
-notify.workspace = true
-ws.workspace = true
