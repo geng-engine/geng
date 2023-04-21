@@ -30,11 +30,9 @@ impl<'a> FramebufferRead<'a> {
         //     }
         // }
         self.fbo.bind();
-        #[warn(clippy::uninit_vec)]
         let result = unsafe {
             let buffer_len = self.size.x * self.size.y * 4;
             let mut buffer = Vec::with_capacity(buffer_len);
-            buffer.set_len(buffer_len);
             gl.read_pixels(
                 0,
                 0,
@@ -42,8 +40,9 @@ impl<'a> FramebufferRead<'a> {
                 self.size.y as raw::SizeI,
                 raw::RGBA,
                 raw::UNSIGNED_BYTE,
-                &mut buffer,
+                std::slice::from_raw_parts_mut(buffer.as_mut_ptr(), buffer_len),
             );
+            buffer.set_len(buffer_len);
             ColorData {
                 width: self.size.x,
                 height: self.size.y,
