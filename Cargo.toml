@@ -55,6 +55,7 @@ geng-obj = { version = "0.14", path = "crates/geng-obj" }
 geng-debug-overlay = { version = "0.14", path = "crates/geng-debug-overlay" }
 geng-asset = { version = "0.14", path = "crates/geng-asset" }
 geng-asset-derive = { version = "0.14", path = "crates/geng-asset/derive" }
+geng-texture-atlas = { version = "0.14", path = "crates/geng-texture-atlas" }
 
 # Ugli
 ugli = { version = "0.14", path = "crates/ugli" }

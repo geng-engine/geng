@@ -36,6 +36,7 @@ geng-draw2d.workspace = true
 geng-obj.workspace = true
 geng-debug-overlay.workspace = true
 geng-asset.workspace = true
+geng-texture-atlas.workspace = true
 ugli.workspace = true
 
 gilrs.workspace = true
