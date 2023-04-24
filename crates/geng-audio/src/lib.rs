@@ -47,6 +47,12 @@ pub struct Sound {
 }
 
 impl Sound {
+    pub fn looped(&self) -> bool {
+        self.inner.looped
+    }
+    pub fn set_looped(&mut self, looped: bool) {
+        self.inner.looped = looped;
+    }
     pub fn duration(&self) -> time::Duration {
         self.inner.duration()
     }
