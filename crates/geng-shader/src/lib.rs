@@ -21,7 +21,21 @@ impl Library {
         if antialias {
             prelude = "#define GENG_ANTIALIAS\n".to_owned() + &prelude;
         }
-        library.prefix = prefix;
+        fn default_prefix() -> (String, String) {
+            let common_glsl = "#extension GL_OES_standard_derivatives : enable\nprecision highp int;\nprecision highp float;\n";
+            if cfg!(target_arch = "wasm32") {
+                (
+                    format!("{common_glsl}#define VERTEX_SHADER\n"),
+                    format!("{common_glsl}#define FRAGMENT_SHADER\n"),
+                )
+            } else {
+                (
+                    format!("#version 100\n{common_glsl}#define VERTEX_SHADER\n"),
+                    format!("#version 100\n{common_glsl}#define FRAGMENT_SHADER\n"),
+                )
+            }
+        }
+        library.prefix = Some(prefix.unwrap_or_else(default_prefix));
         library.add("prelude", &prelude);
         library
     }
