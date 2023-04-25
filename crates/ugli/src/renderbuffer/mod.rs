@@ -1,5 +1,7 @@
 use super::*;
 
+/// # Safety
+/// Don't implement yourself
 pub unsafe trait RenderbufferPixel {
     const GL_FORMAT: raw::Enum;
 }

@@ -1,5 +1,3 @@
-use batbox::{js_sys, web_sys};
-
 pub type BitField = u32;
 pub type Bool = bool;
 pub type ClampedFloat = f32;
@@ -15,7 +13,9 @@ pub type SizeIPtr = i32;
 pub struct Context {
     inner: web_sys::WebGlRenderingContext,
     angle_instanced_arrays: web_sys::AngleInstancedArrays,
+    #[allow(dead_code)]
     oes_standard_derivatives: web_sys::OesStandardDerivatives,
+    #[allow(dead_code)]
     blend_minmax: web_sys::ExtBlendMinmax,
 }
 

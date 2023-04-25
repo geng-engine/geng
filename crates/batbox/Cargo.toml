@@ -15,8 +15,23 @@ version.workspace = true
 targets = ["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]
 
 [dependencies]
-batbox-macros.workspace = true
-batbox-derive.workspace = true
+batbox-i18n.workspace = true
+batbox-num.workspace = true
+batbox-color.workspace = true
+batbox-approx.workspace = true
+batbox-tuple-macros.workspace = true
+batbox-time.workspace = true
+batbox-file.workspace = true
+batbox-file-dialog.workspace = true
+batbox-preferences.workspace = true
+batbox-cli.workspace = true
+batbox-logger.workspace = true
+batbox-diff.workspace = true
+batbox-collection.workspace = true
+batbox-cmp.workspace = true
+batbox-range.workspace = true
+batbox-la.workspace = true
+batbox-lapp.workspace = true
 
 # rng
 rand.workspace = true

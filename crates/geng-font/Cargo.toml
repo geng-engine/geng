@@ -1,0 +1,24 @@
+[package]
+name = "geng-font"
+authors.workspace = true
+categories.workspace = true
+description.workspace = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[dependencies]
+batbox-num.workspace = true
+batbox-la.workspace = true
+batbox-color.workspace = true
+geng-camera.workspace = true
+geng-shader.workspace = true
+ugli.workspace = true
+ttf-parser.workspace = true
+itertools.workspace = true
+serde.workspace = true
+anyhow.workspace = true

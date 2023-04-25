@@ -1,13 +1,4 @@
 //! Utility stuff
-#[allow(unused_imports)]
-use super::*;
-
-pub mod prelude {
-    //! Items intended to always be available. Reexported from [crate::prelude]
-
-    #[doc(no_inline)]
-    pub use super::*;
-}
 
 /// Construct default value of a type
 pub fn default<T: Default>() -> T {
@@ -39,7 +30,7 @@ pub fn run_dir() -> std::path::PathBuf {
         if path.is_dir() {
             return path;
         } else {
-            warn!("run_dir was expected to be {path:?} but its not a valid directory path");
+            log::warn!("run_dir was expected to be {path:?} but its not a valid directory path");
         }
     } else {
         #[cfg(not(target_arch = "wasm32"))]

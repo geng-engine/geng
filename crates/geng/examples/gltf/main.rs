@@ -1,6 +1,6 @@
 use geng::prelude::*;
 
-#[derive(geng::Assets)]
+#[derive(geng::asset::Load)]
 struct Assets {
     shader: ugli::Program,
 }
@@ -81,7 +81,7 @@ struct Example {
     geng: Geng,
     assets: Rc<Assets>,
     camera: Camera,
-    transition: Rc<RefCell<Option<geng::Transition>>>,
+    transition: Rc<RefCell<Option<geng::state::Transition>>>,
 }
 
 impl Example {
@@ -89,7 +89,7 @@ impl Example {
         let (document, buffers, _images) = gltf::import_slice(&gltf).unwrap();
         let mut meshes = Vec::new();
         for mesh in document.meshes() {
-            info!("{:?}", mesh.name());
+            log::info!("{:?}", mesh.name());
             for primitive in mesh.primitives() {
                 let reader = primitive.reader(|buffer| buffers.get(buffer.index()).map(|x| &**x));
                 let positions: Vec<vec3<f32>> = reader
@@ -186,7 +186,7 @@ impl geng::State for Example {
                         u_ambient_light_color: Rgba::WHITE,
                         u_ambient_light_intensity: 0.1,
                     },
-                    geng::camera3d_uniforms(&self.camera, framebuffer_size),
+                    self.camera.uniforms(framebuffer_size),
                 ),
                 ugli::DrawParameters {
                     depth_func: Some(ugli::DepthFunc::Less),
@@ -209,7 +209,7 @@ impl geng::State for Example {
             geng::Event::KeyDown { key: geng::Key::S }
                 if self.geng.window().is_key_pressed(geng::Key::LCtrl) =>
             {
-                file::save("test.txt", "Hello, world!".as_bytes()).unwrap();
+                file_dialog::save("test.txt", "Hello, world!".as_bytes()).unwrap();
             }
             geng::Event::KeyDown { key: geng::Key::O }
                 if self.geng.window().is_key_pressed(geng::Key::LCtrl) =>
@@ -217,23 +217,21 @@ impl geng::State for Example {
                 let geng = self.geng.clone();
                 let assets = self.assets.clone();
                 let transition = self.transition.clone();
-                file::select(move |file| {
-                    *transition.borrow_mut() = Some(geng::Transition::Switch(Box::new(load(
-                        geng,
-                        assets,
-                        async move {
+                file_dialog::select(move |file| {
+                    *transition.borrow_mut() = Some(geng::state::Transition::Switch(Box::new(
+                        load(geng, assets, async move {
                             let mut reader = file.reader().unwrap();
                             let mut buf = Vec::new();
                             reader.read_to_end(&mut buf).await.unwrap();
                             buf
-                        },
-                    ))))
+                        }),
+                    )))
                 });
             }
             _ => {}
         }
     }
-    fn transition(&mut self) -> Option<geng::Transition> {
+    fn transition(&mut self) -> Option<geng::state::Transition> {
         self.transition.borrow_mut().take()
     }
 }
@@ -258,14 +256,15 @@ struct Opt {
 fn main() {
     logger::init();
     geng::setup_panic_handler();
-    let opt: Opt = program_args::parse();
+    let opt: Opt = cli::parse();
     let geng = Geng::new("Example");
     let path = opt
         .path
         .unwrap_or(run_dir().join("assets").join("crab.glb"));
     geng.clone().run_loading(async move {
         let assets = geng
-            .load_asset(run_dir().join("assets"))
+            .asset_manager()
+            .load(run_dir().join("assets"))
             .await
             .expect("Failed to load assets");
         let assets = Rc::new(assets);

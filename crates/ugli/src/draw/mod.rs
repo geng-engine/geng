@@ -200,34 +200,26 @@ pub fn draw<V, U, DP>(
             } else {
                 *self.vertex_count = Some(data.len());
             }
-            let sample = mem::MaybeUninit::uninit();
-            let sample = sample.as_ptr();
             data.buffer.bind();
-            unsafe {
-                D::walk_attributes(
-                    sample,
-                    Vac {
-                        sample,
-                        attribute_locations: self.attribute_locations,
-                        divisor,
-                        program: self.program,
-                        offset: data.range.start * mem::size_of::<D>(),
-                    },
-                );
-            }
+            D::walk_attributes(Vac::<D> {
+                attribute_locations: self.attribute_locations,
+                divisor,
+                program: self.program,
+                offset: data.range.start * mem::size_of::<D>(),
+                phantom_data: PhantomData,
+            });
             struct Vac<'a, D: Vertex + 'a> {
                 attribute_locations: &'a mut Vec<raw::UInt>,
                 offset: usize,
-                sample: *const D,
                 divisor: Option<usize>,
                 program: &'a Program,
+                phantom_data: PhantomData<D>,
             }
-            unsafe impl<'a, D: Vertex> VertexAttributeVisitor for Vac<'a, D> {
-                unsafe fn visit<A: VertexAttribute>(&mut self, name: &str, attribute: *const A) {
+            impl<'a, D: Vertex> VertexAttributeVisitor for Vac<'a, D> {
+                fn visit<A: VertexAttribute>(&mut self, name: &str, offset: usize) {
                     let gl = &self.program.ugli.inner.raw;
                     if let Some(attribute_info) = self.program.attributes.get(name) {
-                        let offset = self.offset + A::as_primitive(attribute) as usize
-                            - self.sample as usize;
+                        let offset = self.offset + offset + A::primitive_offset();
                         for row in 0..A::Primitive::ROWS {
                             let offset = offset + mem::size_of::<A>() * row / A::Primitive::ROWS;
                             let location = attribute_info.location + row as raw::UInt;

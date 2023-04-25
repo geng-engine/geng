@@ -1,6 +1,12 @@
 #![recursion_limit = "128"]
 
+#[doc(hidden)]
+pub use ::field_offset as __field_offset;
+
 use batbox::prelude::*;
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::prelude::*;
+
 pub use ugli_derive::*;
 
 mod context;
@@ -35,6 +41,13 @@ fn gl_bool(b: bool) -> raw::Bool {
         raw::TRUE
     } else {
         raw::FALSE
+    }
+}
+
+#[macro_export]
+macro_rules! field_offset {
+    (Self.$field_name:ident) => {
+        $crate::__field_offset::offset_of!(Self => $field_name).get_byte_offset()
     }
 }
 

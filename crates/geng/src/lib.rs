@@ -27,54 +27,42 @@
 //! ```
 //!
 
-pub use geng_derive::*;
-
 pub mod prelude {
-    pub use crate::{draw_2d, Geng, Hot};
-    pub use crate::{Camera2dExt as _, Camera3dExt as _};
+    pub use crate::{draw2d, Geng, Hot};
+    pub use crate::{AbstractCamera2d, AbstractCamera3d, Camera2d};
     pub use ::batbox;
     pub use ::batbox::prelude::*;
     pub use gilrs::{self, Gilrs};
     pub use ugli::{self, Ugli};
 }
 
-use crate as geng;
 use crate::prelude::*;
-#[allow(unused_imports)]
-use log::{trace, warn};
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::prelude::*;
 
-mod asset;
-mod camera;
 mod cli_args;
 mod context;
-mod debug_overlay;
-pub mod draw_2d;
-pub mod font;
 mod loading_screen;
-pub mod net;
-pub mod obj;
-mod shader_lib;
+
+pub use geng_asset as asset;
 #[cfg(feature = "audio")]
-mod sound;
-mod state;
-mod texture_atlas;
-pub mod ui;
-mod window;
+pub use geng_audio::{self as audio, *};
+pub use geng_camera::{
+    self as camera, AbstractCamera2d, AbstractCamera3d, Camera2d, PixelPerfectCamera,
+};
+pub use geng_draw2d::{self as draw2d, Draw2d};
+pub use geng_font::{self as font, Font, TextAlign};
+pub use geng_net as net;
+pub use geng_shader as shader;
+pub use geng_state::{self as state, State};
+pub use geng_texture_atlas::{self as texture_atlas, TextureAtlas};
+pub use geng_ui as ui;
+pub use geng_window::{self as window, CursorType, Event, Key, MouseButton, TouchPoint, Window};
 
 pub use asset::*;
-pub use camera::*;
 pub use cli_args::*;
 pub use context::*;
-pub use debug_overlay::*;
-pub use draw_2d::Draw2d;
-pub use font::*;
 pub use loading_screen::*;
-pub use shader_lib::*;
-#[cfg(feature = "audio")]
-pub use sound::*;
-pub use state::*;
-pub use texture_atlas::*;
-pub use window::*;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn setup_panic_handler() {
@@ -111,4 +99,56 @@ pub fn setup_panic_handler() {
         show_error(&error);
     }
     std::panic::set_hook(Box::new(panic_hook));
+}
+
+impl Geng {
+    pub(crate) fn set_loading_progress_title(&self, title: &str) {
+        log::trace!("Set loading progress title to {title:?}");
+        // TODO: native
+        #[cfg(target_arch = "wasm32")]
+        {
+            #[wasm_bindgen(inline_js = r#"
+            export function set_progress_title(title) {
+                window.gengUpdateProgressTitle(title);
+            }
+            "#)]
+            extern "C" {
+                fn set_progress_title(title: &str);
+            }
+            set_progress_title(title);
+        }
+    }
+
+    pub(crate) fn set_loading_progress(&self, progress: f64, total: Option<f64>) {
+        log::trace!("Loading progress {progress:?}/{total:?}");
+        // TODO: native
+        #[cfg(target_arch = "wasm32")]
+        {
+            #[wasm_bindgen(inline_js = r#"
+            export function set_progress(progress, total) {
+                window.gengUpdateProgress(progress, total);
+            }
+            "#)]
+            extern "C" {
+                fn set_progress(progress: f64, total: Option<f64>);
+            }
+            set_progress(progress, total);
+        }
+    }
+
+    pub(crate) fn finish_loading(&self) {
+        #[cfg(target_arch = "wasm32")]
+        {
+            #[wasm_bindgen(inline_js = r#"
+            export function finish_loading() {
+                document.getElementById("geng-progress-screen").style.display = "none";
+                document.getElementById("geng-canvas").style.display = "block";
+            }
+            "#)]
+            extern "C" {
+                fn finish_loading();
+            }
+            finish_loading();
+        }
+    }
 }

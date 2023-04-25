@@ -1,0 +1,25 @@
+[package]
+name = "geng-debug-overlay"
+authors.workspace = true
+categories.workspace = true
+description.workspace = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[dependencies]
+batbox-la.workspace = true
+batbox-color.workspace = true
+batbox-time.workspace = true
+batbox-logger.workspace = true
+geng-window.workspace = true
+geng-draw2d.workspace = true
+geng-camera.workspace = true
+geng-ui.workspace = true
+ugli.workspace = true
+log.workspace = true
+once_cell.workspace = true

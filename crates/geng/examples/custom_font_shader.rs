@@ -55,11 +55,12 @@ struct State {
 impl State {
     fn new(geng: &Geng) -> Self {
         let font = geng::Font::new(
-            geng,
-            include_bytes!("../src/font/default.ttf"),
-            geng::font::ttf::Options {
+            geng.ugli(),
+            include_bytes!("../../geng-font/src/default.ttf"),
+            geng::font::Options {
                 pixel_size: 64.0,
                 max_distance: 0.25,
+                antialias: true,
             },
         )
         .unwrap();
@@ -86,16 +87,16 @@ impl geng::State for State {
             &ugli::VertexBuffer::new_dynamic(
                 self.geng.ugli(),
                 vec![
-                    draw_2d::Vertex {
+                    draw2d::Vertex {
                         a_pos: vec2(0.0, 0.0),
                     },
-                    draw_2d::Vertex {
+                    draw2d::Vertex {
                         a_pos: vec2(1.0, 0.0),
                     },
-                    draw_2d::Vertex {
+                    draw2d::Vertex {
                         a_pos: vec2(1.0, 1.0),
                     },
-                    draw_2d::Vertex {
+                    draw2d::Vertex {
                         a_pos: vec2(0.0, 1.0),
                     },
                 ],
@@ -108,14 +109,12 @@ impl geng::State for State {
                     u_border_color: Rgba::GRAY,
                     u_outline_distance: self.font.max_distance() / 2.0,
                 },
-                geng::camera2d_uniforms(
-                    &geng::Camera2d {
-                        center: size / 2.0,
-                        rotation: 0.0,
-                        fov: 3.0,
-                    },
-                    framebuffer.size().map(|x| x as f32),
-                ),
+                geng::Camera2d {
+                    center: size / 2.0,
+                    rotation: 0.0,
+                    fov: 3.0,
+                }
+                .uniforms(framebuffer.size().map(|x| x as f32)),
             ),
             ugli::DrawParameters {
                 blend_mode: Some(ugli::BlendMode::straight_alpha()),

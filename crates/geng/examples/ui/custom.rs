@@ -57,7 +57,7 @@ impl geng::ui::Widget for CustomWidget<'_> {
             &self.assets.shader,
             ugli::DrawMode::TriangleFan,
             &ugli::VertexBuffer::new_dynamic(
-                cx.geng.ugli(),
+                cx.draw2d.ugli(),
                 vec![
                     Vertex {
                         a_pos: vec2(0.0, 0.0),
@@ -80,10 +80,7 @@ impl geng::ui::Widget for CustomWidget<'_> {
                     u_size: cx.position.size().map(|x| x as f32),
                     u_ratio: self.ratio,
                 },
-                geng::camera2d_uniforms(
-                    &geng::PixelPerfectCamera,
-                    cx.framebuffer.size().map(|x| x as f32),
-                ),
+                geng::PixelPerfectCamera.uniforms(cx.framebuffer.size().map(|x| x as f32)),
             ),
             ugli::DrawParameters {
                 blend_mode: Some(ugli::BlendMode::straight_alpha()),

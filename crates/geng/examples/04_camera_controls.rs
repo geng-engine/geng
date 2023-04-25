@@ -45,9 +45,8 @@ impl geng::State for State {
             framebuffer,
             &self.camera,
             "Scroll to zoom\nDrag LMB to move\nQ/E to rotate",
-            vec2::ZERO,
-            geng::TextAlign::CENTER,
-            1.0,
+            vec2::splat(geng::TextAlign::CENTER),
+            mat3::identity(),
             Rgba::WHITE,
         );
     }

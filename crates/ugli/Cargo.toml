@@ -18,10 +18,16 @@ targets = ["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]
 batbox.workspace = true
 ugli-raw.workspace = true
 ugli-derive.workspace = true
+field-offset.workspace = true
 
 num_enum.workspace = true # TODO: should be in batbox?
 serde.workspace = true
 image.workspace = true
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen.workspace = true
+serde-wasm-bindgen.workspace = true
+web-sys.workspace = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 glutin.workspace = true

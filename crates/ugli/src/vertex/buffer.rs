@@ -94,7 +94,7 @@ impl<T: Vertex> VertexBuffer<T> {
     {
         VertexBufferSlice {
             buffer: self,
-            range: index_range(self.data.len(), range),
+            range: self.data.len().index_range(range),
         }
     }
 

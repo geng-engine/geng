@@ -1,0 +1,19 @@
+[package]
+name = "batbox-lapp"
+authors.workspace = true
+categories.workspace = true
+description.workspace = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[dependencies]
+batbox-la.workspace = true
+batbox-num.workspace = true
+batbox-range.workspace = true
+batbox-cmp.workspace = true
+batbox-approx.workspace = true

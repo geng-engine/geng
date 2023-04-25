@@ -1,0 +1,22 @@
+[package]
+name = "geng-draw2d"
+authors.workspace = true
+categories.workspace = true
+description.workspace = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[dependencies]
+batbox-approx.workspace = true
+batbox-lapp.workspace = true
+batbox-la.workspace = true
+batbox-color.workspace = true
+ugli.workspace = true
+geng-font.workspace = true
+geng-camera.workspace = true
+geng-shader.workspace = true

@@ -1,5 +1,7 @@
 use super::*;
 
+/// # Safety
+/// Don't implement yourself
 pub unsafe trait TexturePixel {
     const INTERNAL_FORMAT: raw::Enum;
     const FORMAT: raw::Enum;

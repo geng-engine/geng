@@ -5,6 +5,8 @@ pub enum AttributeType {
     Float = raw::FLOAT as _,
 }
 
+/// # Safety
+/// Don't implement yourself
 pub unsafe trait VertexAttributePrimitive {
     const SIZE: usize;
     const ROWS: usize;
@@ -13,13 +15,13 @@ pub unsafe trait VertexAttributePrimitive {
 
 pub trait VertexAttribute {
     type Primitive: VertexAttributePrimitive;
-    fn as_primitive(ptr: *const Self) -> *const Self::Primitive;
+    fn primitive_offset() -> usize;
 }
 
 impl<T: VertexAttributePrimitive> VertexAttribute for T {
     type Primitive = Self;
-    fn as_primitive(ptr: *const Self) -> *const Self {
-        ptr
+    fn primitive_offset() -> usize {
+        0
     }
 }
 
@@ -64,43 +66,43 @@ mod batbox {
 
     impl VertexAttribute for vec2<f32> {
         type Primitive = [f32; 2];
-        fn as_primitive(ptr: *const Self) -> *const [f32; 2] {
-            ptr as _
+        fn primitive_offset() -> usize {
+            0
         }
     }
 
     impl VertexAttribute for vec3<f32> {
         type Primitive = [f32; 3];
-        fn as_primitive(ptr: *const Self) -> *const [f32; 3] {
-            ptr as _
+        fn primitive_offset() -> usize {
+            0
         }
     }
 
     impl VertexAttribute for vec4<f32> {
         type Primitive = [f32; 4];
-        fn as_primitive(ptr: *const Self) -> *const [f32; 4] {
-            ptr as _
+        fn primitive_offset() -> usize {
+            0
         }
     }
 
     impl VertexAttribute for Rgba<f32> {
         type Primitive = [f32; 4];
-        fn as_primitive(ptr: *const Self) -> *const [f32; 4] {
-            ptr as _
+        fn primitive_offset() -> usize {
+            0
         }
     }
 
     impl VertexAttribute for mat3<f32> {
         type Primitive = [[f32; 3]; 3];
-        fn as_primitive(ptr: *const Self) -> *const [[f32; 3]; 3] {
-            ptr as _
+        fn primitive_offset() -> usize {
+            0
         }
     }
 
     impl VertexAttribute for mat4<f32> {
         type Primitive = [[f32; 4]; 4];
-        fn as_primitive(ptr: *const Self) -> *const [[f32; 4]; 4] {
-            ptr as _
+        fn primitive_offset() -> usize {
+            0
         }
     }
 }

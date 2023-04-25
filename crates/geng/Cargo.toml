@@ -16,36 +16,32 @@ targets = ["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]
 
 [features]
 default = ["audio"]
-audio = ["dep:rodio"]
+audio = ["dep:geng-audio"]
 
 [dev-dependencies]
 gltf.workspace = true
+geng-net-simple.workspace = true
 
 [dependencies]
 batbox.workspace = true
-geng-derive.workspace = true
-geng-ui-macros.workspace = true
+geng-window.workspace = true
+geng-net.workspace = true
+geng-camera.workspace = true
+geng-shader.workspace = true
+geng-font.workspace = true
+geng-audio = { workspace = true, optional = true }
+geng-ui.workspace = true
+geng-state.workspace = true
+geng-draw2d.workspace = true
+geng-obj.workspace = true
+geng-debug-overlay.workspace = true
+geng-asset.workspace = true
+geng-texture-atlas.workspace = true
 ugli.workspace = true
 
-rusttype.workspace = true
-ttf-parser.workspace = true
-serde.workspace = true
-lazy_static.workspace = true
-flate2.workspace = true
-atomic_float.workspace = true
 gilrs.workspace = true
+serde.workspace = true
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 console_error_panic_hook.workspace = true
-
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-image.workspace = true
-winit.workspace = true
-raw-window-handle.workspace = true
-glutin-winit.workspace = true
-glutin.workspace = true
-threadpool.workspace = true
-num_cpus.workspace = true
-notify.workspace = true
-rodio = { workspace = true, optional = true }
-ws.workspace = true
+wasm-bindgen.workspace = true

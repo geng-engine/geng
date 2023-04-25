@@ -1,6 +1,6 @@
 use geng::prelude::*;
 
-#[derive(geng::Assets)]
+#[derive(geng::asset::Load)]
 struct Assets {
     texture: ugli::Texture,
 }
@@ -35,9 +35,9 @@ impl<'a> Transform2d<f32> for Grid<'a> {
 }
 
 impl<'a> geng::Draw2d for Grid<'a> {
-    fn draw_2d_transformed(
+    fn draw2d_transformed(
         &self,
-        geng: &Geng,
+        helper: &draw2d::Helper,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn geng::AbstractCamera2d,
         transform: mat3<f32>,
@@ -45,7 +45,7 @@ impl<'a> geng::Draw2d for Grid<'a> {
         for (x, column) in self.table.iter().enumerate() {
             for (y, object) in column.iter().enumerate() {
                 if let Some(object) = *object {
-                    geng.draw_2d_transformed(
+                    helper.draw2d_transformed(
                         framebuffer,
                         camera,
                         &object
@@ -74,7 +74,7 @@ impl<'a> geng::Draw2d for Grid<'a> {
 struct State {
     geng: Geng,
     camera: geng::Camera2d,
-    objects: Vec<Box<dyn draw_2d::Draw2d>>,
+    objects: Vec<Box<dyn draw2d::Draw2d>>,
 }
 
 impl State {
@@ -89,10 +89,9 @@ impl State {
             objects: vec![],
         };
         result.add(
-            draw_2d::Quad::unit(Rgba::WHITE)
-                .transform(mat3::rotate(0.5) * mat3::scale_uniform(0.5)),
+            draw2d::Quad::unit(Rgba::WHITE).transform(mat3::rotate(0.5) * mat3::scale_uniform(0.5)),
         );
-        result.add(draw_2d::TexturedQuad::unit(ugli::Texture::new_with(
+        result.add(draw2d::TexturedQuad::unit(ugli::Texture::new_with(
             geng.ugli(),
             vec2(2, 2),
             |pos| match (pos.x, pos.y) {
@@ -103,31 +102,31 @@ impl State {
                 _ => unreachable!(),
             },
         )));
-        result.add(draw_2d::TexturedQuad::unit(assets.texture));
-        result.add(draw_2d::TexturedQuad::unit({
+        result.add(draw2d::TexturedQuad::unit(assets.texture));
+        result.add(draw2d::TexturedQuad::unit({
             const SIZE: usize = 128;
             let mut texture = ugli::Texture::new_uninitialized(geng.ugli(), vec2(SIZE, SIZE));
             let mut framebuffer = ugli::Framebuffer::new_color(
                 geng.ugli(),
                 ugli::ColorAttachment::Texture(&mut texture),
             );
-            geng.draw_2d(
+            geng.draw2d().draw2d(
                 &mut framebuffer,
                 &geng::PixelPerfectCamera,
-                &draw_2d::Polygon::new_gradient(vec![
-                    draw_2d::ColoredVertex {
+                &draw2d::Polygon::new_gradient(vec![
+                    draw2d::ColoredVertex {
                         a_pos: vec2(0.0, 0.0),
                         a_color: Rgba::BLACK,
                     },
-                    draw_2d::ColoredVertex {
+                    draw2d::ColoredVertex {
                         a_pos: vec2(SIZE as f32, 0.0),
                         a_color: Rgba::RED,
                     },
-                    draw_2d::ColoredVertex {
+                    draw2d::ColoredVertex {
                         a_pos: vec2(SIZE as f32, SIZE as f32),
                         a_color: Rgba::GREEN,
                     },
-                    draw_2d::ColoredVertex {
+                    draw2d::ColoredVertex {
                         a_pos: vec2(0.0, SIZE as f32),
                         a_color: Rgba::BLUE,
                     },
@@ -135,26 +134,26 @@ impl State {
             );
             texture
         }));
-        result.add(draw_2d::Ellipse::unit(Rgba::RED));
+        result.add(draw2d::Ellipse::unit(Rgba::RED));
         result.add(
-            draw_2d::Ellipse::unit_with_cut(0.5, Rgba::RED)
+            draw2d::Ellipse::unit_with_cut(0.5, Rgba::RED)
                 .transform(mat3::rotate(f32::PI / 4.0) * mat3::scale(vec2(1.0, 0.5))),
         );
-        result.add(draw_2d::Polygon::new_gradient(vec![
-            draw_2d::ColoredVertex {
+        result.add(draw2d::Polygon::new_gradient(vec![
+            draw2d::ColoredVertex {
                 a_pos: vec2(-1.0, -1.0),
                 a_color: Rgba::RED,
             },
-            draw_2d::ColoredVertex {
+            draw2d::ColoredVertex {
                 a_pos: vec2(1.0, -1.0),
                 a_color: Rgba::GREEN,
             },
-            draw_2d::ColoredVertex {
+            draw2d::ColoredVertex {
                 a_pos: vec2(0.0, 1.0),
                 a_color: Rgba::BLUE,
             },
         ]));
-        result.add(draw_2d::Polygon::strip(
+        result.add(draw2d::Polygon::strip(
             vec![
                 vec2(-1.0, -1.0),
                 vec2(0.0, -1.0),
@@ -166,30 +165,30 @@ impl State {
             Rgba::GRAY,
         ));
         result.add(
-            draw_2d::Text::unit(geng.default_font().clone(), "Hello!", Rgba::WHITE)
+            draw2d::Text::unit(geng.default_font().clone(), "Hello!", Rgba::WHITE)
                 .transform(mat3::rotate(f32::PI / 6.0)),
         );
         result.add(
-            draw_2d::Text::unit(geng.default_font().clone(), "", Rgba::WHITE)
+            draw2d::Text::unit(geng.default_font().clone(), "", Rgba::WHITE)
                 .transform(mat3::rotate(f32::PI / 6.0)),
         );
-        result.add(draw_2d::Segment::new(
+        result.add(draw2d::Segment::new(
             Segment(vec2(-3.0, -5.0), vec2(3.0, 5.0)),
             0.5,
             Rgba::GREEN,
         ));
-        result.add(draw_2d::Segment::new_gradient(
-            draw_2d::ColoredVertex {
+        result.add(draw2d::Segment::new_gradient(
+            draw2d::ColoredVertex {
                 a_pos: vec2(-5.0, 3.0),
                 a_color: Rgba::BLUE,
             },
-            draw_2d::ColoredVertex {
+            draw2d::ColoredVertex {
                 a_pos: vec2(5.0, -3.0),
                 a_color: Rgba::RED,
             },
             0.5,
         ));
-        result.add(draw_2d::Chain::new(
+        result.add(draw2d::Chain::new(
             Chain::new(vec![
                 vec2(-5.0, -5.0),
                 vec2(5.0, -2.0),
@@ -200,21 +199,21 @@ impl State {
             Rgba::RED,
             5,
         ));
-        result.add(draw_2d::Chain::new_gradient(
+        result.add(draw2d::Chain::new_gradient(
             vec![
-                draw_2d::ColoredVertex {
+                draw2d::ColoredVertex {
                     a_pos: vec2(-5.0, -5.0),
                     a_color: Rgba::RED,
                 },
-                draw_2d::ColoredVertex {
+                draw2d::ColoredVertex {
                     a_pos: vec2(5.0, -2.0),
                     a_color: Rgba::GREEN,
                 },
-                draw_2d::ColoredVertex {
+                draw2d::ColoredVertex {
                     a_pos: vec2(-5.0, 2.0),
                     a_color: Rgba::BLUE,
                 },
-                draw_2d::ColoredVertex {
+                draw2d::ColoredVertex {
                     a_pos: vec2(5.0, 5.0),
                     a_color: Rgba::BLACK,
                 },
@@ -222,7 +221,7 @@ impl State {
             0.5,
             5,
         ));
-        result.add(draw_2d::Chain::new(
+        result.add(draw2d::Chain::new(
             CardinalSpline::new(
                 vec![
                     vec2(-5.0, -5.0),
@@ -237,7 +236,7 @@ impl State {
             Rgba::RED,
             1,
         ));
-        result.add(draw_2d::Chain::new(
+        result.add(draw2d::Chain::new(
             Trajectory::parabola(
                 [vec2(0.0, 3.0), vec2(-5.0, -2.0), vec2(5.0, 0.0)],
                 -1.0..=1.0,
@@ -247,7 +246,7 @@ impl State {
             Rgba::RED,
             1,
         ));
-        result.add(draw_2d::Chain::new(
+        result.add(draw2d::Chain::new(
             Trajectory::new(Box::new(|t| vec2(t, t * t * t)), -2.0..=2.0).chain(10),
             0.5,
             Rgba::RED,
@@ -255,7 +254,7 @@ impl State {
         ));
         result
     }
-    fn add<T: draw_2d::Draw2d + 'static>(&mut self, object: T) {
+    fn add<T: draw2d::Draw2d + 'static>(&mut self, object: T) {
         self.objects.push(Box::new(object));
     }
 }
@@ -273,7 +272,7 @@ impl geng::State for State {
             self.objects.iter().map(|object| object.deref()),
         );
         let framebuffer_size = framebuffer.size();
-        self.geng.draw_2d(
+        self.geng.draw2d().draw2d(
             framebuffer,
             &self.camera,
             &grid
@@ -289,7 +288,8 @@ fn main() {
     let geng = Geng::new("Let's draw!");
     geng.clone().run_loading(async move {
         let assets = geng
-            .load_asset(run_dir().join("assets"))
+            .asset_manager()
+            .load(run_dir().join("assets"))
             .await
             .expect("Failed to load assets");
         State::new(&geng, assets)

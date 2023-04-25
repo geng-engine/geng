@@ -1,0 +1,24 @@
+[package]
+name = "geng-ui"
+authors.workspace = true
+categories.workspace = true
+description.workspace = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[dependencies]
+batbox-tuple-macros.workspace = true
+batbox-la.workspace = true
+batbox-cmp.workspace = true
+batbox-color.workspace = true
+geng-window.workspace = true
+geng-font.workspace = true
+geng-camera.workspace = true
+geng-draw2d.workspace = true
+ugli.workspace = true
+derive_more.workspace = true

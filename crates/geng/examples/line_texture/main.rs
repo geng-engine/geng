@@ -1,8 +1,8 @@
 use geng::prelude::*;
 
-#[derive(geng::Assets)]
+#[derive(geng::asset::Load)]
 struct Assets {
-    #[asset(postprocess = "make_repeated")]
+    #[load(postprocess = "make_repeated")]
     texture: ugli::Texture,
 }
 
@@ -72,24 +72,24 @@ impl geng::State for Example {
         }
         let assets = self.assets.get();
         let texture = &assets.texture;
-        self.geng.draw_2d(
+        self.geng.draw2d().draw2d(
             framebuffer,
             &geng::Camera2d {
                 center: vec2(0.0, 2.5),
                 rotation: 0.0,
                 fov: 10.0,
             },
-            &draw_2d::TexturedPolygon::strip(
+            &draw2d::TexturedPolygon::strip(
                 izip![points, ts]
                     .flat_map(move |(Point { pos: p, normal: n }, t)| {
                         let t = t / (texture.size().x as f32 / texture.size().y as f32);
                         [
-                            draw_2d::TexturedVertex {
+                            draw2d::TexturedVertex {
                                 a_pos: p,
                                 a_vt: vec2(t, 0.0),
                                 a_color: Rgba::WHITE,
                             },
-                            draw_2d::TexturedVertex {
+                            draw2d::TexturedVertex {
                                 a_pos: p + n,
                                 a_vt: vec2(t, 1.0),
                                 a_color: Rgba::WHITE,
@@ -109,7 +109,8 @@ fn main() {
     let geng = Geng::new("Line Texture");
     geng.clone().run_loading(async move {
         let assets: Hot<Assets> = geng
-            .load_asset(run_dir().join("assets"))
+            .asset_manager()
+            .load(run_dir().join("assets"))
             .await
             .expect("Failed to load assets");
         Example::new(geng, assets)

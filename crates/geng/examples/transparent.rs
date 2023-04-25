@@ -17,9 +17,8 @@ impl geng::State for State {
             framebuffer,
             &geng::PixelPerfectCamera,
             "Hello, World!",
-            framebuffer.size().map(|x| x as f32 / 2.0),
-            geng::TextAlign::CENTER,
-            32.0,
+            vec2::splat(geng::TextAlign::CENTER),
+            mat3::translate(framebuffer.size().map(|x| x as f32 / 2.0)) * mat3::scale_uniform(32.0),
             Rgba::WHITE,
         );
     }
