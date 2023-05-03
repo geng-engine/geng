@@ -6,11 +6,13 @@ use serde::{Deserialize, Serialize};
 use std::ops::*;
 
 mod aabb;
+mod angle;
 mod mat;
 mod quat;
 mod vec;
 
 pub use aabb::*;
+pub use angle::*;
 pub use mat::*;
 pub use quat::*;
 pub use vec::*;
