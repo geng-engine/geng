@@ -1,7 +1,7 @@
 use super::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
-#[serde(from = "AngleSerde<T>", into = "AngleSerde<T>")]
+#[serde(transparent)]
 pub struct Angle<T: Float = f32> {
     radians: T,
 }
@@ -115,21 +115,6 @@ impl<T: Float> Neg for Angle<T> {
         Self {
             radians: -self.radians,
         }
-    }
-}
-
-#[derive(Serialize, Deserialize)]
-struct AngleSerde<T: Float>(T);
-
-impl<T: Float> From<AngleSerde<T>> for Angle<T> {
-    fn from(value: AngleSerde<T>) -> Self {
-        Self::new_radians(value.0)
-    }
-}
-
-impl<T: Float> From<Angle<T>> for AngleSerde<T> {
-    fn from(value: Angle<T>) -> Self {
-        Self(value.as_radians())
     }
 }
 
