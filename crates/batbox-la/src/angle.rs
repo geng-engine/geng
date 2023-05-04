@@ -79,6 +79,24 @@ fn radians_to_degrees<T: Float>(radians: T) -> T {
     radians / T::PI * T::from_f32(180.0)
 }
 
+impl<T: Float> Mul<T> for Angle<T> {
+    type Output = Self;
+    fn mul(self, rhs: T) -> Self::Output {
+        Self {
+            radians: self.radians * rhs,
+        }
+    }
+}
+
+impl<T: Float> Div<T> for Angle<T> {
+    type Output = Self;
+    fn div(self, rhs: T) -> Self::Output {
+        Self {
+            radians: self.radians / rhs,
+        }
+    }
+}
+
 impl<T: Float> Add for Angle<T> {
     type Output = Self;
     fn add(self, rhs: Self) -> Self::Output {
