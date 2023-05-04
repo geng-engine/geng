@@ -64,8 +64,8 @@ impl<T: Float> Angle<T> {
         Self { radians: delta }
     }
 
-    /// Returns a vector of unit length from the angle.
-    pub fn unit_direction(&self) -> vec2<T> {
+    /// Returns a direction vector of unit length.
+    pub fn unit_vec(&self) -> vec2<T> {
         let (sin, cos) = self.radians.sin_cos();
         vec2(cos, sin)
     }
