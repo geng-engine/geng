@@ -9,11 +9,11 @@ pub struct Angle<T: Float = f32> {
 impl<T: Float> Angle<T> {
     pub const ZERO: Self = Self { radians: T::ZERO };
 
-    pub fn new_radians(radians: T) -> Self {
+    pub fn from_radians(radians: T) -> Self {
         Self { radians }
     }
 
-    pub fn new_degrees(degrees: T) -> Self {
+    pub fn from_degrees(degrees: T) -> Self {
         Self {
             radians: degrees_to_radians(degrees),
         }
@@ -147,8 +147,8 @@ fn test_angle_conversion() {
         (360.0, f32::PI * 2.0),
     ];
     for (degrees, radians) in tests {
-        let d = Angle::new_degrees(degrees).as_radians();
-        let r = Angle::new_radians(radians).as_radians();
+        let d = Angle::from_degrees(degrees).as_radians();
+        let r = Angle::from_radians(radians).as_radians();
         let delta = r - d;
         assert!(
             delta.abs() < EPSILON,
@@ -164,7 +164,7 @@ fn test_angle_normalize_2pi() {
     for test in tests {
         for offset in [0, 1, -1, 2, -2] {
             let angle = test + f32::PI * 2.0 * offset as f32;
-            let norm = Angle::new_radians(angle).normalized_2pi().as_radians();
+            let norm = Angle::from_radians(angle).normalized_2pi().as_radians();
             let delta = test - norm;
             assert!(
                 delta.abs() < EPSILON,
@@ -187,8 +187,8 @@ fn test_angle_delta() {
                 for offset in [0.0, 1.0, -1.0, 2.0, -2.0] {
                     let from = from + f32::PI * 2.0 * offset_from as f32 + offset;
                     let to = to + f32::PI * 2.0 * offset_to as f32 + offset;
-                    let angle = Angle::new_radians(from)
-                        .angle_to(Angle::new_radians(to))
+                    let angle = Angle::from_radians(from)
+                        .angle_to(Angle::from_radians(to))
                         .as_radians();
                     let delta = test - angle;
                     assert!(
