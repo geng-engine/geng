@@ -181,26 +181,40 @@ impl Controller {
             root,
             &mut |widget| {
                 let widget_position = state.get_position(widget);
-                match *event {
-                    Event::MouseMove { position, .. } => {
+                enum CursorEvent {
+                    Move(vec2<f64>),
+                    Press(vec2<f64>),
+                    Release(vec2<f64>),
+                }
+                let cursor = match *event {
+                    Event::MouseMove { position, .. } => CursorEvent::Move(position),
+                    Event::MouseDown { position, .. } => CursorEvent::Press(position),
+                    Event::MouseUp { position, .. } => CursorEvent::Release(position),
+                    Event::TouchMove(Touch { position, .. }) => CursorEvent::Move(position),
+                    Event::TouchStart(Touch { position, .. }) => CursorEvent::Press(position),
+                    Event::TouchEnd(Touch { position, .. }) => CursorEvent::Release(position),
+                    _ => return,
+                };
+                match cursor {
+                    CursorEvent::Move(position) => {
                         if let Some(sense) = widget.sense() {
                             sense.set_hovered(widget_position.contains(position));
                         }
                         widget.handle_event(event);
                     }
-                    Event::MouseDown { button, position } => {
+                    CursorEvent::Press(position) => {
                         if widget_position.contains(position) {
                             if let Some(sense) = widget.sense() {
                                 sense.set_captured(true);
-                                widget.handle_event(&Event::MouseDown { button, position });
+                                widget.handle_event(event);
                             }
                         } else if let Some(sense) = widget.sense() {
                             if sense.is_captured() {
-                                widget.handle_event(&Event::MouseDown { button, position });
+                                widget.handle_event(event);
                             }
                         }
                     }
-                    Event::MouseUp { button, position } => {
+                    CursorEvent::Release(position) => {
                         let mut default_sense = Sense::default();
                         let sense = widget.sense().unwrap_or(&mut default_sense);
                         let was_captured = sense.is_captured();
@@ -209,10 +223,9 @@ impl Controller {
                             sense.click();
                         }
                         if was_captured || widget_position.contains(position) {
-                            widget.handle_event(&Event::MouseUp { button, position });
+                            widget.handle_event(event);
                         }
                     }
-                    _ => {}
                 }
             },
             &mut |widget| {

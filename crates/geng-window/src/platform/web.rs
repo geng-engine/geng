@@ -135,6 +135,10 @@ trait Convert<T>: Sized {
     fn convert(value: T) -> Option<Self>;
 }
 
+trait ConvertEvent<T>: Sized {
+    fn convert(value: T) -> Vec<Self>;
+}
+
 impl Convert<String> for Key {
     fn convert(key: String) -> Option<Key> {
         use Key::*;
@@ -238,50 +242,53 @@ impl Convert<i16> for MouseButton {
     }
 }
 
-impl Convert<web_sys::KeyboardEvent> for Event {
-    fn convert(event: web_sys::KeyboardEvent) -> Option<Event> {
+impl ConvertEvent<web_sys::KeyboardEvent> for Event {
+    fn convert(event: web_sys::KeyboardEvent) -> Vec<Event> {
         if event.repeat() {
-            return None;
+            return vec![];
         }
-        let key = Convert::convert(event.code())?;
-        Some(match event.type_().as_str() {
+        let Some(key) = Convert::convert(event.code()) else { return vec![] };
+        vec![match event.type_().as_str() {
             "keydown" => Event::KeyDown { key },
             "keyup" => Event::KeyUp { key },
-            _ => return None,
-        })
+            _ => return vec![],
+        }]
     }
 }
 
-impl Convert<web_sys::MouseEvent> for Event {
-    fn convert(event: web_sys::MouseEvent) -> Option<Event> {
-        let button = Convert::convert(event.button());
-        let canvas: web_sys::HtmlCanvasElement = event.target().unwrap().dyn_into().unwrap();
-        let position = vec2(
-            event.offset_x(),
-            canvas.height() as i32 - 1 - event.offset_y(),
-        )
-        .map(|x| x as f64);
-        Some(match event.type_().as_str() {
-            "mousedown" => Event::MouseDown {
-                position,
-                button: button?,
-            },
-            "mouseup" => Event::MouseUp {
-                position,
-                button: button?,
-            },
-            "mousemove" => Event::MouseMove {
-                position,
-                delta: vec2(event.movement_x(), -event.movement_y()).map(|x| x as f64),
-            },
-            _ => return None,
-        })
+impl ConvertEvent<web_sys::MouseEvent> for Event {
+    fn convert(event: web_sys::MouseEvent) -> Vec<Event> {
+        let event = || -> Option<Event> {
+            let button = Convert::convert(event.button());
+            let canvas: web_sys::HtmlCanvasElement = event.target().unwrap().dyn_into().unwrap();
+            let position = vec2(
+                event.offset_x(),
+                canvas.height() as i32 - 1 - event.offset_y(),
+            )
+            .map(|x| x as f64);
+            Some(match event.type_().as_str() {
+                "mousedown" => Event::MouseDown {
+                    position,
+                    button: button?,
+                },
+                "mouseup" => Event::MouseUp {
+                    position,
+                    button: button?,
+                },
+                "mousemove" => Event::MouseMove {
+                    position,
+                    delta: vec2(event.movement_x(), -event.movement_y()).map(|x| x as f64),
+                },
+                _ => return None,
+            })
+        };
+        event().into_iter().collect()
     }
 }
 
-impl Convert<web_sys::WheelEvent> for Event {
-    fn convert(event: web_sys::WheelEvent) -> Option<Event> {
-        Some(Event::Wheel {
+impl ConvertEvent<web_sys::WheelEvent> for Event {
+    fn convert(event: web_sys::WheelEvent) -> Vec<Event> {
+        vec![Event::Wheel {
             delta: -event.delta_y()
                 * match event.delta_mode() {
                     web_sys::WheelEvent::DOM_DELTA_PIXEL => 1.0,
@@ -289,34 +296,35 @@ impl Convert<web_sys::WheelEvent> for Event {
                     web_sys::WheelEvent::DOM_DELTA_PAGE => 800.0,
                     _ => {
                         log::error!("Unexpected delta mode: {}", event.delta_mode());
-                        return None;
+                        return vec![];
                     }
                 },
-        })
+        }]
     }
 }
 
-impl Convert<web_sys::TouchEvent> for Event {
-    fn convert(event: web_sys::TouchEvent) -> Option<Event> {
+impl ConvertEvent<web_sys::TouchEvent> for Event {
+    fn convert(event: web_sys::TouchEvent) -> Vec<Event> {
+        let create_event: Box<dyn Fn(Touch) -> Event> = match event.type_().as_str() {
+            "touchstart" => Box::new(Event::TouchStart),
+            "touchmove" => Box::new(Event::TouchMove),
+            "touchcancel" | "touchend" => Box::new(Event::TouchEnd),
+            _ => return vec![],
+        };
         let canvas: web_sys::HtmlCanvasElement = event.target().unwrap().dyn_into().unwrap();
         let rect = canvas.get_bounding_client_rect();
-        let touches = event.touches();
-        let touches = (0..touches.length())
+        let touches = event.changed_touches();
+        (0..touches.length())
             .map(|index| {
                 let touch = touches.item(index).unwrap();
                 let offset_x = touch.page_x() as f64 - rect.left();
                 let offset_y = touch.page_y() as f64 - rect.top();
-                TouchPoint {
+                create_event(Touch {
+                    id: touch.identifier() as u64,
                     position: vec2(offset_x, canvas.height() as f64 - 1.0 - offset_y),
-                }
+                })
             })
-            .collect();
-        Some(match event.type_().as_str() {
-            "touchstart" => Event::TouchStart { touches },
-            "touchmove" => Event::TouchMove { touches },
-            "touchcancel" | "touchend" => Event::TouchEnd { touches },
-            _ => return None,
-        })
+            .collect()
     }
 }
 
@@ -326,7 +334,7 @@ impl Context {
         T: wasm_bindgen::convert::FromWasmAbi + 'static,
         T: AsRef<web_sys::Event>,
         T: Clone,
-        Event: Convert<T>,
+        Event: ConvertEvent<T>,
         F: Fn(Event) + 'static,
     {
         let handler = handler.clone();
@@ -336,7 +344,7 @@ impl Context {
             if event.as_ref().type_() == "contextmenu" {
                 event.as_ref().prevent_default();
             }
-            if let Some(e) = Convert::convert(event.clone()) {
+            for e in ConvertEvent::convert(event.clone()) {
                 handler(e);
                 event.as_ref().prevent_default();
             }

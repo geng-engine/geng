@@ -8,7 +8,9 @@ pub enum MouseButton {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
-pub struct TouchPoint {
+pub struct Touch {
+    pub id: u64,
+    // TODO force
     pub position: vec2<f64>,
 }
 
@@ -29,15 +31,9 @@ pub enum Event {
     Wheel {
         delta: f64,
     },
-    TouchStart {
-        touches: Vec<TouchPoint>,
-    },
-    TouchMove {
-        touches: Vec<TouchPoint>,
-    },
-    TouchEnd {
-        touches: Vec<TouchPoint>,
-    },
+    TouchStart(Touch),
+    TouchMove(Touch),
+    TouchEnd(Touch),
     KeyDown {
         key: Key,
     },
@@ -61,10 +57,8 @@ impl Event {
             | MouseMove {
                 ref mut position, ..
             } => *position += delta,
-            TouchStart { ref mut touches } | TouchMove { ref mut touches } => {
-                for touch in touches {
-                    touch.position += delta;
-                }
+            TouchStart(ref mut touch) | TouchMove(ref mut touch) | TouchEnd(ref mut touch) => {
+                touch.position += delta;
             }
             _ => {}
         }
