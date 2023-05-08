@@ -1,8 +1,9 @@
 use super::*;
 
 pub struct TouchSimulator {
+    next_id: u64,
     draw2d: Rc<draw2d::Helper>,
-    touches: Vec<vec2<f64>>,
+    touches: Vec<Touch>,
     holding: Option<usize>,
 }
 
@@ -11,6 +12,7 @@ const RADIUS: f64 = 10.0;
 impl TouchSimulator {
     pub fn new(draw2d: &Rc<draw2d::Helper>) -> Self {
         Self {
+            next_id: 0,
             draw2d: draw2d.clone(),
             touches: Vec::new(),
             holding: None,
@@ -26,7 +28,7 @@ impl TouchSimulator {
                 if let Some(index) = self
                     .touches
                     .iter()
-                    .position(|&touch| (touch - position).len() < RADIUS)
+                    .position(|&touch| (touch.position - position).len() < RADIUS)
                 {
                     self.holding = Some(index);
                 } else {
@@ -47,16 +49,9 @@ impl TouchSimulator {
                 if let Some(index) = self
                     .touches
                     .iter()
-                    .position(|&touch| (touch - position).len() < RADIUS)
+                    .position(|&touch| (touch.position - position).len() < RADIUS)
                 {
-                    self.touches.remove(index);
-                    return Some(vec![Event::TouchEnd {
-                        touches: self
-                            .touches
-                            .iter()
-                            .map(|&position| TouchPoint { position })
-                            .collect(),
-                    }]);
+                    return Some(vec![Event::TouchEnd(self.touches.remove(index))]);
                 } else {
                     return Some(vec![]);
                 }
@@ -72,24 +67,17 @@ impl TouchSimulator {
     }
     fn new_touch(&mut self, position: vec2<f64>) -> Vec<Event> {
         self.holding = Some(self.touches.len());
-        self.touches.push(position);
-        vec![Event::TouchStart {
-            touches: self
-                .touches
-                .iter()
-                .map(|&position| TouchPoint { position })
-                .collect(),
-        }]
+        let touch = Touch {
+            id: self.next_id,
+            position,
+        };
+        self.next_id += 1;
+        self.touches.push(touch);
+        vec![Event::TouchStart(touch)]
     }
     fn move_touch(&mut self, index: usize, position: vec2<f64>) -> Vec<Event> {
-        self.touches[index] = position;
-        vec![Event::TouchMove {
-            touches: self
-                .touches
-                .iter()
-                .map(|&position| TouchPoint { position })
-                .collect(),
-        }]
+        self.touches[index].position = position;
+        vec![Event::TouchMove(self.touches[index])]
     }
     pub fn draw(&self, framebuffer: &mut ugli::Framebuffer) {
         for &touch in &self.touches {
@@ -97,7 +85,7 @@ impl TouchSimulator {
                 framebuffer,
                 &geng_camera::PixelPerfectCamera,
                 &draw2d::Ellipse::circle_with_cut(
-                    touch.map(|x| x as f32),
+                    touch.position.map(|x| x as f32),
                     RADIUS as f32 - 2.0,
                     RADIUS as f32 + 2.0,
                     Rgba::new(0.5, 0.5, 0.5, 0.5),

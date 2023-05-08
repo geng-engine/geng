@@ -57,7 +57,7 @@ pub use geng_shader as shader;
 pub use geng_state::{self as state, State};
 pub use geng_texture_atlas::{self as texture_atlas, TextureAtlas};
 pub use geng_ui as ui;
-pub use geng_window::{self as window, CursorType, Event, Key, MouseButton, TouchPoint, Window};
+pub use geng_window::{self as window, CursorType, Event, Key, MouseButton, Touch, Window};
 
 pub use asset::*;
 pub use cli_args::*;
