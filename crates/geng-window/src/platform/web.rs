@@ -15,6 +15,9 @@ pub struct Context {
     mouse_pos: Rc<Cell<vec2<f64>>>,
     #[allow(clippy::type_complexity)]
     event_handler: Rc<RefCell<Box<dyn Fn(Event)>>>,
+    editing_text: Rc<Cell<bool>>,
+    text_agent: web_sys::HtmlInputElement,
+    is_composing: Rc<Cell<bool>>,
 }
 
 impl Context {
@@ -43,6 +46,9 @@ impl Context {
             ugli,
             event_handler: event_handler.clone(),
             mouse_pos: Rc::new(Cell::new(vec2::ZERO)),
+            editing_text: Rc::new(Cell::new(false)),
+            text_agent: Self::install_text_agent().unwrap(),
+            is_composing: Rc::new(Cell::new(false)),
         };
         context.subscribe_events(move |event| {
             event_handler.borrow()(event);
@@ -128,6 +134,16 @@ impl Context {
             .document()
             .unwrap()
             .exit_pointer_lock();
+    }
+
+    pub fn start_text_input(&self) {
+        self.editing_text.set(true);
+        self.update_text_agent();
+    }
+
+    pub fn stop_text_input(&self) {
+        self.editing_text.set(false);
+        self.update_text_agent();
     }
 }
 
@@ -328,46 +344,178 @@ impl ConvertEvent<web_sys::TouchEvent> for Event {
     }
 }
 
+const TEXT_AGENT_PREFIX: &str = "💩";
+
 impl Context {
-    fn subscribe_to<T, F>(&self, handler: &Rc<F>, event_name: &str)
-    where
+    fn subscribe_to_raw<T>(
+        &self,
+        target: &web_sys::EventTarget,
+        handler: impl Fn(T) + 'static,
+        event_name: &str,
+    ) where
+        T: wasm_bindgen::convert::FromWasmAbi + 'static,
+        T: AsRef<web_sys::Event>,
+        T: Clone,
+    {
+        let handler = wasm_bindgen::closure::Closure::wrap(Box::new(handler) as Box<dyn Fn(T)>);
+        target
+            .add_event_listener_with_callback(event_name, handler.as_ref().unchecked_ref())
+            .unwrap();
+        handler.forget(); // TODO: not forget
+    }
+    fn subscribe_to<T>(
+        &self,
+        target: &web_sys::EventTarget,
+        handler: &Rc<impl Fn(Event) + 'static>,
+        event_name: &str,
+    ) where
         T: wasm_bindgen::convert::FromWasmAbi + 'static,
         T: AsRef<web_sys::Event>,
         T: Clone,
         Event: ConvertEvent<T>,
-        F: Fn(Event) + 'static,
     {
         let handler = handler.clone();
         let canvas = self.canvas.clone();
+        let text_agent = self.text_agent.clone();
+        let editing_text = self.editing_text.clone();
+        let is_composing = self.is_composing.clone();
         let handler = move |event: T| {
-            canvas.focus().unwrap();
+            if is_composing.get() {
+                return;
+            }
+            if editing_text.get() {
+                text_agent.focus().unwrap();
+            } else {
+                canvas.focus().unwrap();
+            }
             if event.as_ref().type_() == "contextmenu" {
                 event.as_ref().prevent_default();
             }
             for e in ConvertEvent::convert(event.clone()) {
                 handler(e);
-                event.as_ref().prevent_default();
+                if !editing_text.get() {
+                    // event.as_ref().prevent_default();
+                }
             }
         };
-        let handler = wasm_bindgen::closure::Closure::wrap(Box::new(handler) as Box<dyn Fn(T)>);
-        self.canvas
-            .add_event_listener_with_callback(event_name, handler.as_ref().unchecked_ref())
-            .unwrap();
-        handler.forget(); // TODO: not forget
+        self.subscribe_to_raw(target, handler, event_name);
     }
     fn subscribe_events<F: Fn(Event) + 'static>(&self, handler: F) {
         let handler = Rc::new(handler);
         let handler = &handler;
-        self.subscribe_to::<web_sys::KeyboardEvent, _>(handler, "keydown");
-        self.subscribe_to::<web_sys::KeyboardEvent, _>(handler, "keyup");
-        self.subscribe_to::<web_sys::MouseEvent, _>(handler, "mousedown");
-        self.subscribe_to::<web_sys::MouseEvent, _>(handler, "mouseup");
-        self.subscribe_to::<web_sys::MouseEvent, _>(handler, "mousemove");
-        self.subscribe_to::<web_sys::WheelEvent, _>(handler, "wheel");
-        self.subscribe_to::<web_sys::TouchEvent, _>(handler, "touchstart");
-        self.subscribe_to::<web_sys::TouchEvent, _>(handler, "touchmove");
-        self.subscribe_to::<web_sys::TouchEvent, _>(handler, "touchend");
-        self.subscribe_to::<web_sys::TouchEvent, _>(handler, "touchcancel");
-        self.subscribe_to::<web_sys::MouseEvent, _>(handler, "contextmenu");
+        self.subscribe_to::<web_sys::KeyboardEvent>(&self.canvas, handler, "keydown");
+        self.subscribe_to::<web_sys::KeyboardEvent>(&self.canvas, handler, "keyup");
+        let prev_text = Rc::new(RefCell::new("".to_owned()));
+        self.subscribe_to_raw::<web_sys::InputEvent>(
+            &self.text_agent,
+            {
+                let is_composing = self.is_composing.clone();
+                let prev_text = prev_text.clone();
+                let handler = handler.clone();
+                move |event: web_sys::InputEvent| {
+                    let input: web_sys::HtmlInputElement =
+                        event.target().unwrap().dyn_into().unwrap();
+                    if is_composing.get() {
+                        if let Some(text) = input.value().strip_prefix(TEXT_AGENT_PREFIX) {
+                            while prev_text.borrow_mut().pop().is_some() {
+                                handler(Event::KeyDown {
+                                    key: Key::Backspace,
+                                });
+                                handler(Event::KeyUp {
+                                    key: Key::Backspace,
+                                });
+                            }
+                            *prev_text.borrow_mut() = text.to_owned();
+                            handler(Event::Text(text.to_owned()));
+                        }
+                    } else {
+                        if let Some(text) = input.value().strip_prefix(TEXT_AGENT_PREFIX) {
+                            handler(Event::Text(text.to_owned()));
+                        } else {
+                            // TODO: own event?
+                            handler(Event::KeyDown {
+                                key: Key::Backspace,
+                            });
+                            handler(Event::KeyUp {
+                                key: Key::Backspace,
+                            });
+                        };
+                        input.set_value(TEXT_AGENT_PREFIX);
+                    }
+                }
+            },
+            "input",
+        );
+        self.subscribe_to_raw::<web_sys::CompositionEvent>(
+            &self.text_agent,
+            {
+                let is_composing = self.is_composing.clone();
+                let prev_text = prev_text.clone();
+                move |_event| {
+                    is_composing.set(true);
+                    prev_text.borrow_mut().clear();
+                }
+            },
+            "compositionstart",
+        );
+        self.subscribe_to_raw::<web_sys::CompositionEvent>(
+            &self.text_agent,
+            {
+                let is_composing = self.is_composing.clone();
+                let input = self.text_agent.clone();
+                move |_event| {
+                    is_composing.set(false);
+                    input.set_value(TEXT_AGENT_PREFIX);
+                }
+            },
+            "compositionend",
+        );
+        self.subscribe_to::<web_sys::MouseEvent>(&self.canvas, handler, "mousedown");
+        self.subscribe_to::<web_sys::MouseEvent>(&self.canvas, handler, "mouseup");
+        self.subscribe_to::<web_sys::MouseEvent>(&self.canvas, handler, "mousemove");
+        self.subscribe_to::<web_sys::WheelEvent>(&self.canvas, handler, "wheel");
+        self.subscribe_to::<web_sys::TouchEvent>(&self.canvas, handler, "touchstart");
+        self.subscribe_to::<web_sys::TouchEvent>(&self.canvas, handler, "touchmove");
+        self.subscribe_to::<web_sys::TouchEvent>(&self.canvas, handler, "touchend");
+        self.subscribe_to::<web_sys::TouchEvent>(&self.canvas, handler, "touchcancel");
+        self.subscribe_to::<web_sys::MouseEvent>(&self.canvas, handler, "contextmenu");
+    }
+
+    fn install_text_agent() -> Result<web_sys::HtmlInputElement, JsValue> {
+        let window = web_sys::window().unwrap();
+        let document = window.document().unwrap();
+        let body = document.body().expect("document should have a body");
+        let input = document
+            .create_element("input")?
+            .dyn_into::<web_sys::HtmlInputElement>()?;
+        {
+            let style = input.style();
+            // Transparent
+            style.set_property("opacity", "0").unwrap();
+            // Hide under canvas
+            style.set_property("z-index", "-1").unwrap();
+            // z-index doesn't work otherwise
+            style.set_property("position", "absolute").unwrap();
+            style.set_property("top", "0").unwrap();
+        }
+        // Set size as small as possible, in case user may click on it.
+        input.set_size(1);
+        input.set_autofocus(true);
+        input.set_hidden(true);
+        input.set_value(TEXT_AGENT_PREFIX);
+
+        body.append_child(&input)?;
+        Ok(input)
+    }
+
+    /// Focus or blur text agent to toggle mobile keyboard.
+    fn update_text_agent(&self) {
+        if self.editing_text.get() {
+            self.text_agent.set_hidden(false);
+            self.text_agent.focus().unwrap();
+        } else {
+            self.text_agent.set_hidden(true);
+            self.canvas.focus().unwrap();
+        }
     }
 }

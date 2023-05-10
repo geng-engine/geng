@@ -276,6 +276,14 @@ impl Context {
         }
         events
     }
+
+    pub fn start_text_input(&self) {
+        // TODO: iOS/Android?
+    }
+
+    pub fn stop_text_input(&self) {
+        // TODO: iOS/Android?
+    }
 }
 
 fn from_glutin_key(key: winit::event::VirtualKeyCode) -> Key {
