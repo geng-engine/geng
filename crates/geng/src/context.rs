@@ -47,7 +47,7 @@ impl Default for ContextOptions {
             transparency: false,
             shader_prefix: None,
             window_size: None,
-            fullscreen: false,
+            fullscreen: !cfg!(debug_assertions),
             target_ui_resolution: None,
             hot_reload: cfg!(debug_assertions),
         }
