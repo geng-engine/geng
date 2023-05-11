@@ -388,9 +388,7 @@ impl Context {
             }
             for e in ConvertEvent::convert(event.clone()) {
                 handler(e);
-                if !editing_text.get() {
-                    // event.as_ref().prevent_default();
-                }
+                event.as_ref().prevent_default();
             }
         };
         self.subscribe_to_raw(target, handler, event_name);
