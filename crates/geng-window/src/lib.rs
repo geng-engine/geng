@@ -110,12 +110,12 @@ impl Window {
         }
     }
 
-    pub fn start_text_input(&self) {
-        self.inner.platform.start_text_input();
+    pub fn start_text_edit(&self, text: &str) {
+        self.inner.platform.start_text_edit(text);
     }
 
-    pub fn stop_text_input(&self) {
-        self.inner.platform.stop_text_input();
+    pub fn stop_text_edit(&self) {
+        self.inner.platform.stop_text_edit();
     }
 
     pub fn real_size(&self) -> vec2<usize> {

@@ -1,7 +1,7 @@
 use super::*;
 
 use anyhow::Context as _;
-use std::ffi::c_void;
+use std::{ffi::c_void, ops::DerefMut};
 
 pub struct Context {
     window: winit::window::Window,
@@ -14,7 +14,7 @@ pub struct Context {
     should_close: Cell<bool>,
     mouse_pos: Rc<Cell<vec2<f64>>>,
     ugli: Ugli,
-    text_input: Cell<bool>,
+    edited_text: RefCell<Option<String>>,
 }
 
 impl Context {
@@ -106,7 +106,7 @@ impl Context {
             lock_cursor: Cell::new(false),
             should_close: Cell::new(false),
             mouse_pos: Rc::new(Cell::new(vec2(0.0, 0.0))),
-            text_input: Cell::new(false),
+            edited_text: RefCell::new(None),
         }
     }
 
@@ -243,7 +243,15 @@ impl Context {
                     }
                 }
                 winit::event::WindowEvent::KeyboardInput { input, .. } => {
-                    if let Some(key) = input.virtual_keycode {
+                    let mut edited_text = self.edited_text.borrow_mut();
+                    if let Some(text) = edited_text.deref_mut() {
+                        if input.state == winit::event::ElementState::Pressed
+                            && input.virtual_keycode == Some(winit::event::VirtualKeyCode::Back)
+                        {
+                            text.pop();
+                            events.push(Event::EditText(text.clone()));
+                        }
+                    } else if let Some(key) = input.virtual_keycode {
                         let key = from_glutin_key(key);
                         events.push(match input.state {
                             winit::event::ElementState::Pressed => Event::KeyDown { key },
@@ -258,8 +266,14 @@ impl Context {
                         &self.gl_ctx,
                     );
                 }
-                winit::event::WindowEvent::ReceivedCharacter(c) if self.text_input.get() => {
-                    events.push(Event::Text(c.to_string()));
+                winit::event::WindowEvent::ReceivedCharacter(c) => {
+                    if !c.is_ascii_control() {
+                        let mut edited_text = self.edited_text.borrow_mut();
+                        if let Some(text) = edited_text.deref_mut() {
+                            text.push(c);
+                            events.push(Event::EditText(text.clone()));
+                        }
+                    }
                 }
                 _ => {}
             };
@@ -282,13 +296,13 @@ impl Context {
         events
     }
 
-    pub fn start_text_input(&self) {
-        self.text_input.set(true);
+    pub fn start_text_edit(&self, text: &str) {
+        *self.edited_text.borrow_mut() = Some(text.to_owned());
         // TODO: iOS/Android?
     }
 
-    pub fn stop_text_input(&self) {
-        self.text_input.set(false);
+    pub fn stop_text_edit(&self) {
+        *self.edited_text.borrow_mut() = None;
         // TODO: iOS/Android?
     }
 }

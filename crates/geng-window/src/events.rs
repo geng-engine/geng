@@ -40,7 +40,7 @@ pub enum Event {
     KeyUp {
         key: Key,
     },
-    Text(String),
+    EditText(String),
     Gamepad(gilrs::Event), // TODO window should not know about it?
 }
 

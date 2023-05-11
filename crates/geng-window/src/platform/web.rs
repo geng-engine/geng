@@ -17,7 +17,6 @@ pub struct Context {
     event_handler: Rc<RefCell<Box<dyn Fn(Event)>>>,
     editing_text: Rc<Cell<bool>>,
     text_agent: web_sys::HtmlInputElement,
-    is_composing: Rc<Cell<bool>>,
 }
 
 impl Context {
@@ -48,7 +47,6 @@ impl Context {
             mouse_pos: Rc::new(Cell::new(vec2::ZERO)),
             editing_text: Rc::new(Cell::new(false)),
             text_agent: Self::install_text_agent().unwrap(),
-            is_composing: Rc::new(Cell::new(false)),
         };
         context.subscribe_events(move |event| {
             event_handler.borrow()(event);
@@ -136,12 +134,13 @@ impl Context {
             .exit_pointer_lock();
     }
 
-    pub fn start_text_input(&self) {
+    pub fn start_text_edit(&self, text: &str) {
         self.editing_text.set(true);
+        self.text_agent.set_value(text);
         self.update_text_agent();
     }
 
-    pub fn stop_text_input(&self) {
+    pub fn stop_text_edit(&self) {
         self.editing_text.set(false);
         self.update_text_agent();
     }
@@ -378,11 +377,7 @@ impl Context {
         let canvas = self.canvas.clone();
         let text_agent = self.text_agent.clone();
         let editing_text = self.editing_text.clone();
-        let is_composing = self.is_composing.clone();
         let handler = move |event: T| {
-            if is_composing.get() {
-                return;
-            }
             if editing_text.get() {
                 text_agent.focus().unwrap();
             } else {
@@ -405,70 +400,17 @@ impl Context {
         let handler = &handler;
         self.subscribe_to::<web_sys::KeyboardEvent>(&self.canvas, handler, "keydown");
         self.subscribe_to::<web_sys::KeyboardEvent>(&self.canvas, handler, "keyup");
-        let prev_text = Rc::new(RefCell::new("".to_owned()));
         self.subscribe_to_raw::<web_sys::InputEvent>(
             &self.text_agent,
             {
-                let is_composing = self.is_composing.clone();
-                let prev_text = prev_text.clone();
                 let handler = handler.clone();
                 move |event: web_sys::InputEvent| {
                     let input: web_sys::HtmlInputElement =
                         event.target().unwrap().dyn_into().unwrap();
-                    if is_composing.get() {
-                        if let Some(text) = input.value().strip_prefix(TEXT_AGENT_PREFIX) {
-                            while prev_text.borrow_mut().pop().is_some() {
-                                handler(Event::KeyDown {
-                                    key: Key::Backspace,
-                                });
-                                handler(Event::KeyUp {
-                                    key: Key::Backspace,
-                                });
-                            }
-                            *prev_text.borrow_mut() = text.to_owned();
-                            handler(Event::Text(text.to_owned()));
-                        }
-                    } else {
-                        if let Some(text) = input.value().strip_prefix(TEXT_AGENT_PREFIX) {
-                            handler(Event::Text(text.to_owned()));
-                        } else {
-                            // TODO: own event?
-                            handler(Event::KeyDown {
-                                key: Key::Backspace,
-                            });
-                            handler(Event::KeyUp {
-                                key: Key::Backspace,
-                            });
-                        };
-                        input.set_value(TEXT_AGENT_PREFIX);
-                    }
+                    handler(Event::EditText(input.value()));
                 }
             },
             "input",
-        );
-        self.subscribe_to_raw::<web_sys::CompositionEvent>(
-            &self.text_agent,
-            {
-                let is_composing = self.is_composing.clone();
-                let prev_text = prev_text.clone();
-                move |_event| {
-                    is_composing.set(true);
-                    prev_text.borrow_mut().clear();
-                }
-            },
-            "compositionstart",
-        );
-        self.subscribe_to_raw::<web_sys::CompositionEvent>(
-            &self.text_agent,
-            {
-                let is_composing = self.is_composing.clone();
-                let input = self.text_agent.clone();
-                move |_event| {
-                    is_composing.set(false);
-                    input.set_value(TEXT_AGENT_PREFIX);
-                }
-            },
-            "compositionend",
         );
         self.subscribe_to::<web_sys::MouseEvent>(&self.canvas, handler, "mousedown");
         self.subscribe_to::<web_sys::MouseEvent>(&self.canvas, handler, "mouseup");
