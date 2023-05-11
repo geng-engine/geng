@@ -14,6 +14,7 @@ pub struct Context {
     should_close: Cell<bool>,
     mouse_pos: Rc<Cell<vec2<f64>>>,
     ugli: Ugli,
+    text_input: Cell<bool>,
 }
 
 impl Context {
@@ -105,6 +106,7 @@ impl Context {
             lock_cursor: Cell::new(false),
             should_close: Cell::new(false),
             mouse_pos: Rc::new(Cell::new(vec2(0.0, 0.0))),
+            text_input: Cell::new(false),
         }
     }
 
@@ -256,6 +258,9 @@ impl Context {
                         &self.gl_ctx,
                     );
                 }
+                winit::event::WindowEvent::ReceivedCharacter(c) if self.text_input.get() => {
+                    events.push(Event::Text(c.to_string()));
+                }
                 _ => {}
             };
             use winit::platform::run_return::EventLoopExtRunReturn;
@@ -278,10 +283,12 @@ impl Context {
     }
 
     pub fn start_text_input(&self) {
+        self.text_input.set(true);
         // TODO: iOS/Android?
     }
 
     pub fn stop_text_input(&self) {
+        self.text_input.set(false);
         // TODO: iOS/Android?
     }
 }
