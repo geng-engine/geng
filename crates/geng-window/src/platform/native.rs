@@ -222,6 +222,7 @@ impl Context {
                 winit::event::WindowEvent::CursorMoved { position, .. } => {
                     let position = vec2(position.x, self.real_size().y as f64 - 1.0 - position.y);
                     mouse_move = Some(position);
+                    self.mouse_pos.set(position);
                 }
                 winit::event::WindowEvent::MouseInput { state, button, .. } => {
                     let button = match button {
@@ -278,6 +279,7 @@ impl Context {
                 _ => {}
             };
             use winit::platform::run_return::EventLoopExtRunReturn;
+            let prev_mouse = self.mouse_pos.get();
             self.event_loop.borrow_mut().run_return(|e, _, flow| {
                 if let winit::event::Event::WindowEvent { event: e, .. } = e {
                     handle_event(e)
@@ -288,9 +290,8 @@ impl Context {
                 // This is here because of weird delta
                 events.push(Event::MouseMove {
                     position,
-                    delta: position - self.mouse_pos.get(),
+                    delta: position - prev_mouse,
                 });
-                self.mouse_pos.set(position);
             }
         }
         events
