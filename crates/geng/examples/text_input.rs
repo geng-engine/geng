@@ -33,10 +33,10 @@ impl geng::State for State {
     fn handle_event(&mut self, event: geng::Event) {
         match event {
             geng::Event::TouchStart(_) | geng::Event::MouseDown { .. } => {
-                self.geng.window().start_text_input();
+                self.geng.window().start_text_edit(&self.text);
             }
             geng::Event::Text(text) => {
-                self.text.push_str(&text);
+                self.text = text;
             }
             geng::Event::KeyDown {
                 key: geng::Key::Backspace,
