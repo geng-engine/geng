@@ -35,7 +35,7 @@ impl geng::State for State {
             geng::Event::TouchStart(_) | geng::Event::MouseDown { .. } => {
                 self.geng.window().start_text_edit(&self.text);
             }
-            geng::Event::Text(text) => {
+            geng::Event::EditText(text) => {
                 self.text = text;
             }
             geng::Event::KeyDown {
