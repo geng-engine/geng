@@ -87,59 +87,60 @@ impl geng::State for State {
                 button: geng::MouseButton::Left,
                 ..
             } => self.drag_start = None,
-            geng::Event::TouchStart { touches } => {
-                if touches.len() == 1 {
-                    self.drag_start = Some(self.camera.screen_to_world(
-                        self.framebuffer_size,
-                        touches[0].position.map(|x| x as f32),
-                    ));
-                }
-                if touches.len() == 2 {
-                    let diff = touches[0].position - touches[1].position;
-                    self.prev_touch_distance = diff.len() as f32;
-                    self.prev_touch_angle = f64::atan2(diff.x, diff.y) as f32;
-                    self.drag_start = Some(self.camera.screen_to_world(
-                        self.framebuffer_size,
-                        (touches[0].position + touches[1].position).map(|x| x as f32) / 2.0,
-                    ));
-                }
-            }
-            geng::Event::TouchMove { touches } => {
-                if touches.len() == 1 {
-                    if let Some(start) = self.drag_start {
-                        let current_pos = self.camera.screen_to_world(
-                            self.framebuffer_size,
-                            touches[0].position.map(|x| x as f32),
-                        );
-                        self.camera.center += start - current_pos;
-                    }
-                } else if touches.len() == 2 {
-                    let diff = touches[0].position - touches[1].position;
-                    let now_dist = diff.len() as f32;
-                    self.camera.fov /= now_dist / self.prev_touch_distance;
-                    self.prev_touch_distance = now_dist;
-                    let now_angle = f64::atan2(diff.x, diff.y) as f32;
-                    let mut angle_diff = now_angle - self.prev_touch_angle;
-                    while angle_diff > std::f32::consts::PI {
-                        angle_diff -= 2.0 * std::f32::consts::PI;
-                    }
-                    while angle_diff < -std::f32::consts::PI {
-                        angle_diff += 2.0 * std::f32::consts::PI;
-                    }
-                    self.camera.rotation -= angle_diff;
-                    self.prev_touch_angle = now_angle;
-                    if let Some(start) = self.drag_start {
-                        let current_pos = self.camera.screen_to_world(
-                            self.framebuffer_size,
-                            (touches[0].position + touches[1].position).map(|x| x as f32) / 2.0,
-                        );
-                        self.camera.center += start - current_pos;
-                    }
-                }
-            }
-            geng::Event::TouchEnd { .. } => {
-                self.drag_start = None;
-            }
+            // TODO OMEGALUL
+            // geng::Event::TouchStart { touches } => {
+            //     if touches.len() == 1 {
+            //         self.drag_start = Some(self.camera.screen_to_world(
+            //             self.framebuffer_size,
+            //             touches[0].position.map(|x| x as f32),
+            //         ));
+            //     }
+            //     if touches.len() == 2 {
+            //         let diff = touches[0].position - touches[1].position;
+            //         self.prev_touch_distance = diff.len() as f32;
+            //         self.prev_touch_angle = f64::atan2(diff.x, diff.y) as f32;
+            //         self.drag_start = Some(self.camera.screen_to_world(
+            //             self.framebuffer_size,
+            //             (touches[0].position + touches[1].position).map(|x| x as f32) / 2.0,
+            //         ));
+            //     }
+            // }
+            // geng::Event::TouchMove { touches } => {
+            //     if touches.len() == 1 {
+            //         if let Some(start) = self.drag_start {
+            //             let current_pos = self.camera.screen_to_world(
+            //                 self.framebuffer_size,
+            //                 touches[0].position.map(|x| x as f32),
+            //             );
+            //             self.camera.center += start - current_pos;
+            //         }
+            //     } else if touches.len() == 2 {
+            //         let diff = touches[0].position - touches[1].position;
+            //         let now_dist = diff.len() as f32;
+            //         self.camera.fov /= now_dist / self.prev_touch_distance;
+            //         self.prev_touch_distance = now_dist;
+            //         let now_angle = f64::atan2(diff.x, diff.y) as f32;
+            //         let mut angle_diff = now_angle - self.prev_touch_angle;
+            //         while angle_diff > std::f32::consts::PI {
+            //             angle_diff -= 2.0 * std::f32::consts::PI;
+            //         }
+            //         while angle_diff < -std::f32::consts::PI {
+            //             angle_diff += 2.0 * std::f32::consts::PI;
+            //         }
+            //         self.camera.rotation -= angle_diff;
+            //         self.prev_touch_angle = now_angle;
+            //         if let Some(start) = self.drag_start {
+            //             let current_pos = self.camera.screen_to_world(
+            //                 self.framebuffer_size,
+            //                 (touches[0].position + touches[1].position).map(|x| x as f32) / 2.0,
+            //             );
+            //             self.camera.center += start - current_pos;
+            //         }
+            //     }
+            // }
+            // geng::Event::TouchEnd { .. } => {
+            //     self.drag_start = None;
+            // }
             _ => {}
         }
     }
