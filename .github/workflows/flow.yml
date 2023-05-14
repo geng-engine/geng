@@ -57,6 +57,8 @@ jobs:
       - test
       - test-web
     name: Pages
+    permissions:
+      contents: write
     if: github.ref == 'refs/heads/main' && github.repository_owner == 'geng-engine'
     runs-on: ubuntu-latest
     steps:
