@@ -57,7 +57,7 @@ jobs:
       - test
       - test-web
     name: Pages
-    if: github.ref == 'refs/heads/main' && github.repository_owner == 'kuviman'
+    if: github.ref == 'refs/heads/main' && github.repository_owner == 'geng-engine'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -95,7 +95,7 @@ jobs:
     needs:
       - test
       - test-web
-    if: github.ref == 'refs/heads/main' && github.repository_owner == 'kuviman'
+    if: github.ref == 'refs/heads/main' && github.repository_owner == 'geng-engine'
     name: Docker
     runs-on: ubuntu-latest
     steps:
