@@ -10,11 +10,12 @@
   };
   outputs = { self, nixpkgs, rust-overlay, crane, utils }:
     {
-      makeFlakeSystemOutputs = system: { src, buildInputs ? [ ] }:
+      makeFlakeSystemOutputs = system: { src, buildInputs ? [ ], rust ? { } }:
         let
           overlays = [ (import rust-overlay) ];
           pkgs = import nixpkgs { inherit system overlays; };
-          rust-toolchain = pkgs.rust-bin.stable."1.69.0".default;
+          rust-version = ({ version = "latest"; } // rust).version;
+          rust-toolchain = pkgs.rust-bin.stable.${rust-version}.default.override rust;
           crane-lib = (crane.lib.${system}).overrideToolchain rust-toolchain;
           waylandDeps = with pkgs; [
             libxkbcommon
