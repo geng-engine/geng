@@ -25,7 +25,7 @@ struct DeriveInput {
     generics: syn::Generics,
     data: darling::ast::Data<(), Field>,
     #[darling(default)]
-    json: bool,
+    serde: Option<String>,
     #[darling(default)]
     sequential: bool,
 }
@@ -61,22 +61,21 @@ impl DeriveInput {
             ident,
             generics,
             data,
-            json,
+            serde,
             sequential,
         } = self;
         let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
-        if json {
+        if let Some(ext) = serde {
             return quote! {
                 impl #impl_generics geng::asset::Load #ty_generics for #ident #where_clause {
                     fn load(manager: &geng::asset::Manager, path: &std::path::Path) -> geng::asset::Future<Self> {
-                        let json = manager.load::<String>(path);
+                        let path = path.to_owned();
                         async move {
-                            let json = json.await?;
-                            Ok(serde_json::from_str(&json)?)
+                            Ok(batbox::file::load_detect(path).await?)
                         }.boxed_local()
                     }
-                    const DEFAULT_EXT: Option<&'static str> = Some("json");
+                    const DEFAULT_EXT: Option<&'static str> = Some(#ext);
                 }
             };
         }
