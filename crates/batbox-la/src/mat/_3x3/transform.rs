@@ -57,4 +57,9 @@ impl<T: Float> mat3<T> {
         result[(1, 1)] = cs;
         result
     }
+
+    /// Construct matrix that performs rotation around a specified point
+    pub fn rotate_around(p: vec2<T>, angle: T) -> Self {
+        Self::translate(p) * Self::rotate(angle) * Self::translate(-p)
+    }
 }
