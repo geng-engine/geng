@@ -15,7 +15,10 @@
           overlays = [ (import rust-overlay) ];
           pkgs = import nixpkgs { inherit system overlays; };
           rust-version = ({ version = "latest"; } // rust).version;
-          rust-toolchain = pkgs.rust-bin.stable.${rust-version}.default.override rust;
+          rust-toolchain = pkgs.rust-bin.stable.${rust-version}.default.override
+            {
+              targets = [ "wasm32-unknown-unknown" ];
+            } // rust;
           crane-lib = (crane.lib.${system}).overrideToolchain rust-toolchain;
           waylandDeps = with pkgs; [
             libxkbcommon
@@ -60,12 +63,18 @@
               });
             in
             finalPackage;
-          cargo-geng = crane-lib.buildPackage {
-            src = ./.;
-            cargoExtraArgs = "--package cargo-geng";
+          lib = {
+            crane = crane-lib;
+            cargo-geng = crane-lib.buildPackage {
+              pname = "cargo-geng";
+              # cargoVendorDir = null;
+              src = ./.;
+              cargoExtraArgs = "--package cargo-geng";
+            };
           };
         in
         {
+          inherit lib;
           defaultPackage = package;
           defaultApp = utils.lib.mkApp {
             drv = package;
@@ -75,7 +84,7 @@
             buildInputs = buildDeps ++ [
               rust-toolchain
               rust-analyzer
-              # cargo-geng
+              lib.cargo-geng
             ];
             shellHook = ''
               export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${libPath}"
@@ -87,12 +96,10 @@
       makeFlakeOutputs = f: utils.lib.eachDefaultSystem (system: self.makeFlakeSystemOutputs system (f system));
     } // utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs { inherit system; };
         flakeOutputs = (self.makeFlakeSystemOutputs system { src = ./.; });
       in
       {
-        devShell = flakeOutputs.devShell;
-        formatter = pkgs.nixpkgs-fmt;
+        inherit (flakeOutputs) devShell formatter lib;
       }
     );
 }

@@ -97,7 +97,7 @@ atomic_float = "0.1"
 num_enum = "0.5"
 gltf = "1"
 http = "0.2"
-gilrs = { git = "https://gitlab.com/gilrs-project/gilrs", features = [
+gilrs = { version = "0.10", features = [
     "serde-serialize",
 ] }
 
