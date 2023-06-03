@@ -17,7 +17,7 @@
           rust-version = ({ version = "latest"; } // rust).version;
           rust-toolchain = pkgs.rust-bin.stable.${rust-version}.default.override
             {
-              targets = [ "wasm32-unknown-unknown" ];
+              targets = [ "wasm32-unknown-unknown" "x86_64-pc-windows-gnu" ];
             } // rust;
           crane-lib = (crane.lib.${system}).overrideToolchain rust-toolchain;
           waylandDeps = with pkgs; [
@@ -30,13 +30,21 @@
             xorg.libXi
             xorg.libXrandr
           ];
-          libDeps = with pkgs; buildInputs
-          ++ waylandDeps ++ xorgDeps ++ [
-            alsa-lib
-            udev
-            libGL
-            xorg.libxcb
+          windowsDeps = with pkgs;[
+            pkgsCross.mingwW64.stdenv.cc
+            pkgsCross.mingwW64.windows.pthreads
           ];
+          libDeps = with pkgs;
+            buildInputs ++
+            waylandDeps ++
+            xorgDeps ++
+            windowsDeps ++
+            [
+              alsa-lib
+              udev
+              libGL
+              xorg.libxcb
+            ];
           nativeBuildDeps = with pkgs; [ pkg-config ];
           buildDeps = with pkgs; libDeps ++ [ xorg.libxcb ];
           libPath = pkgs.lib.makeLibraryPath libDeps;
