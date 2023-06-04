@@ -2,7 +2,7 @@ use super::*;
 
 /// RGBA Color
 #[repr(C)]
-#[derive(Debug, Copy, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Copy, Clone, serde::Serialize, serde::Deserialize, PartialEq, Eq, Hash)]
 #[serde(try_from = "String", into = "String")]
 pub struct Rgba<T: ColorComponent> {
     /// Red component
@@ -106,13 +106,6 @@ fn test_display() {
     );
     assert_eq!(Rgba::<f32>::opaque(0.1, 0.2, 0.3).to_string(), "#19334c");
 }
-
-impl<T: ColorComponent + PartialEq> PartialEq for Rgba<T> {
-    fn eq(&self, other: &Self) -> bool {
-        self.r == other.r && self.g == other.g && self.b == other.b && self.a == other.a
-    }
-}
-impl<T: ColorComponent + Eq> Eq for Rgba<T> {}
 
 impl<T: ColorComponent> Rgba<T> {
     /// Construct `Rgba` from red, green, and blue components, fully opaque (max alpha).
