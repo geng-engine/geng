@@ -69,6 +69,11 @@ impl<T> vec2<T> {
     pub fn map<U, F: Fn(T) -> U>(self, f: F) -> vec2<U> {
         vec2(f(self.0), f(self.1))
     }
+
+    /// Zip two vectors together
+    pub fn zip<U>(self, v: vec2<U>) -> vec2<(T, U)> {
+        vec2((self.0, v.0), (self.1, v.1))
+    }
 }
 
 impl<T: Clone> vec2<T> {
