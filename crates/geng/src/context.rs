@@ -12,7 +12,7 @@ pub(crate) struct GengImpl {
     max_delta_time: Cell<f64>,
     ui_theme: RefCell<Option<ui::Theme>>,
     pub(crate) options: ContextOptions,
-    pub(crate) load_progress: RefCell<LoadProgress>,
+    pub(crate) load_progress: RefCell<asset::LoadProgress>,
     pub(crate) gilrs: RefCell<gilrs::Gilrs>,
 }
 

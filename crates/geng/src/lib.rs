@@ -28,7 +28,7 @@
 //!
 
 pub mod prelude {
-    pub use crate::{draw2d, Geng, Hot};
+    pub use crate::{asset::Hot, draw2d, Geng};
     pub use crate::{AbstractCamera2d, AbstractCamera3d, Camera2d};
     pub use ::batbox;
     pub use ::batbox::prelude::*;
@@ -59,7 +59,6 @@ pub use geng_texture_atlas::{self as texture_atlas, TextureAtlas};
 pub use geng_ui as ui;
 pub use geng_window::{self as window, CursorType, Event, Key, MouseButton, Touch, Window};
 
-pub use asset::*;
 pub use cli_args::*;
 pub use context::*;
 pub use loading_screen::*;
