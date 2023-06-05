@@ -9,6 +9,38 @@ pub struct Aabb2<T> {
     pub max: vec2<T>,
 }
 
+impl<T: Copy> Aabb2<T> {
+    /// Get the bottom-left corner of the [Aabb2].
+    pub fn bottom_left(&self) -> vec2<T> {
+        self.min
+    }
+
+    /// Get the bottom-right corner of the [Aabb2].
+    pub fn bottom_right(&self) -> vec2<T> {
+        vec2(self.max.x, self.min.y)
+    }
+
+    /// Get the top-left corner of the [Aabb2].
+    pub fn top_left(&self) -> vec2<T> {
+        vec2(self.min.x, self.max.y)
+    }
+
+    /// Get the top-right corner of the [Aabb2].
+    pub fn top_right(&self) -> vec2<T> {
+        vec2(self.max.x, self.max.y)
+    }
+
+    /// Get an array of all four corner points
+    pub fn corners(&self) -> [vec2<T>; 4] {
+        [
+            self.bottom_left(),
+            self.bottom_right(),
+            self.top_right(),
+            self.top_left(),
+        ]
+    }
+}
+
 impl<T: UNum> Aabb2<T> {
     /// An [Aabb2] with both position and size equal to (0, 0).
     pub const ZERO: Self = Aabb2 {
@@ -135,26 +167,6 @@ impl<T: UNum> Aabb2<T> {
         Self::from_corners(self.bottom_left(), self.top_right())
     }
 
-    /// Get the bottom-left corner of the [Aabb2].
-    pub fn bottom_left(&self) -> vec2<T> {
-        self.min
-    }
-
-    /// Get the bottom-right corner of the [Aabb2].
-    pub fn bottom_right(&self) -> vec2<T> {
-        vec2(self.max.x, self.min.y)
-    }
-
-    /// Get the top-left corner of the [Aabb2].
-    pub fn top_left(&self) -> vec2<T> {
-        vec2(self.min.x, self.max.y)
-    }
-
-    /// Get the top-right corner of the [Aabb2].
-    pub fn top_right(&self) -> vec2<T> {
-        vec2(self.max.x, self.max.y)
-    }
-
     /// Get the center position of the [Aabb2].
     pub fn center(&self) -> vec2<T> {
         let two: T = T::ONE + T::ONE;
@@ -164,21 +176,18 @@ impl<T: UNum> Aabb2<T> {
         )
     }
 
-    /// Get an array of all four corner points
-    pub fn corners(&self) -> [vec2<T>; 4] {
-        [
-            self.bottom_left(),
-            self.bottom_right(),
-            self.top_right(),
-            self.top_left(),
-        ]
-    }
-
     /// Map every value (coordinate) of the [Aabb2].
     pub fn map<U: UNum, F: Fn(T) -> U>(self, f: F) -> Aabb2<U> {
         Aabb2 {
             min: self.min.map(&f),
             max: self.max.map(&f),
+        }
+    }
+
+    pub fn zip<U>(self, other: Aabb2<U>) -> Aabb2<(T, U)> {
+        Aabb2 {
+            min: self.min.zip(other.min),
+            max: self.max.zip(other.max),
         }
     }
 
