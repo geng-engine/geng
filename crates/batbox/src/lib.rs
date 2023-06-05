@@ -23,6 +23,7 @@ pub mod crates {
     pub use ::maplit;
     pub use ::once_cell;
     pub use ::pin_utils;
+    pub use ::ron;
     pub use ::serde;
     pub use ::serde_json;
     pub use ::thiserror;
