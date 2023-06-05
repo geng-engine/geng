@@ -81,6 +81,11 @@ impl Window {
         let pressed_buttons = self.inner.pressed_buttons.clone();
         let event_handler = self.inner.event_handler.clone();
         self.inner.platform.swap_buffers(move |event| {
+            if let Event::KeyDown { key } = event {
+                if pressed_keys.borrow().contains(&key) {
+                    return;
+                }
+            }
             Self::default_handler(&event, &pressed_keys, &pressed_buttons);
             if let Some(ref mut handler) = *event_handler.borrow_mut() {
                 handler(event);
