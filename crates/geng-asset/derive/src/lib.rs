@@ -49,6 +49,8 @@ struct Field {
     listed_in: Option<String>,
     #[darling(default, rename = "if")]
     condition: Option<syn::Expr>,
+    #[darling(default)]
+    serde: bool,
 }
 
 fn parse_syn<T: syn::parse::Parse>(value: Option<String>) -> Option<T> {
@@ -97,14 +99,24 @@ impl DeriveInput {
             })
             .collect::<Vec<_>>();
         let field_loaders = data.fields.iter().map(|field| {
-            let ident = field.ident.as_ref().unwrap();
             if let Some(expr) = &field.load_with {
                 return quote!(#expr);
             }
+            let ident = field.ident.as_ref().unwrap();
             let ext = match &field.ext {
                 Some(ext) => quote!(Some(#ext)),
                 None => quote!(None::<&str>),
             };
+            if field.serde {
+                return match &field.path {
+                    Some(path) => quote! {
+                        batbox::file::load_detect(base_path.join(#path))
+                    },
+                    None => quote! {
+                        batbox::file::load_detect(base_path.join(stringify!(#ident)), #ext)
+                    },
+                };
+            }
             let list = match (&field.listed_in, &field.list) {
                 (None, None) => None,
                 (None, Some(range)) => Some(quote! {
