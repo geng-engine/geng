@@ -30,15 +30,10 @@
             xorg.libXi
             xorg.libXrandr
           ];
-          windowsDeps = with pkgs;[
-            pkgsCross.mingwW64.stdenv.cc
-            pkgsCross.mingwW64.windows.pthreads
-          ];
           libDeps = with pkgs;
             buildInputs ++
             waylandDeps ++
             xorgDeps ++
-            windowsDeps ++
             [
               alsa-lib
               udev
@@ -93,11 +88,19 @@
               rust-toolchain
               rust-analyzer
               lib.cargo-geng
+              # wineWowPackages.waylandFull
+              # pkgsCross.mingwW64.windows.pthreads
             ];
-            shellHook = ''
-              export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${libPath}"
-              export WINIT_UNIX_BACKEND=x11 # TODO fix
-            '';
+            shellHook =
+              let
+                libPath = pkgs.lib.makeLibraryPath (libDeps ++ [ pkgsCross.mingwW64.windows.pthreads ]);
+              in
+              ''
+                export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${libPath}"
+                export WINIT_UNIX_BACKEND=x11 # TODO fix
+                export CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER="${pkgsCross.mingwW64.stdenv.cc}/bin/x86_64-w64-mingw32-gcc"
+                export CARGO_TARGET_X86_64_PC_WINDOWS_GNU_RUNNER="wine64"
+              '';
           };
           formatter = pkgs.nixpkgs-fmt;
         };
