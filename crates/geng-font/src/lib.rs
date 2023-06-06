@@ -480,6 +480,7 @@ impl Font {
                         .iter()
                         .flat_map(|glyph| [glyph.i_pos, glyph.i_pos + glyph.i_size]),
                 )
+                .unwrap()
                 .extend_uniform(-self.max_distance),
             )
         })

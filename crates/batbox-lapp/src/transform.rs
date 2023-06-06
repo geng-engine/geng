@@ -129,6 +129,7 @@ pub trait Transform2dExt<F: Float>: Transform2d<F> {
             .into_iter()
             .map(|p| (self.bounding_quad().transform * p.extend(F::ONE)).into_2d()),
         )
+        .unwrap()
     }
 
     /// Make this object's bounding [Quad] fit into given target

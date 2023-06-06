@@ -47,7 +47,7 @@ impl Polygon {
     }
 
     pub(super) fn normalize(mut vertices: Vec<ColoredVertex>) -> (mat3<f32>, Vec<ColoredVertex>) {
-        let aabb = Aabb2::points_bounding_box(vertices.iter().map(|vertex| vertex.a_pos));
+        let aabb = Aabb2::points_bounding_box(vertices.iter().map(|vertex| vertex.a_pos)).unwrap();
         let transform = mat3::translate(aabb.center()) * mat3::scale(aabb.size() / 2.0);
         let inverse = transform.inverse();
         for vertex in &mut vertices {
@@ -135,7 +135,7 @@ impl<T: std::borrow::Borrow<ugli::Texture>> TexturedPolygon<T> {
     }
 
     pub(super) fn normalize(mut vertices: Vec<TexturedVertex>) -> (mat3<f32>, Vec<TexturedVertex>) {
-        let aabb = Aabb2::points_bounding_box(vertices.iter().map(|vertex| vertex.a_pos));
+        let aabb = Aabb2::points_bounding_box(vertices.iter().map(|vertex| vertex.a_pos)).unwrap();
         let transform = mat3::translate(aabb.center()) * mat3::scale(aabb.size() / 2.0);
         let inverse = transform.inverse();
         for vertex in &mut vertices {
