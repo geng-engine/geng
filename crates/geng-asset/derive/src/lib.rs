@@ -147,7 +147,7 @@ impl DeriveInput {
                     },
                 };
                 quote! {
-                    futures::future::try_join_all((#list).map(|item| { #loader }))
+                    ::geng::prelude::futures::future::try_join_all((#list).map(|item| { #loader }))
                 }
             } else {
                 match &field.path {
@@ -209,7 +209,7 @@ impl DeriveInput {
         } else {
             quote! {
                 #(let #field_names = #field_loaders;)*
-                let (#(#field_names,)*) = futures::join!(#(#field_names,)*);
+                let (#(#field_names,)*) = ::geng::prelude::futures::join!(#(#field_names,)*);
                 #(
                     let #field_names = anyhow::Context::context(
                         #field_names,
