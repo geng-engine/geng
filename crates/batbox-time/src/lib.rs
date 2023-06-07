@@ -107,6 +107,11 @@ impl Timer {
         }
     }
 
+    /// Reset timer
+    pub fn reset(&mut self) {
+        self.start = Instant::now();
+    }
+
     /// Get duration elapsed since last reset.
     pub fn elapsed(&self) -> Duration {
         self.start.elapsed()
