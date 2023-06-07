@@ -246,13 +246,14 @@ impl Context {
                 winit::event::WindowEvent::KeyboardInput { input, .. } => {
                     let mut edited_text = self.edited_text.borrow_mut();
                     if let Some(text) = edited_text.deref_mut() {
-                        if input.state == winit::event::ElementState::Pressed
-                            && input.virtual_keycode == Some(winit::event::VirtualKeyCode::Back)
-                        {
-                            text.pop();
-                            events.push(Event::EditText(text.clone()));
+                        if input.state == winit::event::ElementState::Pressed {
+                            if input.virtual_keycode == Some(winit::event::VirtualKeyCode::Back) {
+                                text.pop();
+                                events.push(Event::EditText(text.clone()));
+                            }
                         }
-                    } else if let Some(key) = input.virtual_keycode {
+                    }
+                    if let Some(key) = input.virtual_keycode {
                         let key = from_glutin_key(key);
                         events.push(match input.state {
                             winit::event::ElementState::Pressed => Event::KeyDown { key },
