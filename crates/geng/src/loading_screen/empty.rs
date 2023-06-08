@@ -26,13 +26,10 @@ impl Drop for EmptyLoadingScreen {
 }
 
 impl State for EmptyLoadingScreen {
-    fn update(&mut self, delta_time: f64) {
-        #![allow(unused_variables)]
+    fn update(&mut self, _delta_time: f64) {
         let progress = self.geng.inner.load_progress.borrow();
         self.geng
             .set_loading_progress(progress.progress as f64, Some(progress.total as f64));
     }
-    fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
-        #![allow(unused_variables)]
-    }
+    fn draw(&mut self, _framebuffer: &mut ugli::Framebuffer) {}
 }

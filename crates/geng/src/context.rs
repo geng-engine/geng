@@ -169,6 +169,7 @@ impl Geng {
 
     /// Run the application
     pub fn run(self, state: impl State) {
+        self.finish_loading();
         let geng = &self;
         struct StateWrapper {
             state_manager: state::Manager,
