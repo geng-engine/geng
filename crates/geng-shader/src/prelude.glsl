@@ -2,6 +2,7 @@
   #ifdef FRAGMENT_SHADER
     #define varying in
   #else
+    #define attribute in
     #define varying out
   #endif
 #endif
