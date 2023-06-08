@@ -1,3 +1,11 @@
+#if __VERSION__ >= 150
+  #ifdef FRAGMENT_SHADER
+    #define varying in
+  #else
+    #define varying out
+  #endif
+#endif
+
 #define PI 3.1415926535897932384626433832795
 
 vec2 rotate(vec2 v, float a)

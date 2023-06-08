@@ -30,8 +30,8 @@ impl Library {
                 )
             } else {
                 (
-                    format!("#version 100\n{common_glsl}#define VERTEX_SHADER\n"),
-                    format!("#version 100\n{common_glsl}#define FRAGMENT_SHADER\n"),
+                    format!("#version 150\n{common_glsl}#define VERTEX_SHADER\n"),
+                    format!("#version 150\n{common_glsl}#define FRAGMENT_SHADER\n"),
                 )
             }
         }
