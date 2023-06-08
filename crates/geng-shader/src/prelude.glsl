@@ -1,6 +1,8 @@
 #if __VERSION__ >= 150
   #ifdef FRAGMENT_SHADER
     #define varying in
+    #define gl_FragColor frag_color
+    out vec4 gl_FragColor;
   #else
     #define attribute in
     #define varying out
