@@ -31,6 +31,7 @@
 //!     }
 //! }
 //! ```
+#![warn(missing_docs)]
 
 pub use batbox_i18n_macro::gen;
 

@@ -1,6 +1,7 @@
 //! Loading files
 //!
 //! Since [std::fs] is not working on the web, use this for consistency
+#![warn(missing_docs)]
 
 use anyhow::anyhow;
 use futures::prelude::*;

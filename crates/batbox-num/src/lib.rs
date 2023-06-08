@@ -1,4 +1,5 @@
 //! Numeric types and traits
+#![warn(missing_docs)]
 
 mod float;
 mod real;

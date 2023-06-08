@@ -1,6 +1,7 @@
 //! Time related things
 //!
 //! [std::time] is not working on web so use this instead
+#![warn(missing_docs)]
 
 /// A measurement of a monotonically nondecreasing clock.
 ///

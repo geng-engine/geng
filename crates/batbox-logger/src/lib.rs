@@ -6,6 +6,7 @@
 //! batbox_logger::init();
 //! log::info!("This is a doctest");
 //! ```
+#![warn(missing_docs)]
 
 use std::sync::Mutex;
 #[cfg(target_arch = "wasm32")]

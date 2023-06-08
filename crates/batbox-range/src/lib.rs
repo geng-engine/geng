@@ -1,4 +1,5 @@
 //! Extra utilities for working with ranges
+#![warn(missing_docs)]
 
 #[doc(no_inline)]
 pub use std::ops::{
@@ -57,6 +58,7 @@ impl<T> FixedRangeBounds<T> for RangeToInclusive<T> {
     }
 }
 
+/// Extension trait for getting index ranges
 pub trait IndexRangeExt {
     /// Convert any range into a `start..end` [Range] as if used for slicing of a container of length equal to self
     fn index_range<R>(self, range: R) -> Range<usize>

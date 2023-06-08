@@ -1,4 +1,5 @@
 //! File dialogs
+#![warn(missing_docs)]
 
 use futures::prelude::*;
 #[cfg(target_arch = "wasm32")]

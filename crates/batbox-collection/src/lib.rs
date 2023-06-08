@@ -1,4 +1,5 @@
 //! A collection of identifiable entities
+#![warn(missing_docs)]
 
 use batbox_diff::Diff;
 use serde::{Deserialize, Serialize};

@@ -1,4 +1,5 @@
 //! Working with colors in various formats
+#![warn(missing_docs)]
 
 use batbox_approx::Approx;
 

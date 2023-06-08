@@ -1,5 +1,6 @@
 use super::*;
 
+/// This struct represents an angle in 2d space,
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct Angle<T: Float = f32> {
@@ -7,22 +8,27 @@ pub struct Angle<T: Float = f32> {
 }
 
 impl<T: Float> Angle<T> {
+    /// 0 angle is pointing to positive x axis
     pub const ZERO: Self = Self { radians: T::ZERO };
 
+    /// Create angle from value in radians
     pub fn from_radians(radians: T) -> Self {
         Self { radians }
     }
 
+    /// Create angle from value in degrees
     pub fn from_degrees(degrees: T) -> Self {
         Self {
             radians: degrees_to_radians(degrees),
         }
     }
 
+    /// See angle value as radians
     pub fn as_radians(&self) -> T {
         self.radians
     }
 
+    /// See angle value as degrees
     pub fn as_degrees(&self) -> T {
         radians_to_degrees(self.radians)
     }

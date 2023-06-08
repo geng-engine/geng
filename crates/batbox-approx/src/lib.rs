@@ -1,4 +1,5 @@
 //! Approximate comparing of things
+#![warn(missing_docs)]
 
 /// Default EPS used for approx equality
 pub const DEFAULT_EPS: f32 = 1e-9;

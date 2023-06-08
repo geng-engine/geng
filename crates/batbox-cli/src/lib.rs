@@ -1,6 +1,7 @@
 //! Retrieving program arguments
 //!
 //! Works on web using query string
+#![warn(missing_docs)]
 
 pub mod prelude {
     //! Items intended to be added to global namespace

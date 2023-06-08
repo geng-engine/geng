@@ -184,6 +184,7 @@ impl<T: UNum> Aabb2<T> {
         }
     }
 
+    /// Zip every value (coordinate) with another [Aabb2]
     pub fn zip<U>(self, other: Aabb2<U>) -> Aabb2<(T, U)> {
         Aabb2 {
             min: self.min.zip(other.min),
