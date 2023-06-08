@@ -1,4 +1,5 @@
 #if __VERSION__ >= 150
+  #define texture2D texture
   #ifdef FRAGMENT_SHADER
     #define varying in
     #define gl_FragColor frag_color
