@@ -57,7 +57,7 @@ impl<T: Float> mat4<T> {
     /// # Examples
     /// ```
     /// # use batbox_la::*;
-    /// let matrix = mat4::<f64>::rotate_x(0.123);
+    /// let matrix = mat4::<f64>::rotate_x(Angle::from_radians(0.123));
     /// let matrix_inv = matrix.inverse();
     /// let mult = matrix * matrix_inv;
     /// for i in 0..4 {

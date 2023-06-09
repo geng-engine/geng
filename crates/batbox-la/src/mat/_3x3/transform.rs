@@ -47,19 +47,18 @@ impl<T: Num + Copy> mat3<T> {
 
 impl<T: Float> mat3<T> {
     /// Construct rotational matrix
-    pub fn rotate(angle: T) -> Self {
+    pub fn rotate(angle: Angle<T>) -> Self {
         let mut result = Self::identity();
-        let cs = angle.cos();
-        let sn = angle.sin();
-        result[(0, 0)] = cs;
-        result[(0, 1)] = -sn;
-        result[(1, 0)] = sn;
-        result[(1, 1)] = cs;
+        let (sin, cos) = angle.sin_cos();
+        result[(0, 0)] = cos;
+        result[(0, 1)] = -sin;
+        result[(1, 0)] = sin;
+        result[(1, 1)] = cos;
         result
     }
 
     /// Construct matrix that performs rotation around a specified point
-    pub fn rotate_around(p: vec2<T>, angle: T) -> Self {
+    pub fn rotate_around(p: vec2<T>, angle: Angle<T>) -> Self {
         Self::translate(p) * Self::rotate(angle) * Self::translate(-p)
     }
 }

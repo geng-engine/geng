@@ -11,6 +11,66 @@ impl<T: Float> Angle<T> {
     /// 0 angle is pointing to positive x axis
     pub const ZERO: Self = Self { radians: T::ZERO };
 
+    /// Computes the arccosine of a number as an angle.
+    ///
+    /// Return value is in radians in the range [0, pi] or NaN if the number is outside the range [-1, 1].
+    pub fn acos(cos: T) -> Self {
+        Self {
+            radians: cos.acos(),
+        }
+    }
+
+    /// Computes the arcsine of a number as an angle.
+    ///
+    /// Return value is in radians in the range [-pi/2, pi/2] or NaN if the number is outside the range [-1, 1].
+    pub fn asin(sin: T) -> Self {
+        Self {
+            radians: sin.asin(),
+        }
+    }
+
+    /// Computes the arctangent of a number as an angle.
+    ///
+    /// Return value is in radians in the range [-pi/2, pi/2];
+    pub fn atan(tan: T) -> Self {
+        Self {
+            radians: tan.atan(),
+        }
+    }
+
+    /// Computes the four quadrant arctangent of `self` (`y`) and `other` (`x`) as an angle.
+    ///
+    /// * `x = 0`, `y = 0`: `0`
+    /// * `x >= 0`: `arctan(y/x)` -> `[-pi/2, pi/2]`
+    /// * `y >= 0`: `arctan(y/x) + pi` -> `(pi/2, pi]`
+    /// * `y < 0`: `arctan(y/x) - pi` -> `(-pi, -pi/2)`
+    pub fn atan2(y: T, x: T) -> Self {
+        Self {
+            radians: T::atan2(y, x),
+        }
+    }
+
+    /// Compute the sine
+    pub fn sin(&self) -> T {
+        self.radians.sin()
+    }
+
+    /// Compute the cosine
+    pub fn cos(&self) -> T {
+        self.radians.cos()
+    }
+
+    /// Simultaneously computes the sine and cosine of the angle.
+    /// Returns `(sin(self), cos(self))`.
+    pub fn sin_cos(&self) -> (T, T) {
+        self.radians.sin_cos()
+    }
+
+    /// Computes the tangent of the angle.
+    pub fn tan(self) -> T {
+        self.radians.tan()
+    }
+
     /// Create angle from value in radians
     pub fn from_radians(radians: T) -> Self {
         Self { radians }

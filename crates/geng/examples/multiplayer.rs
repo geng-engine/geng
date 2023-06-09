@@ -143,7 +143,7 @@ impl geng::State for Game {
         ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
         let camera = geng::Camera2d {
             center: vec2(0.0, 0.0),
-            rotation: 0.0,
+            rotation: Angle::ZERO,
             fov: 100.0,
         };
         let model = self.model.get();

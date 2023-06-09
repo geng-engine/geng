@@ -49,43 +49,40 @@ impl<T: Num + Copy> mat4<T> {
 
 impl<T: Float> mat4<T> {
     /// Construct matrix rotating around x axis.
-    pub fn rotate_x(angle: T) -> Self {
+    pub fn rotate_x(angle: Angle<T>) -> Self {
         let mut result = Self::identity();
-        let cs = angle.cos();
-        let sn = angle.sin();
-        result[(1, 1)] = cs;
-        result[(1, 2)] = -sn;
-        result[(2, 1)] = sn;
-        result[(2, 2)] = cs;
+        let (sin, cos) = angle.sin_cos();
+        result[(1, 1)] = cos;
+        result[(1, 2)] = -sin;
+        result[(2, 1)] = sin;
+        result[(2, 2)] = cos;
         result
     }
 
     /// Construct matrix rotating around y axis.
-    pub fn rotate_y(angle: T) -> Self {
+    pub fn rotate_y(angle: Angle<T>) -> Self {
         let mut result = Self::identity();
-        let cs = angle.cos();
-        let sn = angle.sin();
-        result[(2, 2)] = cs;
-        result[(2, 0)] = -sn;
-        result[(0, 2)] = sn;
-        result[(0, 0)] = cs;
+        let (sin, cos) = angle.sin_cos();
+        result[(2, 2)] = cos;
+        result[(2, 0)] = -sin;
+        result[(0, 2)] = sin;
+        result[(0, 0)] = cos;
         result
     }
 
     /// Construct matrix rotating around z axis.
-    pub fn rotate_z(angle: T) -> Self {
+    pub fn rotate_z(angle: Angle<T>) -> Self {
         let mut result = Self::identity();
-        let cs = angle.cos();
-        let sn = angle.sin();
-        result[(0, 0)] = cs;
-        result[(0, 1)] = -sn;
-        result[(1, 0)] = sn;
-        result[(1, 1)] = cs;
+        let (sin, cos) = angle.sin_cos();
+        result[(0, 0)] = cos;
+        result[(0, 1)] = -sin;
+        result[(1, 0)] = sin;
+        result[(1, 1)] = cos;
         result
     }
 
     /// Construct a rotational matrix around given axis
-    pub fn rotate(v: vec3<T>, angle: T) -> Self
+    pub fn rotate(v: vec3<T>, angle: Angle<T>) -> Self
     where
         T: SubAssign + AddAssign,
     {

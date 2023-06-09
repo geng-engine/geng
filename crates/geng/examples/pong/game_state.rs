@@ -42,7 +42,7 @@ impl GameState {
             geng: geng.clone(),
             camera: geng::Camera2d {
                 center: vec2(0.0, 0.0),
-                rotation: 0.0,
+                rotation: Angle::ZERO,
                 fov: 400.0,
             },
             boundary: Aabb2::ZERO.extend_symmetric(vec2(ARENA_SIZE_X, ARENA_SIZE_Y) / 2.0),

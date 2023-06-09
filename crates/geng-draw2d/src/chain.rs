@@ -147,9 +147,8 @@ impl Chain {
 
                 // Round
                 {
-                    let angle = vec2::dot(forward_norm, backward_norm)
-                        .clamp(-1.0, 1.0) // Clamp for good measure (because of float inconsistency)
-                        .acos();
+                    let angle =
+                        Angle::acos(vec2::dot(forward_norm, backward_norm).clamp(-1.0, 1.0));
                     let (start, end, shift) = if side.is_sign_positive() {
                         (back_vertex, forward_vertex, backward_norm * width)
                     } else {

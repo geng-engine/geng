@@ -38,10 +38,9 @@ impl<T: Float> Quat<T> {
     }
 
     /// Construct a quaternion representing rotation around given axis by given angle
-    pub fn from_axis_angle(axis: vec3<T>, angle: T) -> Self {
+    pub fn from_axis_angle(axis: vec3<T>, angle: Angle<T>) -> Self {
         let angle = angle / (T::ONE + T::ONE);
-        let sin = angle.sin();
-        let cos = angle.cos();
+        let (sin, cos) = angle.sin_cos();
         let v = axis * sin;
         Self {
             i: v.x,
@@ -183,7 +182,7 @@ impl<T: Float> From<Quat<T>> for mat4<T> {
 fn test_quat() {
     let mat = mat4::from(Quat::from_axis_angle(
         vec3(0.0, 1.0, 0.0),
-        std::f64::consts::PI / 2.0,
+        Angle::from_radians(f64::PI / 2.0),
     ));
     let v = mat * vec4(1.0, 0.0, 0.0, 1.0);
     assert!(v.x.approx_eq(&0.0));
