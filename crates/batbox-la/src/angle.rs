@@ -105,6 +105,13 @@ impl<T: Float> Angle<T> {
         }
     }
 
+    /// Calculate absolute value
+    pub fn abs(&self) -> Self {
+        Self {
+            radians: self.radians.abs(),
+        }
+    }
+
     /// Normalize the angle to be in range `-pi..pi`.
     pub fn normalized_pi(&self) -> Self {
         let pi = T::PI;
