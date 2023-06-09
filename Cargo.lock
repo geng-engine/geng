@@ -447,6 +447,7 @@ version = "0.14.0"
 dependencies = [
  "anyhow",
  "batbox-approx",
+ "batbox-la",
  "serde",
 ]
 

@@ -118,6 +118,16 @@ impl<T: ColorComponent> Rgba<T> {
         Self { r, g, b, a }
     }
 
+    /// Convert color into vec4(r, g, b, a)
+    pub fn to_vec4(self) -> vec4<T> {
+        vec4(self.r, self.g, self.b, self.a)
+    }
+
+    /// Convert vec4(r, g, b, a) into color
+    pub fn from_vec4(vec4(r, g, b, a): vec4<T>) -> Self {
+        Self { r, g, b, a }
+    }
+
     /// Convert `Rgba<T>` to `Rgba<U>` by applying a function to every color component excluding alpha.
     /// The resulting alpha is calculated by applying ColorComponent::convert() method.
     /// # Examples

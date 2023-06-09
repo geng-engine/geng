@@ -2,6 +2,7 @@
 #![warn(missing_docs)]
 
 use batbox_approx::Approx;
+use batbox_la::*;
 
 mod component;
 mod consts;
