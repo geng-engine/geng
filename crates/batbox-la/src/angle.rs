@@ -11,6 +11,13 @@ impl<T: Float> Angle<T> {
     /// 0 angle is pointing to positive x axis
     pub const ZERO: Self = Self { radians: T::ZERO };
 
+    /// Map inner value to a different type
+    pub fn map<U: Float>(&self, f: impl Fn(T) -> U) -> Angle<U> {
+        Angle {
+            radians: f(self.radians),
+        }
+    }
+
     /// Computes the arccosine of a number as an angle.
     ///
     /// Return value is in radians in the range [0, pi] or NaN if the number is outside the range [-1, 1].
