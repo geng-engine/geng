@@ -9,9 +9,10 @@ uniform ivec2 u_framebuffer_size;
 uniform mat3 u_projection_matrix;
 uniform mat3 u_view_matrix;
 uniform mat3 u_model_matrix;
+uniform mat3 u_texture_matrix;
 void main() {
     v_color = a_color;
-    v_vt = a_vt;
+    v_vt = (u_texture_matrix * vec3(a_vt, 1.0)).xy;
     vec3 pos = u_projection_matrix * u_view_matrix * u_model_matrix * vec3(a_pos, 1.0);
     gl_Position = vec4(pos.xy, 0.0, pos.z);
 }

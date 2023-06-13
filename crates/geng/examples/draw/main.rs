@@ -2,7 +2,7 @@ use geng::prelude::*;
 
 #[derive(geng::asset::Load)]
 struct Assets {
-    texture: ugli::Texture,
+    texture: Rc<ugli::Texture>,
 }
 
 struct Grid<'a> {
@@ -103,7 +103,11 @@ impl State {
                 _ => unreachable!(),
             },
         )));
-        result.add(draw2d::TexturedQuad::unit(assets.texture));
+        result.add(draw2d::TexturedQuad::unit(assets.texture.clone()));
+        result.add(
+            draw2d::TexturedQuad::unit(assets.texture.clone())
+                .sub_texture(Aabb2::ZERO.extend_positive(vec2::splat(0.5))),
+        );
         result.add(draw2d::TexturedQuad::unit({
             const SIZE: usize = 128;
             let mut texture = ugli::Texture::new_uninitialized(geng.ugli(), vec2(SIZE, SIZE));

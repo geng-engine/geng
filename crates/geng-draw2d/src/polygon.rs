@@ -165,6 +165,7 @@ impl<T: std::borrow::Borrow<ugli::Texture>> Draw2d for TexturedPolygon<T> {
                     u_texture: self.texture.borrow(),
                     u_framebuffer_size: framebuffer_size,
                     u_model_matrix: transform * self.transform,
+                    u_texture_matrix: mat3::identity(),
                 },
                 camera.uniforms(framebuffer_size.map(|x| x as f32)),
             ),
