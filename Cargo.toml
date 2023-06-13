@@ -18,6 +18,7 @@ version = "0.14.0"
 [workspace.dependencies]
 # Batbox
 batbox = { version = "0.14", path = "crates/batbox" }
+batbox-android = { version = "0.14", path = "crates/batbox-android" }
 batbox-tuple-macros = { version = "0.14", path = "crates/batbox-tuple-macros" }
 batbox-i18n = { version = "0.14", path = "crates/batbox-i18n" }
 batbox-i18n-macro = { version = "0.14", path = "crates/batbox-i18n/macro" }
@@ -148,3 +149,9 @@ hyper = { version = "0.14", features = ["server", "http1", "tcp"] }
 hyper-staticfile = "0.9"
 fs_extra = "1"
 cargo_metadata = "0.15"
+
+# android
+android-activity = { version = "0.4", features = [ "native-activity" ] }
+oboe = { version = "0.5", features = [ "java-interface", "shared-stdcxx" ] }
+jni = "0.21.1"
+ndk-context = "0.1.1"
