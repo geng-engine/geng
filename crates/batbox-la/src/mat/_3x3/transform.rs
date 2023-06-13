@@ -13,6 +13,16 @@ impl<T: Num + Copy> mat3<T> {
         Self::scale(vec2(factor, factor))
     }
 
+    /// Construct matrix that performs uniform scaling around a specified point
+    pub fn scale_uniform_around(p: vec2<T>, scale: T) -> Self {
+        mat3::translate(p) * mat3::scale_uniform(scale) * mat3::translate(-p)
+    }
+
+    /// Construct matrix that performs scaling around a specified point
+    pub fn scale_around(p: vec2<T>, scale: vec2<T>) -> Self {
+        mat3::translate(p) * mat3::scale(scale) * mat3::translate(-p)
+    }
+
     /// Construct a scale matrix.
     ///
     /// # Examples
