@@ -19,6 +19,25 @@ pub struct Context {
 
 impl Context {
     pub fn new(options: &Options) -> Self {
+        #[cfg(target_os = "android")]
+        let event_loop = {
+            use winit::platform::android::EventLoopBuilderExtAndroid;
+            // TODO
+            // android_logger::init_once(
+            //     android_logger::Config::default().with_min_level(log::Level::Trace),
+            // );
+            let mut event_loop = winit::event_loop::EventLoopBuilder::new()
+                .with_android_app(batbox_android::app().clone())
+                .build();
+            use winit::platform::run_return::EventLoopExtRunReturn;
+            event_loop.run_return(|e, _, flow| {
+                if let winit::event::Event::Resumed = e {
+                    *flow = winit::event_loop::ControlFlow::Exit;
+                }
+            });
+            event_loop
+        };
+        #[cfg(not(target_os = "android"))]
         let event_loop = winit::event_loop::EventLoop::<()>::new();
         let (window, gl_config) = glutin_winit::DisplayBuilder::new()
             .with_window_builder(Some({
@@ -207,6 +226,9 @@ impl Context {
     fn get_events(&self) -> Vec<Event> {
         let mut events = Vec::new();
         {
+            let window_pos = |position: winit::dpi::PhysicalPosition<f64>| -> vec2<f64> {
+                vec2(position.x, self.real_size().y as f64 - 1.0 - position.y)
+            };
             let mut mouse_move = None;
             let mut handle_event = |e: winit::event::WindowEvent| match e {
                 winit::event::WindowEvent::Focused(focus) => self.focused.set(focus),
@@ -220,7 +242,7 @@ impl Context {
                     });
                 }
                 winit::event::WindowEvent::CursorMoved { position, .. } => {
-                    let position = vec2(position.x, self.real_size().y as f64 - 1.0 - position.y);
+                    let position = window_pos(position);
                     mouse_move = Some(position);
                     self.mouse_pos.set(position);
                 }
@@ -276,6 +298,19 @@ impl Context {
                             events.push(Event::EditText(text.clone()));
                         }
                     }
+                }
+                winit::event::WindowEvent::Touch(touch) => {
+                    let geng_touch = Touch {
+                        id: touch.id,
+                        position: window_pos(touch.location),
+                    };
+                    events.push(match touch.phase {
+                        winit::event::TouchPhase::Started => Event::TouchStart(geng_touch),
+                        winit::event::TouchPhase::Moved => Event::TouchMove(geng_touch),
+                        winit::event::TouchPhase::Ended | winit::event::TouchPhase::Cancelled => {
+                            Event::TouchEnd(geng_touch)
+                        }
+                    });
                 }
                 _ => {}
             };
