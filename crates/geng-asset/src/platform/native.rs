@@ -1,5 +1,4 @@
 use super::*;
-use anyhow::Context as _;
 
 async fn spawn_blocking<T>(f: impl FnOnce() -> T) -> T {
     // TODO threadpool
@@ -9,16 +8,14 @@ async fn spawn_blocking<T>(f: impl FnOnce() -> T) -> T {
 pub fn load_texture(manager: &Manager, path: &std::path::Path) -> Future<ugli::Texture> {
     let ugli = manager.ugli().clone();
     let path = path.to_owned();
-    let image_future = spawn_blocking(move || {
+    async move {
         log::debug!("Loading {:?}", path);
-        fn load(path: &std::path::Path) -> anyhow::Result<image::RgbaImage> {
-            let image = image::open(path).context(format!("Failed to load {path:?}"))?;
-            Ok(match image {
-                image::DynamicImage::ImageRgba8(image) => image,
-                _ => image.to_rgba8(),
-            })
-        }
-        load(&path)
-    });
-    async move { Ok(ugli::Texture::from_image(&ugli, image_future.await?)) }.boxed_local()
+        let image = image::load_from_memory(&file::load_bytes(path).await?)?;
+        let image = match image {
+            image::DynamicImage::ImageRgba8(image) => image,
+            _ => image.to_rgba8(),
+        };
+        Ok(ugli::Texture::from_image(&ugli, image))
+    }
+    .boxed_local()
 }
