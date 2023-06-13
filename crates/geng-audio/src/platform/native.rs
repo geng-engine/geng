@@ -133,11 +133,7 @@ pub struct Sound {
 
 impl Sound {
     pub async fn load(context: &Rc<Context>, path: &std::path::Path) -> anyhow::Result<Self> {
-        // TODO non blocking
-        use std::io::Read;
-        let mut data = Vec::new();
-        std::fs::File::open(path)?.read_to_end(&mut data)?;
-        Self::decode_bytes(context, data).await
+        Self::decode_bytes(context, batbox_file::load_bytes(path).await?).await
     }
     pub async fn decode_bytes(context: &Rc<Context>, data: Vec<u8>) -> anyhow::Result<Self> {
         Ok(Self {
