@@ -14,6 +14,9 @@ pub fn default<T: Default>() -> T {
 ///
 /// On the web this just returns `.`
 pub fn run_dir() -> std::path::PathBuf {
+    if cfg!(target_os = "android") || cfg!(target_arch = "wasm32") {
+        return std::path::PathBuf::from(".");
+    }
     if let Some(dir) = std::env::var_os("CARGO_MANIFEST_DIR") {
         let mut path = std::path::PathBuf::from(dir);
         let current_exe = std::env::current_exe().unwrap();
@@ -40,9 +43,5 @@ pub fn run_dir() -> std::path::PathBuf {
             }
         }
     }
-    if cfg!(target_arch = "wasm32") {
-        std::path::PathBuf::from(".")
-    } else {
-        std::env::current_dir().unwrap()
-    }
+    std::env::current_dir().unwrap()
 }
