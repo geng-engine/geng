@@ -23,7 +23,7 @@ impl Library {
         }
         fn default_prefix() -> (String, String) {
             let common_glsl = "precision highp int;\nprecision highp float;\n";
-            if cfg!(target_arch = "wasm32") {
+            if cfg!(any(target_arch = "wasm32", target_os = "android")) {
                 (
                     format!("{common_glsl}#define VERTEX_SHADER\n"),
                     format!("#extension GL_OES_standard_derivatives : enable\n{common_glsl}#define FRAGMENT_SHADER\n"),
