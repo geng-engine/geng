@@ -347,6 +347,7 @@ dependencies = [
  "async-std",
  "async-trait",
  "backtrace",
+ "batbox-android",
  "batbox-approx",
  "batbox-cli",
  "batbox-cmp",
@@ -395,6 +396,16 @@ dependencies = [
  "wasm-bindgen-futures",
  "wasm-streams 0.3.0",
  "web-sys",
+]
+
+[[package]]
+name = "batbox-android"
+version = "0.14.0"
+dependencies = [
+ "android-activity",
+ "jni 0.21.1",
+ "ndk-context",
+ "oboe",
 ]
 
 [[package]]
@@ -476,6 +487,7 @@ dependencies = [
  "anyhow",
  "async-compat",
  "async-std",
+ "batbox-android",
  "futures",
  "http",
  "js-sys",
@@ -1653,6 +1665,7 @@ version = "0.14.0"
 dependencies = [
  "anyhow",
  "atomic_float",
+ "batbox-file",
  "batbox-la",
  "batbox-num",
  "batbox-time",
@@ -1801,6 +1814,7 @@ name = "geng-window"
 version = "0.14.0"
 dependencies = [
  "anyhow",
+ "batbox-android",
  "batbox-la",
  "gilrs",
  "glutin",
@@ -2381,6 +2395,22 @@ dependencies = [
  "log",
  "thiserror",
  "walkdir",
+]
+
+[[package]]
+name = "jni"
+version = "0.21.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1a87aa2bb7d2af34197c04845522473242e1aa17c12f4935d5856491a7fb8c97"
+dependencies = [
+ "cesu8",
+ "cfg-if 1.0.0",
+ "combine",
+ "jni-sys",
+ "log",
+ "thiserror",
+ "walkdir",
+ "windows-sys 0.45.0",
 ]
 
 [[package]]
