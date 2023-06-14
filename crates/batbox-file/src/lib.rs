@@ -36,7 +36,7 @@ pub async fn load(path: impl AsRef<std::path::Path>) -> anyhow::Result<impl Asyn
         Ok(futures::io::BufReader::new(read_stream(body)))
     }
     #[cfg(target_os = "android")]
-    if true {
+    if batbox_android::file_mode() == batbox_android::FileMode::Assets {
         // Maybe if starts with "asset://"??
         let app = batbox_android::app();
         let asset_manager = app.asset_manager();

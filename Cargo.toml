@@ -155,3 +155,4 @@ android-activity = { version = "0.4", features = [ "native-activity" ] }
 oboe = { version = "0.5", features = [ "java-interface", "shared-stdcxx" ] }
 jni = "0.21.1"
 ndk-context = "0.1.1"
+ndk = "0.7"

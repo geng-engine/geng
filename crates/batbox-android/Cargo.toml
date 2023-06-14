@@ -16,3 +16,4 @@ android-activity.workspace = true
 oboe.workspace = true
 jni.workspace = true
 ndk-context.workspace = true
+ndk.workspace = true
