@@ -335,12 +335,14 @@ impl Context {
 
     pub fn start_text_edit(&self, text: &str) {
         *self.edited_text.borrow_mut() = Some(text.to_owned());
-        // TODO: iOS/Android?
+        #[cfg(target_os = "android")]
+        batbox_android::app().show_soft_input(false);
     }
 
     pub fn stop_text_edit(&self) {
         *self.edited_text.borrow_mut() = None;
-        // TODO: iOS/Android?
+        #[cfg(target_os = "android")]
+        batbox_android::app().hide_soft_input(false);
     }
 }
 
