@@ -339,8 +339,9 @@ impl Context {
             self.event_loop.borrow_mut().run_return(|e, _, flow| {
                 if let winit::event::Event::WindowEvent { event: e, .. } = e {
                     handle_event(e)
+                } else if winit::event::Event::RedrawEventsCleared == e {
+                    *flow = winit::event_loop::ControlFlow::Exit;
                 }
-                *flow = winit::event_loop::ControlFlow::Exit;
             });
             if let Some(position) = mouse_move {
                 // This is here because of weird delta
