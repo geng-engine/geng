@@ -2,6 +2,7 @@
 
 use std::path::PathBuf;
 
+pub use android_activity as activity;
 pub type App = android_activity::AndroidApp;
 
 static APP: std::sync::OnceLock<App> = std::sync::OnceLock::new();
