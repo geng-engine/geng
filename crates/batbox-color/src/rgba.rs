@@ -234,6 +234,18 @@ impl<T: ColorComponent> std::ops::DerefMut for Rgba<T> {
     }
 }
 
+impl<T: ColorComponent> std::ops::Mul for Rgba<T> {
+    type Output = Self;
+    fn mul(self, rhs: Self) -> Self {
+        let mul = |a: T, b: T| T::from_f32(a.as_f32() * b.as_f32());
+        let r = mul(self.r, rhs.r);
+        let g = mul(self.g, rhs.g);
+        let b = mul(self.b, rhs.b);
+        let a = mul(self.a, rhs.a);
+        Self { r, g, b, a }
+    }
+}
+
 #[test]
 fn test_deref() {
     let color = Rgba::opaque(1, 2, 3);
