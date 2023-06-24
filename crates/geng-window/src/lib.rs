@@ -13,6 +13,7 @@ mod events;
 pub use cursor::*;
 pub use events::*;
 
+#[derive(Clone)]
 pub struct Options {
     pub fullscreen: bool,
     pub vsync: bool,

@@ -4,9 +4,10 @@ use anyhow::Context as _;
 use std::{ffi::c_void, ops::DerefMut};
 
 pub struct Context {
-    window: winit::window::Window,
-    gl_ctx: glutin::context::PossiblyCurrentContext,
-    gl_surface: glutin::surface::Surface<glutin::surface::WindowSurface>,
+    options: Options,
+    window: RefCell<Option<winit::window::Window>>,
+    gl_ctx: RefCell<Option<glutin::context::PossiblyCurrentContext>>,
+    gl_surface: RefCell<Option<glutin::surface::Surface<glutin::surface::WindowSurface>>>,
     event_loop: RefCell<winit::event_loop::EventLoop<()>>,
     is_fullscreen: Cell<bool>,
     focused: Cell<bool>,
@@ -17,47 +18,94 @@ pub struct Context {
     edited_text: RefCell<Option<String>>,
 }
 
+fn create_window_builder(options: &Options) -> winit::window::WindowBuilder {
+    let mut builder = winit::window::WindowBuilder::new();
+    if let Some(size) = options.size {
+        builder = builder.with_inner_size(winit::dpi::PhysicalSize {
+            width: size.x as u32,
+            height: size.y as u32,
+        });
+    }
+    builder = builder.with_title(&options.title);
+    builder = builder.with_transparent(options.transparency);
+    builder
+}
+
+fn resume<T>(
+    window_field: &mut Option<winit::window::Window>,
+    window_target: Option<&winit::event_loop::EventLoopWindowTarget<T>>,
+    options: &Options,
+    gl_ctx_field: &mut Option<glutin::context::PossiblyCurrentContext>,
+    gl_surface_field: &mut Option<glutin::surface::Surface<glutin::surface::WindowSurface>>,
+) {
+    let gl_ctx = gl_ctx_field.as_mut().unwrap();
+    let gl_config = glutin::config::GetGlConfig::config(gl_ctx);
+    let window = window_field.take().unwrap_or_else(|| {
+        let window_builder = create_window_builder(options);
+        glutin_winit::finalize_window(window_target.unwrap(), window_builder, &gl_config).unwrap()
+    });
+
+    let attrs = glutin_winit::GlWindow::build_surface_attributes(&window, <_>::default());
+    let gl_surface = unsafe {
+        glutin::prelude::GlDisplay::create_window_surface(
+            &glutin::display::GetGlDisplay::display(&gl_config),
+            &gl_config,
+            &attrs,
+        )
+        .unwrap()
+    };
+
+    // Make it current.
+    glutin::prelude::PossiblyCurrentContextGlSurfaceAccessor::make_current(gl_ctx, &gl_surface)
+        .unwrap();
+
+    // Try setting vsync.
+    if let Err(res) = glutin::surface::GlSurface::set_swap_interval(
+        &gl_surface,
+        gl_ctx,
+        if options.vsync {
+            glutin::surface::SwapInterval::Wait(std::num::NonZeroU32::new(1).unwrap())
+        } else {
+            glutin::surface::SwapInterval::DontWait
+        },
+    ) {
+        log::error!("Error setting vsync: {res:?}");
+    }
+
+    window_field.replace(window);
+    gl_surface_field.replace(gl_surface);
+}
+
 impl Context {
     pub fn new(options: &Options) -> Self {
         #[cfg(target_os = "android")]
         let event_loop = {
             use winit::platform::android::EventLoopBuilderExtAndroid;
-            // TODO
-            // android_logger::init_once(
-            //     android_logger::Config::default().with_min_level(log::Level::Trace),
-            // );
-            let mut event_loop = winit::event_loop::EventLoopBuilder::new()
+            winit::event_loop::EventLoopBuilder::new()
                 .with_android_app(batbox_android::app().clone())
-                .build();
-            use winit::platform::run_return::EventLoopExtRunReturn;
-            event_loop.run_return(|e, _, flow| {
-                if let winit::event::Event::Resumed = e {
-                    *flow = winit::event_loop::ControlFlow::Exit;
-                }
-            });
-            event_loop
+                .build()
         };
         #[cfg(not(target_os = "android"))]
         let event_loop = winit::event_loop::EventLoop::<()>::new();
+
         let (window, gl_config) = glutin_winit::DisplayBuilder::new()
-            .with_window_builder(Some({
-                let mut builder = winit::window::WindowBuilder::new();
-                if let Some(size) = options.size {
-                    builder = builder.with_inner_size(winit::dpi::PhysicalSize {
-                        width: size.x as u32,
-                        height: size.y as u32,
-                    });
-                }
-                builder = builder.with_title(&options.title);
-                builder = builder.with_transparent(options.transparency);
-                builder
-            }))
+            .with_window_builder(
+                // Only windows requires the window to be present before creating the display.
+                // Other platforms don't really need one.
+                //
+                // XXX if you don't care about running on android or so you can safely remove
+                // this condition and always pass the window builder.
+                if !cfg!(target_os = "android") {
+                    Some(create_window_builder(options))
+                } else {
+                    None
+                },
+            )
             .build(
                 &event_loop,
                 glutin::config::ConfigTemplateBuilder::new()
                     .with_transparency(options.transparency),
-                |mut configs| {
-                    if options.vsync {}
+                |configs| {
                     let config = if options.antialias {
                         configs
                             .into_iter()
@@ -73,48 +121,43 @@ impl Context {
                 },
             )
             .unwrap();
-        let window = window.unwrap();
-        // .with_vsync(options.vsync)
-        let raw_window_handle = raw_window_handle::HasRawWindowHandle::raw_window_handle(&window);
-
+        let raw_window_handle = window
+            .as_ref()
+            .map(|window| raw_window_handle::HasRawWindowHandle::raw_window_handle(window));
         let gl_display = glutin::display::GetGlDisplay::display(&gl_config);
-        let context_attributes = glutin::context::ContextAttributesBuilder::new()
-            // TODO
-            // .with_profile(glutin::context::GlProfile::Core)
-            // .with_context_api(glutin::context::ContextApi::OpenGl(Some(
-            //     glutin::context::Version::new(3, 3),
-            // )))
-            .build(Some(raw_window_handle));
+        let context_attributes =
+            glutin::context::ContextAttributesBuilder::new().build(raw_window_handle);
 
-        let (gl_surface, gl_ctx) = {
-            let attrs = glutin_winit::GlWindow::build_surface_attributes(&window, <_>::default());
-            let surface = unsafe {
-                glutin::display::GlDisplay::create_window_surface(&gl_display, &gl_config, &attrs)
-                    .expect("Failed to create window surface")
-            };
-            let context = glutin::prelude::NotCurrentGlContextSurfaceAccessor::make_current(
-                unsafe {
-                    glutin::display::GlDisplay::create_context(
-                        &gl_display,
-                        &gl_config,
-                        &context_attributes,
-                    )
-                    .expect("Failed to create context")
-                },
-                &surface,
-            )
-            .expect("Failed to make context current");
-            (surface, context)
+        let gl_ctx = unsafe {
+            glutin::display::GlDisplay::create_context(&gl_display, &gl_config, &context_attributes)
+                .expect("Failed to create context")
         };
-        glutin::surface::GlSurface::set_swap_interval(
-            &gl_surface,
-            &gl_ctx,
-            match options.vsync {
-                true => glutin::surface::SwapInterval::Wait(1.try_into().unwrap()),
-                false => glutin::surface::SwapInterval::DontWait,
-            },
-        )
-        .expect("Failed to setup vsync");
+
+        // Continuation of out android hack
+        let mut window = window;
+        let mut gl_ctx =
+            Some(glutin::prelude::NotCurrentGlContext::treat_as_possibly_current(gl_ctx));
+        let mut gl_surface = None;
+        let mut event_loop = event_loop;
+        if cfg!(target_os = "android") {
+            use winit::platform::run_return::EventLoopExtRunReturn;
+            event_loop.run_return(|e, window_target, flow| {
+                if let winit::event::Event::Resumed = e {
+                    resume(
+                        &mut window,
+                        Some(window_target),
+                        options,
+                        &mut gl_ctx,
+                        &mut gl_surface,
+                    );
+                    *flow = winit::event_loop::ControlFlow::Exit;
+                }
+            });
+        } else {
+            resume::<()>(&mut window, None, options, &mut gl_ctx, &mut gl_surface);
+        }
+        assert!(gl_surface.is_some());
+
         let ugli = Ugli::create_from_glutin(|symbol| {
             glutin::display::GlDisplay::get_proc_address(
                 &gl_display,
@@ -122,10 +165,11 @@ impl Context {
             ) as *const c_void
         });
         Self {
-            window,
+            options: options.clone(),
+            window: RefCell::new(window),
             event_loop: RefCell::new(event_loop),
-            gl_surface,
-            gl_ctx,
+            gl_surface: RefCell::new(gl_surface),
+            gl_ctx: RefCell::new(gl_ctx),
             ugli,
             is_fullscreen: Cell::new(false),
             focused: Cell::new(false),
@@ -137,13 +181,17 @@ impl Context {
     }
 
     pub fn real_size(&self) -> vec2<usize> {
-        let size = self.window.inner_size();
+        let size = match &*self.window.borrow() {
+            Some(window) => window.inner_size(),
+            None => return vec2::ZERO,
+        };
         let (width, height) = (size.width, size.height);
         vec2(width as usize, height as usize)
     }
 
     pub fn set_fullscreen(&self, fullscreen: bool) {
-        self.window.set_fullscreen(if fullscreen {
+        let Some(window) = &*self.window.borrow() else { return };
+        window.set_fullscreen(if fullscreen {
             Some(winit::window::Fullscreen::Borderless(None))
         } else {
             None
@@ -156,6 +204,7 @@ impl Context {
     }
 
     pub fn set_icon(&self, path: &std::path::Path) -> anyhow::Result<()> {
+        let Some(window) = &*self.window.borrow() else { return Ok(()) };
         let image = image::open(path).context(format!("Failed to load {path:?}"))?;
         let image = match image {
             image::DynamicImage::ImageRgba8(image) => image,
@@ -164,12 +213,18 @@ impl Context {
         let width = image.width();
         let height = image.height();
         let icon = winit::window::Icon::from_rgba(image.into_raw(), width, height)?;
-        self.window.set_window_icon(Some(icon));
+        window.set_window_icon(Some(icon));
         Ok(())
     }
 
     pub fn swap_buffers(&self, event_handler: impl Fn(Event)) {
-        glutin::surface::GlSurface::swap_buffers(&self.gl_surface, &self.gl_ctx).unwrap();
+        if let Some(gl_surface) = &*self.gl_surface.borrow() {
+            glutin::surface::GlSurface::swap_buffers(
+                gl_surface,
+                self.gl_ctx.borrow().as_ref().unwrap(),
+            )
+            .unwrap();
+        }
         for event in self.get_events() {
             if let Event::KeyDown { key: Key::Escape } = event {
                 self.unlock_cursor();
@@ -208,26 +263,26 @@ impl Context {
     }
 
     pub fn set_cursor_position(&self, position: vec2<f64>) {
+        let Some(window) = &*self.window.borrow() else { return };
         self.mouse_pos.set(position);
         let position = vec2(position.x, self.real_size().y as f64 - 1.0 - position.y); // TODO: WAT
-        if let Err(e) = self
-            .window
-            .set_cursor_position(winit::dpi::PhysicalPosition::new(position.x, position.y))
+        if let Err(e) =
+            window.set_cursor_position(winit::dpi::PhysicalPosition::new(position.x, position.y))
         {
             log::error!("Failed to set cursor position: {:?}", e);
         }
     }
 
     pub fn set_cursor_type(&self, cursor_type: CursorType) {
+        let Some(window) = &*self.window.borrow() else { return };
         use winit::window::CursorIcon as GC;
-        self.window.set_cursor_icon(match cursor_type {
+        window.set_cursor_icon(match cursor_type {
             CursorType::Default => GC::Default,
             CursorType::Pointer => GC::Pointer,
             CursorType::Drag => GC::AllScroll,
             CursorType::None => GC::Default,
         });
-        self.window
-            .set_cursor_visible(cursor_type != CursorType::None);
+        window.set_cursor_visible(cursor_type != CursorType::None);
     }
 
     fn get_events(&self) -> Vec<Event> {
@@ -305,19 +360,16 @@ impl Context {
                 }
                 winit::event::WindowEvent::Resized(new_size) => {
                     if new_size.width != 0 && new_size.height != 0 {
-                        log::debug!("Resizing to {new_size:?}");
-                        glutin::surface::GlSurface::resize(
-                            &self.gl_surface,
-                            &self.gl_ctx,
-                            new_size.width.try_into().unwrap(),
-                            new_size.height.try_into().unwrap(),
-                        );
+                        if let Some(gl_surface) = &*self.gl_surface.borrow() {
+                            log::debug!("Resizing to {new_size:?}");
+                            glutin::surface::GlSurface::resize(
+                                gl_surface,
+                                self.gl_ctx.borrow().as_ref().unwrap(),
+                                new_size.width.try_into().unwrap(),
+                                new_size.height.try_into().unwrap(),
+                            );
+                        }
                     }
-                    // glutin_winit::GlWindow::resize_surface(
-                    //     &self.window,
-                    //     &self.gl_surface,
-                    //     &self.gl_ctx,
-                    // );
                 }
                 winit::event::WindowEvent::Touch(touch) => {
                     let geng_touch = Touch {
@@ -336,13 +388,43 @@ impl Context {
             };
             use winit::platform::run_return::EventLoopExtRunReturn;
             let prev_mouse = self.mouse_pos.get();
-            self.event_loop.borrow_mut().run_return(|e, _, flow| {
-                if let winit::event::Event::WindowEvent { event: e, .. } = e {
-                    handle_event(e)
-                } else if winit::event::Event::RedrawEventsCleared == e {
-                    *flow = winit::event_loop::ControlFlow::Exit;
-                }
-            });
+            self.event_loop
+                .borrow_mut()
+                .run_return(|e, window_target, flow| match e {
+                    winit::event::Event::WindowEvent { event: e, .. } => handle_event(e),
+                    winit::event::Event::RedrawEventsCleared
+                        if glutin::prelude::PossiblyCurrentGlContext::is_current(
+                            self.gl_ctx.borrow().as_ref().unwrap(),
+                        ) =>
+                    {
+                        *flow = winit::event_loop::ControlFlow::Exit;
+                    }
+                    winit::event::Event::Resumed => {
+                        log::debug!("Resumed!");
+                        resume(
+                            &mut self.window.borrow_mut(),
+                            Some(window_target),
+                            &self.options,
+                            &mut self.gl_ctx.borrow_mut(),
+                            &mut self.gl_surface.borrow_mut(),
+                        );
+                    }
+                    winit::event::Event::Suspended => {
+                        log::debug!("Suspended!");
+                        self.window.take();
+                        if let Some(_gl_surface) = self.gl_surface.take() {
+                            self.gl_ctx.replace(Some(
+                                glutin::prelude::NotCurrentGlContext::treat_as_possibly_current(
+                                    glutin::prelude::PossiblyCurrentGlContext::make_not_current(
+                                        self.gl_ctx.take().unwrap(),
+                                    )
+                                    .unwrap(),
+                                ),
+                            ));
+                        }
+                    }
+                    _ => {}
+                });
             if let Some(position) = mouse_move {
                 // This is here because of weird delta
                 events.push(Event::MouseMove {
