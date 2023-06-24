@@ -24,6 +24,7 @@
           rust-version = ({ version = "latest"; } // rust).version;
           rust-toolchain = pkgs.rust-bin.stable.${rust-version}.default.override
             {
+              extensions = [ "rust-src" ];
               targets = [
                 "wasm32-unknown-unknown"
                 "x86_64-pc-windows-gnu"
