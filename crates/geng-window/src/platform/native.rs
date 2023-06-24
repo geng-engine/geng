@@ -49,25 +49,32 @@ impl Context {
                     });
                 }
                 builder = builder.with_title(&options.title);
+                builder = builder.with_transparent(options.transparency);
                 builder
             }))
-            .build(&event_loop, Default::default(), |configs| {
-                if options.vsync {}
-                if options.antialias {
-                    configs
-                        .into_iter()
-                        .max_by_key(|config| glutin::config::GlConfig::num_samples(config))
-                } else {
-                    configs
-                        .into_iter()
-                        .min_by_key(|config| glutin::config::GlConfig::num_samples(config))
-                }
-                .expect("Could not find fitting config")
-            })
+            .build(
+                &event_loop,
+                glutin::config::ConfigTemplateBuilder::new()
+                    .with_transparency(options.transparency),
+                |mut configs| {
+                    if options.vsync {}
+                    let config = if options.antialias {
+                        configs
+                            .into_iter()
+                            .max_by_key(|config| glutin::config::GlConfig::num_samples(config))
+                    } else {
+                        configs
+                            .into_iter()
+                            .min_by_key(|config| glutin::config::GlConfig::num_samples(config))
+                    }
+                    .expect("Could not find fitting config");
+                    log::debug!("{config:#?}");
+                    config
+                },
+            )
             .unwrap();
         let window = window.unwrap();
         // .with_vsync(options.vsync)
-        // .with_multisampling(if options.antialias { 8 } else { 0 })
         let raw_window_handle = raw_window_handle::HasRawWindowHandle::raw_window_handle(&window);
 
         let gl_display = glutin::display::GetGlDisplay::display(&gl_config);
@@ -215,7 +222,7 @@ impl Context {
         use winit::window::CursorIcon as GC;
         self.window.set_cursor_icon(match cursor_type {
             CursorType::Default => GC::Default,
-            CursorType::Pointer => GC::Hand,
+            CursorType::Pointer => GC::Pointer,
             CursorType::Drag => GC::AllScroll,
             CursorType::None => GC::Default,
         });
@@ -232,7 +239,10 @@ impl Context {
             let mut mouse_move = None;
             let mut handle_event = |e: winit::event::WindowEvent| match e {
                 winit::event::WindowEvent::Focused(focus) => self.focused.set(focus),
-                winit::event::WindowEvent::CloseRequested => self.should_close.set(true),
+                winit::event::WindowEvent::CloseRequested => {
+                    log::debug!("Close requested");
+                    self.should_close.set(true);
+                }
                 winit::event::WindowEvent::MouseWheel { delta, .. } => {
                     events.push(Event::Wheel {
                         delta: match delta {
@@ -265,39 +275,49 @@ impl Context {
                         });
                     }
                 }
-                winit::event::WindowEvent::KeyboardInput { input, .. } => {
+                winit::event::WindowEvent::KeyboardInput { event, .. } => {
                     let mut edited_text = self.edited_text.borrow_mut();
-                    if let Some(text) = edited_text.deref_mut() {
-                        if input.state == winit::event::ElementState::Pressed {
-                            if input.virtual_keycode == Some(winit::event::VirtualKeyCode::Back) {
-                                text.pop();
-                                events.push(Event::EditText(text.clone()));
+                    if let Some(edited_text) = edited_text.deref_mut() {
+                        if event.state == winit::event::ElementState::Pressed {
+                            if event.physical_key == winit::keyboard::KeyCode::Backspace {
+                                edited_text.pop();
+                                events.push(Event::EditText(edited_text.clone()));
+                            }
+                            #[cfg(not(target_os = "android"))]
+                            {
+                                use winit::platform::modifier_supplement::KeyEventExtModifierSupplement;
+                                if let Some(text) =
+                                    KeyEventExtModifierSupplement::text_with_all_modifiers(&event)
+                                {
+                                    for c in text.chars().filter(|c| !char::is_ascii_control(c)) {
+                                        edited_text.push(c);
+                                    }
+                                    events.push(Event::EditText(edited_text.clone()));
+                                }
                             }
                         }
                     }
-                    if let Some(key) = input.virtual_keycode {
-                        let key = from_glutin_key(key);
-                        events.push(match input.state {
-                            winit::event::ElementState::Pressed => Event::KeyDown { key },
-                            winit::event::ElementState::Released => Event::KeyUp { key },
-                        });
-                    }
+                    let key = from_winit_key(event.physical_key);
+                    events.push(match event.state {
+                        winit::event::ElementState::Pressed => Event::KeyDown { key },
+                        winit::event::ElementState::Released => Event::KeyUp { key },
+                    });
                 }
-                winit::event::WindowEvent::Resized(_new_size) => {
-                    glutin_winit::GlWindow::resize_surface(
-                        &self.window,
-                        &self.gl_surface,
-                        &self.gl_ctx,
-                    );
-                }
-                winit::event::WindowEvent::ReceivedCharacter(c) => {
-                    if !c.is_ascii_control() {
-                        let mut edited_text = self.edited_text.borrow_mut();
-                        if let Some(text) = edited_text.deref_mut() {
-                            text.push(c);
-                            events.push(Event::EditText(text.clone()));
-                        }
+                winit::event::WindowEvent::Resized(new_size) => {
+                    if new_size.width != 0 && new_size.height != 0 {
+                        log::debug!("Resizing to {new_size:?}");
+                        glutin::surface::GlSurface::resize(
+                            &self.gl_surface,
+                            &self.gl_ctx,
+                            new_size.width.try_into().unwrap(),
+                            new_size.height.try_into().unwrap(),
+                        );
                     }
+                    // glutin_winit::GlWindow::resize_surface(
+                    //     &self.window,
+                    //     &self.gl_surface,
+                    //     &self.gl_ctx,
+                    // );
                 }
                 winit::event::WindowEvent::Touch(touch) => {
                     let geng_touch = Touch {
@@ -346,66 +366,66 @@ impl Context {
     }
 }
 
-fn from_glutin_key(key: winit::event::VirtualKeyCode) -> Key {
-    use winit::event::VirtualKeyCode as GKey;
+fn from_winit_key(key: winit::keyboard::KeyCode) -> Key {
+    use winit::keyboard::KeyCode as GKey;
     match key {
-        GKey::Key0 => Key::Num0,
-        GKey::Key1 => Key::Num1,
-        GKey::Key2 => Key::Num2,
-        GKey::Key3 => Key::Num3,
-        GKey::Key4 => Key::Num4,
-        GKey::Key5 => Key::Num5,
-        GKey::Key6 => Key::Num6,
-        GKey::Key7 => Key::Num7,
-        GKey::Key8 => Key::Num8,
-        GKey::Key9 => Key::Num9,
+        GKey::Digit0 => Key::Num0,
+        GKey::Digit1 => Key::Num1,
+        GKey::Digit2 => Key::Num2,
+        GKey::Digit3 => Key::Num3,
+        GKey::Digit4 => Key::Num4,
+        GKey::Digit5 => Key::Num5,
+        GKey::Digit6 => Key::Num6,
+        GKey::Digit7 => Key::Num7,
+        GKey::Digit8 => Key::Num8,
+        GKey::Digit9 => Key::Num9,
 
-        GKey::A => Key::A,
-        GKey::B => Key::B,
-        GKey::C => Key::C,
-        GKey::D => Key::D,
-        GKey::E => Key::E,
-        GKey::F => Key::F,
-        GKey::G => Key::G,
-        GKey::H => Key::H,
-        GKey::I => Key::I,
-        GKey::J => Key::J,
-        GKey::K => Key::K,
-        GKey::L => Key::L,
-        GKey::M => Key::M,
-        GKey::N => Key::N,
-        GKey::O => Key::O,
-        GKey::P => Key::P,
-        GKey::Q => Key::Q,
-        GKey::R => Key::R,
-        GKey::S => Key::S,
-        GKey::T => Key::T,
-        GKey::U => Key::U,
-        GKey::V => Key::V,
-        GKey::W => Key::W,
-        GKey::X => Key::X,
-        GKey::Y => Key::Y,
-        GKey::Z => Key::Z,
+        GKey::KeyA => Key::A,
+        GKey::KeyB => Key::B,
+        GKey::KeyC => Key::C,
+        GKey::KeyD => Key::D,
+        GKey::KeyE => Key::E,
+        GKey::KeyF => Key::F,
+        GKey::KeyG => Key::G,
+        GKey::KeyH => Key::H,
+        GKey::KeyI => Key::I,
+        GKey::KeyJ => Key::J,
+        GKey::KeyK => Key::K,
+        GKey::KeyL => Key::L,
+        GKey::KeyM => Key::M,
+        GKey::KeyN => Key::N,
+        GKey::KeyO => Key::O,
+        GKey::KeyP => Key::P,
+        GKey::KeyQ => Key::Q,
+        GKey::KeyR => Key::R,
+        GKey::KeyS => Key::S,
+        GKey::KeyT => Key::T,
+        GKey::KeyU => Key::U,
+        GKey::KeyV => Key::V,
+        GKey::KeyW => Key::W,
+        GKey::KeyX => Key::X,
+        GKey::KeyY => Key::Y,
+        GKey::KeyZ => Key::Z,
 
         GKey::Escape => Key::Escape,
         GKey::Space => Key::Space,
-        GKey::Return => Key::Enter,
-        GKey::Back => Key::Backspace,
+        GKey::Enter => Key::Enter,
+        GKey::Backspace => Key::Backspace,
         GKey::Tab => Key::Tab,
 
-        GKey::LShift => Key::LShift,
-        GKey::RShift => Key::RShift,
+        GKey::ShiftLeft => Key::LShift,
+        GKey::ShiftRight => Key::RShift,
 
-        GKey::LControl => Key::LCtrl,
-        GKey::RControl => Key::RCtrl,
+        GKey::ControlLeft => Key::LCtrl,
+        GKey::ControlRight => Key::RCtrl,
 
-        GKey::LAlt => Key::LAlt,
-        GKey::RAlt => Key::RAlt,
+        GKey::AltLeft => Key::LAlt,
+        GKey::AltRight => Key::RAlt,
 
-        GKey::Left => Key::Left,
-        GKey::Right => Key::Right,
-        GKey::Up => Key::Up,
-        GKey::Down => Key::Down,
+        GKey::ArrowLeft => Key::Left,
+        GKey::ArrowRight => Key::Right,
+        GKey::ArrowUp => Key::Up,
+        GKey::ArrowDown => Key::Down,
 
         GKey::PageUp => Key::PageUp,
         GKey::PageDown => Key::PageDown,
