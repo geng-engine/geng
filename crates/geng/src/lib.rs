@@ -4,7 +4,7 @@
 //! `geng` (Game ENGine) is an engine for Rust Programming Language.
 //!
 //! # Quick start
-//! More examples are available [here](https://github.com/kuviman/geng/tree/main/crates/geng/examples).
+//! More examples are available [here](https://github.com/geng-engine/geng/tree/main/crates/geng/examples).
 //!
 //! ```no_run
 //! use geng::prelude::*;

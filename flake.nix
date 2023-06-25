@@ -90,7 +90,7 @@
               pname = "cargo-apk";
               version = "0.9.7";
               src = builtins.fetchGit {
-                url = "https://github.com/kuviman/cargo-apk";
+                url = "https://github.com/geng-engine/cargo-apk";
                 rev = "03814af67622d7f5f8f048081b407c3909b6b289";
               };
               cargoExtraArgs = "--package cargo-apk";
