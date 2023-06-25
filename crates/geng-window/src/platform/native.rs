@@ -62,8 +62,7 @@ fn resume<T>(
     };
 
     // Make it current.
-    glutin::prelude::PossiblyCurrentContextGlSurfaceAccessor::make_current(gl_ctx, &gl_surface)
-        .unwrap();
+    glutin::context::PossiblyCurrentGlContext::make_current(gl_ctx, &gl_surface).unwrap();
 
     // Try setting vsync.
     if let Err(res) = glutin::surface::GlSurface::set_swap_interval(

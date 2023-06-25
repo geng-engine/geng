@@ -98,23 +98,21 @@ atomic_float = "0.1"
 num_enum = "0.5"
 gltf = "1"
 http = "0.2"
-gilrs = { version = "0.10", features = [
-    "serde-serialize",
-] }
+gilrs = { version = "0.10", features = ["serde-serialize"] }
 
 # Native
 libc = "0.2"
 tinyfiledialogs = "3"
 directories = "4"
 image = "0.24"
-winit = "0.28"
+winit.git = "https://github.com/rust-windowing/winit"
 raw-window-handle = "0.5"
-glutin-winit = "0.3"
-glutin = "0.30"
+glutin-winit = { git = "https://github.com/geng-engine/glutin", branch = "geng" }
+glutin = { git = "https://github.com/geng-engine/glutin", branch = "geng" }
 threadpool = "1"
 num_cpus = "1"
 notify = "5"
-rodio = { git = "https://github.com/kuviman/rodio", branch = "mp3-duration" } # TODO
+rodio = { git = "https://github.com/geng-engine/rodio", branch = "mp3-duration" } # TODO
 ws = "0.9"
 gl = "0.14"
 field-offset = "0.3"
@@ -151,8 +149,8 @@ fs_extra = "1"
 cargo_metadata = "0.15"
 
 # android
-android-activity = { version = "0.4", features = [ "native-activity" ] }
-oboe = { version = "0.5", features = [ "java-interface", "shared-stdcxx" ] }
+android-activity = { version = "0.4", features = ["native-activity"] }
+oboe = { version = "0.5", features = ["java-interface", "shared-stdcxx"] }
 jni = "0.21.1"
 ndk-context = "0.1.1"
 ndk = "0.7"
