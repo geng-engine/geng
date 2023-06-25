@@ -396,7 +396,7 @@ impl Context {
             let prev_mouse = self.mouse_pos.get();
             self.event_loop
                 .borrow_mut()
-                .run_return(|e, window_target, flow| match dbg!(e) {
+                .run_return(|e, window_target, flow| match e {
                     winit::event::Event::WindowEvent { event: e, .. } => handle_event(e),
                     winit::event::Event::RedrawEventsCleared
                         if glutin::prelude::PossiblyCurrentGlContext::is_current(
@@ -406,8 +406,8 @@ impl Context {
                         *flow = winit::event_loop::ControlFlow::Exit;
                     }
                     winit::event::Event::Resumed => {
-                        log::debug!("Resumed!");
                         if self.gl_surface.borrow().is_none() {
+                            log::debug!("Resumed!");
                             resume(
                                 &mut self.window.borrow_mut(),
                                 Some(window_target),
