@@ -1,0 +1,15 @@
+[package]
+name = "android-test"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[package.metadata.android]
+sdk.target_sdk_version = 33
+application.activity.orientation = "landscape"
+application.activity.theme = "@android:style/Theme.NoTitleBar.Fullscreen"
+
+[dependencies]
+geng.workspace = true

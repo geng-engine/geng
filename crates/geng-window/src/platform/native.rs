@@ -145,19 +145,23 @@ impl Context {
         let mut gl_surface = None;
         let mut event_loop = event_loop;
         if cfg!(target_os = "android") {
-            use winit::platform::run_return::EventLoopExtRunReturn;
-            event_loop.run_return(|e, window_target, flow| {
-                if let winit::event::Event::Resumed = e {
-                    resume(
-                        &mut window,
-                        Some(window_target),
-                        options,
-                        &mut gl_ctx,
-                        &mut gl_surface,
-                    );
-                    *flow = winit::event_loop::ControlFlow::Exit;
-                }
-            });
+            use winit::platform::pump_events::EventLoopExtPumpEvents;
+            let mut resumed = false;
+            while !resumed {
+                event_loop.pump_events(|e, window_target, flow| {
+                    if let winit::event::Event::Resumed = e {
+                        resume(
+                            &mut window,
+                            Some(window_target),
+                            options,
+                            &mut gl_ctx,
+                            &mut gl_surface,
+                        );
+                        resumed = true;
+                        // *flow = winit::event_loop::ControlFlow::Exit;
+                    }
+                });
+            }
         } else {
             resume::<()>(&mut window, None, options, &mut gl_ctx, &mut gl_surface);
         }
@@ -391,36 +395,38 @@ impl Context {
                 }
                 _ => {}
             };
-            use winit::platform::run_return::EventLoopExtRunReturn;
+            use winit::platform::pump_events::EventLoopExtPumpEvents;
             let prev_mouse = self.mouse_pos.get();
             self.event_loop
                 .borrow_mut()
-                .run_return(|e, window_target, flow| match e {
-                    winit::event::Event::WindowEvent { event: e, .. } => handle_event(e),
-                    winit::event::Event::RedrawEventsCleared
-                        if glutin::prelude::PossiblyCurrentGlContext::is_current(
-                            self.gl_ctx.borrow().as_ref().unwrap(),
-                        ) =>
-                    {
-                        *flow = winit::event_loop::ControlFlow::Exit;
-                    }
-                    winit::event::Event::Resumed => {
-                        if self.gl_surface.borrow().is_none() {
-                            log::debug!("Resumed!");
-                            resume(
-                                &mut self.window.borrow_mut(),
-                                Some(window_target),
-                                &self.options,
-                                &mut self.gl_ctx.borrow_mut(),
-                                &mut self.gl_surface.borrow_mut(),
-                            );
+                .pump_events(|e, window_target, flow| {
+                    flow.set_wait();
+                    match dbg!(e) {
+                        winit::event::Event::WindowEvent { event: e, .. } => handle_event(e),
+                        winit::event::Event::RedrawEventsCleared
+                            if glutin::prelude::PossiblyCurrentGlContext::is_current(
+                                self.gl_ctx.borrow().as_ref().unwrap(),
+                            ) =>
+                        {
+                            // flow.set_exit();
                         }
-                    }
-                    winit::event::Event::Suspended => {
-                        log::debug!("Suspended!");
-                        self.window.take();
-                        if let Some(_gl_surface) = self.gl_surface.take() {
-                            self.gl_ctx.replace(Some(
+                        winit::event::Event::Resumed => {
+                            if self.gl_surface.borrow().is_none() {
+                                log::debug!("Resumed!");
+                                resume(
+                                    &mut self.window.borrow_mut(),
+                                    Some(window_target),
+                                    &self.options,
+                                    &mut self.gl_ctx.borrow_mut(),
+                                    &mut self.gl_surface.borrow_mut(),
+                                );
+                            }
+                        }
+                        winit::event::Event::Suspended => {
+                            log::debug!("Suspended!");
+                            self.window.take();
+                            if let Some(_gl_surface) = self.gl_surface.take() {
+                                self.gl_ctx.replace(Some(
                                 glutin::prelude::NotCurrentGlContext::treat_as_possibly_current(
                                     glutin::prelude::PossiblyCurrentGlContext::make_not_current(
                                         self.gl_ctx.take().unwrap(),
@@ -428,9 +434,10 @@ impl Context {
                                     .unwrap(),
                                 ),
                             ));
+                            }
                         }
+                        _ => {}
                     }
-                    _ => {}
                 });
             if let Some(position) = mouse_move {
                 // This is here because of weird delta

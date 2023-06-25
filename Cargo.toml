@@ -105,7 +105,7 @@ libc = "0.2"
 tinyfiledialogs = "3"
 directories = "4"
 image = "0.24"
-winit.git = "https://github.com/rust-windowing/winit"
+winit = { git = "https://github.com/rib/winit", branch = "run-ondemand-and-event-pumping" }
 raw-window-handle = "0.5"
 glutin-winit = { git = "https://github.com/geng-engine/glutin", branch = "geng" }
 glutin = { git = "https://github.com/geng-engine/glutin", branch = "geng" }
