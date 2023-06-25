@@ -18,6 +18,12 @@ pub struct Context {
     edited_text: RefCell<Option<String>>,
 }
 
+impl Drop for Context {
+    fn drop(&mut self) {
+        log::debug!("Dropping context");
+    }
+}
+
 fn create_window_builder(options: &Options) -> winit::window::WindowBuilder {
     let mut builder = winit::window::WindowBuilder::new();
     if let Some(size) = options.size {
@@ -390,7 +396,7 @@ impl Context {
             let prev_mouse = self.mouse_pos.get();
             self.event_loop
                 .borrow_mut()
-                .run_return(|e, window_target, flow| match e {
+                .run_return(|e, window_target, flow| match dbg!(e) {
                     winit::event::Event::WindowEvent { event: e, .. } => handle_event(e),
                     winit::event::Event::RedrawEventsCleared
                         if glutin::prelude::PossiblyCurrentGlContext::is_current(
@@ -401,13 +407,15 @@ impl Context {
                     }
                     winit::event::Event::Resumed => {
                         log::debug!("Resumed!");
-                        resume(
-                            &mut self.window.borrow_mut(),
-                            Some(window_target),
-                            &self.options,
-                            &mut self.gl_ctx.borrow_mut(),
-                            &mut self.gl_surface.borrow_mut(),
-                        );
+                        if self.gl_surface.borrow().is_none() {
+                            resume(
+                                &mut self.window.borrow_mut(),
+                                Some(window_target),
+                                &self.options,
+                                &mut self.gl_ctx.borrow_mut(),
+                                &mut self.gl_surface.borrow_mut(),
+                            );
+                        }
                     }
                     winit::event::Event::Suspended => {
                         log::debug!("Suspended!");
