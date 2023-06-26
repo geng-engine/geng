@@ -12,8 +12,8 @@ pub(crate) fn calc_text_constraints(
         min_size: vec2(
             font.measure(text, TEXT_ALIGN)
                 .map_or(0.0, |aabb| aabb.width() as f64),
-            size as f64,
-        ),
+            1.0,
+        ) * size as f64,
         flex: vec2(0.0, 0.0),
     }
 }
