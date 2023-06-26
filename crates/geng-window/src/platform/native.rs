@@ -401,7 +401,7 @@ impl Context {
                 .borrow_mut()
                 .pump_events(|e, window_target, flow| {
                     flow.set_wait();
-                    match dbg!(e) {
+                    match e {
                         winit::event::Event::WindowEvent { event: e, .. } => handle_event(e),
                         winit::event::Event::RedrawEventsCleared
                             if glutin::prelude::PossiblyCurrentGlContext::is_current(
