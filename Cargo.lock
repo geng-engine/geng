@@ -1853,7 +1853,7 @@ dependencies = [
  "ugli",
  "wasm-bindgen",
  "web-sys",
- "winit 0.28.6 (git+https://github.com/rib/winit?branch=run-ondemand-and-event-pumping)",
+ "winit",
 ]
 
 [[package]]
@@ -2010,7 +2010,7 @@ dependencies = [
 [[package]]
 name = "glutin"
 version = "0.30.8"
-source = "git+https://github.com/geng-engine/glutin?branch=geng#ef661ccb646827acecd6f0d66105c093a2b48335"
+source = "git+https://github.com/geng-engine/glutin?branch=geng#f01c200a5cab4d63d2a275c92af6b1c5d2844be1"
 dependencies = [
  "bitflags 2.3.2",
  "cfg_aliases",
@@ -2032,18 +2032,18 @@ dependencies = [
 [[package]]
 name = "glutin-winit"
 version = "0.3.0"
-source = "git+https://github.com/geng-engine/glutin?branch=geng#ef661ccb646827acecd6f0d66105c093a2b48335"
+source = "git+https://github.com/geng-engine/glutin?branch=geng#f01c200a5cab4d63d2a275c92af6b1c5d2844be1"
 dependencies = [
  "cfg_aliases",
  "glutin",
  "raw-window-handle",
- "winit 0.28.6 (git+https://github.com/rust-windowing/winit)",
+ "winit",
 ]
 
 [[package]]
 name = "glutin_egl_sys"
 version = "0.5.0"
-source = "git+https://github.com/geng-engine/glutin?branch=geng#ef661ccb646827acecd6f0d66105c093a2b48335"
+source = "git+https://github.com/geng-engine/glutin?branch=geng#f01c200a5cab4d63d2a275c92af6b1c5d2844be1"
 dependencies = [
  "gl_generator",
  "windows-sys 0.45.0",
@@ -2052,7 +2052,7 @@ dependencies = [
 [[package]]
 name = "glutin_glx_sys"
 version = "0.4.0"
-source = "git+https://github.com/geng-engine/glutin?branch=geng#ef661ccb646827acecd6f0d66105c093a2b48335"
+source = "git+https://github.com/geng-engine/glutin?branch=geng#f01c200a5cab4d63d2a275c92af6b1c5d2844be1"
 dependencies = [
  "gl_generator",
  "x11-dl",
@@ -2061,7 +2061,7 @@ dependencies = [
 [[package]]
 name = "glutin_wgl_sys"
 version = "0.4.0"
-source = "git+https://github.com/geng-engine/glutin?branch=geng#ef661ccb646827acecd6f0d66105c093a2b48335"
+source = "git+https://github.com/geng-engine/glutin?branch=geng#f01c200a5cab4d63d2a275c92af6b1c5d2844be1"
 dependencies = [
  "gl_generator",
 ]
@@ -2563,9 +2563,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.146"
+version = "0.2.147"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f92be4933c13fd498862a9e02a3055f8a8d9c039ce33db97306fd5a6caa7f29b"
+checksum = "b4668fb0ea861c1df094127ac5f1da3409a82116a4ba74fca2e58ef927159bb3"
 
 [[package]]
 name = "libloading"
@@ -4980,7 +4980,7 @@ checksum = "1a515f5799fe4961cb532f983ce2b23082366b898e52ffbce459c86f67c8378a"
 [[package]]
 name = "winit"
 version = "0.28.6"
-source = "git+https://github.com/rib/winit?branch=run-ondemand-and-event-pumping#32ba29af94249fde0725068ad5e88a4c55a97ca8"
+source = "git+https://github.com/rib/winit?branch=run-ondemand-and-event-pumping#d84d771465bf99bdc3d5f39c25bfb5ea85f218f3"
 dependencies = [
  "android-activity",
  "atomic-waker",
@@ -5005,48 +5005,6 @@ dependencies = [
  "raw-window-handle",
  "redox_syscall 0.3.5",
  "sctk-adwaita",
- "smithay-client-toolkit",
- "smol_str",
- "unicode-segmentation",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "wayland-backend",
- "wayland-client",
- "wayland-protocols",
- "web-sys",
- "web-time",
- "windows-sys 0.48.0",
- "x11-dl",
- "xkbcommon-dl",
-]
-
-[[package]]
-name = "winit"
-version = "0.28.6"
-source = "git+https://github.com/rust-windowing/winit#bc216b8f67015c8cee9ac6e9b64391c5b43ce765"
-dependencies = [
- "android-activity",
- "atomic-waker",
- "bitflags 2.3.2",
- "calloop",
- "cfg_aliases",
- "core-foundation",
- "core-graphics",
- "cursor-icon",
- "dispatch",
- "fnv",
- "js-sys",
- "libc",
- "log",
- "memmap2",
- "ndk",
- "ndk-sys",
- "objc2",
- "once_cell",
- "orbclient",
- "percent-encoding",
- "raw-window-handle",
- "redox_syscall 0.3.5",
  "smithay-client-toolkit",
  "smol_str",
  "unicode-segmentation",
