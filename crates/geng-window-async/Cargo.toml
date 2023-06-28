@@ -1,0 +1,59 @@
+[package]
+name = "geng-window-async"
+authors.workspace = true
+categories.workspace = true
+description.workspace = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]
+
+[dependencies]
+async-executor.workspace = true
+async-broadcast.workspace = true
+futures.workspace = true
+batbox-la.workspace = true
+anyhow.workspace = true
+ugli.workspace = true
+serde.workspace = true
+log.workspace = true
+gilrs.workspace = true
+clap.workspace = true
+
+[dev-dependencies]
+batbox-logger.workspace = true
+batbox-cli.workspace = true
+async-recursion.workspace = true
+
+[target.'cfg(target_os = "android")'.dependencies]
+batbox-android.workspace = true
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+js-sys.workspace = true
+web-sys = { workspace = true, features = [
+    "MouseEvent",
+    "TouchEvent",
+    "TouchList",
+    "Touch",
+    "WheelEvent",
+    "KeyboardEvent",
+    "DomRect",
+    "CssStyleDeclaration",
+    "HtmlCanvasElement",
+    "InputEvent",
+    "CompositionEvent",
+] }
+wasm-bindgen.workspace = true
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+winit.workspace = true
+glutin.workspace = true
+glutin-winit.workspace = true
+raw-window-handle.workspace = true
+image.workspace = true
