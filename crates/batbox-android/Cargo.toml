@@ -1,5 +1,5 @@
 [package]
-name = "batbox-color"
+name = "batbox-android"
 authors.workspace = true
 categories.workspace = true
 description.workspace = true
@@ -11,9 +11,9 @@ readme.workspace = true
 repository.workspace = true
 version.workspace = true
 
-[dependencies]
-batbox-approx.workspace = true
-batbox-la.workspace = true
-
-serde.workspace = true
-anyhow.workspace = true # TODO use thiserror
+[target.'cfg(target_os = "android")'.dependencies]
+android-activity.workspace = true
+oboe.workspace = true
+jni.workspace = true
+ndk-context.workspace = true
+ndk.workspace = true

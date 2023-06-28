@@ -54,13 +54,14 @@ impl geng::State for CrabRave {
         ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
         let camera = geng::Camera2d {
             center: vec2::ZERO,
-            rotation: 0.0,
+            rotation: Angle::ZERO,
             fov: 3.0,
         };
         let x = (self.t / 10.0).cos();
-        let body =
-            mat3::translate(vec2(x, 0.0) + vec2(1.0, 0.0).rotate(self.t) * vec2(1.0, 0.5) * 0.1)
-                * mat3::rotate(self.t.sin() * 0.2);
+        let body = mat3::translate(
+            vec2(x, 0.0)
+                + vec2(1.0, 0.0).rotate(Angle::from_radians(self.t)) * vec2(1.0, 0.5) * 0.1,
+        ) * mat3::rotate(Angle::from_radians(self.t.sin() * 0.2));
 
         let limb =
             |attach_pos: vec2<f32>, end_pos: vec2<f32>, target_end_pos: vec2<f32>| -> mat3<f32> {

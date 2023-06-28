@@ -92,7 +92,7 @@ impl Ugli {
         let gl = &self.inner.raw;
         log::info!("GL version: {:?}", gl.get_version_string());
         gl.enable(raw::DEPTH_TEST);
-        #[cfg(not(target_arch = "wasm32"))]
+        #[cfg(not(any(target_arch = "wasm32", target_os = "android")))]
         gl.enable(raw::PROGRAM_POINT_SIZE);
         gl.pixel_store(raw::UNPACK_ALIGNMENT, 1);
         self.check();

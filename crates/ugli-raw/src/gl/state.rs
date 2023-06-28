@@ -44,6 +44,9 @@ impl Context {
 
     pub fn clear_depth(&self, depth: ClampedFloat) {
         unsafe {
+            #[cfg(target_os = "android")]
+            gl::ClearDepthf(depth.into());
+            #[cfg(not(target_os = "android"))]
             gl::ClearDepth(depth.into());
         }
     }

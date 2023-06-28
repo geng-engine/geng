@@ -184,6 +184,7 @@ impl<T: UNum> Aabb2<T> {
         }
     }
 
+    /// Zip every value (coordinate) with another [Aabb2]
     pub fn zip<U>(self, other: Aabb2<U>) -> Aabb2<(T, U)> {
         Aabb2 {
             min: self.min.zip(other.min),
@@ -266,12 +267,12 @@ impl<T: UNum> Aabb2<T> {
     ///     vec2(1, 4),
     ///     vec2(-1, -1),
     ///     vec2(0, 3),
-    /// ]);
+    /// ]).unwrap();
     /// assert_eq!(aabb, Aabb2 { min: vec2(-1, -2), max: vec2(3, 4) });
     /// ```
-    pub fn points_bounding_box(points: impl IntoIterator<Item = vec2<T>>) -> Self {
+    pub fn points_bounding_box(points: impl IntoIterator<Item = vec2<T>>) -> Option<Self> {
         let mut points = points.into_iter();
-        let vec2(mut min_x, mut min_y) = points.next().expect("At least one point expected");
+        let vec2(mut min_x, mut min_y) = points.next()?;
         let mut max_x = min_x;
         let mut max_y = min_y;
         for vec2(x, y) in points {
@@ -281,9 +282,9 @@ impl<T: UNum> Aabb2<T> {
             max_x = partial_max(max_x, x);
             max_y = partial_max(max_y, y);
         }
-        Aabb2 {
+        Some(Aabb2 {
             min: vec2(min_x, min_y),
             max: vec2(max_x, max_y),
-        }
+        })
     }
 }

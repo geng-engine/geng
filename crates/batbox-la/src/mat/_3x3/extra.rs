@@ -65,7 +65,7 @@ impl<T: Float> mat3<T> {
     /// # Examples
     /// ```
     /// # use batbox_la::*;
-    /// let matrix = mat3::<f64>::rotate(0.123);
+    /// let matrix = mat3::<f64>::rotate(Angle::from_radians(0.123));
     /// let matrix_inv = matrix.inverse();
     /// let mult = matrix * matrix_inv;
     /// for i in 0..3 {

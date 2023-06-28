@@ -1,6 +1,7 @@
 //! Saving/loading preferences (small amounts of user data)
 //!
 //! Web implementation uses [local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)
+#![warn(missing_docs)]
 
 use serde::{de::DeserializeOwned, Serialize};
 

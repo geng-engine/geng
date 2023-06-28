@@ -4,7 +4,7 @@ use super::*;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Camera2d {
     pub center: vec2<f32>,
-    pub rotation: f32,
+    pub rotation: Angle<f32>,
     pub fov: f32,
 }
 

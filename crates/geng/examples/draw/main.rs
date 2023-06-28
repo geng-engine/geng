@@ -2,7 +2,7 @@ use geng::prelude::*;
 
 #[derive(geng::asset::Load)]
 struct Assets {
-    texture: ugli::Texture,
+    texture: Rc<ugli::Texture>,
 }
 
 struct Grid<'a> {
@@ -83,13 +83,14 @@ impl State {
             geng: geng.clone(),
             camera: geng::Camera2d {
                 center: vec2::ZERO,
-                rotation: 0.0,
+                rotation: Angle::ZERO,
                 fov: 10.0,
             },
             objects: vec![],
         };
         result.add(
-            draw2d::Quad::unit(Rgba::WHITE).transform(mat3::rotate(0.5) * mat3::scale_uniform(0.5)),
+            draw2d::Quad::unit(Rgba::WHITE)
+                .transform(mat3::rotate(Angle::from_radians(0.5)) * mat3::scale_uniform(0.5)),
         );
         result.add(draw2d::TexturedQuad::unit(ugli::Texture::new_with(
             geng.ugli(),
@@ -102,7 +103,11 @@ impl State {
                 _ => unreachable!(),
             },
         )));
-        result.add(draw2d::TexturedQuad::unit(assets.texture));
+        result.add(draw2d::TexturedQuad::unit(assets.texture.clone()));
+        result.add(
+            draw2d::TexturedQuad::unit(assets.texture.clone())
+                .sub_texture(Aabb2::ZERO.extend_positive(vec2::splat(0.5))),
+        );
         result.add(draw2d::TexturedQuad::unit({
             const SIZE: usize = 128;
             let mut texture = ugli::Texture::new_uninitialized(geng.ugli(), vec2(SIZE, SIZE));
@@ -135,10 +140,9 @@ impl State {
             texture
         }));
         result.add(draw2d::Ellipse::unit(Rgba::RED));
-        result.add(
-            draw2d::Ellipse::unit_with_cut(0.5, Rgba::RED)
-                .transform(mat3::rotate(f32::PI / 4.0) * mat3::scale(vec2(1.0, 0.5))),
-        );
+        result.add(draw2d::Ellipse::unit_with_cut(0.5, Rgba::RED).transform(
+            mat3::rotate(Angle::from_radians(f32::PI / 4.0)) * mat3::scale(vec2(1.0, 0.5)),
+        ));
         result.add(draw2d::Polygon::new_gradient(vec![
             draw2d::ColoredVertex {
                 a_pos: vec2(-1.0, -1.0),
@@ -166,11 +170,11 @@ impl State {
         ));
         result.add(
             draw2d::Text::unit(geng.default_font().clone(), "Hello!", Rgba::WHITE)
-                .transform(mat3::rotate(f32::PI / 6.0)),
+                .transform(mat3::rotate(Angle::from_radians(f32::PI / 6.0))),
         );
         result.add(
             draw2d::Text::unit(geng.default_font().clone(), "", Rgba::WHITE)
-                .transform(mat3::rotate(f32::PI / 6.0)),
+                .transform(mat3::rotate(Angle::from_radians(f32::PI / 6.0))),
         );
         result.add(draw2d::Segment::new(
             Segment(vec2(-3.0, -5.0), vec2(3.0, 5.0)),

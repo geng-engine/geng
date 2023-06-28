@@ -1,4 +1,5 @@
 //! Extra utilities for [Ord] and [PartialOrd] types
+#![warn(missing_docs)]
 
 use batbox_range::*;
 

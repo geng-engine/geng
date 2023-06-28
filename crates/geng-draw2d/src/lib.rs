@@ -241,6 +241,7 @@ impl Helper {
                     u_texture: texture,
                     u_framebuffer_size: framebuffer_size,
                     u_model_matrix: mat3::<f32>::identity(),
+                    u_texture_matrix: mat3::<f32>::identity(),
                 },
                 camera.uniforms(framebuffer_size.map(|x| x as f32)),
             ),

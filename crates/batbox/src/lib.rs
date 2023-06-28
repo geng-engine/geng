@@ -2,11 +2,7 @@
 //!
 //! Check out [prelude] which is supposed to be used like `use batbox::prelude::*`
 //! A lot of reexports of std and other [crates].
-
 #![warn(missing_docs)]
-
-#[allow(unused_imports)]
-use crate as batbox;
 
 pub mod crates {
     //! External crates
@@ -29,6 +25,8 @@ pub mod crates {
     pub use ::thiserror;
     pub use ::toml;
 
+    #[cfg(target_os = "android")]
+    pub use ::batbox_android as android;
     pub use ::batbox_approx as approx;
     pub use ::batbox_cli as cli;
     pub use ::batbox_cmp as cmp;
@@ -103,6 +101,9 @@ pub mod prelude {
         sync::{Arc, Mutex},
     };
 
+    #[cfg(target_os = "android")]
+    #[doc(no_inline)]
+    pub use crate::crates::android;
     #[doc(no_inline)]
     pub use crate::crates::approx::*;
     #[doc(no_inline)]

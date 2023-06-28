@@ -13,7 +13,7 @@ pub(crate) struct GengImpl {
     ui_theme: RefCell<Option<ui::Theme>>,
     pub(crate) options: ContextOptions,
     pub(crate) load_progress: RefCell<asset::LoadProgress>,
-    pub(crate) gilrs: RefCell<gilrs::Gilrs>,
+    pub(crate) gilrs: Option<RefCell<gilrs::Gilrs>>,
 }
 
 #[derive(Clone)]
@@ -101,7 +101,11 @@ impl Geng {
                 ui_theme: RefCell::new(None),
                 options,
                 load_progress: RefCell::new(asset::LoadProgress::new()),
-                gilrs: RefCell::new(gilrs::Gilrs::new().unwrap()),
+                gilrs: if cfg!(target_os = "android") {
+                    None
+                } else {
+                    Some(RefCell::new(gilrs::Gilrs::new().unwrap()))
+                },
             }),
         }
     }
@@ -122,8 +126,8 @@ impl Geng {
         &self.inner.asset_manager
     }
 
-    pub fn gilrs(&self) -> Ref<Gilrs> {
-        self.inner.gilrs.borrow()
+    pub fn gilrs(&self) -> Option<Ref<Gilrs>> {
+        self.inner.gilrs.as_ref().map(|gilrs| gilrs.borrow())
     }
 
     pub fn shader_lib(&self) -> &shader::Library {
@@ -169,6 +173,7 @@ impl Geng {
 
     /// Run the application
     pub fn run(self, state: impl State) {
+        self.finish_loading();
         let geng = &self;
         struct StateWrapper {
             state_manager: state::Manager,
@@ -273,8 +278,8 @@ impl Geng {
             let geng = geng.clone();
             // TODO: remove the busy loop to not use any resources?
             move || {
-                {
-                    let mut gilrs = geng.inner.gilrs.borrow_mut();
+                if let Some(gilrs) = &geng.inner.gilrs {
+                    let mut gilrs = gilrs.borrow_mut();
                     while let Some(gamepad_event) = gilrs.next_event() {
                         geng.inner.window.send_event(Event::Gamepad(gamepad_event));
                     }

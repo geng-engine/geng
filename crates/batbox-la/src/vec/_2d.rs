@@ -188,10 +188,10 @@ impl<T: Float> vec2<T> {
     /// ```
     /// # use batbox_la::*;
     /// let v = vec2(1.0, 2.0);
-    /// assert!((v.rotate(std::f32::consts::FRAC_PI_2) - vec2(-2.0, 1.0)).len() < 1e-5);
+    /// assert!((v.rotate(Angle::from_radians(std::f32::consts::FRAC_PI_2)) - vec2(-2.0, 1.0)).len() < 1e-5);
     /// ```
-    pub fn rotate(self, angle: T) -> Self {
-        let (sin, cos) = T::sin_cos(angle);
+    pub fn rotate(self, angle: Angle<T>) -> Self {
+        let (sin, cos) = angle.sin_cos();
         Self(self.x * cos - self.y * sin, self.x * sin + self.y * cos)
     }
 
@@ -252,10 +252,10 @@ impl<T: Float> vec2<T> {
     /// ```
     /// # use batbox_la::*;
     /// let v = vec2(0.0, 1.0);
-    /// assert_eq!(v.arg(), std::f32::consts::FRAC_PI_2);
+    /// assert_eq!(v.arg().as_radians(), std::f32::consts::FRAC_PI_2);
     /// ```
-    pub fn arg(self) -> T {
-        T::atan2(self.y, self.x)
+    pub fn arg(self) -> Angle<T> {
+        Angle::atan2(self.y, self.x)
     }
 
     /// Apply transformation matrix

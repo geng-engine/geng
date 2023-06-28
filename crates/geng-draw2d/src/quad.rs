@@ -61,6 +61,7 @@ impl Transform2d<f32> for Quad {
 pub struct TexturedQuad<T: std::borrow::Borrow<ugli::Texture>> {
     transform: mat3<f32>,
     texture: T,
+    texture_transform: mat3<f32>,
     color: Rgba<f32>,
 }
 
@@ -78,8 +79,15 @@ impl<T: std::borrow::Borrow<ugli::Texture>> TexturedQuad<T> {
     pub fn unit_colored(texture: T, color: Rgba<f32>) -> Self {
         Self {
             transform: mat3::identity(),
+            texture_transform: mat3::identity(),
             texture,
             color,
+        }
+    }
+    pub fn sub_texture(self, aabb: Aabb2<f32>) -> Self {
+        Self {
+            texture_transform: mat3::translate(aabb.bottom_left()) * mat3::scale(aabb.size()),
+            ..self
         }
     }
 }
@@ -104,6 +112,7 @@ impl<T: std::borrow::Borrow<ugli::Texture>> Draw2d for TexturedQuad<T> {
                     u_texture: self.texture.borrow(),
                     u_framebuffer_size: framebuffer_size,
                     u_model_matrix: transform * self.transform,
+                    u_texture_matrix: self.texture_transform,
                 },
                 camera.uniforms(framebuffer_size.map(|x| x as f32)),
             ),

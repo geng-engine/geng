@@ -1,6 +1,7 @@
 //! Time related things
 //!
 //! [std::time] is not working on web so use this instead
+#![warn(missing_docs)]
 
 /// A measurement of a monotonically nondecreasing clock.
 ///
@@ -105,6 +106,11 @@ impl Timer {
         Self {
             start: Instant::now(),
         }
+    }
+
+    /// Reset timer
+    pub fn reset(&mut self) {
+        self.start = Instant::now();
     }
 
     /// Get duration elapsed since last reset.

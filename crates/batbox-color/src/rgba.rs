@@ -118,6 +118,16 @@ impl<T: ColorComponent> Rgba<T> {
         Self { r, g, b, a }
     }
 
+    /// Convert color into vec4(r, g, b, a)
+    pub fn to_vec4(self) -> vec4<T> {
+        vec4(self.r, self.g, self.b, self.a)
+    }
+
+    /// Convert vec4(r, g, b, a) into color
+    pub fn from_vec4(vec4(r, g, b, a): vec4<T>) -> Self {
+        Self { r, g, b, a }
+    }
+
     /// Convert `Rgba<T>` to `Rgba<U>` by applying a function to every color component excluding alpha.
     /// The resulting alpha is calculated by applying ColorComponent::convert() method.
     /// # Examples
@@ -221,6 +231,18 @@ impl<T: ColorComponent> std::ops::Deref for Rgba<T> {
 impl<T: ColorComponent> std::ops::DerefMut for Rgba<T> {
     fn deref_mut(&mut self) -> &mut [T; 4] {
         unsafe { std::mem::transmute(self) }
+    }
+}
+
+impl<T: ColorComponent> std::ops::Mul for Rgba<T> {
+    type Output = Self;
+    fn mul(self, rhs: Self) -> Self {
+        let mul = |a: T, b: T| T::from_f32(a.as_f32() * b.as_f32());
+        let r = mul(self.r, rhs.r);
+        let g = mul(self.g, rhs.g);
+        let b = mul(self.b, rhs.b);
+        let a = mul(self.a, rhs.a);
+        Self { r, g, b, a }
     }
 }
 

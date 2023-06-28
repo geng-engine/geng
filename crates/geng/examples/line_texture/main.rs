@@ -28,7 +28,7 @@ impl geng::State for Example {
         let points: Vec<vec2<f32>> = (0..=N)
             .map(|i| {
                 let angle = f32::PI * i as f32 / N as f32;
-                vec2(3.0, 0.0).rotate(f32::PI - angle)
+                vec2(3.0, 0.0).rotate(Angle::from_radians(f32::PI - angle))
             })
             .collect();
         struct Point {
@@ -76,7 +76,7 @@ impl geng::State for Example {
             framebuffer,
             &geng::Camera2d {
                 center: vec2(0.0, 2.5),
-                rotation: 0.0,
+                rotation: Angle::ZERO,
                 fov: 10.0,
             },
             &draw2d::TexturedPolygon::strip(

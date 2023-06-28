@@ -6,7 +6,8 @@ struct State {
     framebuffer_size: vec2<f32>,   // Save framebuffer size to access it outside of draw call
     drag_start: Option<vec2<f32>>, // Store location that needs to stay under cursor
     prev_touch_distance: f32,
-    prev_touch_angle: f32,
+    prev_touch_angle: Angle,
+    touches: Vec<geng::Touch>,
 }
 
 impl State {
@@ -15,13 +16,14 @@ impl State {
             geng: geng.clone(),
             camera: geng::Camera2d {
                 center: vec2(0.0, 0.0),
-                rotation: 0.0,
+                rotation: Angle::ZERO,
                 fov: 15.0,
             },
             framebuffer_size: vec2(1.0, 1.0),
             prev_touch_distance: 0.0,
-            prev_touch_angle: 0.0,
+            prev_touch_angle: Angle::ZERO,
             drag_start: None,
+            touches: vec![],
         }
     }
 }
@@ -32,10 +34,10 @@ impl geng::State for State {
 
         // Rotating camera
         if self.geng.window().is_key_pressed(geng::Key::Q) {
-            self.camera.rotation += delta_time;
+            self.camera.rotation += Angle::from_radians(delta_time);
         }
         if self.geng.window().is_key_pressed(geng::Key::E) {
-            self.camera.rotation -= delta_time;
+            self.camera.rotation -= Angle::from_radians(delta_time);
         }
     }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
@@ -87,60 +89,60 @@ impl geng::State for State {
                 button: geng::MouseButton::Left,
                 ..
             } => self.drag_start = None,
-            // TODO OMEGALUL
-            // geng::Event::TouchStart { touches } => {
-            //     if touches.len() == 1 {
-            //         self.drag_start = Some(self.camera.screen_to_world(
-            //             self.framebuffer_size,
-            //             touches[0].position.map(|x| x as f32),
-            //         ));
-            //     }
-            //     if touches.len() == 2 {
-            //         let diff = touches[0].position - touches[1].position;
-            //         self.prev_touch_distance = diff.len() as f32;
-            //         self.prev_touch_angle = f64::atan2(diff.x, diff.y) as f32;
-            //         self.drag_start = Some(self.camera.screen_to_world(
-            //             self.framebuffer_size,
-            //             (touches[0].position + touches[1].position).map(|x| x as f32) / 2.0,
-            //         ));
-            //     }
-            // }
-            // geng::Event::TouchMove { touches } => {
-            //     if touches.len() == 1 {
-            //         if let Some(start) = self.drag_start {
-            //             let current_pos = self.camera.screen_to_world(
-            //                 self.framebuffer_size,
-            //                 touches[0].position.map(|x| x as f32),
-            //             );
-            //             self.camera.center += start - current_pos;
-            //         }
-            //     } else if touches.len() == 2 {
-            //         let diff = touches[0].position - touches[1].position;
-            //         let now_dist = diff.len() as f32;
-            //         self.camera.fov /= now_dist / self.prev_touch_distance;
-            //         self.prev_touch_distance = now_dist;
-            //         let now_angle = f64::atan2(diff.x, diff.y) as f32;
-            //         let mut angle_diff = now_angle - self.prev_touch_angle;
-            //         while angle_diff > std::f32::consts::PI {
-            //             angle_diff -= 2.0 * std::f32::consts::PI;
-            //         }
-            //         while angle_diff < -std::f32::consts::PI {
-            //             angle_diff += 2.0 * std::f32::consts::PI;
-            //         }
-            //         self.camera.rotation -= angle_diff;
-            //         self.prev_touch_angle = now_angle;
-            //         if let Some(start) = self.drag_start {
-            //             let current_pos = self.camera.screen_to_world(
-            //                 self.framebuffer_size,
-            //                 (touches[0].position + touches[1].position).map(|x| x as f32) / 2.0,
-            //             );
-            //             self.camera.center += start - current_pos;
-            //         }
-            //     }
-            // }
-            // geng::Event::TouchEnd { .. } => {
-            //     self.drag_start = None;
-            // }
+            geng::Event::TouchStart(touch) => {
+                self.touches.push(touch);
+                if self.touches.len() == 1 {
+                    self.drag_start = Some(self.camera.screen_to_world(
+                        self.framebuffer_size,
+                        self.touches[0].position.map(|x| x as f32),
+                    ));
+                }
+                if self.touches.len() == 2 {
+                    let diff = self.touches[0].position - self.touches[1].position;
+                    self.prev_touch_distance = diff.len() as f32;
+                    self.prev_touch_angle = diff.map(|x| x as f32).arg();
+                    self.drag_start = Some(self.camera.screen_to_world(
+                        self.framebuffer_size,
+                        (self.touches[0].position + self.touches[1].position).map(|x| x as f32)
+                            / 2.0,
+                    ));
+                }
+            }
+            geng::Event::TouchMove(touch) => {
+                if let Some(t) = self.touches.iter_mut().find(|t| t.id == touch.id) {
+                    *t = touch;
+                }
+                if self.touches.len() == 1 {
+                    if let Some(start) = self.drag_start {
+                        let current_pos = self.camera.screen_to_world(
+                            self.framebuffer_size,
+                            self.touches[0].position.map(|x| x as f32),
+                        );
+                        self.camera.center += start - current_pos;
+                    }
+                } else if self.touches.len() == 2 {
+                    let diff = self.touches[0].position - self.touches[1].position;
+                    let now_dist = diff.len() as f32;
+                    self.camera.fov /= now_dist / self.prev_touch_distance;
+                    self.prev_touch_distance = now_dist;
+                    let now_angle = diff.map(|x| x as f32).arg();
+                    let angle_diff = (now_angle - self.prev_touch_angle).normalized_pi();
+                    self.camera.rotation -= angle_diff;
+                    self.prev_touch_angle = now_angle;
+                    if let Some(start) = self.drag_start {
+                        let current_pos = self.camera.screen_to_world(
+                            self.framebuffer_size,
+                            (self.touches[0].position + self.touches[1].position).map(|x| x as f32)
+                                / 2.0,
+                        );
+                        self.camera.center += start - current_pos;
+                    }
+                }
+            }
+            geng::Event::TouchEnd(touch) => {
+                self.touches.retain(|t| t.id != touch.id);
+                self.drag_start = None;
+            }
             _ => {}
         }
     }

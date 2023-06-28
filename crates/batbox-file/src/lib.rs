@@ -1,6 +1,7 @@
 //! Loading files
 //!
 //! Since [std::fs] is not working on the web, use this for consistency
+#![warn(missing_docs)]
 
 use anyhow::anyhow;
 use futures::prelude::*;
@@ -33,6 +34,56 @@ pub async fn load(path: impl AsRef<std::path::Path>) -> anyhow::Result<impl Asyn
         }
         let body = response.body().expect("response without body?");
         Ok(futures::io::BufReader::new(read_stream(body)))
+    }
+    #[cfg(target_os = "android")]
+    if batbox_android::file_mode() == batbox_android::FileMode::Assets {
+        // Maybe if starts with "asset://"??
+        let app = batbox_android::app();
+        let asset_manager = app.asset_manager();
+        let path = path.to_str().expect("Path expected to be a utf-8 str");
+        let path = path.strip_prefix("./").unwrap();
+        let path = std::ffi::CString::new(path).expect("Paths should not have null bytes");
+        let mut asset = asset_manager
+            .open(path.as_c_str())
+            .ok_or(anyhow!("Asset not found"))?;
+
+        struct ReadAsAsync<T>(Box<T>);
+
+        impl<T: std::io::Read> AsyncRead for ReadAsAsync<T> {
+            fn poll_read(
+                mut self: Pin<&mut Self>,
+                _: &mut std::task::Context<'_>,
+                buf: &mut [u8],
+            ) -> std::task::Poll<std::io::Result<usize>> {
+                std::task::Poll::Ready(std::io::Read::read(&mut self.0, buf))
+            }
+
+            fn poll_read_vectored(
+                mut self: Pin<&mut Self>,
+                _: &mut std::task::Context<'_>,
+                bufs: &mut [std::io::IoSliceMut<'_>],
+            ) -> std::task::Poll<std::io::Result<usize>> {
+                std::task::Poll::Ready(std::io::Read::read_vectored(&mut self.0, bufs))
+            }
+        }
+
+        impl<T: std::io::BufRead> AsyncBufRead for ReadAsAsync<T> {
+            fn poll_fill_buf(
+                mut self: Pin<&mut Self>,
+                _: &mut std::task::Context<'_>,
+            ) -> std::task::Poll<std::io::Result<&[u8]>> {
+                std::task::Poll::Ready(std::io::BufRead::fill_buf(&mut self.get_mut().0))
+            }
+
+            fn consume(mut self: Pin<&mut Self>, amt: usize) {
+                std::io::BufRead::consume(&mut self.0, amt)
+            }
+        }
+
+        return Ok(
+            Box::pin(ReadAsAsync(Box::new(std::io::BufReader::new(asset))))
+                as Pin<Box<dyn AsyncBufRead>>,
+        );
     }
     #[cfg(not(target_arch = "wasm32"))]
     match path

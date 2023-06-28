@@ -42,7 +42,7 @@ impl geng::State for State {
             framebuffer,
             &geng::Camera2d {
                 center: vec2(0.0, 0.0),
-                rotation: 0.0,
+                rotation: Angle::ZERO,
                 fov: 15.0,
             },
             "Use arrow keys to move around\nPress Space to reset",

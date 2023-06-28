@@ -22,16 +22,16 @@ impl Library {
             prelude = "#define GENG_ANTIALIAS\n".to_owned() + &prelude;
         }
         fn default_prefix() -> (String, String) {
-            let common_glsl = "#extension GL_OES_standard_derivatives : enable\nprecision highp int;\nprecision highp float;\n";
-            if cfg!(target_arch = "wasm32") {
+            let common_glsl = "precision highp int;\nprecision highp float;\n";
+            if cfg!(any(target_arch = "wasm32", target_os = "android")) {
                 (
                     format!("{common_glsl}#define VERTEX_SHADER\n"),
-                    format!("{common_glsl}#define FRAGMENT_SHADER\n"),
+                    format!("#extension GL_OES_standard_derivatives : enable\n{common_glsl}#define FRAGMENT_SHADER\n"),
                 )
             } else {
                 (
-                    format!("#version 100\n{common_glsl}#define VERTEX_SHADER\n"),
-                    format!("#version 100\n{common_glsl}#define FRAGMENT_SHADER\n"),
+                    format!("#version 150\n{common_glsl}#define VERTEX_SHADER\n"),
+                    format!("#version 150\n{common_glsl}#define FRAGMENT_SHADER\n"),
                 )
             }
         }

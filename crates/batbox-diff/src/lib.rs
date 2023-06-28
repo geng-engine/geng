@@ -1,4 +1,5 @@
 //! Diffing structs
+#![warn(missing_docs)]
 
 use serde::{de::DeserializeOwned, Serialize};
 use std::fmt::Debug;

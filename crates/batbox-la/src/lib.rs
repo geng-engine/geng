@@ -1,3 +1,6 @@
+//! Linear algebra
+#![warn(missing_docs)]
+
 use batbox_approx::*;
 use batbox_cmp::*;
 use batbox_num::*;

@@ -1,3 +1,15 @@
+#if __VERSION__ >= 150
+  #define texture2D texture
+  #ifdef FRAGMENT_SHADER
+    #define varying in
+    #define gl_FragColor frag_color
+    out vec4 gl_FragColor;
+  #else
+    #define attribute in
+    #define varying out
+  #endif
+#endif
+
 #define PI 3.1415926535897932384626433832795
 
 vec2 rotate(vec2 v, float a)

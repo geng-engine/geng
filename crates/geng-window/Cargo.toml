@@ -22,6 +22,9 @@ serde.workspace = true
 log.workspace = true
 gilrs.workspace = true
 
+[target.'cfg(target_os = "android")'.dependencies]
+batbox-android.workspace = true
+
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 js-sys.workspace = true
 web-sys = { workspace = true, features = [

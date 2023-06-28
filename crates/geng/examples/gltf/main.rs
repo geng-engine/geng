@@ -18,8 +18,8 @@ pub struct Camera {
     pub fov: f32,
     pub pos: vec3<f32>,
     pub distance: f32,
-    pub rot_h: f32,
-    pub rot_v: f32,
+    pub rot_h: Angle<f32>,
+    pub rot_v: Angle<f32>,
 }
 
 impl Camera {
@@ -154,8 +154,8 @@ impl Example {
                 fov: f32::PI / 3.0,
                 pos: vec3(0.0, 0.0, 1.0),
                 distance: 5.0,
-                rot_h: 0.0,
-                rot_v: f32::PI / 3.0,
+                rot_h: Angle::ZERO,
+                rot_v: Angle::from_radians(f32::PI / 3.0),
             },
             transition: default(),
         }
@@ -179,7 +179,7 @@ impl geng::State for Example {
                 (
                     mesh.material.uniforms(),
                     ugli::uniforms! {
-                        u_model_matrix: mat4::rotate_z(self.time), // TODO
+                        u_model_matrix: mat4::rotate_z(Angle::from_radians(self.time)), // TODO
                         u_eye_pos: self.camera.eye_pos(),
                         u_light_dir: vec3(1.0, -2.0, 5.0),
                         u_light_color: Rgba::WHITE,
@@ -200,9 +200,10 @@ impl geng::State for Example {
             geng::Event::MouseMove { delta, .. } => {
                 if !self.geng.window().pressed_buttons().is_empty() {
                     let sense = 0.01;
-                    self.camera.rot_h += delta.x as f32 * sense;
-                    self.camera.rot_v =
-                        (self.camera.rot_v + delta.y as f32 * sense).clamp(0.0, f32::PI);
+                    self.camera.rot_h += Angle::from_radians(delta.x as f32 * sense);
+                    self.camera.rot_v = (self.camera.rot_v
+                        + Angle::from_radians(delta.y as f32 * sense))
+                    .clamp_range(Angle::ZERO..=Angle::from_radians(f32::PI));
                 }
             }
 

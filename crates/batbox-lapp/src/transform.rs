@@ -78,12 +78,12 @@ pub trait Transform2dExt<F: Float>: Transform2d<F> {
         self.translate(-aabb.bottom_left() - aabb.size() * alignment)
     }
 
-    /// Rotate object around (0, 0) by given angle (in radians)
-    fn rotate(self, rot: F) -> Self
+    /// Rotate object around (0, 0) by given angle
+    fn rotate(self, angle: Angle<F>) -> Self
     where
         Self: Sized,
     {
-        self.transform(mat3::rotate(rot))
+        self.transform(mat3::rotate(angle))
     }
 
     /// Translate object by given vector
@@ -129,6 +129,7 @@ pub trait Transform2dExt<F: Float>: Transform2d<F> {
             .into_iter()
             .map(|p| (self.bounding_quad().transform * p.extend(F::ONE)).into_2d()),
         )
+        .unwrap()
     }
 
     /// Make this object's bounding [Quad] fit into given target

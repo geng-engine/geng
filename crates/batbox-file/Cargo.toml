@@ -37,3 +37,6 @@ wasm-bindgen.workspace = true
 wasm-bindgen-futures.workspace = true
 js-sys.workspace = true
 http.workspace = true
+
+[target.'cfg(target_os = "android")'.dependencies]
+batbox-android.workspace = true

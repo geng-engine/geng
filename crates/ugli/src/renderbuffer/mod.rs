@@ -6,19 +6,41 @@ pub unsafe trait RenderbufferPixel {
     const GL_FORMAT: raw::Enum;
 }
 
-unsafe impl RenderbufferPixel for Rgba<f32> {
-    const GL_FORMAT: raw::Enum = raw::RGBA;
+#[cfg(target_os = "android")]
+mod impls {
+    use super::*;
+
+    unsafe impl RenderbufferPixel for Rgba<f32> {
+        const GL_FORMAT: raw::Enum = raw::RGBA4;
+    }
+
+    unsafe impl RenderbufferPixel for DepthComponent {
+        const GL_FORMAT: raw::Enum = raw::DEPTH_COMPONENT16;
+    }
+
+    unsafe impl RenderbufferPixel for DepthStencilValue {
+        const GL_FORMAT: raw::Enum = raw::DEPTH24_STENCIL8; // TODO this only works on GL ES 3.0
+    }
 }
 
-unsafe impl RenderbufferPixel for DepthComponent {
-    const GL_FORMAT: raw::Enum = raw::DEPTH_COMPONENT;
+#[cfg(not(target_os = "android"))]
+mod impls {
+    use super::*;
+
+    unsafe impl RenderbufferPixel for Rgba<f32> {
+        const GL_FORMAT: raw::Enum = raw::RGBA;
+    }
+
+    unsafe impl RenderbufferPixel for DepthComponent {
+        const GL_FORMAT: raw::Enum = raw::DEPTH_COMPONENT;
+    }
+
+    unsafe impl RenderbufferPixel for DepthStencilValue {
+        const GL_FORMAT: raw::Enum = raw::DEPTH_STENCIL;
+    }
 }
 
 pub struct DepthStencilValue;
-
-unsafe impl RenderbufferPixel for DepthStencilValue {
-    const GL_FORMAT: raw::Enum = raw::DEPTH_STENCIL;
-}
 
 pub struct Renderbuffer<T: RenderbufferPixel = Rgba<f32>> {
     pub(crate) ugli: Ugli,
@@ -44,7 +66,6 @@ impl<T: RenderbufferPixel> Renderbuffer<T> {
             size.x as raw::SizeI,
             size.y as raw::SizeI,
         );
-        ugli.debug_check();
         Self {
             ugli: ugli.clone(),
             handle,
