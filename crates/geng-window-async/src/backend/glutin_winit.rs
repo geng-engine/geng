@@ -10,7 +10,6 @@ pub struct Context {
     gl_surface: RefCell<Option<glutin::surface::Surface<glutin::surface::WindowSurface>>>,
     event_loop: RefCell<Option<winit::event_loop::EventLoop<()>>>,
     is_fullscreen: Cell<bool>,
-    focused: Cell<bool>,
     lock_cursor: Cell<bool>,
     cursor_pos: Cell<vec2<f64>>,
     ugli: Ugli,
@@ -176,7 +175,6 @@ impl Context {
             framebuffer: RefCell::new(ugli::Framebuffer::default(&ugli)),
             ugli,
             is_fullscreen: Cell::new(false),
-            focused: Cell::new(false),
             lock_cursor: Cell::new(false),
             cursor_pos: Cell::new(vec2(0.0, 0.0)),
             edited_text: RefCell::new(None),
@@ -272,7 +270,9 @@ impl Context {
             vec2(position.x, self.real_size().y as f64 - 1.0 - position.y)
         };
         match event {
-            winit::event::WindowEvent::Focused(focus) => self.focused.set(focus),
+            winit::event::WindowEvent::Focused(focus) => {
+                event_handler(Event::Focused(focus));
+            }
             winit::event::WindowEvent::CloseRequested => {
                 event_handler(Event::CloseRequested);
             }

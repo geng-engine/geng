@@ -30,6 +30,7 @@ pub enum Event {
     Gamepad(gilrs::Event), // TODO window should not know about it?
     Draw,
     CloseRequested,
+    Focused(bool),
 }
 
 impl Event {
