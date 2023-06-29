@@ -112,7 +112,7 @@ async fn space_escape(depth: usize, renderer: &Renderer, window: &window::Window
                         window.lock_cursor();
                     }
                 }
-                window::Key::T if window.is_key_pressed(window::Key::LCtrl) => {
+                window::Key::T if window.is_key_pressed(window::Key::ControlLeft) => {
                     if window.is_editing_text() {
                         log::info!("stop editing text");
                         window.stop_text_edit();

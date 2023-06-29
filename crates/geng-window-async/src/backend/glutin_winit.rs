@@ -335,11 +335,12 @@ impl Context {
                         }
                     }
                 }
-                let key = from_winit_key(event.physical_key);
-                event_handler(match event.state {
-                    winit::event::ElementState::Pressed => Event::KeyPress { key },
-                    winit::event::ElementState::Released => Event::KeyRelease { key },
-                });
+                if let Some(key) = from_winit_key(event.physical_key) {
+                    event_handler(match event.state {
+                        winit::event::ElementState::Pressed => Event::KeyPress { key },
+                        winit::event::ElementState::Released => Event::KeyRelease { key },
+                    });
+                }
             }
             winit::event::WindowEvent::Resized(new_size) => {
                 if new_size.width != 0 && new_size.height != 0 {
@@ -459,7 +460,7 @@ impl Context {
     pub fn start_text_edit(&self, text: &str) {
         *self.edited_text.borrow_mut() = Some(text.to_owned());
         #[cfg(target_os = "android")]
-        batbox_android::app().show_soft_input(false);
+        batbox_android::app().show_soft_input(true);
     }
 
     pub fn stop_text_edit(&self) {
@@ -473,20 +474,28 @@ impl Context {
     }
 }
 
-fn from_winit_key(key: winit::keyboard::KeyCode) -> Key {
+fn from_winit_key(key: winit::keyboard::KeyCode) -> Option<Key> {
     use winit::keyboard::KeyCode as GKey;
-    match key {
-        GKey::Digit0 => Key::Num0,
-        GKey::Digit1 => Key::Num1,
-        GKey::Digit2 => Key::Num2,
-        GKey::Digit3 => Key::Num3,
-        GKey::Digit4 => Key::Num4,
-        GKey::Digit5 => Key::Num5,
-        GKey::Digit6 => Key::Num6,
-        GKey::Digit7 => Key::Num7,
-        GKey::Digit8 => Key::Num8,
-        GKey::Digit9 => Key::Num9,
-
+    Some(match key {
+        GKey::Backquote => Key::Backquote,
+        GKey::Backslash => Key::Backslash,
+        GKey::BracketLeft => Key::BracketLeft,
+        GKey::BracketRight => Key::BracketRight,
+        GKey::Comma => Key::Comma,
+        GKey::Digit0 => Key::Digit0,
+        GKey::Digit1 => Key::Digit1,
+        GKey::Digit2 => Key::Digit2,
+        GKey::Digit3 => Key::Digit3,
+        GKey::Digit4 => Key::Digit4,
+        GKey::Digit5 => Key::Digit5,
+        GKey::Digit6 => Key::Digit6,
+        GKey::Digit7 => Key::Digit7,
+        GKey::Digit8 => Key::Digit8,
+        GKey::Digit9 => Key::Digit9,
+        GKey::Equal => Key::Equal,
+        GKey::IntlBackslash => Key::IntlBackslash,
+        GKey::IntlRo => Key::IntlRo,
+        GKey::IntlYen => Key::IntlYen,
         GKey::KeyA => Key::A,
         GKey::KeyB => Key::B,
         GKey::KeyC => Key::C,
@@ -513,34 +522,69 @@ fn from_winit_key(key: winit::keyboard::KeyCode) -> Key {
         GKey::KeyX => Key::X,
         GKey::KeyY => Key::Y,
         GKey::KeyZ => Key::Z,
-
-        GKey::Escape => Key::Escape,
-        GKey::Space => Key::Space,
-        GKey::Enter => Key::Enter,
+        GKey::Minus => Key::Minus,
+        GKey::Period => Key::Period,
+        GKey::Quote => Key::Quote,
+        GKey::Semicolon => Key::Semicolon,
+        GKey::Slash => Key::Slash,
+        GKey::AltLeft => Key::AltLeft,
+        GKey::AltRight => Key::AltRight,
         GKey::Backspace => Key::Backspace,
+        GKey::CapsLock => Key::CapsLock,
+        GKey::ContextMenu => Key::ContextMenu,
+        GKey::ControlLeft => Key::ControlLeft,
+        GKey::ControlRight => Key::ControlRight,
+        GKey::Enter => Key::Enter,
+        GKey::SuperLeft => Key::SuperLeft,
+        GKey::SuperRight => Key::SuperRight,
+        GKey::ShiftLeft => Key::ShiftLeft,
+        GKey::ShiftRight => Key::ShiftRight,
+        GKey::Space => Key::Space,
         GKey::Tab => Key::Tab,
-
-        GKey::ShiftLeft => Key::LShift,
-        GKey::ShiftRight => Key::RShift,
-
-        GKey::ControlLeft => Key::LCtrl,
-        GKey::ControlRight => Key::RCtrl,
-
-        GKey::AltLeft => Key::LAlt,
-        GKey::AltRight => Key::RAlt,
-
-        GKey::ArrowLeft => Key::Left,
-        GKey::ArrowRight => Key::Right,
-        GKey::ArrowUp => Key::Up,
-        GKey::ArrowDown => Key::Down,
-
-        GKey::PageUp => Key::PageUp,
-        GKey::PageDown => Key::PageDown,
-        GKey::Insert => Key::Insert,
         GKey::Delete => Key::Delete,
-        GKey::Home => Key::Home,
         GKey::End => Key::End,
-
+        GKey::Help => Key::Help,
+        GKey::Home => Key::Home,
+        GKey::Insert => Key::Insert,
+        GKey::PageDown => Key::PageDown,
+        GKey::PageUp => Key::PageUp,
+        GKey::ArrowDown => Key::ArrowDown,
+        GKey::ArrowLeft => Key::ArrowLeft,
+        GKey::ArrowRight => Key::ArrowRight,
+        GKey::ArrowUp => Key::ArrowUp,
+        GKey::NumLock => Key::NumLock,
+        GKey::Numpad0 => Key::Numpad0,
+        GKey::Numpad1 => Key::Numpad1,
+        GKey::Numpad2 => Key::Numpad2,
+        GKey::Numpad3 => Key::Numpad3,
+        GKey::Numpad4 => Key::Numpad4,
+        GKey::Numpad5 => Key::Numpad5,
+        GKey::Numpad6 => Key::Numpad6,
+        GKey::Numpad7 => Key::Numpad7,
+        GKey::Numpad8 => Key::Numpad8,
+        GKey::Numpad9 => Key::Numpad9,
+        GKey::NumpadAdd => Key::NumpadAdd,
+        GKey::NumpadBackspace => Key::NumpadBackspace,
+        GKey::NumpadClear => Key::NumpadClear,
+        GKey::NumpadClearEntry => Key::NumpadClearEntry,
+        GKey::NumpadComma => Key::NumpadComma,
+        GKey::NumpadDecimal => Key::NumpadDecimal,
+        GKey::NumpadDivide => Key::NumpadDivide,
+        GKey::NumpadEnter => Key::NumpadEnter,
+        GKey::NumpadEqual => Key::NumpadEqual,
+        GKey::NumpadHash => Key::NumpadHash,
+        GKey::NumpadMemoryAdd => Key::NumpadMemoryAdd,
+        GKey::NumpadMemoryClear => Key::NumpadMemoryClear,
+        GKey::NumpadMemoryRecall => Key::NumpadMemoryRecall,
+        GKey::NumpadMemoryStore => Key::NumpadMemoryStore,
+        GKey::NumpadMemorySubtract => Key::NumpadMemorySubtract,
+        GKey::NumpadMultiply => Key::NumpadMultiply,
+        GKey::NumpadParenLeft => Key::NumpadParenLeft,
+        GKey::NumpadParenRight => Key::NumpadParenRight,
+        GKey::NumpadStar => Key::NumpadStar,
+        GKey::NumpadSubtract => Key::NumpadSubtract,
+        GKey::Escape => Key::Escape,
+        GKey::BrowserBack => Key::Back,
         GKey::F1 => Key::F1,
         GKey::F2 => Key::F2,
         GKey::F3 => Key::F3,
@@ -553,10 +597,9 @@ fn from_winit_key(key: winit::keyboard::KeyCode) -> Key {
         GKey::F10 => Key::F10,
         GKey::F11 => Key::F11,
         GKey::F12 => Key::F12,
-
         _ => {
             log::trace!("Unrecognized key: {:?}", key);
-            Key::Unknown
+            return None;
         }
-    }
+    })
 }
