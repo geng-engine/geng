@@ -28,6 +28,7 @@ clap.workspace = true
 
 [dev-dependencies]
 batbox.workspace = true
+geng-shader.workspace = true
 
 [target.'cfg(target_os = "android")'.dependencies]
 batbox-android.workspace = true

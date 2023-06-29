@@ -1,5 +1,74 @@
 use batbox::prelude::*;
 use geng_window_async as geng_window;
+use ugli::Ugli;
+
+mod renderer {
+    use super::*;
+
+    #[derive(ugli::Vertex)]
+    struct Vertex {
+        a_pos: vec2<f32>,
+    }
+
+    pub struct Renderer {
+        program: ugli::Program,
+        data: ugli::VertexBuffer<Vertex>,
+    }
+
+    const PROGRAM_SOURCE: &str = r#"
+    #ifdef VERTEX_SHADER
+    attribute vec2 a_pos;
+    void main() {
+        gl_Position = vec4(a_pos, 0.0, 1.0);
+    }
+    #endif
+    #ifdef FRAGMENT_SHADER
+    uniform vec4 u_color;
+    void main() {
+        gl_FragColor = u_color;
+    }
+    #endif
+    "#;
+
+    impl Renderer {
+        pub fn new(ugli: &Ugli) -> Self {
+            Self {
+                program: geng_shader::Library::new(ugli, false, None)
+                    .compile(PROGRAM_SOURCE)
+                    .unwrap(),
+                data: ugli::VertexBuffer::new_static(
+                    ugli,
+                    vec![
+                        Vertex {
+                            a_pos: vec2(-0.5, -0.5),
+                        },
+                        Vertex {
+                            a_pos: vec2(0.5, -0.5),
+                        },
+                        Vertex {
+                            a_pos: vec2(0.0, 0.5),
+                        },
+                    ],
+                ),
+            }
+        }
+        pub fn draw(&self, framebuffer: &mut ugli::Framebuffer, color: Rgba<f32>) {
+            ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
+            ugli::draw(
+                framebuffer,
+                &self.program,
+                ugli::DrawMode::Triangles,
+                &self.data,
+                ugli::uniforms! {
+                    u_color: color,
+                },
+                ugli::DrawParameters::default(),
+            );
+        }
+    }
+}
+
+use renderer::Renderer;
 
 #[derive(clap::Parser)]
 struct CliArgs {
@@ -10,7 +79,7 @@ struct CliArgs {
 }
 
 #[async_recursion(?Send)]
-async fn space_escape(depth: usize, window: &geng_window::Window) {
+async fn space_escape(depth: usize, renderer: &Renderer, window: &geng_window::Window) {
     log::info!("Entering depth {depth:?}");
     let color: Rgba<f32> = Hsla::new(thread_rng().gen(), 1.0, 0.5, 1.0).into();
     let mut g = 0.0;
@@ -22,19 +91,14 @@ async fn space_escape(depth: usize, window: &geng_window::Window) {
                     break;
                 }
                 geng_window::Key::Space => {
-                    space_escape(depth + 1, window).await;
+                    space_escape(depth + 1, renderer, window).await;
                 }
                 _ => {}
             },
             geng_window::Event::Draw => {
                 g = (g + timer.tick().as_secs_f64() as f32).fract();
                 window.with_framebuffer(|framebuffer| {
-                    ugli::clear(
-                        framebuffer,
-                        Some(color * Rgba::new(g, g, g, 1.0)),
-                        None,
-                        None,
-                    );
+                    renderer.draw(framebuffer, color * Rgba::new(g, g, g, 1.0));
                 });
             }
             _ => {}
@@ -68,6 +132,8 @@ fn main() {
                     .next()
                     .await;
             };
+            let renderer = Renderer::new(window.ugli());
+            let space_escape = space_escape(0, &renderer, &window);
             futures::select! {
                 () = log_events.fuse() => {
                     unreachable!()
@@ -75,7 +141,7 @@ fn main() {
                 () = close_requested.fuse() => {
                     log::info!("Exiting because of request");
                 },
-                () = space_escape(0, &window).fuse() => {
+                () = space_escape.fuse() => {
                     log::info!("Exiting because space_escape finished");
                 },
             }

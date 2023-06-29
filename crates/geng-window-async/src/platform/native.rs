@@ -357,6 +357,8 @@ impl Context {
                             new_size.width.try_into().unwrap(),
                             new_size.height.try_into().unwrap(),
                         );
+                        self.ugli
+                            ._set_size(vec2(new_size.width, new_size.height).map(|x| x as usize));
                         self.framebuffer
                             .replace(ugli::Framebuffer::default(&self.ugli));
                     }

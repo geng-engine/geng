@@ -1883,6 +1883,7 @@ dependencies = [
  "batbox-la",
  "clap",
  "futures",
+ "geng-shader",
  "gilrs",
  "glutin",
  "glutin-winit",
