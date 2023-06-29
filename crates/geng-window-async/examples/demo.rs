@@ -88,10 +88,9 @@ struct CliArgs {
 #[async_recursion(?Send)]
 async fn space_escape(depth: usize, renderer: &Renderer, window: &window::Window) {
     log::info!("Entering depth {depth:?}");
-    let color: Rgba<f32> = Hsla::new(thread_rng().gen(), 1.0, 0.5, 1.0).into();
-    let mut g = 0.0;
-    let mut timer = Timer::new();
-    let transform = mat3::rotate(thread_rng().gen());
+    let timer = Timer::new();
+    let transform =
+        mat3::rotate(thread_rng().gen()) * mat3::scale_uniform((depth as f32 * 0.1).exp());
     while let Some(event) = window.events().next().await {
         match event {
             window::Event::KeyPress { key } => match key {
@@ -125,9 +124,9 @@ async fn space_escape(depth: usize, renderer: &Renderer, window: &window::Window
                 _ => {}
             },
             window::Event::Draw => {
-                g = (g + timer.tick().as_secs_f64() as f32).fract();
+                let color = Hsla::new(timer.elapsed().as_secs_f64() as f32, 1.0, 0.5, 1.0).into();
                 window.with_framebuffer(|framebuffer| {
-                    renderer.draw(framebuffer, transform, color * Rgba::new(g, g, g, 1.0));
+                    renderer.draw(framebuffer, transform, color);
                 });
             }
             _ => {}
