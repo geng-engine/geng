@@ -1,5 +1,5 @@
 use batbox::prelude::*;
-use geng_window_async as geng_window;
+use geng_window_async as window;
 use ugli::Ugli;
 
 mod renderer {
@@ -80,13 +80,13 @@ use renderer::Renderer;
 #[derive(clap::Parser)]
 struct CliArgs {
     #[clap(flatten)]
-    window: geng_window::CliArgs,
+    window: window::CliArgs,
     #[clap(long)]
     auto_close: Option<bool>,
 }
 
 #[async_recursion(?Send)]
-async fn space_escape(depth: usize, renderer: &Renderer, window: &geng_window::Window) {
+async fn space_escape(depth: usize, renderer: &Renderer, window: &window::Window) {
     log::info!("Entering depth {depth:?}");
     let color: Rgba<f32> = Hsla::new(thread_rng().gen(), 1.0, 0.5, 1.0).into();
     let mut g = 0.0;
@@ -94,17 +94,17 @@ async fn space_escape(depth: usize, renderer: &Renderer, window: &geng_window::W
     let transform = mat3::rotate(thread_rng().gen());
     while let Some(event) = window.events().next().await {
         match event {
-            geng_window::Event::KeyPress { key } => match key {
-                geng_window::Key::Escape => {
+            window::Event::KeyPress { key } => match key {
+                window::Key::Escape => {
                     break;
                 }
-                geng_window::Key::Space => {
+                window::Key::Space => {
                     space_escape(depth + 1, renderer, window).await;
                 }
-                geng_window::Key::F => {
+                window::Key::F => {
                     window.toggle_fullscreen();
                 }
-                geng_window::Key::M => {
+                window::Key::M => {
                     if window.cursor_locked() {
                         log::info!("unlocking cursor");
                         window.unlock_cursor();
@@ -113,7 +113,7 @@ async fn space_escape(depth: usize, renderer: &Renderer, window: &geng_window::W
                         window.lock_cursor();
                     }
                 }
-                geng_window::Key::T if window.is_key_pressed(geng_window::Key::LCtrl) => {
+                window::Key::T if window.is_key_pressed(window::Key::LCtrl) => {
                     if window.is_editing_text() {
                         log::info!("stop editing text");
                         window.stop_text_edit();
@@ -124,7 +124,7 @@ async fn space_escape(depth: usize, renderer: &Renderer, window: &geng_window::W
                 }
                 _ => {}
             },
-            geng_window::Event::Draw => {
+            window::Event::Draw => {
                 g = (g + timer.tick().as_secs_f64() as f32).fract();
                 window.with_framebuffer(|framebuffer| {
                     renderer.draw(framebuffer, transform, color * Rgba::new(g, g, g, 1.0));
@@ -139,17 +139,18 @@ async fn space_escape(depth: usize, renderer: &Renderer, window: &geng_window::W
 fn main() {
     logger::init();
     let args: CliArgs = cli::parse();
-    geng_window::run(
+    window::run(
         {
-            let mut options = geng_window::Options::new("geng window demo").with_cli(&args.window);
+            let mut options = window::Options::new("geng window demo").with_cli(&args.window);
             options.auto_close = args.auto_close.unwrap_or(false);
             options
         },
         |window| async move {
+            window.set_cursor_type(window::CursorType::Pointer);
             let log_events = async {
                 let mut events = window.events();
                 while let Some(event) = events.next().await {
-                    if event != geng_window::Event::Draw {
+                    if event != window::Event::Draw {
                         log::info!("{event:?}");
                     }
                 }
@@ -157,7 +158,7 @@ fn main() {
             let close_requested = async {
                 window
                     .events()
-                    .filter(|event| future::ready(*event == geng_window::Event::CloseRequested))
+                    .filter(|event| future::ready(*event == window::Event::CloseRequested))
                     .next()
                     .await;
             };
