@@ -28,12 +28,14 @@ async fn space_escape(depth: usize, window: &geng_window::Window) {
             },
             geng_window::Event::Draw => {
                 g = (g + timer.tick().as_secs_f64() as f32).fract();
-                ugli::clear(
-                    &mut window.lock_framebuffer(),
-                    Some(color * Rgba::new(g, g, g, 1.0)),
-                    None,
-                    None,
-                );
+                window.with_framebuffer(|framebuffer| {
+                    ugli::clear(
+                        framebuffer,
+                        Some(color * Rgba::new(g, g, g, 1.0)),
+                        None,
+                        None,
+                    );
+                });
             }
             _ => {}
         }

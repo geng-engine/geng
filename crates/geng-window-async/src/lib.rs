@@ -184,8 +184,8 @@ impl Window {
         self.inner.executor.spawn(f)
     }
 
-    pub fn lock_framebuffer(&self) -> RefMut<ugli::Framebuffer<'static>> {
-        self.inner.platform.lock_framebuffer()
+    pub fn with_framebuffer(&self, f: impl FnOnce(&mut ugli::Framebuffer)) {
+        f(&mut self.inner.platform.lock_framebuffer());
     }
 
     pub fn events(&self) -> impl futures::Stream<Item = Event> {
@@ -206,8 +206,8 @@ where
                 return std::ops::ControlFlow::Break(());
             }
         }
-        if let Some(removed) = this.inner.event_sender.try_broadcast(event).unwrap() {
-            log::error!("Event has been ignored: {removed:?}");
+        if let Some(_removed) = this.inner.event_sender.try_broadcast(event).unwrap() {
+            // log::error!("Event has been ignored: {removed:?}");
         }
         this.inner.event_receiver.borrow_mut().try_recv().unwrap();
         while this.inner.executor.try_tick() {
