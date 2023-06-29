@@ -5,7 +5,7 @@ use std::collections::HashSet;
 use std::rc::Rc;
 use ugli::Ugli;
 
-mod platform;
+mod backend;
 
 mod cursor;
 mod events;
@@ -78,7 +78,7 @@ struct WindowImpl {
     event_sender: async_broadcast::Sender<Event>,
     event_receiver: RefCell<async_broadcast::Receiver<Event>>,
     executor: async_executor::LocalExecutor<'static>,
-    platform: Rc<platform::Context>,
+    backend: Rc<backend::Context>,
     pressed_keys: Rc<RefCell<HashSet<Key>>>,
     pressed_buttons: Rc<RefCell<HashSet<MouseButton>>>,
     cursor_pos: Cell<Option<vec2<f64>>>,
@@ -102,7 +102,7 @@ impl Window {
                 // We can't just not have this receiver since the channel will be closed then
                 event_receiver: RefCell::new(event_receiver),
                 executor: async_executor::LocalExecutor::new(),
-                platform: Rc::new(platform::Context::new(options)),
+                backend: Rc::new(backend::Context::new(options)),
                 pressed_keys: Rc::new(RefCell::new(HashSet::new())),
                 pressed_buttons: Rc::new(RefCell::new(HashSet::new())),
                 auto_close: Cell::new(options.auto_close),
@@ -117,26 +117,26 @@ impl Window {
     }
 
     pub fn start_text_edit(&self, text: &str) {
-        self.inner.platform.start_text_edit(text);
+        self.inner.backend.start_text_edit(text);
     }
 
     pub fn stop_text_edit(&self) {
-        self.inner.platform.stop_text_edit();
+        self.inner.backend.stop_text_edit();
     }
 
     pub fn is_editing_text(&self) -> bool {
-        self.inner.platform.is_editing_text()
+        self.inner.backend.is_editing_text()
     }
 
     pub fn real_size(&self) -> vec2<usize> {
-        self.inner.platform.real_size()
+        self.inner.backend.real_size()
     }
     pub fn size(&self) -> vec2<usize> {
         self.real_size().map(|x| x.max(1))
     }
 
     pub fn ugli(&self) -> &Ugli {
-        let ugli = self.inner.platform.ugli();
+        let ugli = self.inner.backend.ugli();
         ugli._set_size(self.size());
         ugli
     }
@@ -158,11 +158,11 @@ impl Window {
     }
 
     pub fn set_fullscreen(&self, fullscreen: bool) {
-        self.inner.platform.set_fullscreen(fullscreen);
+        self.inner.backend.set_fullscreen(fullscreen);
     }
 
     pub fn is_fullscreen(&self) -> bool {
-        self.inner.platform.is_fullscreen()
+        self.inner.backend.is_fullscreen()
     }
 
     pub fn toggle_fullscreen(&self) {
@@ -179,7 +179,7 @@ impl Window {
 
     #[cfg(not(target_arch = "wasm32"))]
     pub fn set_icon(&self, path: impl AsRef<std::path::Path>) -> anyhow::Result<()> {
-        self.inner.platform.set_icon(path.as_ref())
+        self.inner.backend.set_icon(path.as_ref())
     }
 
     pub fn spawn(
@@ -190,7 +190,7 @@ impl Window {
     }
 
     pub fn with_framebuffer(&self, f: impl FnOnce(&mut ugli::Framebuffer)) {
-        f(&mut self.inner.platform.lock_framebuffer());
+        f(&mut self.inner.backend.lock_framebuffer());
     }
 
     pub fn events(&self) -> impl futures::Stream<Item = Event> {
@@ -205,7 +205,7 @@ where
     let this = Window::new(&options);
     let f = f(this.clone());
     let main_task = this.spawn(f);
-    this.inner.platform.clone().run(move |event| {
+    this.inner.backend.clone().run(move |event| {
         match event {
             Event::KeyPress { key } => {
                 if !this.inner.pressed_keys.borrow_mut().insert(key) {

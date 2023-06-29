@@ -14,7 +14,7 @@ impl Window {
         if self.cursor_locked() {
             return;
         }
-        self.inner.platform.set_cursor_type(cursor_type);
+        self.inner.backend.set_cursor_type(cursor_type);
     }
 
     pub fn cursor_position(&self) -> Option<vec2<f64>> {
@@ -25,18 +25,18 @@ impl Window {
     }
 
     pub fn cursor_locked(&self) -> bool {
-        self.inner.platform.cursor_locked()
+        self.inner.backend.cursor_locked()
     }
 
     pub fn lock_cursor(&self) {
-        self.inner.platform.lock_cursor();
-        self.inner.platform.set_cursor_type(CursorType::None);
+        self.inner.backend.lock_cursor();
+        self.inner.backend.set_cursor_type(CursorType::None);
     }
 
     pub fn unlock_cursor(&self) {
-        self.inner.platform.unlock_cursor();
+        self.inner.backend.unlock_cursor();
         self.inner
-            .platform
+            .backend
             .set_cursor_type(self.inner.cursor_type.get());
     }
 }

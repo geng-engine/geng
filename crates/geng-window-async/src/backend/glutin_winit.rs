@@ -42,10 +42,10 @@ fn resume<T>(
     let gl_config = glutin::config::GetGlConfig::config(gl_ctx);
     let window = window_field.take().unwrap_or_else(|| {
         let window_builder = create_window_builder(options);
-        glutin_winit::finalize_window(window_target.unwrap(), window_builder, &gl_config).unwrap()
+        ::glutin_winit::finalize_window(window_target.unwrap(), window_builder, &gl_config).unwrap()
     });
 
-    let attrs = glutin_winit::GlWindow::build_surface_attributes(&window, <_>::default());
+    let attrs = ::glutin_winit::GlWindow::build_surface_attributes(&window, <_>::default());
     let gl_surface = unsafe {
         glutin::prelude::GlDisplay::create_window_surface(
             &glutin::display::GetGlDisplay::display(&gl_config),
@@ -87,7 +87,7 @@ impl Context {
         #[cfg(not(target_os = "android"))]
         let event_loop = winit::event_loop::EventLoop::<()>::new();
 
-        let (window, gl_config) = glutin_winit::DisplayBuilder::new()
+        let (window, gl_config) = ::glutin_winit::DisplayBuilder::new()
             .with_window_builder(
                 // Only windows requires the window to be present before creating the display.
                 // Other platforms don't really need one.
