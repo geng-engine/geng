@@ -229,6 +229,11 @@ where
                     return std::ops::ControlFlow::Continue(());
                 }
             }
+            Event::RawMouseMove { .. } => {
+                if !this.cursor_locked() {
+                    return std::ops::ControlFlow::Continue(());
+                }
+            }
             Event::CloseRequested => {
                 if this.is_auto_close() {
                     return std::ops::ControlFlow::Break(());
