@@ -12,9 +12,9 @@ pub struct Context {
     is_fullscreen: Cell<bool>,
     focused: Cell<bool>,
     lock_cursor: Cell<bool>,
-    should_close: Cell<bool>,
     mouse_pos: Rc<Cell<vec2<f64>>>,
     ugli: Ugli,
+    framebuffer: RefCell<ugli::Framebuffer<'static>>,
     edited_text: RefCell<Option<String>>,
 }
 
@@ -173,11 +173,11 @@ impl Context {
             event_loop: RefCell::new(Some(event_loop)),
             gl_surface: RefCell::new(gl_surface),
             gl_ctx: RefCell::new(gl_ctx),
+            framebuffer: RefCell::new(ugli::Framebuffer::default(&ugli)),
             ugli,
             is_fullscreen: Cell::new(false),
             focused: Cell::new(false),
             lock_cursor: Cell::new(false),
-            should_close: Cell::new(false),
             mouse_pos: Rc::new(Cell::new(vec2(0.0, 0.0))),
             edited_text: RefCell::new(None),
         }
@@ -231,8 +231,8 @@ impl Context {
         &self.ugli
     }
 
-    pub fn should_close(&self) -> bool {
-        self.should_close.get()
+    pub fn lock_framebuffer(&self) -> RefMut<ugli::Framebuffer<'static>> {
+        self.framebuffer.borrow_mut()
     }
 
     pub fn mouse_pos(&self) -> vec2<f64> {
@@ -357,6 +357,8 @@ impl Context {
                             new_size.width.try_into().unwrap(),
                             new_size.height.try_into().unwrap(),
                         );
+                        self.framebuffer
+                            .replace(ugli::Framebuffer::default(&self.ugli));
                     }
                 }
             }
@@ -389,6 +391,7 @@ impl Context {
             }
             winit::event::Event::RedrawEventsCleared => {
                 if let Some(gl_surface) = &*self.gl_surface.borrow() {
+                    event_handler(Event::Draw);
                     glutin::surface::GlSurface::swap_buffers(
                         gl_surface,
                         self.gl_ctx.borrow().as_ref().unwrap(),

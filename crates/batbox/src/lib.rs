@@ -8,6 +8,7 @@ pub mod crates {
     //! External crates
 
     pub use ::anyhow;
+    pub use ::async_recursion;
     pub use ::async_trait;
     pub use ::bincode;
     pub use ::derivative;
@@ -61,6 +62,8 @@ pub mod prelude {
 
     #[doc(no_inline)]
     pub use crate::crates::anyhow::{anyhow, Context as _};
+    #[doc(no_inline)]
+    pub use crate::crates::async_recursion::async_recursion;
     #[doc(no_inline)]
     pub use crate::crates::async_trait::async_trait;
     #[doc(no_inline)]

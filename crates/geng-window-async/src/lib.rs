@@ -1,6 +1,6 @@
 use batbox_la::*;
 use serde::{Deserialize, Serialize};
-use std::cell::{Cell, RefCell};
+use std::cell::{Cell, RefCell, RefMut};
 use std::collections::HashSet;
 use std::rc::Rc;
 use ugli::Ugli;
@@ -92,7 +92,7 @@ pub struct Window {
 }
 
 impl Window {
-    pub fn new(options: &Options) -> Self {
+    fn new(options: &Options) -> Self {
         // channel capacity is 1 because events are supposed to be consumed immediately
         let (mut event_sender, event_receiver) = async_broadcast::broadcast(1);
         event_sender.set_overflow(true);
@@ -134,10 +134,6 @@ impl Window {
         let ugli = self.inner.platform.ugli();
         ugli._set_size(self.size());
         ugli
-    }
-
-    pub fn should_close(&self) -> bool {
-        self.inner.platform.should_close()
     }
 
     pub fn is_key_pressed(&self, key: Key) -> bool {
@@ -188,29 +184,37 @@ impl Window {
         self.inner.executor.spawn(f)
     }
 
-    pub fn run(self, f: impl std::future::Future<Output = ()> + 'static) {
-        let main_task = self.spawn(f);
-        let this = self.clone();
-        self.inner.platform.clone().run(move |event| {
-            if let Event::CloseRequested = event {
-                if self.is_auto_close() {
-                    return std::ops::ControlFlow::Break(());
-                }
-            }
-            if let Some(removed) = this.inner.event_sender.try_broadcast(event).unwrap() {
-                log::error!("Event has been ignored: {removed:?}");
-            }
-            this.inner.event_receiver.borrow_mut().try_recv().unwrap();
-            while this.inner.executor.try_tick() {
-                if main_task.is_finished() {
-                    return std::ops::ControlFlow::Break(());
-                }
-            }
-            std::ops::ControlFlow::Continue(())
-        });
+    pub fn lock_framebuffer(&self) -> RefMut<ugli::Framebuffer<'static>> {
+        self.inner.platform.lock_framebuffer()
     }
 
     pub fn events(&self) -> impl futures::Stream<Item = Event> {
         self.inner.event_receiver.borrow().clone()
     }
+}
+
+pub fn run<Fut>(options: Options, f: impl FnOnce(Window) -> Fut)
+where
+    Fut: std::future::Future<Output = ()> + 'static,
+{
+    let this = Window::new(&options);
+    let f = f(this.clone());
+    let main_task = this.spawn(f);
+    this.inner.platform.clone().run(move |event| {
+        if let Event::CloseRequested = event {
+            if this.is_auto_close() {
+                return std::ops::ControlFlow::Break(());
+            }
+        }
+        if let Some(removed) = this.inner.event_sender.try_broadcast(event).unwrap() {
+            log::error!("Event has been ignored: {removed:?}");
+        }
+        this.inner.event_receiver.borrow_mut().try_recv().unwrap();
+        while this.inner.executor.try_tick() {
+            if main_task.is_finished() {
+                return std::ops::ControlFlow::Break(());
+            }
+        }
+        std::ops::ControlFlow::Continue(())
+    });
 }

@@ -42,6 +42,7 @@ pub enum Event {
     },
     EditText(String),
     Gamepad(gilrs::Event), // TODO window should not know about it?
+    Draw,
     CloseRequested,
 }
 
