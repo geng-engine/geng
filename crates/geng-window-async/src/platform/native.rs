@@ -12,7 +12,7 @@ pub struct Context {
     is_fullscreen: Cell<bool>,
     focused: Cell<bool>,
     lock_cursor: Cell<bool>,
-    cursor_pos: Rc<Cell<vec2<f64>>>,
+    cursor_pos: Cell<vec2<f64>>,
     ugli: Ugli,
     framebuffer: RefCell<ugli::Framebuffer<'static>>,
     edited_text: RefCell<Option<String>>,
@@ -178,7 +178,7 @@ impl Context {
             is_fullscreen: Cell::new(false),
             focused: Cell::new(false),
             lock_cursor: Cell::new(false),
-            cursor_pos: Rc::new(Cell::new(vec2(0.0, 0.0))),
+            cursor_pos: Cell::new(vec2(0.0, 0.0)),
             edited_text: RefCell::new(None),
         }
     }
