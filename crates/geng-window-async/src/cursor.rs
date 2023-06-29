@@ -19,7 +19,7 @@ impl Window {
     }
 
     pub fn cursor_position(&self) -> vec2<f64> {
-        self.inner.platform.mouse_pos()
+        self.inner.platform.cursor_pos()
     }
 
     pub fn cursor_locked(&self) -> bool {

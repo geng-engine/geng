@@ -7,6 +7,12 @@ pub struct Angle<T: Float = f32> {
     radians: T,
 }
 
+impl<T: Float> rand::distributions::Distribution<Angle<T>> for rand::distributions::Standard {
+    fn sample<R: rand::Rng + ?Sized>(&self, rng: &mut R) -> Angle<T> {
+        Angle::from_radians(rng.gen_range(T::ZERO..T::from_f32(2.0 * f32::PI)))
+    }
+}
+
 impl<T: Float> Angle<T> {
     /// 0 angle is pointing to positive x axis
     pub const ZERO: Self = Self { radians: T::ZERO };

@@ -16,4 +16,5 @@ batbox-num.workspace = true
 batbox-cmp.workspace = true
 batbox-range.workspace = true
 batbox-approx.workspace = true
+rand.workspace = true
 serde.workspace = true

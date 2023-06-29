@@ -79,8 +79,6 @@ struct WindowImpl {
     event_receiver: RefCell<async_broadcast::Receiver<Event>>,
     executor: async_executor::LocalExecutor<'static>,
     platform: Rc<platform::Context>,
-    #[allow(clippy::type_complexity)]
-    event_handler: Rc<RefCell<Option<Box<dyn FnMut(Event)>>>>,
     pressed_keys: Rc<RefCell<HashSet<Key>>>,
     pressed_buttons: Rc<RefCell<HashSet<MouseButton>>>,
     auto_close: Cell<bool>,
@@ -103,7 +101,6 @@ impl Window {
                 event_receiver: RefCell::new(event_receiver),
                 executor: async_executor::LocalExecutor::new(),
                 platform: Rc::new(platform::Context::new(options)),
-                event_handler: Rc::new(RefCell::new(None)),
                 pressed_keys: Rc::new(RefCell::new(HashSet::new())),
                 pressed_buttons: Rc::new(RefCell::new(HashSet::new())),
                 auto_close: Cell::new(options.auto_close),
@@ -121,6 +118,10 @@ impl Window {
 
     pub fn stop_text_edit(&self) {
         self.inner.platform.stop_text_edit();
+    }
+
+    pub fn is_editing_text(&self) -> bool {
+        self.inner.platform.is_editing_text()
     }
 
     pub fn real_size(&self) -> vec2<usize> {
@@ -201,10 +202,29 @@ where
     let f = f(this.clone());
     let main_task = this.spawn(f);
     this.inner.platform.clone().run(move |event| {
-        if let Event::CloseRequested = event {
-            if this.is_auto_close() {
-                return std::ops::ControlFlow::Break(());
+        match event {
+            Event::KeyDown { key } => {
+                if !this.inner.pressed_keys.borrow_mut().insert(key) {
+                    return std::ops::ControlFlow::Continue(());
+                }
             }
+            Event::KeyUp { key } => {
+                if !this.inner.pressed_keys.borrow_mut().remove(&key) {
+                    return std::ops::ControlFlow::Continue(());
+                }
+            }
+            Event::MouseDown { button, .. } => {
+                this.inner.pressed_buttons.borrow_mut().insert(button);
+            }
+            Event::MouseUp { button, .. } => {
+                this.inner.pressed_buttons.borrow_mut().remove(&button);
+            }
+            Event::CloseRequested => {
+                if this.is_auto_close() {
+                    return std::ops::ControlFlow::Break(());
+                }
+            }
+            _ => {}
         }
         if let Some(_removed) = this.inner.event_sender.try_broadcast(event).unwrap() {
             // log::error!("Event has been ignored: {removed:?}");

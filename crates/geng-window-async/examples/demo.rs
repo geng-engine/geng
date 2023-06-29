@@ -18,8 +18,9 @@ mod renderer {
     const PROGRAM_SOURCE: &str = r#"
     #ifdef VERTEX_SHADER
     attribute vec2 a_pos;
+    uniform mat3 u_transform;
     void main() {
-        gl_Position = vec4(a_pos, 0.0, 1.0);
+        gl_Position = mat4(u_transform) * vec4(a_pos, 0.0, 1.0);
     }
     #endif
     #ifdef FRAGMENT_SHADER
@@ -52,7 +53,12 @@ mod renderer {
                 ),
             }
         }
-        pub fn draw(&self, framebuffer: &mut ugli::Framebuffer, color: Rgba<f32>) {
+        pub fn draw(
+            &self,
+            framebuffer: &mut ugli::Framebuffer,
+            transform: mat3<f32>,
+            color: Rgba<f32>,
+        ) {
             ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
             ugli::draw(
                 framebuffer,
@@ -60,6 +66,7 @@ mod renderer {
                 ugli::DrawMode::Triangles,
                 &self.data,
                 ugli::uniforms! {
+                    u_transform: transform,
                     u_color: color,
                 },
                 ugli::DrawParameters::default(),
@@ -84,6 +91,7 @@ async fn space_escape(depth: usize, renderer: &Renderer, window: &geng_window::W
     let color: Rgba<f32> = Hsla::new(thread_rng().gen(), 1.0, 0.5, 1.0).into();
     let mut g = 0.0;
     let mut timer = Timer::new();
+    let transform = mat3::rotate(thread_rng().gen());
     while let Some(event) = window.events().next().await {
         match event {
             geng_window::Event::KeyDown { key } => match key {
@@ -93,12 +101,33 @@ async fn space_escape(depth: usize, renderer: &Renderer, window: &geng_window::W
                 geng_window::Key::Space => {
                     space_escape(depth + 1, renderer, window).await;
                 }
+                geng_window::Key::F => {
+                    window.toggle_fullscreen();
+                }
+                geng_window::Key::M => {
+                    if window.cursor_locked() {
+                        log::info!("unlocking cursor");
+                        window.unlock_cursor();
+                    } else {
+                        log::info!("locking cursor");
+                        window.lock_cursor();
+                    }
+                }
+                geng_window::Key::T if window.is_key_pressed(geng_window::Key::LCtrl) => {
+                    if window.is_editing_text() {
+                        log::info!("stop editing text");
+                        window.stop_text_edit();
+                    } else {
+                        log::info!("start editing text");
+                        window.start_text_edit("text");
+                    }
+                }
                 _ => {}
             },
             geng_window::Event::Draw => {
                 g = (g + timer.tick().as_secs_f64() as f32).fract();
                 window.with_framebuffer(|framebuffer| {
-                    renderer.draw(framebuffer, color * Rgba::new(g, g, g, 1.0));
+                    renderer.draw(framebuffer, transform, color * Rgba::new(g, g, g, 1.0));
                 });
             }
             _ => {}

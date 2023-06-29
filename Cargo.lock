@@ -569,6 +569,7 @@ dependencies = [
  "batbox-cmp",
  "batbox-num",
  "batbox-range",
+ "rand 0.8.5",
  "serde",
 ]
 

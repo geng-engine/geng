@@ -12,7 +12,7 @@ pub struct Context {
     is_fullscreen: Cell<bool>,
     focused: Cell<bool>,
     lock_cursor: Cell<bool>,
-    mouse_pos: Rc<Cell<vec2<f64>>>,
+    cursor_pos: Rc<Cell<vec2<f64>>>,
     ugli: Ugli,
     framebuffer: RefCell<ugli::Framebuffer<'static>>,
     edited_text: RefCell<Option<String>>,
@@ -142,7 +142,7 @@ impl Context {
             use winit::platform::pump_events::EventLoopExtPumpEvents;
             let mut resumed = false;
             while !resumed {
-                event_loop.pump_events(|e, window_target, flow| {
+                event_loop.pump_events(|e, window_target, _flow| {
                     if let winit::event::Event::Resumed = e {
                         resume(
                             &mut window,
@@ -178,7 +178,7 @@ impl Context {
             is_fullscreen: Cell::new(false),
             focused: Cell::new(false),
             lock_cursor: Cell::new(false),
-            mouse_pos: Rc::new(Cell::new(vec2(0.0, 0.0))),
+            cursor_pos: Rc::new(Cell::new(vec2(0.0, 0.0))),
             edited_text: RefCell::new(None),
         }
     }
@@ -220,13 +220,6 @@ impl Context {
         Ok(())
     }
 
-    pub fn swap_buffers(&self, event_handler: impl Fn(Event)) {
-        if self.lock_cursor.get() && self.focused.get() {
-            let pos = (self.real_size() / 2).map(|x| x as f64);
-            self.set_cursor_position(pos);
-        }
-    }
-
     pub fn ugli(&self) -> &Ugli {
         &self.ugli
     }
@@ -235,8 +228,8 @@ impl Context {
         self.framebuffer.borrow_mut()
     }
 
-    pub fn mouse_pos(&self) -> vec2<f64> {
-        self.mouse_pos.get()
+    pub fn cursor_pos(&self) -> vec2<f64> {
+        self.cursor_pos.get()
     }
 
     pub fn cursor_locked(&self) -> bool {
@@ -244,17 +237,27 @@ impl Context {
     }
 
     pub fn lock_cursor(&self) {
+        let Some(window) = &*self.window.borrow() else { return };
+        if let Err(lock_e) = window.set_cursor_grab(winit::window::CursorGrabMode::Locked) {
+            if let Err(confine_e) = window.set_cursor_grab(winit::window::CursorGrabMode::Confined)
+            {
+                log::error!("Failed to lock cursor: {lock_e}, {confine_e}");
+            }
+        }
         self.lock_cursor.set(true);
-        // TODO let _ = self.glutin_window.window().set_cursor_grab(true);
     }
 
     pub fn unlock_cursor(&self) {
         self.lock_cursor.set(false);
+        let Some(window) = &*self.window.borrow() else { return };
+        if let Err(e) = window.set_cursor_grab(winit::window::CursorGrabMode::None) {
+            log::error!("Failed to unlock cursor: {e}");
+        }
     }
 
     pub fn set_cursor_position(&self, position: vec2<f64>) {
         let Some(window) = &*self.window.borrow() else { return };
-        self.mouse_pos.set(position);
+        self.cursor_pos.set(position);
         let position = vec2(position.x, self.real_size().y as f64 - 1.0 - position.y); // TODO: WAT
         if let Err(e) =
             window.set_cursor_position(winit::dpi::PhysicalPosition::new(position.x, position.y))
@@ -298,9 +301,8 @@ impl Context {
             }
             winit::event::WindowEvent::CursorMoved { position, .. } => {
                 let position = screen_pos(position);
-                let delta = position - self.mouse_pos.get();
-                self.mouse_pos.set(position);
-                event_handler(Event::MouseMove { position, delta });
+                self.cursor_pos.set(position);
+                event_handler(Event::CursorMove { position });
             }
             winit::event::WindowEvent::MouseInput { state, button, .. } => {
                 let button = match button {
@@ -310,7 +312,7 @@ impl Context {
                     _ => None,
                 };
                 if let Some(button) = button {
-                    let position = self.mouse_pos.get();
+                    let position = self.cursor_pos.get();
                     event_handler(match state {
                         winit::event::ElementState::Pressed => {
                             Event::MouseDown { position, button }
@@ -320,23 +322,33 @@ impl Context {
                 }
             }
             winit::event::WindowEvent::KeyboardInput { event, .. } => {
-                let mut edited_text = self.edited_text.borrow_mut();
-                if let Some(edited_text) = edited_text.deref_mut() {
-                    if event.state == winit::event::ElementState::Pressed {
-                        if event.physical_key == winit::keyboard::KeyCode::Backspace {
-                            edited_text.pop();
-                            event_handler(Event::EditText(edited_text.clone()));
-                        }
-                        #[cfg(not(target_os = "android"))]
-                        {
-                            use winit::platform::modifier_supplement::KeyEventExtModifierSupplement;
-                            if let Some(text) =
-                                KeyEventExtModifierSupplement::text_with_all_modifiers(&event)
-                            {
-                                for c in text.chars().filter(|c| !char::is_ascii_control(c)) {
-                                    edited_text.push(c);
+                {
+                    let mut edited_text_ref = self.edited_text.borrow_mut();
+                    if let Some(edited_text) = edited_text_ref.deref_mut() {
+                        if event.state == winit::event::ElementState::Pressed {
+                            if event.physical_key == winit::keyboard::KeyCode::Backspace {
+                                edited_text.pop();
+                                let event = Event::EditText(edited_text.clone());
+                                std::mem::drop(edited_text_ref);
+                                event_handler(event);
+                            } else {
+                                #[cfg(not(target_os = "android"))]
+                                {
+                                    use winit::platform::modifier_supplement::KeyEventExtModifierSupplement;
+                                    if let Some(text) =
+                                        KeyEventExtModifierSupplement::text_with_all_modifiers(
+                                            &event,
+                                        )
+                                    {
+                                        for c in text.chars().filter(|c| !char::is_ascii_control(c))
+                                        {
+                                            edited_text.push(c);
+                                        }
+                                        let event = Event::EditText(edited_text.clone());
+                                        std::mem::drop(edited_text_ref);
+                                        event_handler(event);
+                                    }
                                 }
-                                event_handler(Event::EditText(edited_text.clone()));
                             }
                         }
                     }
@@ -393,6 +405,10 @@ impl Context {
             }
             winit::event::Event::RedrawEventsCleared => {
                 if let Some(gl_surface) = &*self.gl_surface.borrow() {
+                    if self.lock_cursor.get() && self.focused.get() {
+                        let pos = (self.real_size() / 2).map(|x| x as f64);
+                        self.set_cursor_position(pos);
+                    }
                     event_handler(Event::Draw);
                     glutin::surface::GlSurface::swap_buffers(
                         gl_surface,
@@ -427,6 +443,14 @@ impl Context {
                     ));
                 }
             }
+            winit::event::Event::DeviceEvent { event, .. } => match event {
+                winit::event::DeviceEvent::MouseMotion {
+                    delta: (delta_x, delta_y),
+                } => event_handler(Event::RawMouseMove {
+                    delta: vec2(delta_x, -delta_y),
+                }),
+                _ => {}
+            },
             _ => {}
         }
     }
@@ -464,6 +488,10 @@ impl Context {
         *self.edited_text.borrow_mut() = None;
         #[cfg(target_os = "android")]
         batbox_android::app().hide_soft_input(false);
+    }
+
+    pub fn is_editing_text(&self) -> bool {
+        self.edited_text.borrow().is_some()
     }
 }
 

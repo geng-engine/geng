@@ -24,8 +24,10 @@ pub enum Event {
         position: vec2<f64>,
         button: MouseButton,
     },
-    MouseMove {
+    CursorMove {
         position: vec2<f64>,
+    },
+    RawMouseMove {
         delta: vec2<f64>,
     },
     Wheel {
@@ -57,7 +59,7 @@ impl Event {
             | MouseUp {
                 ref mut position, ..
             }
-            | MouseMove {
+            | CursorMove {
                 ref mut position, ..
             } => *position += delta,
             TouchStart(ref mut touch) | TouchMove(ref mut touch) | TouchEnd(ref mut touch) => {
