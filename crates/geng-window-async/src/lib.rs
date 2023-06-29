@@ -81,6 +81,8 @@ struct WindowImpl {
     platform: Rc<platform::Context>,
     pressed_keys: Rc<RefCell<HashSet<Key>>>,
     pressed_buttons: Rc<RefCell<HashSet<MouseButton>>>,
+    cursor_pos: Cell<Option<vec2<f64>>>,
+    cursor_type: Cell<CursorType>,
     auto_close: Cell<bool>,
 }
 
@@ -104,6 +106,8 @@ impl Window {
                 pressed_keys: Rc::new(RefCell::new(HashSet::new())),
                 pressed_buttons: Rc::new(RefCell::new(HashSet::new())),
                 auto_close: Cell::new(options.auto_close),
+                cursor_pos: Cell::new(None),
+                cursor_type: Cell::new(CursorType::Default),
             }),
         };
         if options.fullscreen {
@@ -203,21 +207,27 @@ where
     let main_task = this.spawn(f);
     this.inner.platform.clone().run(move |event| {
         match event {
-            Event::KeyDown { key } => {
+            Event::KeyPress { key } => {
                 if !this.inner.pressed_keys.borrow_mut().insert(key) {
                     return std::ops::ControlFlow::Continue(());
                 }
             }
-            Event::KeyUp { key } => {
+            Event::KeyRelease { key } => {
                 if !this.inner.pressed_keys.borrow_mut().remove(&key) {
                     return std::ops::ControlFlow::Continue(());
                 }
             }
-            Event::MouseDown { button, .. } => {
+            Event::MousePress { button } => {
                 this.inner.pressed_buttons.borrow_mut().insert(button);
             }
-            Event::MouseUp { button, .. } => {
+            Event::MouseRelease { button } => {
                 this.inner.pressed_buttons.borrow_mut().remove(&button);
+            }
+            Event::CursorMove { position } => {
+                this.inner.cursor_pos.set(Some(position));
+                if this.cursor_locked() {
+                    return std::ops::ControlFlow::Continue(());
+                }
             }
             Event::CloseRequested => {
                 if this.is_auto_close() {

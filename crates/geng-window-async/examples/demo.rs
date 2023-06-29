@@ -94,7 +94,7 @@ async fn space_escape(depth: usize, renderer: &Renderer, window: &geng_window::W
     let transform = mat3::rotate(thread_rng().gen());
     while let Some(event) = window.events().next().await {
         match event {
-            geng_window::Event::KeyDown { key } => match key {
+            geng_window::Event::KeyPress { key } => match key {
                 geng_window::Key::Escape => {
                     break;
                 }

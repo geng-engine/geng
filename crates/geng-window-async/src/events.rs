@@ -16,32 +16,16 @@ pub struct Touch {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Event {
-    MouseDown {
-        position: vec2<f64>,
-        button: MouseButton,
-    },
-    MouseUp {
-        position: vec2<f64>,
-        button: MouseButton,
-    },
-    CursorMove {
-        position: vec2<f64>,
-    },
-    RawMouseMove {
-        delta: vec2<f64>,
-    },
-    Wheel {
-        delta: f64,
-    },
+    MousePress { button: MouseButton },
+    MouseRelease { button: MouseButton },
+    CursorMove { position: vec2<f64> },
+    RawMouseMove { delta: vec2<f64> },
+    Wheel { delta: f64 },
     TouchStart(Touch),
     TouchMove(Touch),
     TouchEnd(Touch),
-    KeyDown {
-        key: Key,
-    },
-    KeyUp {
-        key: Key,
-    },
+    KeyPress { key: Key },
+    KeyRelease { key: Key },
     EditText(String),
     Gamepad(gilrs::Event), // TODO window should not know about it?
     Draw,
@@ -53,13 +37,7 @@ impl Event {
         let mut result = self.clone();
         use Event::*;
         match result {
-            MouseDown {
-                ref mut position, ..
-            }
-            | MouseUp {
-                ref mut position, ..
-            }
-            | CursorMove {
+            CursorMove {
                 ref mut position, ..
             } => *position += delta,
             TouchStart(ref mut touch) | TouchMove(ref mut touch) | TouchEnd(ref mut touch) => {

@@ -10,16 +10,18 @@ pub enum CursorType {
 
 impl Window {
     pub fn set_cursor_type(&self, cursor_type: CursorType) {
+        self.inner.cursor_type.set(cursor_type);
+        if self.cursor_locked() {
+            return;
+        }
         self.inner.platform.set_cursor_type(cursor_type);
     }
 
-    /// TODO should not expose?
-    pub fn set_cursor_position(&self, position: vec2<f64>) {
-        self.inner.platform.set_cursor_position(position);
-    }
-
-    pub fn cursor_position(&self) -> vec2<f64> {
-        self.inner.platform.cursor_pos()
+    pub fn cursor_position(&self) -> Option<vec2<f64>> {
+        if self.cursor_locked() {
+            return None;
+        }
+        self.inner.cursor_pos.get()
     }
 
     pub fn cursor_locked(&self) -> bool {
@@ -28,9 +30,13 @@ impl Window {
 
     pub fn lock_cursor(&self) {
         self.inner.platform.lock_cursor();
+        self.inner.platform.set_cursor_type(CursorType::None);
     }
 
     pub fn unlock_cursor(&self) {
         self.inner.platform.unlock_cursor();
+        self.inner
+            .platform
+            .set_cursor_type(self.inner.cursor_type.get());
     }
 }

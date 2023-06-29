@@ -228,10 +228,6 @@ impl Context {
         self.framebuffer.borrow_mut()
     }
 
-    pub fn cursor_pos(&self) -> vec2<f64> {
-        self.cursor_pos.get()
-    }
-
     pub fn cursor_locked(&self) -> bool {
         self.lock_cursor.get()
     }
@@ -252,17 +248,6 @@ impl Context {
         let Some(window) = &*self.window.borrow() else { return };
         if let Err(e) = window.set_cursor_grab(winit::window::CursorGrabMode::None) {
             log::error!("Failed to unlock cursor: {e}");
-        }
-    }
-
-    pub fn set_cursor_position(&self, position: vec2<f64>) {
-        let Some(window) = &*self.window.borrow() else { return };
-        self.cursor_pos.set(position);
-        let position = vec2(position.x, self.real_size().y as f64 - 1.0 - position.y); // TODO: WAT
-        if let Err(e) =
-            window.set_cursor_position(winit::dpi::PhysicalPosition::new(position.x, position.y))
-        {
-            log::error!("Failed to set cursor position: {:?}", e);
         }
     }
 
@@ -312,12 +297,9 @@ impl Context {
                     _ => None,
                 };
                 if let Some(button) = button {
-                    let position = self.cursor_pos.get();
                     event_handler(match state {
-                        winit::event::ElementState::Pressed => {
-                            Event::MouseDown { position, button }
-                        }
-                        winit::event::ElementState::Released => Event::MouseUp { position, button },
+                        winit::event::ElementState::Pressed => Event::MousePress { button },
+                        winit::event::ElementState::Released => Event::MouseRelease { button },
                     });
                 }
             }
@@ -355,8 +337,8 @@ impl Context {
                 }
                 let key = from_winit_key(event.physical_key);
                 event_handler(match event.state {
-                    winit::event::ElementState::Pressed => Event::KeyDown { key },
-                    winit::event::ElementState::Released => Event::KeyUp { key },
+                    winit::event::ElementState::Pressed => Event::KeyPress { key },
+                    winit::event::ElementState::Released => Event::KeyRelease { key },
                 });
             }
             winit::event::WindowEvent::Resized(new_size) => {
@@ -405,10 +387,6 @@ impl Context {
             }
             winit::event::Event::RedrawEventsCleared => {
                 if let Some(gl_surface) = &*self.gl_surface.borrow() {
-                    if self.lock_cursor.get() && self.focused.get() {
-                        let pos = (self.real_size() / 2).map(|x| x as f64);
-                        self.set_cursor_position(pos);
-                    }
                     event_handler(Event::Draw);
                     glutin::surface::GlSurface::swap_buffers(
                         gl_surface,
@@ -467,7 +445,7 @@ impl Context {
             .run(move |event, window_target, control_flow| {
                 control_flow.set_wait();
                 self.handle_winit_event(event, window_target, &mut |event| {
-                    if let Event::KeyDown { key: Key::Escape } = event {
+                    if let Event::KeyPress { key: Key::Escape } = event {
                         self.unlock_cursor();
                     }
                     if event_handler(event).is_break() {
