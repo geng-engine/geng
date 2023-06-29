@@ -237,7 +237,7 @@ impl Convert<String> for Key {
             "F12" => F12,
 
             _ => {
-                log::warn!("Unrecognized key: {:?}", key);
+                log::trace!("Unrecognized key: {:?}", key);
                 return None;
             }
         })

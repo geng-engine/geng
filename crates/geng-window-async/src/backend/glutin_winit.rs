@@ -555,7 +555,7 @@ fn from_winit_key(key: winit::keyboard::KeyCode) -> Key {
         GKey::F12 => Key::F12,
 
         _ => {
-            log::warn!("Unrecognized key: {:?}", key);
+            log::trace!("Unrecognized key: {:?}", key);
             Key::Unknown
         }
     }
