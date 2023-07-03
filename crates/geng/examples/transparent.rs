@@ -27,11 +27,17 @@ impl geng::State for State {
 fn main() {
     logger::init();
     geng::setup_panic_handler();
-    let geng = Geng::new_with(geng::ContextOptions {
-        title: "Transparent".to_owned(),
-        transparency: true,
-        ..default()
-    });
-    let state = State::new(&geng);
-    geng.run(state);
+    Geng::run_with(
+        &geng::ContextOptions {
+            window: {
+                let mut options = geng::window::Options::new("Transparent");
+                options.transparency = true;
+                options
+            },
+            ..default()
+        },
+        |geng| async move {
+            geng.run_state(State::new(&geng)).await;
+        },
+    );
 }

@@ -5,6 +5,7 @@ pub struct TouchSimulator {
     draw2d: Rc<draw2d::Helper>,
     touches: Vec<Touch>,
     holding: Option<usize>,
+    cursor_position: Option<vec2<f64>>,
 }
 
 const RADIUS: f64 = 10.0;
@@ -16,48 +17,52 @@ impl TouchSimulator {
             draw2d: draw2d.clone(),
             touches: Vec::new(),
             holding: None,
+            cursor_position: None,
         }
     }
     pub fn update(&mut self, _delta_time: f64) {}
     pub fn handle_event(&mut self, event: &Event) -> Option<Vec<Event>> {
         match event {
-            &Event::MouseDown {
-                position,
+            &Event::MouseRelease {
                 button: MouseButton::Left,
             } => {
-                if let Some(index) = self
-                    .touches
-                    .iter()
-                    .position(|&touch| (touch.position - position).len() < RADIUS)
-                {
-                    self.holding = Some(index);
-                } else {
-                    return Some(self.new_touch(position));
+                if let Some(position) = self.cursor_position {
+                    if let Some(index) = self
+                        .touches
+                        .iter()
+                        .position(|&touch| (touch.position - position).len() < RADIUS)
+                    {
+                        self.holding = Some(index);
+                    } else {
+                        return Some(self.new_touch(position));
+                    }
                 }
             }
-            &Event::MouseMove { position, .. } => {
+            &Event::CursorMove { position } => {
+                self.cursor_position = Some(position);
                 if let Some(index) = self.holding {
                     return Some(self.move_touch(index, position));
                 } else {
                     return Some(vec![]);
                 }
             }
-            &Event::MouseDown {
-                position,
+            &Event::MouseRelease {
                 button: MouseButton::Right,
             } => {
-                if let Some(index) = self
-                    .touches
-                    .iter()
-                    .position(|&touch| (touch.position - position).len() < RADIUS)
-                {
-                    return Some(vec![Event::TouchEnd(self.touches.remove(index))]);
-                } else {
-                    return Some(vec![]);
+                if let Some(position) = self.cursor_position {
+                    if let Some(index) = self
+                        .touches
+                        .iter()
+                        .position(|&touch| (touch.position - position).len() < RADIUS)
+                    {
+                        return Some(vec![Event::TouchEnd(self.touches.remove(index))]);
+                    } else {
+                        return Some(vec![]);
+                    }
                 }
             }
-            Event::MouseDown { .. } => return Some(vec![]),
-            Event::MouseUp { .. } => {
+            Event::MousePress { .. } => return Some(vec![]),
+            Event::MouseRelease { .. } => {
                 self.holding = None;
                 return Some(vec![]);
             }

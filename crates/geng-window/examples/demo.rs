@@ -1,5 +1,5 @@
 use batbox::prelude::*;
-use geng_window_async as window;
+use geng_window as window;
 use ugli::Ugli;
 
 mod renderer {
@@ -139,8 +139,9 @@ fn main() {
     logger::init();
     let args: CliArgs = cli::parse();
     window::run(
-        {
-            let mut options = window::Options::new("geng window demo").with_cli(&args.window);
+        &{
+            let mut options = window::Options::new("geng window demo");
+            options.with_cli(&args.window);
             options.auto_close = args.auto_close.unwrap_or(false);
             options.start_hidden = true;
             options

@@ -122,13 +122,12 @@ impl geng::State for State {
 fn main() {
     logger::init();
     geng::setup_panic_handler();
-    let geng = Geng::new("Geng UI Demo!");
-    geng.clone().run_loading(async move {
+    Geng::run("Geng UI Demo!", |geng| async move {
         let assets = geng
             .asset_manager()
             .load(run_dir().join("assets"))
             .await
             .expect("Failed to load assets");
-        State::new(&geng, assets)
+        geng.run_state(State::new(&geng, assets)).await;
     });
 }

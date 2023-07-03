@@ -5,7 +5,7 @@ use std::collections::HashSet;
 use std::rc::Rc;
 use ugli::Ugli;
 
-mod platform;
+mod backend;
 
 mod cursor;
 mod events;
@@ -13,7 +13,27 @@ mod events;
 pub use cursor::*;
 pub use events::*;
 
-#[derive(Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize, clap::Args, Default)]
+#[group(id = "window")]
+pub struct CliArgs {
+    /// Turn vertical synchronization on/off
+    #[clap(long, value_name = "BOOL")]
+    pub vsync: Option<bool>,
+    /// Turn antialiasing on/off
+    #[clap(long, value_name = "BOOL")]
+    pub antialias: Option<bool>,
+    /// Start with given window width (also requires window-height)
+    #[clap(long = "window-width", value_name = "PIXELS")]
+    pub width: Option<usize>,
+    /// Start with given window height (also requires window-width)
+    #[clap(long = "window-height", value_name = "PIXELS")]
+    pub height: Option<usize>,
+    /// Start in fullscreen
+    #[clap(long, value_name = "BOOL")]
+    pub fullscreen: Option<bool>,
+}
+
+#[derive(Debug, Clone)]
 pub struct Options {
     pub fullscreen: bool,
     pub vsync: bool,
@@ -21,14 +41,50 @@ pub struct Options {
     pub antialias: bool,
     pub transparency: bool,
     pub size: Option<vec2<usize>>,
+    pub auto_close: bool,
+    pub start_hidden: bool,
+}
+
+impl Options {
+    pub fn new(title: &str) -> Self {
+        Self {
+            title: title.to_owned(),
+            fullscreen: !cfg!(debug_assertions),
+            vsync: true,
+            antialias: true,
+            transparency: false,
+            size: None,
+            auto_close: true,
+            start_hidden: false,
+        }
+    }
+
+    pub fn with_cli(&mut self, args: &CliArgs) {
+        if let Some(vsync) = args.vsync {
+            self.vsync = vsync;
+        }
+        if let Some(antialias) = args.antialias {
+            self.antialias = antialias;
+        }
+        if let (Some(window_width), Some(window_height)) = (args.width, args.height) {
+            self.size = Some(vec2(window_width, window_height));
+        }
+        if let Some(fullscreen) = args.fullscreen {
+            self.fullscreen = fullscreen;
+        }
+    }
 }
 
 struct WindowImpl {
-    platform: platform::Context,
-    #[allow(clippy::type_complexity)]
-    event_handler: Rc<RefCell<Option<Box<dyn FnMut(Event)>>>>,
+    event_sender: async_broadcast::Sender<Event>,
+    event_receiver: RefCell<async_broadcast::Receiver<Event>>,
+    executor: async_executor::LocalExecutor<'static>,
+    backend: Rc<backend::Context>,
     pressed_keys: Rc<RefCell<HashSet<Key>>>,
     pressed_buttons: Rc<RefCell<HashSet<MouseButton>>>,
+    cursor_pos: Cell<Option<vec2<f64>>>,
+    cursor_type: Cell<CursorType>,
+    auto_close: Cell<bool>,
 }
 
 #[derive(Clone)]
@@ -37,108 +93,54 @@ pub struct Window {
 }
 
 impl Window {
-    pub fn new(options: &Options) -> Self {
+    fn new(options: &Options) -> Self {
+        // channel capacity is 1 because events are supposed to be consumed immediately
+        let (mut event_sender, event_receiver) = async_broadcast::broadcast(1);
+        event_sender.set_overflow(true);
         let window = Self {
             inner: Rc::new(WindowImpl {
-                platform: platform::Context::new(options),
-                event_handler: Rc::new(RefCell::new(None)),
+                event_sender,
+                // We can't just not have this receiver since the channel will be closed then
+                event_receiver: RefCell::new(event_receiver),
+                executor: async_executor::LocalExecutor::new(),
+                backend: Rc::new(backend::Context::new(options)),
                 pressed_keys: Rc::new(RefCell::new(HashSet::new())),
                 pressed_buttons: Rc::new(RefCell::new(HashSet::new())),
+                auto_close: Cell::new(options.auto_close),
+                cursor_pos: Cell::new(None),
+                cursor_type: Cell::new(CursorType::Default),
             }),
         };
         if options.fullscreen {
             window.set_fullscreen(true);
         }
+        if !options.start_hidden {
+            window.show();
+        }
         window
     }
 
-    /// TODO internal?
-    pub fn send_event(&self, event: Event) {
-        let mut handler = self.inner.event_handler.borrow_mut();
-        if let Some(handler) = &mut *handler {
-            handler(event);
-        }
-    }
-
-    /// TODO internal?
-    pub fn set_event_handler(&self, handler: Box<dyn FnMut(Event)>) {
-        *self.inner.event_handler.borrow_mut() = Some(handler);
-    }
-
-    /// TODO internal?
-    pub fn clear_event_handler(&self) {
-        self.inner.event_handler.borrow_mut().take();
-    }
-
-    // #[cfg(not(target_arch = "wasm32"))]
-    // pub fn show(&self) {
-    //     self.glutin_window.window().set_visible(true);
-    // }
-
-    /// TODO internal
-    pub fn swap_buffers(&self) {
-        // ugli::sync();
-        let pressed_keys = self.inner.pressed_keys.clone();
-        let pressed_buttons = self.inner.pressed_buttons.clone();
-        let event_handler = self.inner.event_handler.clone();
-        self.inner.platform.swap_buffers(move |event| {
-            if let Event::KeyDown { key } = event {
-                if pressed_keys.borrow().contains(&key) {
-                    return;
-                }
-            }
-            Self::default_handler(&event, &pressed_keys, &pressed_buttons);
-            if let Some(ref mut handler) = *event_handler.borrow_mut() {
-                handler(event);
-            }
-        });
-    }
-
-    fn default_handler(
-        event: &Event,
-        pressed_keys: &RefCell<HashSet<Key>>,
-        pressed_buttons: &RefCell<HashSet<MouseButton>>,
-    ) {
-        match *event {
-            Event::KeyDown { key } => {
-                pressed_keys.borrow_mut().insert(key);
-            }
-            Event::KeyUp { key } => {
-                pressed_keys.borrow_mut().remove(&key);
-            }
-            Event::MouseDown { button, .. } => {
-                pressed_buttons.borrow_mut().insert(button);
-            }
-            Event::MouseUp { button, .. } => {
-                pressed_buttons.borrow_mut().remove(&button);
-            }
-            _ => {}
-        }
-    }
-
     pub fn start_text_edit(&self, text: &str) {
-        self.inner.platform.start_text_edit(text);
+        self.inner.backend.start_text_edit(text);
     }
 
     pub fn stop_text_edit(&self) {
-        self.inner.platform.stop_text_edit();
+        self.inner.backend.stop_text_edit();
+    }
+
+    pub fn is_editing_text(&self) -> bool {
+        self.inner.backend.is_editing_text()
     }
 
     pub fn real_size(&self) -> vec2<usize> {
-        self.inner.platform.real_size()
+        self.inner.backend.real_size()
     }
     pub fn size(&self) -> vec2<usize> {
         self.real_size().map(|x| x.max(1))
     }
 
     pub fn ugli(&self) -> &Ugli {
-        let ugli = self.inner.platform.ugli();
-        ugli._set_size(self.size());
-        ugli
-    }
-
-    pub fn should_close(&self) -> bool {
-        self.inner.platform.should_close()
+        self.inner.backend.ugli()
     }
 
     pub fn is_key_pressed(&self, key: Key) -> bool {
@@ -158,19 +160,103 @@ impl Window {
     }
 
     pub fn set_fullscreen(&self, fullscreen: bool) {
-        self.inner.platform.set_fullscreen(fullscreen);
+        self.inner.backend.set_fullscreen(fullscreen);
     }
 
     pub fn is_fullscreen(&self) -> bool {
-        self.inner.platform.is_fullscreen()
+        self.inner.backend.is_fullscreen()
     }
 
     pub fn toggle_fullscreen(&self) {
         self.set_fullscreen(!self.is_fullscreen());
     }
 
+    pub fn set_auto_close(&self, auto_close: bool) {
+        self.inner.auto_close.set(auto_close);
+    }
+
+    pub fn is_auto_close(&self) -> bool {
+        self.inner.auto_close.get()
+    }
+
     #[cfg(not(target_arch = "wasm32"))]
     pub fn set_icon(&self, path: impl AsRef<std::path::Path>) -> anyhow::Result<()> {
-        self.inner.platform.set_icon(path.as_ref())
+        self.inner.backend.set_icon(path.as_ref())
     }
+
+    pub fn spawn(
+        &self,
+        f: impl std::future::Future<Output = ()> + 'static,
+    ) -> async_executor::Task<()> {
+        self.inner.executor.spawn(f)
+    }
+
+    pub fn with_framebuffer(&self, f: impl FnOnce(&mut ugli::Framebuffer)) {
+        self.inner.backend.with_framebuffer(f);
+    }
+
+    pub fn events(&self) -> impl futures::Stream<Item = Event> {
+        self.inner.event_receiver.borrow().clone()
+    }
+
+    pub fn show(&self) {
+        self.inner.backend.show();
+    }
+}
+
+pub fn run<Fut>(options: &Options, f: impl FnOnce(Window) -> Fut)
+where
+    Fut: std::future::Future<Output = ()> + 'static,
+{
+    let this = Window::new(options);
+    let f = f(this.clone());
+    let main_task = this.spawn(f);
+    while this.inner.executor.try_tick() {}
+    this.inner.backend.clone().run(move |event| {
+        match event {
+            Event::KeyPress { key } => {
+                if !this.inner.pressed_keys.borrow_mut().insert(key) {
+                    return std::ops::ControlFlow::Continue(());
+                }
+            }
+            Event::KeyRelease { key } => {
+                if !this.inner.pressed_keys.borrow_mut().remove(&key) {
+                    return std::ops::ControlFlow::Continue(());
+                }
+            }
+            Event::MousePress { button } => {
+                this.inner.pressed_buttons.borrow_mut().insert(button);
+            }
+            Event::MouseRelease { button } => {
+                this.inner.pressed_buttons.borrow_mut().remove(&button);
+            }
+            Event::CursorMove { position } => {
+                this.inner.cursor_pos.set(Some(position));
+                if this.cursor_locked() {
+                    return std::ops::ControlFlow::Continue(());
+                }
+            }
+            Event::RawMouseMove { .. } => {
+                if !this.cursor_locked() {
+                    return std::ops::ControlFlow::Continue(());
+                }
+            }
+            Event::CloseRequested => {
+                if this.is_auto_close() {
+                    return std::ops::ControlFlow::Break(());
+                }
+            }
+            _ => {}
+        }
+        if let Some(_removed) = this.inner.event_sender.try_broadcast(event).unwrap() {
+            // log::error!("Event has been ignored: {removed:?}");
+        }
+        this.inner.event_receiver.borrow_mut().try_recv().unwrap();
+        while this.inner.executor.try_tick() {
+            if main_task.is_finished() {
+                return std::ops::ControlFlow::Break(());
+            }
+        }
+        std::ops::ControlFlow::Continue(())
+    });
 }

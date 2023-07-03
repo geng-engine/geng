@@ -127,7 +127,7 @@ impl geng::State for State {
 fn main() {
     logger::init();
     geng::setup_panic_handler();
-    let geng = Geng::new("Font");
-    let state = State::new(&geng);
-    geng.run(state);
+    Geng::run("Font", |geng| async move {
+        geng.run_state(State::new(&geng)).await;
+    });
 }

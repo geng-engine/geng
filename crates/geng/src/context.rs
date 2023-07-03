@@ -23,15 +23,10 @@ pub struct Geng {
 
 #[derive(Debug, Clone)]
 pub struct ContextOptions {
-    pub title: String,
-    pub vsync: bool,
+    pub window: window::Options,
     pub fixed_delta_time: f64,
     pub max_delta_time: f64,
-    pub antialias: bool,
-    pub transparency: bool,
     pub shader_prefix: Option<(String, String)>,
-    pub window_size: Option<vec2<usize>>,
-    pub fullscreen: bool,
     pub target_ui_resolution: Option<vec2<f64>>,
     pub hot_reload: bool,
 }
@@ -39,15 +34,19 @@ pub struct ContextOptions {
 impl Default for ContextOptions {
     fn default() -> Self {
         Self {
-            title: "Geng Application".to_string(),
-            vsync: true,
+            window: window::Options {
+                title: "Geng Application".to_string(),
+                vsync: true,
+                antialias: false,
+                transparency: false,
+                size: None,
+                fullscreen: !cfg!(debug_assertions),
+                auto_close: true,
+                start_hidden: false,
+            },
             fixed_delta_time: 0.05,
             max_delta_time: 0.1,
-            antialias: false,
-            transparency: false,
             shader_prefix: None,
-            window_size: None,
-            fullscreen: !cfg!(debug_assertions),
             target_ui_resolution: None,
             hot_reload: cfg!(debug_assertions),
         }
@@ -57,57 +56,61 @@ impl Default for ContextOptions {
 impl Geng {
     /// Initialize with default [ContextOptions] except for the title.
     /// To initialize with different options see [`Geng::new_with()`].
-    pub fn new(title: &str) -> Self {
-        Self::new_with(ContextOptions {
-            title: title.to_owned(),
-            ..default()
-        })
+    pub fn run<Fut>(title: &str, f: impl 'static + FnOnce(Geng) -> Fut)
+    where
+        Fut: 'static + Future<Output = ()>,
+    {
+        let mut options = ContextOptions::default();
+        options.window.title = title.to_owned();
+        Self::run_with(&options, f);
     }
 
     /// Initialize with custom [ContextOptions].
-    pub fn new_with(options: ContextOptions) -> Self {
+    pub fn run_with<Fut>(options: &ContextOptions, f: impl 'static + FnOnce(Geng) -> Fut)
+    where
+        Fut: 'static + Future<Output = ()>,
+    {
+        let options = options.clone();
         setup_panic_handler();
-        let window = Window::new(&window::Options {
-            fullscreen: options.fullscreen,
-            vsync: options.vsync,
-            title: options.title.clone(),
-            antialias: options.antialias,
-            transparency: options.transparency,
-            size: options.window_size,
-        });
-        let ugli = window.ugli().clone();
-        let shader_lib =
-            shader::Library::new(&ugli, options.antialias, options.shader_prefix.clone());
-        let draw2d = Rc::new(draw2d::Helper::new(&ugli, options.antialias));
-        let default_font = Rc::new(Font::default(window.ugli()));
-        #[cfg(feature = "audio")]
-        let audio = Audio::new();
-        Self {
-            inner: Rc::new(GengImpl {
-                window,
-                #[cfg(feature = "audio")]
-                audio: audio.clone(),
-                shader_lib,
-                draw2d,
-                asset_manager: asset::Manager::new(
-                    &ugli,
+        window::run(&options.window.clone(), |window| async move {
+            let ugli = window.ugli().clone();
+            let shader_lib = shader::Library::new(
+                &ugli,
+                options.window.antialias,
+                options.shader_prefix.clone(),
+            );
+            let draw2d = Rc::new(draw2d::Helper::new(&ugli, options.window.antialias));
+            let default_font = Rc::new(Font::default(window.ugli()));
+            #[cfg(feature = "audio")]
+            let audio = Audio::new();
+            let geng = Geng {
+                inner: Rc::new(GengImpl {
+                    window,
                     #[cfg(feature = "audio")]
-                    &audio,
-                    options.hot_reload,
-                ),
-                default_font,
-                fixed_delta_time: Cell::new(options.fixed_delta_time),
-                max_delta_time: Cell::new(options.max_delta_time),
-                ui_theme: RefCell::new(None),
-                options,
-                load_progress: RefCell::new(asset::LoadProgress::new()),
-                gilrs: if cfg!(target_os = "android") {
-                    None
-                } else {
-                    Some(RefCell::new(gilrs::Gilrs::new().unwrap()))
-                },
-            }),
-        }
+                    audio: audio.clone(),
+                    shader_lib,
+                    draw2d,
+                    asset_manager: asset::Manager::new(
+                        &ugli,
+                        #[cfg(feature = "audio")]
+                        &audio,
+                        options.hot_reload,
+                    ),
+                    default_font,
+                    fixed_delta_time: Cell::new(options.fixed_delta_time),
+                    max_delta_time: Cell::new(options.max_delta_time),
+                    ui_theme: RefCell::new(None),
+                    options,
+                    load_progress: RefCell::new(asset::LoadProgress::new()),
+                    gilrs: if cfg!(target_os = "android") {
+                        None
+                    } else {
+                        Some(RefCell::new(gilrs::Gilrs::new().unwrap()))
+                    },
+                }),
+            };
+            f(geng).await;
+        });
     }
 
     pub fn window(&self) -> &Window {
@@ -163,18 +166,10 @@ impl Geng {
 }
 
 impl Geng {
-    pub fn run_loading<S: State>(self, state: impl Future<Output = S> + 'static) {
-        self.clone().run(LoadingScreen::new(
-            &self,
-            EmptyLoadingScreen::new(&self),
-            state,
-        ));
-    }
-
     /// Run the application
-    pub fn run(self, state: impl State) {
+    pub async fn run_state(&self, state: impl State) {
         self.finish_loading();
-        let geng = &self;
+        let geng = self;
         struct StateWrapper {
             state_manager: state::Manager,
             debug_overlay: geng_debug_overlay::DebugOverlay,
@@ -210,7 +205,7 @@ impl Geng {
             timer: Timer,
             next_fixed_update: f64,
         }
-        let runner = Rc::new(RefCell::new(Runner {
+        let mut runner = Runner {
             geng: geng.clone(),
             state: StateWrapper {
                 state_manager: {
@@ -227,7 +222,7 @@ impl Geng {
             ),
             timer: Timer::new(),
             next_fixed_update: geng.inner.fixed_delta_time.get(),
-        }));
+        };
 
         impl Runner {
             fn update(&mut self) {
@@ -268,68 +263,32 @@ impl Geng {
                 }
             }
         }
-        geng.inner.window.set_event_handler(Box::new({
-            let runner = runner.clone();
-            move |event| {
-                runner.borrow_mut().handle_event(event);
-            }
-        }));
-        let main_loop = {
-            let geng = geng.clone();
-            // TODO: remove the busy loop to not use any resources?
-            move || {
-                if let Some(gilrs) = &geng.inner.gilrs {
-                    let mut gilrs = gilrs.borrow_mut();
-                    while let Some(gamepad_event) = gilrs.next_event() {
-                        geng.inner.window.send_event(Event::Gamepad(gamepad_event));
+        let mut events = geng.window().events();
+        while let Some(event) = events.next().await {
+            match event {
+                Event::Draw => {
+                    if let Some(gilrs) = &geng.inner.gilrs {
+                        let mut gilrs = gilrs.borrow_mut();
+                        while let Some(gamepad_event) = gilrs.next_event() {
+                            // TODO geng.inner.window.send_event(Event::Gamepad(gamepad_event));
+                        }
+                    }
+
+                    runner.update();
+                    let window_size = geng.inner.window.real_size();
+                    // This means window is minimized?
+                    if window_size.x != 0 && window_size.y != 0 {
+                        geng.window().with_framebuffer(|framebuffer| {
+                            runner.draw(framebuffer);
+                        });
+                    }
+
+                    if runner.need_to_quit() {
+                        return;
                     }
                 }
-
-                runner.borrow_mut().update();
-                let window_size = geng.inner.window.real_size();
-                // This means window is minimized?
-                if window_size.x != 0 && window_size.y != 0 {
-                    let mut framebuffer = ugli::Framebuffer::default(geng.ugli());
-                    runner.borrow_mut().draw(&mut framebuffer);
-                }
-                geng.inner.window.swap_buffers();
-
-                !runner.borrow_mut().need_to_quit()
+                _ => runner.handle_event(event),
             }
-        };
-
-        #[cfg(target_arch = "wasm32")]
-        {
-            #[wasm_bindgen(inline_js = r#"
-        export function run(main_loop) {
-            function main_loop_wrapper() {
-                main_loop();
-                window.requestAnimationFrame(main_loop_wrapper);
-            }
-            main_loop_wrapper();
-        }
-        "#)]
-            extern "C" {
-                fn run(main_loop: &wasm_bindgen::JsValue);
-            }
-            let main_loop = wasm_bindgen::closure::Closure::wrap(Box::new(move || {
-                main_loop();
-            })
-                as Box<dyn FnMut()>);
-            run(main_loop.as_ref());
-            main_loop.forget();
-        }
-
-        #[cfg(not(target_arch = "wasm32"))]
-        {
-            while !geng.inner.window.should_close() {
-                if !main_loop() {
-                    break;
-                }
-            }
-
-            // Needed to drop state
-            geng.inner.window.clear_event_handler();
         }
     }
 }

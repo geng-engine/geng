@@ -3,6 +3,7 @@ use super::*;
 pub struct Vec2Slider<'a> {
     pub position: &'a mut Aabb2<f32>,
     pub sense: &'a mut geng::ui::Sense,
+    pub hover_at: &'a mut Option<vec2<f32>>,
     pub animation: &'a mut f32,
     pub change: RefCell<&'a mut Option<vec2<f32>>>,
     pub value: vec2<f32>,
@@ -14,6 +15,7 @@ impl<'a> Vec2Slider<'a> {
             position: cx.get_state_with(|| Aabb2::point(vec2::ZERO)),
             sense: cx.get_state(),
             animation: cx.get_state(),
+            hover_at: cx.get_state(),
             change: RefCell::new(cx.get_state()),
             value,
         }
@@ -72,14 +74,18 @@ impl geng::ui::Widget for Vec2Slider<'_> {
     }
     fn handle_event(&mut self, event: &geng::Event) {
         // Use helper to determine if we should process interactions
-        if self.sense.is_captured() {
-            if let geng::Event::MouseDown { position, .. }
-            | geng::Event::MouseMove { position, .. } = &event
-            {
-                let new_value = ((position.map(|x| x as f32) - self.position.center())
+        if let geng::Event::CursorMove { position } = event {
+            *self.hover_at = Some(
+                ((position.map(|x| x as f32) - self.position.center())
                     / (self.position.size() / 2.0))
-                    .clamp_len(..=1.0);
-                **self.change.borrow_mut() = Some(new_value);
+                    .clamp_len(..=1.0),
+            );
+        }
+        if self.sense.is_captured() {
+            if let geng::Event::MousePress { .. } | geng::Event::CursorMove { .. } = event {
+                if let Some(new_value) = *self.hover_at {
+                    **self.change.borrow_mut() = Some(new_value);
+                }
             }
         }
     }

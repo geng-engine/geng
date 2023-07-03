@@ -24,14 +24,13 @@ impl geng::State for Example {
 fn main() {
     logger::init();
     geng::setup_panic_handler();
-    let geng = Geng::new("derive assets example");
-    geng.clone().run_loading(async move {
+    Geng::run("derive assets example", |geng| async move {
         let assets: Assets = geng
             .asset_manager()
             .load(run_dir().join("assets"))
             .await
             .unwrap();
         log::info!("{:?}", assets.list);
-        Example
-    })
+        geng.run_state(Example).await;
+    });
 }

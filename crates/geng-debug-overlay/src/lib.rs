@@ -54,7 +54,7 @@ impl DebugOverlay {
     }
 
     pub fn handle_event(&mut self, event: Event, mut inner_handler: impl FnMut(Event)) {
-        if let Event::KeyDown { key } = event {
+        if let Event::KeyPress { key } = event {
             match key {
                 Key::F3 => {
                     self.show = !self.show;

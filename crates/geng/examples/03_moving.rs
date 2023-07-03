@@ -23,16 +23,16 @@ impl geng::State for State {
         let delta_time = delta_time as f32;
 
         // Move depending on the keys currently being pressed
-        if self.geng.window().is_key_pressed(geng::Key::Left) {
+        if self.geng.window().is_key_pressed(geng::Key::ArrowLeft) {
             self.position.x -= delta_time;
         }
-        if self.geng.window().is_key_pressed(geng::Key::Right) {
+        if self.geng.window().is_key_pressed(geng::Key::ArrowRight) {
             self.position.x += delta_time;
         }
-        if self.geng.window().is_key_pressed(geng::Key::Up) {
+        if self.geng.window().is_key_pressed(geng::Key::ArrowUp) {
             self.position.y += delta_time;
         }
-        if self.geng.window().is_key_pressed(geng::Key::Down) {
+        if self.geng.window().is_key_pressed(geng::Key::ArrowDown) {
             self.position.y -= delta_time;
         }
     }
@@ -55,7 +55,7 @@ impl geng::State for State {
     fn handle_event(&mut self, event: geng::Event) {
         if matches!(
             event,
-            geng::Event::KeyDown {
+            geng::Event::KeyPress {
                 key: geng::Key::Space
             }
         ) {
@@ -67,7 +67,7 @@ impl geng::State for State {
 fn main() {
     logger::init();
     geng::setup_panic_handler();
-    let geng = Geng::new("Moving");
-    let state = State::new(&geng);
-    geng.run(state);
+    Geng::run("Moving", |geng| async move {
+        geng.run_state(State::new(&geng)).await;
+    });
 }

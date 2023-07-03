@@ -197,23 +197,27 @@ impl geng::State for Example {
     }
     fn handle_event(&mut self, event: geng::Event) {
         match event {
-            geng::Event::MouseMove { delta, .. } => {
-                if !self.geng.window().pressed_buttons().is_empty() {
-                    let sense = 0.01;
-                    self.camera.rot_h += Angle::from_radians(delta.x as f32 * sense);
-                    self.camera.rot_v = (self.camera.rot_v
-                        + Angle::from_radians(delta.y as f32 * sense))
-                    .clamp_range(Angle::ZERO..=Angle::from_radians(f32::PI));
-                }
+            geng::Event::MousePress { .. } => {
+                self.geng.window().lock_cursor();
+            }
+            geng::Event::MouseRelease { .. } => {
+                self.geng.window().unlock_cursor();
+            }
+            geng::Event::RawMouseMove { delta, .. } => {
+                let sense = 0.01;
+                self.camera.rot_h += Angle::from_radians(delta.x as f32 * sense);
+                self.camera.rot_v = (self.camera.rot_v
+                    + Angle::from_radians(delta.y as f32 * sense))
+                .clamp_range(Angle::ZERO..=Angle::from_radians(f32::PI));
             }
 
-            geng::Event::KeyDown { key: geng::Key::S }
-                if self.geng.window().is_key_pressed(geng::Key::LCtrl) =>
+            geng::Event::KeyPress { key: geng::Key::S }
+                if self.geng.window().is_key_pressed(geng::Key::ControlLeft) =>
             {
                 file_dialog::save("test.txt", "Hello, world!".as_bytes()).unwrap();
             }
-            geng::Event::KeyDown { key: geng::Key::O }
-                if self.geng.window().is_key_pressed(geng::Key::LCtrl) =>
+            geng::Event::KeyPress { key: geng::Key::O }
+                if self.geng.window().is_key_pressed(geng::Key::ControlLeft) =>
             {
                 let geng = self.geng.clone();
                 let assets = self.assets.clone();
@@ -258,21 +262,21 @@ fn main() {
     logger::init();
     geng::setup_panic_handler();
     let opt: Opt = cli::parse();
-    let geng = Geng::new("Example");
-    let path = opt
-        .path
-        .unwrap_or(run_dir().join("assets").join("crab.glb"));
-    geng.clone().run_loading(async move {
+    Geng::run("Example", |geng| async move {
+        let path = opt
+            .path
+            .unwrap_or(run_dir().join("assets").join("crab.glb"));
         let assets = geng
             .asset_manager()
             .load(run_dir().join("assets"))
             .await
             .expect("Failed to load assets");
         let assets = Rc::new(assets);
-        load(
-            geng,
+        geng.run_state(load(
+            geng.clone(),
             assets,
             file::load_bytes(path).map(|result| result.unwrap()),
-        )
+        ))
+        .await;
     });
 }

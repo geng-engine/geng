@@ -106,13 +106,12 @@ impl geng::State for Example {
 fn main() {
     logger::init();
     geng::setup_panic_handler();
-    let geng = Geng::new("Line Texture");
-    geng.clone().run_loading(async move {
+    Geng::run("Line Texture", |geng| async move {
         let assets: Hot<Assets> = geng
             .asset_manager()
             .load(run_dir().join("assets"))
             .await
             .expect("Failed to load assets");
-        Example::new(geng, assets)
+        geng.run_state(Example::new(geng.clone(), assets)).await;
     });
 }

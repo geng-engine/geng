@@ -9,6 +9,7 @@ pub struct Slider<'a> {
     tick_radius: &'a mut f32,
     value: f64,
     range: RangeInclusive<f64>,
+    hover_at: &'a mut Option<f64>,
     change: RefCell<&'a mut Option<f64>>,
 }
 
@@ -21,6 +22,7 @@ impl<'a> Slider<'a> {
             sense: cx.get_state(),
             tick_radius: cx.get_state(),
             pos: cx.get_state(),
+            hover_at: cx.get_state(),
             value,
             range,
             change: RefCell::new(cx.get_state()),
@@ -113,16 +115,20 @@ impl<'a> Widget for Slider<'a> {
             Some(pos) => pos,
             None => return,
         };
-        if self.sense.is_captured() {
-            if let geng::Event::MouseDown { position, .. }
-            | geng::Event::MouseMove { position, .. } = &event
-            {
-                let position = position.x - aabb.min.x;
-                let new_value = *self.range.start()
+        if let geng::Event::CursorMove { position } = event {
+            let position = position.x - aabb.min.x;
+            *self.hover_at = Some(
+                *self.range.start()
                     + ((position - aabb.height() / 6.0) / (aabb.width() - aabb.height() / 3.0))
                         .clamp(0.0, 1.0)
-                        * (*self.range.end() - *self.range.start());
-                **self.change.borrow_mut() = Some(new_value);
+                        * (*self.range.end() - *self.range.start()),
+            );
+        }
+        if self.sense.is_captured() {
+            if let geng::Event::MousePress { .. } | geng::Event::CursorMove { .. } = event {
+                if let Some(new_value) = *self.hover_at {
+                    **self.change.borrow_mut() = Some(new_value);
+                }
             }
         }
     }

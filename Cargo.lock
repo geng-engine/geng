@@ -1856,27 +1856,6 @@ name = "geng-window"
 version = "0.14.0"
 dependencies = [
  "anyhow",
- "batbox-android",
- "batbox-la",
- "gilrs",
- "glutin",
- "glutin-winit",
- "image",
- "js-sys",
- "log",
- "raw-window-handle",
- "serde",
- "ugli",
- "wasm-bindgen",
- "web-sys",
- "winit",
-]
-
-[[package]]
-name = "geng-window-async"
-version = "0.14.0"
-dependencies = [
- "anyhow",
  "async-broadcast",
  "async-executor",
  "batbox",

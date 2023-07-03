@@ -10,11 +10,17 @@ use game_state::GameState;
 fn main() {
     logger::init();
     geng::setup_panic_handler();
-    let geng = Geng::new_with(geng::ContextOptions {
-        title: "Pong".to_owned(),
-        antialias: true,
-        ..default()
-    });
-    let state = GameState::new(&geng);
-    geng.run(state);
+    Geng::run_with(
+        &geng::ContextOptions {
+            window: {
+                let mut options = geng::window::Options::new("Pong");
+                options.antialias = true;
+                options
+            },
+            ..default()
+        },
+        |geng| async move {
+            geng.run_state(GameState::new(&geng)).await;
+        },
+    );
 }

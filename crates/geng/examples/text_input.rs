@@ -32,13 +32,13 @@ impl geng::State for State {
     }
     fn handle_event(&mut self, event: geng::Event) {
         match event {
-            geng::Event::TouchStart(_) | geng::Event::MouseDown { .. } => {
+            geng::Event::TouchStart(_) | geng::Event::MousePress { .. } => {
                 self.geng.window().start_text_edit(&self.text);
             }
             geng::Event::EditText(text) => {
                 self.text = text;
             }
-            geng::Event::KeyDown {
+            geng::Event::KeyPress {
                 key: geng::Key::Backspace,
             } => {
                 self.text.pop();
@@ -51,7 +51,7 @@ impl geng::State for State {
 fn main() {
     logger::init();
     geng::setup_panic_handler();
-    let geng = Geng::new("Moving");
-    let state = State::new(&geng);
-    geng.run_loading(async move { state });
+    Geng::run("Moving", |geng| async move {
+        geng.run_state(State::new(&geng)).await
+    });
 }

@@ -44,17 +44,18 @@ pub fn run<T: Model, G: geng::State>(
             None
         };
 
-        let geng = Geng::new(game_name);
-        let state = ConnectingState::new(&geng, opt.connect.as_deref().unwrap(), {
-            let geng = geng.clone();
-            move |player_id, model| game_constructor(&geng, player_id, model)
-        });
-        geng.run(state);
+        Geng::run(game_name, |geng| async move {
+            let state = ConnectingState::new(&geng, opt.connect.as_deref().unwrap(), {
+                let geng = geng.clone();
+                move |player_id, model| game_constructor(&geng, player_id, model)
+            });
+            geng.run_state(state).await;
 
-        #[cfg(not(target_arch = "wasm32"))]
-        if let Some((server_handle, server_thread)) = server {
-            server_handle.shutdown();
-            server_thread.join().unwrap();
-        }
+            #[cfg(not(target_arch = "wasm32"))]
+            if let Some((server_handle, server_thread)) = server {
+                server_handle.shutdown();
+                server_thread.join().unwrap();
+            }
+        });
     }
 }

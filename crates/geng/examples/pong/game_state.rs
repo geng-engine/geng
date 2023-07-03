@@ -67,8 +67,8 @@ impl GameState {
                     PLAYER_SIZE,
                     PLAYER_SPEED,
                     PLAYER_RIGHT_COLOR,
-                    geng::Key::Up,
-                    geng::Key::Down,
+                    geng::Key::ArrowUp,
+                    geng::Key::ArrowDown,
                 );
 
                 [player_left, player_right]

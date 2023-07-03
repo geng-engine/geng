@@ -7,6 +7,7 @@ struct State {
     drag_start: Option<vec2<f32>>, // Store location that needs to stay under cursor
     prev_touch_distance: f32,
     prev_touch_angle: Angle,
+    cursor_pos: Option<vec2<f64>>,
     touches: Vec<geng::Touch>,
 }
 
@@ -23,6 +24,7 @@ impl State {
             prev_touch_distance: 0.0,
             prev_touch_angle: Angle::ZERO,
             drag_start: None,
+            cursor_pos: None,
             touches: vec![],
         }
     }
@@ -54,7 +56,7 @@ impl geng::State for State {
     }
     fn handle_event(&mut self, event: geng::Event) {
         match event {
-            geng::Event::KeyDown {
+            geng::Event::KeyPress {
                 key: geng::Key::Space,
             } => {
                 *self = Self::new(&self.geng);
@@ -64,17 +66,19 @@ impl geng::State for State {
                 self.camera.fov = (self.camera.fov * 1.01f32.powf(-delta as f32)).clamp(1.0, 30.0);
             }
             // Drag start
-            geng::Event::MouseDown {
-                position,
+            geng::Event::MousePress {
                 button: geng::MouseButton::Left,
             } => {
-                self.drag_start = Some(
-                    self.camera
-                        .screen_to_world(self.framebuffer_size, position.map(|x| x as f32)),
-                );
+                if let Some(position) = self.cursor_pos {
+                    self.drag_start = Some(
+                        self.camera
+                            .screen_to_world(self.framebuffer_size, position.map(|x| x as f32)),
+                    );
+                }
             }
             // Drag move
-            geng::Event::MouseMove { position, .. } => {
+            geng::Event::CursorMove { position } => {
+                self.cursor_pos = Some(position);
                 if let Some(start) = self.drag_start {
                     // Find current world position under cursor
                     let current_pos = self
@@ -85,9 +89,8 @@ impl geng::State for State {
                 }
             }
             // Drag end
-            geng::Event::MouseUp {
+            geng::Event::MouseRelease {
                 button: geng::MouseButton::Left,
-                ..
             } => self.drag_start = None,
             geng::Event::TouchStart(touch) => {
                 self.touches.push(touch);
@@ -151,7 +154,7 @@ impl geng::State for State {
 fn main() {
     logger::init();
     geng::setup_panic_handler();
-    let geng = Geng::new("Moving");
-    let state = State::new(&geng);
-    geng.run(state);
+    Geng::run("Moving", |geng| async move {
+        geng.run_state(State::new(&geng)).await;
+    });
 }

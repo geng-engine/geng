@@ -109,22 +109,22 @@ impl geng::State for Game {
         self.current_time += delta_time;
 
         const SPEED: f32 = 10.0;
-        if self.geng.window().is_key_pressed(geng::Key::Left)
+        if self.geng.window().is_key_pressed(geng::Key::ArrowLeft)
             || self.geng.window().is_key_pressed(geng::Key::A)
         {
             self.player.position.x -= SPEED * delta_time;
         }
-        if self.geng.window().is_key_pressed(geng::Key::Right)
+        if self.geng.window().is_key_pressed(geng::Key::ArrowRight)
             || self.geng.window().is_key_pressed(geng::Key::D)
         {
             self.player.position.x += SPEED * delta_time;
         }
-        if self.geng.window().is_key_pressed(geng::Key::Up)
+        if self.geng.window().is_key_pressed(geng::Key::ArrowUp)
             || self.geng.window().is_key_pressed(geng::Key::W)
         {
             self.player.position.y += SPEED * delta_time;
         }
-        if self.geng.window().is_key_pressed(geng::Key::Down)
+        if self.geng.window().is_key_pressed(geng::Key::ArrowDown)
             || self.geng.window().is_key_pressed(geng::Key::S)
         {
             self.player.position.y -= SPEED * delta_time;

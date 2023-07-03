@@ -7,6 +7,7 @@ struct State {
     positions: HashMap<*const c_void, Aabb2<f64>>,
     states: Vec<std::cell::UnsafeCell<Box<dyn std::any::Any>>>,
     next_state: usize,
+    cursor_pos: Option<vec2<f64>>,
 }
 
 impl State {
@@ -74,6 +75,7 @@ impl Controller {
                 positions: Default::default(),
                 states: Vec::new(),
                 next_state: 0,
+                cursor_pos: None,
             }),
         }
     }
@@ -175,7 +177,7 @@ impl Controller {
     pub fn handle_event(&self, root: &mut dyn Widget, event: Event) -> bool {
         let event = &event;
         self.layout(root);
-        let state = self.state.borrow_mut();
+        let mut state = self.state.borrow_mut();
         let mut captured = false;
         traverse_mut(
             root,
@@ -187,9 +189,24 @@ impl Controller {
                     Release(vec2<f64>),
                 }
                 let cursor = match *event {
-                    Event::MouseMove { position, .. } => CursorEvent::Move(position),
-                    Event::MouseDown { position, .. } => CursorEvent::Press(position),
-                    Event::MouseUp { position, .. } => CursorEvent::Release(position),
+                    Event::CursorMove { position } => {
+                        state.cursor_pos = Some(position);
+                        CursorEvent::Move(position)
+                    }
+                    Event::MousePress { .. } => {
+                        if let Some(position) = state.cursor_pos {
+                            CursorEvent::Press(position)
+                        } else {
+                            return;
+                        }
+                    }
+                    Event::MouseRelease { .. } => {
+                        if let Some(position) = state.cursor_pos {
+                            CursorEvent::Release(position)
+                        } else {
+                            return;
+                        }
+                    }
                     Event::TouchMove(Touch { position, .. }) => CursorEvent::Move(position),
                     Event::TouchStart(Touch { position, .. }) => CursorEvent::Press(position),
                     Event::TouchEnd(Touch { position, .. }) => CursorEvent::Release(position),

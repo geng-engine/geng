@@ -7,6 +7,7 @@ pub struct CustomWidget<'a> {
     pub change: RefCell<&'a mut Option<f32>>, // Result of interaction is optionally a change that was made
     pub assets: &'a Assets,
     pub ratio: f32,
+    hover_at: &'a mut Option<f32>,
 }
 
 impl<'a> CustomWidget<'a> {
@@ -15,6 +16,7 @@ impl<'a> CustomWidget<'a> {
             position: cx.get_state_with(|| Aabb2::point(vec2::ZERO)), // Specify default value for hidden state
             animation_time: cx.get_state(),
             sense: cx.get_state(), // Or just use Default trait
+            hover_at: cx.get_state(),
             change: RefCell::new(cx.get_state()),
             assets,
             ratio,
@@ -90,14 +92,17 @@ impl geng::ui::Widget for CustomWidget<'_> {
     }
     fn handle_event(&mut self, event: &geng::Event) {
         // Use helper to determine if we should process interactions
+        if let geng::Event::CursorMove { position } = event {
+            *self.hover_at = Some(
+                ((position.y as f32 - self.position.min.y) / self.position.height().max(0.1))
+                    .clamp(0.0, 1.0),
+            );
+        }
         if self.sense.is_captured() {
-            if let geng::Event::MouseDown { position, .. }
-            | geng::Event::MouseMove { position, .. } = &event
-            {
-                let new_value = ((position.y as f32 - self.position.min.y)
-                    / self.position.height().max(0.1))
-                .clamp(0.0, 1.0);
-                **self.change.borrow_mut() = Some(new_value);
+            if let geng::Event::MousePress { .. } | geng::Event::CursorMove { .. } = event {
+                if let Some(new_value) = *self.hover_at {
+                    **self.change.borrow_mut() = Some(new_value);
+                }
             }
         }
     }

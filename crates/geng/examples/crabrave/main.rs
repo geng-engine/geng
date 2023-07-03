@@ -130,13 +130,12 @@ impl geng::State for CrabRave {
 fn main() {
     logger::init();
     geng::setup_panic_handler();
-    let geng = Geng::new("CrabRave");
-    geng.clone().run_loading(async move {
+    Geng::run("CrabRave", |geng| async move {
         let assets: Hot<Assets> = geng
             .asset_manager()
             .load(run_dir().join("assets"))
             .await
             .expect("Failed to load assets");
-        CrabRave::new(geng, assets)
+        geng.run_state(CrabRave::new(geng.clone(), assets)).await;
     });
 }

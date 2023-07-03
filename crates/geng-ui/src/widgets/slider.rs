@@ -3,6 +3,7 @@ use super::*;
 pub struct Slider<'a> {
     sense: &'a mut Sense,
     pos: &'a mut Option<Aabb2<f64>>,
+    hover_pos: &'a mut Option<f64>,
     tick_radius: &'a mut f32,
     value: f64,
     range: RangeInclusive<f64>,
@@ -22,6 +23,7 @@ impl<'a> Slider<'a> {
             sense: cx.get_state(),
             tick_radius: cx.get_state(),
             pos: cx.get_state(),
+            hover_pos: cx.get_state(),
             value,
             range,
             f,
@@ -110,14 +112,20 @@ impl<'a> Widget for Slider<'a> {
             Some(pos) => pos,
             None => return,
         };
-        if self.sense.is_captured() {
-            if let Event::MouseDown { position, .. } | Event::MouseMove { position, .. } = &event {
-                let position = position.x - aabb.min.x;
-                let new_value = *self.range.start()
+        if let Event::CursorMove { position } = &event {
+            let position = position.x - aabb.min.x;
+            *self.hover_pos = Some(
+                *self.range.start()
                     + ((position - aabb.height() / 6.0) / (aabb.width() - aabb.height() / 3.0))
                         .clamp(0.0, 1.0)
-                        * (*self.range.end() - *self.range.start());
-                (self.f)(new_value);
+                        * (*self.range.end() - *self.range.start()),
+            );
+        }
+        if self.sense.is_captured() {
+            if let Event::MousePress { .. } | Event::CursorMove { .. } = &event {
+                if let Some(new_value) = *self.hover_pos {
+                    (self.f)(new_value);
+                }
             }
         }
     }

@@ -1,10 +1,5 @@
 use super::*;
 
-async fn spawn_blocking<T>(f: impl FnOnce() -> T) -> T {
-    // TODO threadpool
-    f()
-}
-
 pub fn load_texture(manager: &Manager, path: &std::path::Path) -> Future<ugli::Texture> {
     let ugli = manager.ugli().clone();
     let path = path.to_owned();

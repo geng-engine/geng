@@ -58,7 +58,7 @@ impl<T: Model, G: geng::State> geng::State for ConnectingState<T, G> {
     fn handle_event(&mut self, event: geng::Event) {
         if matches!(
             event,
-            geng::Event::KeyDown {
+            geng::Event::KeyPress {
                 key: geng::Key::Escape
             }
         ) {
