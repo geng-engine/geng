@@ -1,6 +1,6 @@
 use batbox_la::*;
 use serde::{Deserialize, Serialize};
-use std::cell::{Cell, RefCell, RefMut};
+use std::cell::{Cell, RefCell};
 use std::collections::HashSet;
 use std::rc::Rc;
 use ugli::Ugli;
@@ -42,6 +42,7 @@ pub struct Options {
     pub transparency: bool,
     pub size: Option<vec2<usize>>,
     pub auto_close: bool,
+    pub start_hidden: bool,
 }
 
 impl Options {
@@ -54,6 +55,7 @@ impl Options {
             transparency: false,
             size: None,
             auto_close: true,
+            start_hidden: false,
         }
     }
 
@@ -113,6 +115,9 @@ impl Window {
         if options.fullscreen {
             window.set_fullscreen(true);
         }
+        if !options.start_hidden {
+            window.show();
+        }
         window
     }
 
@@ -136,9 +141,7 @@ impl Window {
     }
 
     pub fn ugli(&self) -> &Ugli {
-        let ugli = self.inner.backend.ugli();
-        ugli._set_size(self.size());
-        ugli
+        self.inner.backend.ugli()
     }
 
     pub fn is_key_pressed(&self, key: Key) -> bool {
@@ -190,11 +193,15 @@ impl Window {
     }
 
     pub fn with_framebuffer(&self, f: impl FnOnce(&mut ugli::Framebuffer)) {
-        f(&mut self.inner.backend.lock_framebuffer());
+        self.inner.backend.with_framebuffer(f);
     }
 
     pub fn events(&self) -> impl futures::Stream<Item = Event> {
         self.inner.event_receiver.borrow().clone()
+    }
+
+    pub fn show(&self) {
+        self.inner.backend.show();
     }
 }
 
@@ -205,6 +212,7 @@ where
     let this = Window::new(&options);
     let f = f(this.clone());
     let main_task = this.spawn(f);
+    while this.inner.executor.try_tick() {}
     this.inner.backend.clone().run(move |event| {
         match event {
             Event::KeyPress { key } => {

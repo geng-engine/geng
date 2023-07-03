@@ -2,19 +2,18 @@ use super::*;
 
 use wasm_bindgen::prelude::*;
 
-#[wasm_bindgen(module = "/src/platform/web.js")]
+#[wasm_bindgen(module = "/src/backend/web.js")]
 extern "C" {
-    pub fn initialize_window(canvas: &web_sys::HtmlCanvasElement);
-    pub fn is_fullscreen() -> bool;
-    pub fn set_fullscreen(canvas: &web_sys::HtmlCanvasElement, fullscreen: bool);
+    fn initialize_window(canvas: &web_sys::HtmlCanvasElement);
+    fn is_fullscreen() -> bool;
+    fn set_fullscreen(canvas: &web_sys::HtmlCanvasElement, fullscreen: bool);
+    fn show();
+    fn request_animation_frame_loop(closure: &Closure<dyn FnMut()>);
 }
 
 pub struct Context {
     canvas: web_sys::HtmlCanvasElement,
     ugli: Ugli,
-    mouse_pos: Rc<Cell<vec2<f64>>>,
-    #[allow(clippy::type_complexity)]
-    event_handler: Rc<RefCell<Box<dyn Fn(Event)>>>,
     editing_text: Rc<Cell<bool>>,
     text_agent: web_sys::HtmlInputElement,
 }
@@ -39,19 +38,12 @@ impl Context {
                 ..Default::default()
             },
         );
-        let event_handler = Rc::new(RefCell::new(Box::new(|_| {}) as Box<_>));
-        let context = Self {
+        Self {
             canvas,
             ugli,
-            event_handler: event_handler.clone(),
-            mouse_pos: Rc::new(Cell::new(vec2::ZERO)),
             editing_text: Rc::new(Cell::new(false)),
             text_agent: Self::install_text_agent().unwrap(),
-        };
-        context.subscribe_events(move |event| {
-            event_handler.borrow()(event);
-        });
-        context
+        }
     }
 
     pub fn real_size(&self) -> vec2<usize> {
@@ -64,34 +56,12 @@ impl Context {
         &self.ugli
     }
 
-    pub fn should_close(&self) -> bool {
-        false
-    }
-
     pub fn set_fullscreen(&self, fullscreen: bool) {
         set_fullscreen(&self.canvas, fullscreen);
     }
 
     pub fn is_fullscreen(&self) -> bool {
         is_fullscreen()
-    }
-
-    pub fn mouse_pos(&self) -> vec2<f64> {
-        self.mouse_pos.get()
-    }
-
-    pub fn set_cursor_position(&self, _: vec2<f64>) {
-        unimplemented!()
-    }
-
-    pub fn swap_buffers(&self, event_handler: impl Fn(Event) + 'static) {
-        let mouse_pos = self.mouse_pos.clone();
-        *self.event_handler.borrow_mut() = Box::new(move |event| {
-            if let Event::MouseMove { position, .. } = event {
-                mouse_pos.set(position);
-            }
-            event_handler(event);
-        });
     }
 
     pub fn set_cursor_type(&self, cursor_type: CursorType) {
@@ -144,6 +114,33 @@ impl Context {
         self.editing_text.set(false);
         self.update_text_agent();
     }
+
+    pub fn is_editing_text(&self) -> bool {
+        self.editing_text.get()
+    }
+
+    pub fn run(
+        self: Rc<Self>,
+        event_handler: impl FnMut(Event) -> std::ops::ControlFlow<()> + 'static,
+    ) {
+        let event_handler = RefCell::new(event_handler);
+        self.subscribe_events(move |event| {
+            if let std::ops::ControlFlow::Break(()) = (event_handler.borrow_mut())(event) {
+                panic!("Should not be exiting one the web!");
+            }
+        });
+    }
+
+    pub fn with_framebuffer(&self, f: impl FnOnce(&mut ugli::Framebuffer)) {
+        f(&mut ugli::Framebuffer::default(
+            &self.ugli,
+            self.real_size(),
+        ));
+    }
+
+    pub fn show(&self) {
+        show();
+    }
 }
 
 trait Convert<T>: Sized {
@@ -156,85 +153,127 @@ trait ConvertEvent<T>: Sized {
 
 impl Convert<String> for Key {
     fn convert(key: String) -> Option<Key> {
-        use Key::*;
         Some(match key.as_str() {
-            "KeyA" => A,
-            "KeyB" => B,
-            "KeyC" => C,
-            "KeyD" => D,
-            "KeyE" => E,
-            "KeyF" => F,
-            "KeyG" => G,
-            "KeyH" => H,
-            "KeyI" => I,
-            "KeyJ" => J,
-            "KeyK" => K,
-            "KeyL" => L,
-            "KeyM" => M,
-            "KeyN" => N,
-            "KeyO" => O,
-            "KeyP" => P,
-            "KeyQ" => Q,
-            "KeyR" => R,
-            "KeyS" => S,
-            "KeyT" => T,
-            "KeyU" => U,
-            "KeyV" => V,
-            "KeyW" => W,
-            "KeyX" => X,
-            "KeyY" => Y,
-            "KeyZ" => Z,
-
-            "Digit0" => Num0,
-            "Digit1" => Num1,
-            "Digit2" => Num2,
-            "Digit3" => Num3,
-            "Digit4" => Num4,
-            "Digit5" => Num5,
-            "Digit6" => Num6,
-            "Digit7" => Num7,
-            "Digit8" => Num8,
-            "Digit9" => Num9,
-
-            "Escape" => Escape,
-            "Space" => Space,
-            "Enter" => Enter,
-            "Backspace" => Backspace,
-            "Tab" => Tab,
-
-            "ShiftLeft" => LShift,
-            "ShiftRight" => RShift,
-
-            "ControlLeft" => LCtrl,
-            "ControlRight" => RCtrl,
-
-            "AltLeft" => LAlt,
-            "AltRight" => RAlt,
-
-            "ArrowLeft" => Left,
-            "ArrowRight" => Right,
-            "ArrowUp" => Up,
-            "ArrowDown" => Down,
-
-            "PageUp" => PageUp,
-            "PageDown" => PageDown,
-            "Insert" => Insert,
-            "Delete" => Delete,
-            "Home" => Home,
-            "End" => End,
-
-            "F1" => F1,
-            "F2" => F2,
-            "F3" => F3,
-            "F4" => F4,
-            "F5" => F5,
-            "F6" => F6,
-            "F7" => F7,
-            "F8" => F8,
-            "F9" => F9,
-            "F10" => F10,
-            "F11" => F11,
-            "F12" => F12,
+            "Backquote" => Key::Backquote,
+            "Backslash" => Key::Backslash,
+            "BracketLeft" => Key::BracketLeft,
+            "BracketRight" => Key::BracketRight,
+            "Comma" => Key::Comma,
+            "Digit0" => Key::Digit0,
+            "Digit1" => Key::Digit1,
+            "Digit2" => Key::Digit2,
+            "Digit3" => Key::Digit3,
+            "Digit4" => Key::Digit4,
+            "Digit5" => Key::Digit5,
+            "Digit6" => Key::Digit6,
+            "Digit7" => Key::Digit7,
+            "Digit8" => Key::Digit8,
+            "Digit9" => Key::Digit9,
+            "Equal" => Key::Equal,
+            "IntlBackslash" => Key::IntlBackslash,
+            "IntlRo" => Key::IntlRo,
+            "IntlYen" => Key::IntlYen,
+            "KeyA" => Key::A,
+            "KeyB" => Key::B,
+            "KeyC" => Key::C,
+            "KeyD" => Key::D,
+            "KeyE" => Key::E,
+            "KeyF" => Key::F,
+            "KeyG" => Key::G,
+            "KeyH" => Key::H,
+            "KeyI" => Key::I,
+            "KeyJ" => Key::J,
+            "KeyK" => Key::K,
+            "KeyL" => Key::L,
+            "KeyM" => Key::M,
+            "KeyN" => Key::N,
+            "KeyO" => Key::O,
+            "KeyP" => Key::P,
+            "KeyQ" => Key::Q,
+            "KeyR" => Key::R,
+            "KeyS" => Key::S,
+            "KeyT" => Key::T,
+            "KeyU" => Key::U,
+            "KeyV" => Key::V,
+            "KeyW" => Key::W,
+            "KeyX" => Key::X,
+            "KeyY" => Key::Y,
+            "KeyZ" => Key::Z,
+            "Minus" => Key::Minus,
+            "Period" => Key::Period,
+            "Quote" => Key::Quote,
+            "Semicolon" => Key::Semicolon,
+            "Slash" => Key::Slash,
+            "AltLeft" => Key::AltLeft,
+            "AltRight" => Key::AltRight,
+            "Backspace" => Key::Backspace,
+            "CapsLock" => Key::CapsLock,
+            "ContextMenu" => Key::ContextMenu,
+            "ControlLeft" => Key::ControlLeft,
+            "ControlRight" => Key::ControlRight,
+            "Enter" => Key::Enter,
+            "SuperLeft" => Key::SuperLeft,
+            "SuperRight" => Key::SuperRight,
+            "ShiftLeft" => Key::ShiftLeft,
+            "ShiftRight" => Key::ShiftRight,
+            "Space" => Key::Space,
+            "Tab" => Key::Tab,
+            "Delete" => Key::Delete,
+            "End" => Key::End,
+            "Help" => Key::Help,
+            "Home" => Key::Home,
+            "Insert" => Key::Insert,
+            "PageDown" => Key::PageDown,
+            "PageUp" => Key::PageUp,
+            "ArrowDown" => Key::ArrowDown,
+            "ArrowLeft" => Key::ArrowLeft,
+            "ArrowRight" => Key::ArrowRight,
+            "ArrowUp" => Key::ArrowUp,
+            "NumLock" => Key::NumLock,
+            "Numpad0" => Key::Numpad0,
+            "Numpad1" => Key::Numpad1,
+            "Numpad2" => Key::Numpad2,
+            "Numpad3" => Key::Numpad3,
+            "Numpad4" => Key::Numpad4,
+            "Numpad5" => Key::Numpad5,
+            "Numpad6" => Key::Numpad6,
+            "Numpad7" => Key::Numpad7,
+            "Numpad8" => Key::Numpad8,
+            "Numpad9" => Key::Numpad9,
+            "NumpadAdd" => Key::NumpadAdd,
+            "NumpadBackspace" => Key::NumpadBackspace,
+            "NumpadClear" => Key::NumpadClear,
+            "NumpadClearEntry" => Key::NumpadClearEntry,
+            "NumpadComma" => Key::NumpadComma,
+            "NumpadDecimal" => Key::NumpadDecimal,
+            "NumpadDivide" => Key::NumpadDivide,
+            "NumpadEnter" => Key::NumpadEnter,
+            "NumpadEqual" => Key::NumpadEqual,
+            "NumpadHash" => Key::NumpadHash,
+            "NumpadMemoryAdd" => Key::NumpadMemoryAdd,
+            "NumpadMemoryClear" => Key::NumpadMemoryClear,
+            "NumpadMemoryRecall" => Key::NumpadMemoryRecall,
+            "NumpadMemoryStore" => Key::NumpadMemoryStore,
+            "NumpadMemorySubtract" => Key::NumpadMemorySubtract,
+            "NumpadMultiply" => Key::NumpadMultiply,
+            "NumpadParenLeft" => Key::NumpadParenLeft,
+            "NumpadParenRight" => Key::NumpadParenRight,
+            "NumpadStar" => Key::NumpadStar,
+            "NumpadSubtract" => Key::NumpadSubtract,
+            "Escape" => Key::Escape,
+            "BrowserBack" => Key::Back,
+            "F1" => Key::F1,
+            "F2" => Key::F2,
+            "F3" => Key::F3,
+            "F4" => Key::F4,
+            "F5" => Key::F5,
+            "F6" => Key::F6,
+            "F7" => Key::F7,
+            "F8" => Key::F8,
+            "F9" => Key::F9,
+            "F10" => Key::F10,
+            "F11" => Key::F11,
+            "F12" => Key::F12,
 
             _ => {
                 log::trace!("Unrecognized key: {:?}", key);
@@ -264,8 +303,8 @@ impl ConvertEvent<web_sys::KeyboardEvent> for Event {
         }
         let Some(key) = Convert::convert(event.code()) else { return vec![] };
         vec![match event.type_().as_str() {
-            "keydown" => Event::KeyDown { key },
-            "keyup" => Event::KeyUp { key },
+            "keydown" => Event::KeyPress { key },
+            "keyup" => Event::KeyRelease { key },
             _ => return vec![],
         }]
     }
@@ -282,18 +321,9 @@ impl ConvertEvent<web_sys::MouseEvent> for Event {
             )
             .map(|x| x as f64);
             Some(match event.type_().as_str() {
-                "mousedown" => Event::MouseDown {
-                    position,
-                    button: button?,
-                },
-                "mouseup" => Event::MouseUp {
-                    position,
-                    button: button?,
-                },
-                "mousemove" => Event::MouseMove {
-                    position,
-                    delta: vec2(event.movement_x(), -event.movement_y()).map(|x| x as f64),
-                },
+                "mousedown" => Event::MousePress { button: button? },
+                "mouseup" => Event::MouseRelease { button: button? },
+                "mousemove" => Event::CursorMove { position },
                 _ => return None,
             })
         };
@@ -419,6 +449,15 @@ impl Context {
         self.subscribe_to::<web_sys::TouchEvent>(&self.canvas, handler, "touchend");
         self.subscribe_to::<web_sys::TouchEvent>(&self.canvas, handler, "touchcancel");
         self.subscribe_to::<web_sys::MouseEvent>(&self.canvas, handler, "contextmenu");
+        {
+            let handler = handler.clone();
+            let closure =
+                wasm_bindgen::closure::Closure::wrap(
+                    Box::new(move || handler(Event::Draw)) as Box<dyn FnMut()>
+                );
+            request_animation_frame_loop(&closure);
+            std::mem::forget(closure); // Don't drop so that JS can call this thing
+        };
     }
 
     fn install_text_agent() -> Result<web_sys::HtmlInputElement, JsValue> {

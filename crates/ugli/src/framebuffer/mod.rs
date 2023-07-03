@@ -141,13 +141,13 @@ impl<'a> Framebuffer<'a> {
 }
 
 impl<'a> Framebuffer<'a> {
-    pub fn default(ugli: &Ugli) -> Self {
+    pub fn default(ugli: &Ugli, size: vec2<usize>) -> Self {
         Self {
             read: FramebufferRead {
                 fbo: Fbo::default(ugli),
                 color: ColorAttachmentRead::None,
                 depth: DepthAttachmentRead::None,
-                size: ugli.size(),
+                size,
             },
         }
     }

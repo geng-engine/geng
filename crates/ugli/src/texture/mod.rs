@@ -134,16 +134,6 @@ impl<P: TexturePixel> Texture2d<P> {
         self.size.get()
     }
 
-    #[doc(hidden)]
-    pub fn _set_size(&self, size: vec2<usize>) {
-        self.size.set(size);
-    }
-
-    #[doc(hidden)]
-    pub fn _get_handle(&self) -> &raw::Texture {
-        &self.handle
-    }
-
     // TODO: use like Matrix<Color>?
     pub fn sub_image(&mut self, pos: vec2<usize>, size: vec2<usize>, data: &[u8]) {
         assert_eq!(

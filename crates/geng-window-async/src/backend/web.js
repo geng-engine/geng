@@ -70,3 +70,16 @@ export function set_fullscreen(elem, fullscreen) {
         }
     }
 }
+
+export function show() {
+    document.getElementById("geng-progress-screen").style.display = "none";
+    document.getElementById("geng-canvas").style.display = "block";
+}
+
+export function request_animation_frame_loop(f) {
+    function loop() {
+        f();
+        requestAnimationFrame(loop);
+    }
+    loop();
+}

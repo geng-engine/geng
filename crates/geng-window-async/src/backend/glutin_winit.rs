@@ -13,7 +13,7 @@ pub struct Context {
     lock_cursor: Cell<bool>,
     cursor_pos: Cell<vec2<f64>>,
     ugli: Ugli,
-    framebuffer: RefCell<ugli::Framebuffer<'static>>,
+    context_size: Cell<vec2<usize>>,
     edited_text: RefCell<Option<String>>,
 }
 
@@ -27,6 +27,7 @@ fn create_window_builder(options: &Options) -> winit::window::WindowBuilder {
     }
     builder = builder.with_title(&options.title);
     builder = builder.with_transparent(options.transparency);
+    builder = builder.with_visible(!options.start_hidden);
     builder
 }
 
@@ -172,11 +173,11 @@ impl Context {
             event_loop: RefCell::new(Some(event_loop)),
             gl_surface: RefCell::new(gl_surface),
             gl_ctx: RefCell::new(gl_ctx),
-            framebuffer: RefCell::new(ugli::Framebuffer::default(&ugli)),
             ugli,
             is_fullscreen: Cell::new(false),
             lock_cursor: Cell::new(false),
             cursor_pos: Cell::new(vec2(0.0, 0.0)),
+            context_size: Cell::new(vec2(1, 1)),
             edited_text: RefCell::new(None),
         }
     }
@@ -222,8 +223,11 @@ impl Context {
         &self.ugli
     }
 
-    pub fn lock_framebuffer(&self) -> RefMut<ugli::Framebuffer<'static>> {
-        self.framebuffer.borrow_mut()
+    pub fn with_framebuffer(&self, f: impl FnOnce(&mut ugli::Framebuffer)) {
+        f(&mut ugli::Framebuffer::default(
+            &self.ugli,
+            self.context_size.get(),
+        ));
     }
 
     pub fn cursor_locked(&self) -> bool {
@@ -352,10 +356,8 @@ impl Context {
                             new_size.width.try_into().unwrap(),
                             new_size.height.try_into().unwrap(),
                         );
-                        self.ugli
-                            ._set_size(vec2(new_size.width, new_size.height).map(|x| x as usize));
-                        self.framebuffer
-                            .replace(ugli::Framebuffer::default(&self.ugli));
+                        self.context_size
+                            .set(vec2(new_size.width, new_size.height).map(|x| x as usize));
                     }
                 }
             }
@@ -471,6 +473,12 @@ impl Context {
 
     pub fn is_editing_text(&self) -> bool {
         self.edited_text.borrow().is_some()
+    }
+
+    pub fn show(&self) {
+        if let Some(window) = &mut *self.window.borrow_mut() {
+            window.set_visible(true);
+        }
     }
 }
 

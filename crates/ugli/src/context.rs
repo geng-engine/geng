@@ -2,7 +2,6 @@ use super::*;
 
 pub(crate) struct UgliImpl {
     pub(crate) raw: raw::Context,
-    size: Cell<vec2<usize>>,
     phantom_data: PhantomData<*mut ()>,
 }
 
@@ -61,7 +60,6 @@ impl Ugli {
         let ugli = Ugli {
             inner: Rc::new(UgliImpl {
                 raw: raw::Context::new(webgl),
-                size: Cell::new(vec2(1, 1)),
                 phantom_data: PhantomData,
             }),
         };
@@ -78,7 +76,6 @@ impl Ugli {
         let ugli = Ugli {
             inner: Rc::new(UgliImpl {
                 raw: raw::Context::new(get_proc_address),
-                size: Cell::new(vec2(1, 1)),
                 phantom_data: PhantomData,
             }),
         };
@@ -96,12 +93,5 @@ impl Ugli {
         gl.enable(raw::PROGRAM_POINT_SIZE);
         gl.pixel_store(raw::UNPACK_ALIGNMENT, 1);
         self.check();
-    }
-    #[doc(hidden)]
-    pub fn _set_size(&self, size: vec2<usize>) {
-        self.inner.size.set(size);
-    }
-    pub(crate) fn size(&self) -> vec2<usize> {
-        self.inner.size.get()
     }
 }

@@ -142,9 +142,13 @@ fn main() {
         {
             let mut options = window::Options::new("geng window demo").with_cli(&args.window);
             options.auto_close = args.auto_close.unwrap_or(false);
+            options.start_hidden = true;
             options
         },
         |window| async move {
+            // TODO sleep
+            window.show();
+
             window.set_cursor_type(window::CursorType::Pointer);
             let log_events = async {
                 let mut events = window.events();
