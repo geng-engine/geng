@@ -9,20 +9,19 @@
 //! ```no_run
 //! use geng::prelude::*;
 //!
-//! struct State;
-//!
-//! impl geng::State for State {
-//!     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
-//!         ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
-//!     }
-//! }
-//!
 //! fn main() {
 //!     logger::init();
 //!     geng::setup_panic_handler();
-//!     let geng = Geng::new("Application Name");
-//!     let state = State;
-//!     geng.run(state);
+//!     Geng::run("Application Name", |geng| async move {
+//!         let mut events = geng.window().events();
+//!         while let Some(event) = events.next().await {
+//!             if let geng::Event::Draw = event {
+//!                 geng.window().with_framebuffer(|framebuffer| {
+//!                     ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
+//!                 });
+//!             }
+//!         }
+//!     });
 //! }
 //! ```
 //!
