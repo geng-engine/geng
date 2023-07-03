@@ -148,6 +148,7 @@ where
                 &mut gl_ctx,
                 &mut gl_surface,
             );
+            window.as_ref().unwrap().request_redraw();
             let ugli = Ugli::create_from_glutin(|symbol| {
                 glutin::display::GlDisplay::get_proc_address(
                     &gl_display,
@@ -398,7 +399,7 @@ impl Context {
             winit::event::Event::WindowEvent { event, .. } => {
                 self.handle_winit_window_event(event, event_handler)
             }
-            winit::event::Event::RedrawEventsCleared => {
+            winit::event::Event::RedrawRequested(_) => {
                 if let Some(gl_surface) = &*self.gl_surface.borrow() {
                     event_handler(Event::Draw);
                     glutin::surface::GlSurface::swap_buffers(
@@ -406,6 +407,7 @@ impl Context {
                         self.gl_ctx.borrow().as_ref().unwrap(),
                     )
                     .unwrap();
+                    self.window.borrow().as_ref().unwrap().request_redraw();
                 }
             }
             winit::event::Event::Resumed => {
