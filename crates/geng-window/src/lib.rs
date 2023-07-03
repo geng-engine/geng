@@ -93,33 +93,6 @@ pub struct Window {
 }
 
 impl Window {
-    fn new(options: &Options) -> Self {
-        // channel capacity is 1 because events are supposed to be consumed immediately
-        let (mut event_sender, event_receiver) = async_broadcast::broadcast(1);
-        event_sender.set_overflow(true);
-        let window = Self {
-            inner: Rc::new(WindowImpl {
-                event_sender,
-                // We can't just not have this receiver since the channel will be closed then
-                event_receiver: RefCell::new(event_receiver),
-                executor: async_executor::LocalExecutor::new(),
-                backend: Rc::new(backend::Context::new(options)),
-                pressed_keys: Rc::new(RefCell::new(HashSet::new())),
-                pressed_buttons: Rc::new(RefCell::new(HashSet::new())),
-                auto_close: Cell::new(options.auto_close),
-                cursor_pos: Cell::new(None),
-                cursor_type: Cell::new(CursorType::Default),
-            }),
-        };
-        if options.fullscreen {
-            window.set_fullscreen(true);
-        }
-        if !options.start_hidden {
-            window.show();
-        }
-        window
-    }
-
     pub fn start_text_edit(&self, text: &str) {
         self.inner.backend.start_text_edit(text);
     }
@@ -204,59 +177,85 @@ impl Window {
     }
 }
 
-pub fn run<Fut>(options: &Options, f: impl FnOnce(Window) -> Fut)
+pub fn run<Fut>(options: &Options, f: impl 'static + FnOnce(Window) -> Fut)
 where
     Fut: std::future::Future<Output = ()> + 'static,
 {
-    let this = Window::new(options);
-    let f = f(this.clone());
-    let main_task = this.spawn(f);
-    while this.inner.executor.try_tick() {}
-    this.inner.backend.clone().run(move |event| {
-        match event {
-            Event::KeyPress { key } => {
-                if !this.inner.pressed_keys.borrow_mut().insert(key) {
-                    return std::ops::ControlFlow::Continue(());
+    let options = options.clone();
+    backend::run(&options, move |backend| {
+        // channel capacity is 1 because events are supposed to be consumed immediately
+        let (mut event_sender, event_receiver) = async_broadcast::broadcast(1);
+        event_sender.set_overflow(true);
+        let window = Window {
+            inner: Rc::new(WindowImpl {
+                event_sender,
+                // We can't just not have this receiver since the channel will be closed then
+                event_receiver: RefCell::new(event_receiver),
+                executor: async_executor::LocalExecutor::new(),
+                backend,
+                pressed_keys: Rc::new(RefCell::new(HashSet::new())),
+                pressed_buttons: Rc::new(RefCell::new(HashSet::new())),
+                auto_close: Cell::new(options.auto_close),
+                cursor_pos: Cell::new(None),
+                cursor_type: Cell::new(CursorType::Default),
+            }),
+        };
+        if options.fullscreen {
+            window.set_fullscreen(true);
+        }
+        if !options.start_hidden {
+            window.show();
+        }
+
+        let f = f(window.clone());
+        let main_task = window.spawn(f);
+        while window.inner.executor.try_tick() {}
+        move |event| {
+            match event {
+                Event::KeyPress { key } => {
+                    if !window.inner.pressed_keys.borrow_mut().insert(key) {
+                        return std::ops::ControlFlow::Continue(());
+                    }
                 }
-            }
-            Event::KeyRelease { key } => {
-                if !this.inner.pressed_keys.borrow_mut().remove(&key) {
-                    return std::ops::ControlFlow::Continue(());
+                Event::KeyRelease { key } => {
+                    if !window.inner.pressed_keys.borrow_mut().remove(&key) {
+                        return std::ops::ControlFlow::Continue(());
+                    }
                 }
-            }
-            Event::MousePress { button } => {
-                this.inner.pressed_buttons.borrow_mut().insert(button);
-            }
-            Event::MouseRelease { button } => {
-                this.inner.pressed_buttons.borrow_mut().remove(&button);
-            }
-            Event::CursorMove { position } => {
-                this.inner.cursor_pos.set(Some(position));
-                if this.cursor_locked() {
-                    return std::ops::ControlFlow::Continue(());
+                Event::MousePress { button } => {
+                    window.inner.pressed_buttons.borrow_mut().insert(button);
                 }
-            }
-            Event::RawMouseMove { .. } => {
-                if !this.cursor_locked() {
-                    return std::ops::ControlFlow::Continue(());
+                Event::MouseRelease { button } => {
+                    window.inner.pressed_buttons.borrow_mut().remove(&button);
                 }
+                Event::CursorMove { position } => {
+                    window.inner.cursor_pos.set(Some(position));
+                    if window.cursor_locked() {
+                        return std::ops::ControlFlow::Continue(());
+                    }
+                }
+                Event::RawMouseMove { .. } => {
+                    if !window.cursor_locked() {
+                        return std::ops::ControlFlow::Continue(());
+                    }
+                }
+                Event::CloseRequested => {
+                    if window.is_auto_close() {
+                        return std::ops::ControlFlow::Break(());
+                    }
+                }
+                _ => {}
             }
-            Event::CloseRequested => {
-                if this.is_auto_close() {
+            if let Some(_removed) = window.inner.event_sender.try_broadcast(event).unwrap() {
+                // log::error!("Event has been ignored: {removed:?}");
+            }
+            window.inner.event_receiver.borrow_mut().try_recv().unwrap();
+            while window.inner.executor.try_tick() {
+                if main_task.is_finished() {
                     return std::ops::ControlFlow::Break(());
                 }
             }
-            _ => {}
+            std::ops::ControlFlow::Continue(())
         }
-        if let Some(_removed) = this.inner.event_sender.try_broadcast(event).unwrap() {
-            // log::error!("Event has been ignored: {removed:?}");
-        }
-        this.inner.event_receiver.borrow_mut().try_recv().unwrap();
-        while this.inner.executor.try_tick() {
-            if main_task.is_finished() {
-                return std::ops::ControlFlow::Break(());
-            }
-        }
-        std::ops::ControlFlow::Continue(())
     });
 }

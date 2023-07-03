@@ -18,6 +18,15 @@ pub struct Context {
     text_agent: web_sys::HtmlInputElement,
 }
 
+pub fn run<EH>(options: &Options, once_ready: impl 'static + FnOnce(Rc<Context>) -> EH)
+where
+    EH: 'static + FnMut(Event) -> std::ops::ControlFlow<()>,
+{
+    let context = Rc::new(Context::new(options));
+    let event_handler = once_ready(context.clone());
+    context.run(event_handler);
+}
+
 impl Context {
     pub fn new(options: &Options) -> Self {
         let canvas = web_sys::window()
