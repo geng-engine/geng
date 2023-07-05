@@ -407,7 +407,11 @@ impl Context {
                         self.gl_ctx.borrow().as_ref().unwrap(),
                     )
                     .unwrap();
-                    self.window.borrow().as_ref().unwrap().request_redraw();
+                }
+            }
+            winit::event::Event::RedrawEventsCleared => {
+                if let Some(window) = self.window.borrow().as_ref() {
+                    window.request_redraw();
                 }
             }
             winit::event::Event::Resumed => {
