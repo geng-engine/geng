@@ -64,6 +64,13 @@ impl BlendMode {
             equation: BlendEquation::Add,
         })
     }
+    pub fn premultiplied_alpha() -> Self {
+        Self::combined(ChannelBlendMode {
+            src_factor: BlendFactor::One,
+            dst_factor: BlendFactor::OneMinusSrcAlpha,
+            equation: BlendEquation::Add,
+        })
+    }
     pub(crate) fn apply(mode: Option<&Self>, gl: &raw::Context) {
         if let Some(mode) = mode {
             gl.enable(raw::BLEND);
