@@ -169,3 +169,7 @@ vec4 smoothTexture2D(vec2 data_uv, sampler2D tex, ivec2 tex_size) {
     return texture2D(tex, uv);
 }
 #endif
+
+vec4 premultiply_alpha(vec4 color) {
+    return vec4(color.rgb * color.a, color.a);
+}
