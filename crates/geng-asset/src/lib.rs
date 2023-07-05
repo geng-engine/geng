@@ -1,7 +1,5 @@
 use batbox_file as file;
 use futures::prelude::*;
-#[cfg(feature = "audio")]
-use geng_audio::{self as audio, Audio};
 use geng_shader as shader;
 use std::cell::RefCell;
 use std::future::Future as StdFuture;
@@ -23,7 +21,7 @@ pub type Future<T> = Pin<Box<dyn StdFuture<Output = anyhow::Result<T>>>>;
 struct ManagerImpl {
     ugli: Ugli,
     #[cfg(feature = "audio")]
-    audio: Audio,
+    audio: geng_audio::Audio,
     shader_lib: shader::Library,
     hot_reload_enabled: bool,
 }
@@ -34,7 +32,11 @@ pub struct Manager {
 }
 
 impl Manager {
-    pub fn new(ugli: &Ugli, #[cfg(feature = "audio")] audio: &Audio, hot_reload: bool) -> Self {
+    pub fn new(
+        ugli: &Ugli,
+        #[cfg(feature = "audio")] audio: &geng_audio::Audio,
+        hot_reload: bool,
+    ) -> Self {
         Self {
             inner: Rc::new(ManagerImpl {
                 ugli: ugli.clone(),
@@ -46,7 +48,7 @@ impl Manager {
         }
     }
     #[cfg(feature = "audio")]
-    pub fn audio(&self) -> &Audio {
+    pub fn audio(&self) -> &geng_audio::Audio {
         &self.inner.audio
     }
     pub fn ugli(&self) -> &Ugli {
@@ -59,11 +61,16 @@ impl Manager {
         self.inner.hot_reload_enabled
     }
     pub fn load<T: Load>(&self, path: impl AsRef<Path>) -> Future<T> {
-        T::load(self, path.as_ref())
+        T::load(self, path.as_ref(), &Default::default())
     }
+    pub fn load_with<T: Load>(&self, path: impl AsRef<Path>, options: &T::Options) -> Future<T> {
+        T::load(self, path.as_ref(), options)
+    }
+    /// Load asset from given path with specified or default extension
     pub fn load_ext<T: Load>(
         &self,
         path: impl AsRef<std::path::Path>,
+        options: &T::Options,
         ext: Option<impl AsRef<str>>,
     ) -> Future<T> {
         let path = path.as_ref();
@@ -75,12 +82,13 @@ impl Manager {
             }
             None => path,
         };
-        self.load(path)
+        self.load_with(path, options)
     }
 }
 
 pub trait Load: Sized + 'static {
-    fn load(manager: &Manager, path: &Path) -> Future<Self>;
+    type Options: Clone + Default;
+    fn load(manager: &Manager, path: &Path, options: &Self::Options) -> Future<Self>;
     const DEFAULT_EXT: Option<&'static str>;
 }
 
@@ -88,15 +96,17 @@ impl<T: 'static> Load for Rc<T>
 where
     T: Load,
 {
-    fn load(manager: &Manager, path: &Path) -> Future<Self> {
-        let inner = T::load(manager, path);
+    type Options = T::Options;
+    fn load(manager: &Manager, path: &Path, options: &Self::Options) -> Future<Self> {
+        let inner = T::load(manager, path, options);
         async move { Ok(Rc::new(inner.await?)) }.boxed_local()
     }
     const DEFAULT_EXT: Option<&'static str> = T::DEFAULT_EXT;
 }
 
 impl Load for ugli::Program {
-    fn load(manager: &Manager, path: &Path) -> Future<Self> {
+    type Options = ();
+    fn load(manager: &Manager, path: &Path, _options: &Self::Options) -> Future<Self> {
         let glsl: Future<String> = manager.load(path);
         let manager = manager.clone();
         async move {
@@ -109,7 +119,8 @@ impl Load for ugli::Program {
 }
 
 impl Load for serde_json::Value {
-    fn load(manager: &Manager, path: &Path) -> Future<Self> {
+    type Options = ();
+    fn load(manager: &Manager, path: &Path, _options: &Self::Options) -> Future<Self> {
         let string: Future<String> = manager.load(path);
         async move {
             let string: String = string.await?;
@@ -121,7 +132,8 @@ impl Load for serde_json::Value {
 }
 
 impl Load for String {
-    fn load(_manager: &Manager, path: &Path) -> Future<Self> {
+    type Options = ();
+    fn load(_manager: &Manager, path: &Path, _options: &Self::Options) -> Future<Self> {
         let path = path.to_owned();
         async move { file::load_string(&path).await }.boxed_local()
     }
@@ -129,7 +141,8 @@ impl Load for String {
 }
 
 impl Load for Vec<u8> {
-    fn load(_manager: &Manager, path: &Path) -> Future<Self> {
+    type Options = ();
+    fn load(_manager: &Manager, path: &Path, _options: &Self::Options) -> Future<Self> {
         let path = path.to_owned();
         async move { file::load_bytes(&path).await }.boxed_local()
     }
@@ -137,12 +150,14 @@ impl Load for Vec<u8> {
 }
 
 impl Load for geng_font::Font {
-    fn load(manager: &Manager, path: &Path) -> Future<Self> {
+    type Options = geng_font::Options;
+    fn load(manager: &Manager, path: &Path, options: &Self::Options) -> Future<Self> {
         let manager = manager.clone();
         let path = path.to_owned();
+        let options = options.clone();
         async move {
             let data = file::load_bytes(path).await?;
-            geng_font::Font::new(manager.ugli(), &data, geng_font::Options::default())
+            geng_font::Font::new(manager.ugli(), &data, &options)
         }
         .boxed_local()
     }
@@ -171,18 +186,70 @@ impl Default for LoadProgress {
 }
 
 #[cfg(feature = "audio")]
-impl Load for audio::Sound {
-    fn load(manager: &Manager, path: &std::path::Path) -> Future<Self> {
-        let manager = manager.clone();
-        let path = path.to_owned();
-        Box::pin(async move { manager.audio().load(path).await })
+mod audio_ {
+    use super::*;
+
+    #[derive(Debug, Clone)]
+    pub struct SoundOptions {
+        pub looped: bool,
     }
-    const DEFAULT_EXT: Option<&'static str> = Some("wav"); // TODO change to mp3 since wav doesnt work in safari?
+
+    impl Default for SoundOptions {
+        fn default() -> Self {
+            Self { looped: false }
+        }
+    }
+
+    impl Load for geng_audio::Sound {
+        type Options = SoundOptions;
+        fn load(
+            manager: &Manager,
+            path: &std::path::Path,
+            options: &Self::Options,
+        ) -> Future<Self> {
+            let manager = manager.clone();
+            let path = path.to_owned();
+            let options = options.clone();
+            Box::pin(async move {
+                let mut sound = manager.audio().load(path).await?;
+                sound.set_looped(options.looped);
+                Ok(sound)
+            })
+        }
+        const DEFAULT_EXT: Option<&'static str> = Some("wav"); // TODO change to mp3 since wav doesnt work in safari?
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct TextureOptions {
+    pub filter: ugli::Filter,
+    pub wrap_mode: ugli::WrapMode,
+    pub premultiply_alpha: bool,
+}
+
+impl Default for TextureOptions {
+    fn default() -> Self {
+        Self {
+            filter: ugli::Filter::Linear,
+            wrap_mode: ugli::WrapMode::Clamp,
+            premultiply_alpha: false,
+        }
+    }
 }
 
 impl Load for ugli::Texture {
-    fn load(manager: &Manager, path: &std::path::Path) -> Future<Self> {
-        platform::load_texture(manager, path)
+    type Options = TextureOptions;
+    fn load(manager: &Manager, path: &std::path::Path, options: &Self::Options) -> Future<Self> {
+        let manager = manager.clone();
+        let path = path.to_owned();
+        let options = options.clone();
+        async move {
+            let mut texture = platform::load_texture(&manager, &path, &options).await?;
+            texture.set_filter(options.filter);
+            texture.set_wrap_mode(options.wrap_mode);
+            Ok(texture)
+        }
+        .boxed_local()
     }
     const DEFAULT_EXT: Option<&'static str> = Some("png");
 }

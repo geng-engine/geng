@@ -235,17 +235,17 @@ impl Texture {
         texture
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
-    pub fn from_image(ugli: &Ugli, image: image::RgbaImage) -> Self {
-        Self::from_image_image(ugli, image)
-    }
-
     #[cfg(target_arch = "wasm32")]
-    pub fn from_image(ugli: &Ugli, image: &web_sys::HtmlImageElement) -> Self {
+    pub fn from_html_image_element(
+        ugli: &Ugli,
+        image: &web_sys::HtmlImageElement,
+        premultiply_alpha: bool,
+    ) -> Self {
         let mut texture =
             Texture2d::new_raw(ugli, vec2(image.width() as usize, image.height() as usize));
         let gl = &ugli.inner.raw;
         gl.pixel_store_flip_y(true);
+        gl.pixel_store_premultiply_alpha(premultiply_alpha);
         gl.tex_image_2d_image(
             raw::TEXTURE_2D,
             0,

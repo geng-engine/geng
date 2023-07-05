@@ -1,9 +1,10 @@
 use super::*;
 
-pub struct Hot<T> {
+pub struct Hot<T: Load> {
     current: RefCell<T>,
     manager: Manager,
     path: PathBuf,
+    options: T::Options,
     need_update: Arc<std::sync::atomic::AtomicBool>,
     update: RefCell<Option<Future<T>>>,
     #[cfg(not(target_arch = "wasm32"))]
@@ -30,7 +31,11 @@ impl<T: Load> Hot<T> {
                         .store(false, std::sync::atomic::Ordering::SeqCst);
                 }
             } else if self.need_update.load(std::sync::atomic::Ordering::SeqCst) {
-                *update = Some(self.manager.load(&self.path).boxed_local())
+                *update = Some(
+                    self.manager
+                        .load_with(&self.path, &self.options)
+                        .boxed_local(),
+                )
             }
         }
         self.current.borrow()
@@ -38,9 +43,11 @@ impl<T: Load> Hot<T> {
 }
 
 impl<T: Load> Load for Hot<T> {
-    fn load(manager: &Manager, path: &Path) -> Future<Self> {
+    type Options = T::Options;
+    fn load(manager: &Manager, path: &Path, options: &Self::Options) -> Future<Self> {
         let manager = manager.clone();
         let path = path.to_owned();
+        let options = options.clone();
         let need_update = Arc::new(std::sync::atomic::AtomicBool::new(false));
         #[cfg(not(target_arch = "wasm32"))]
         let watcher = if manager.hot_reload_enabled() {
@@ -63,9 +70,10 @@ impl<T: Load> Load for Hot<T> {
             None
         };
         async move {
-            let initial = manager.load(&path).await?;
+            let initial = manager.load_with(&path, &options).await?;
             Ok(Self {
                 need_update,
+                options,
                 manager: manager.clone(),
                 path: path.to_owned(),
                 current: RefCell::new(initial),

@@ -1,10 +1,15 @@
 use super::*;
 use wasm_bindgen::prelude::*;
 
-pub fn load_texture(manager: &Manager, path: &Path) -> Future<ugli::Texture> {
+pub fn load_texture(
+    manager: &Manager,
+    path: &Path,
+    options: &TextureOptions,
+) -> Future<ugli::Texture> {
     let (sender, receiver) = futures::channel::oneshot::channel();
     let image = web_sys::HtmlImageElement::new().unwrap();
     let path = Rc::new(path.to_owned());
+    let options = options.clone();
     let handler = {
         let image = image.clone();
         let ugli = manager.ugli().clone();
@@ -12,7 +17,11 @@ pub fn load_texture(manager: &Manager, path: &Path) -> Future<ugli::Texture> {
         move |success: bool| {
             sender
                 .send(if success {
-                    Ok(ugli::Texture::from_image(&ugli, &image))
+                    Ok(ugli::Texture::from_html_image_element(
+                        &ugli,
+                        &image,
+                        options.premultiply_alpha,
+                    ))
                 } else {
                     Err(anyhow::anyhow!("Failed to load image from {:?}", path))
                 })

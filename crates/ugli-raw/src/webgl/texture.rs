@@ -9,6 +9,12 @@ impl Context {
             if flip { 1 } else { 0 },
         );
     }
+    pub fn pixel_store_premultiply_alpha(&self, premultiply: bool) {
+        self.inner.pixel_storei(
+            web_sys::WebGlRenderingContext::UNPACK_PREMULTIPLY_ALPHA_WEBGL,
+            if premultiply { 1 } else { 0 },
+        );
+    }
     pub fn active_texture(&self, texture: Enum) {
         self.inner.active_texture(texture);
     }

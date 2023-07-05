@@ -30,6 +30,36 @@ struct DeriveInput {
     sequential: bool,
 }
 
+struct Options {
+    setters: Vec<(syn::Ident, syn::Expr)>,
+}
+
+impl darling::FromMeta for Options {
+    fn from_list(items: &[syn::NestedMeta]) -> darling::Result<Self> {
+        Ok(Self {
+            setters: items
+                .iter()
+                .map(|item| {
+                    if let syn::NestedMeta::Meta(syn::Meta::NameValue(meta)) = item {
+                        let ident: syn::Ident = meta
+                            .path
+                            .get_ident()
+                            .ok_or(darling::Error::unsupported_shape("key must be an ident"))?
+                            .clone();
+                        let syn::Lit::Str(lit) = &meta.lit else {
+                            return Err(darling::Error::unsupported_shape("lit must be str"));
+                        };
+                        let expr: syn::Expr = syn::parse_str(&lit.value())?;
+                        Ok((ident, expr))
+                    } else {
+                        Err(darling::Error::unsupported_shape("expected namevalue"))
+                    }
+                })
+                .collect::<Result<Vec<_>, _>>()?,
+        })
+    }
+}
+
 #[derive(FromField)]
 #[darling(attributes(load))]
 struct Field {
@@ -51,6 +81,7 @@ struct Field {
     condition: Option<syn::Expr>,
     #[darling(default)]
     serde: bool,
+    options: Option<Options>,
 }
 
 fn parse_syn<T: syn::parse::Parse>(value: Option<String>) -> Option<T> {
@@ -71,7 +102,8 @@ impl DeriveInput {
         if let Some(ext) = serde {
             return quote! {
                 impl #impl_generics geng::asset::Load #ty_generics for #ident #where_clause {
-                    fn load(manager: &geng::asset::Manager, path: &std::path::Path) -> geng::asset::Future<Self> {
+                    type Options = ();
+                    fn load(manager: &geng::asset::Manager, path: &std::path::Path, options: &Self::Options) -> geng::asset::Future<Self> {
                         let path = path.to_owned();
                         async move {
                             Ok(batbox::file::load_detect(path).await?)
@@ -137,13 +169,23 @@ impl DeriveInput {
                 }),
                 (Some(_), Some(_)) => panic!("Can't specify both list and listed_in"),
             };
+            let field_ty = &field.ty;
+            let options_setters = field.options.iter().flat_map(|options| options.setters.iter()).map(|(ident, expr)| {
+                quote! {
+                    options.#ident = #expr;
+                }
+            });
+            let options = quote! {
+                let mut options: <#field_ty as geng::asset::Load>::Options = Default::default();
+                #(#options_setters)*
+            };
             let mut loader = if let Some(list) = list {
                 let loader = match &field.path {
                     Some(path) => quote! {
-                        manager.load(base_path.join(#path.replace("*", &item)))
+                        manager.load_with(base_path.join(#path.replace("*", &item)), &options)
                     },
                     None => quote! {
-                        manager.load_ext(base_path.join(stringify!(#ident)).join(item), #ext)
+                        manager.load_ext(base_path.join(stringify!(#ident)).join(item), &options, #ext)
                     },
                 };
                 quote! {
@@ -152,13 +194,17 @@ impl DeriveInput {
             } else {
                 match &field.path {
                     Some(path) => quote! {
-                       manager.load(base_path.join(#path))
+                       manager.load_with(base_path.join(#path), &options)
                     },
                     None => quote! {
-                        manager.load_ext(base_path.join(stringify!(#ident)), #ext)
+                        manager.load_ext(base_path.join(stringify!(#ident)), &options, #ext)
                     },
                 }
             };
+            loader = quote! {{
+                #options
+                #loader
+            }};
             if let Some(postprocess) = &field.postprocess {
                 loader = quote! {
                     #loader.map(|result| {
@@ -221,7 +267,8 @@ impl DeriveInput {
         quote! {
             impl geng::asset::Load for #ident
                 /* where #(#field_constraints),* */ {
-                fn load(manager: &geng::asset::Manager, base_path: &std::path::Path) -> geng::asset::Future<Self> {
+                type Options = ();
+                fn load(manager: &geng::asset::Manager, base_path: &std::path::Path, options: &Self::Options) -> geng::asset::Future<Self> {
                     let manager = manager.clone();
                     let base_path = base_path.to_owned();
                     Box::pin(async move {

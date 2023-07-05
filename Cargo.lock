@@ -2032,7 +2032,6 @@ dependencies = [
 [[package]]
 name = "glutin"
 version = "0.30.8"
-source = "git+https://github.com/geng-engine/glutin?branch=geng#f01c200a5cab4d63d2a275c92af6b1c5d2844be1"
 dependencies = [
  "bitflags 2.3.2",
  "cfg_aliases",
@@ -2054,7 +2053,6 @@ dependencies = [
 [[package]]
 name = "glutin-winit"
 version = "0.3.0"
-source = "git+https://github.com/geng-engine/glutin?branch=geng#f01c200a5cab4d63d2a275c92af6b1c5d2844be1"
 dependencies = [
  "cfg_aliases",
  "glutin",
@@ -2065,7 +2063,6 @@ dependencies = [
 [[package]]
 name = "glutin_egl_sys"
 version = "0.5.0"
-source = "git+https://github.com/geng-engine/glutin?branch=geng#f01c200a5cab4d63d2a275c92af6b1c5d2844be1"
 dependencies = [
  "gl_generator",
  "windows-sys 0.45.0",
@@ -2074,7 +2071,6 @@ dependencies = [
 [[package]]
 name = "glutin_glx_sys"
 version = "0.4.0"
-source = "git+https://github.com/geng-engine/glutin?branch=geng#f01c200a5cab4d63d2a275c92af6b1c5d2844be1"
 dependencies = [
  "gl_generator",
  "x11-dl",
@@ -2083,7 +2079,6 @@ dependencies = [
 [[package]]
 name = "glutin_wgl_sys"
 version = "0.4.0"
-source = "git+https://github.com/geng-engine/glutin?branch=geng#f01c200a5cab4d63d2a275c92af6b1c5d2844be1"
 dependencies = [
  "gl_generator",
 ]
