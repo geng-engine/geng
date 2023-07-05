@@ -152,3 +152,20 @@ vec4 pack4(float value) {
     r.yzw -= r.xyz * SHIFT_RIGHT_8;
     return r * PACK_UPSCALE;
 }
+
+#ifdef FRAGMENT_SHADER
+// https://www.youtube.com/watch?v=d6tp43wZqps
+vec4 smoothTexture2D(vec2 data_uv, sampler2D tex, ivec2 tex_size) {
+    vec2 tex_size_f = vec2(tex_size);
+    // box filter size in texel units
+    vec2 box_size = clamp(fwidth(data_uv) * tex_size_f, 1e-5, 1.0);
+    // scale uv by texture size to get texel coordinate
+    vec2 tx = data_uv * tex_size_f - 0.5 * box_size;
+    // compute offset for pixel-sized box filter
+    vec2 tx_offset = max((fract(tx) - (1.0 - box_size)) / box_size, 0.0);
+    // compute bilinear sample uv coordinates
+    vec2 uv = (floor(tx) + 0.5 + tx_offset) / tex_size_f;
+    // sample the texture
+    return texture2D(tex, uv);
+}
+#endif
