@@ -39,6 +39,9 @@ pub trait UNum:
 
 /// Generic signed number type
 pub trait Num: UNum + std::ops::Neg<Output = Self> {
+    /// Returns a number representing sign of `self`.
+    fn signum(self) -> Self;
+
     /// Calculate absolute value
     fn abs(self) -> Self {
         if self >= Self::ZERO {
@@ -48,8 +51,6 @@ pub trait Num: UNum + std::ops::Neg<Output = Self> {
         }
     }
 }
-
-impl<T: UNum + std::ops::Neg<Output = T>> Num for T {}
 
 macro_rules! impl_int {
     ($($t:ty),*) => {
@@ -62,5 +63,23 @@ macro_rules! impl_int {
     };
 }
 
+macro_rules! impl_signed_int {
+    ($($t:ty),*) => {
+        $(
+            impl_int!($t);
+
+            impl Num for $t {
+                fn signum(self) -> Self {
+                    match self {
+                        _ if self > 0 => 1,
+                        0 => 0,
+                        _ => -1,
+                    }
+                }
+            }
+        )*
+    }
+}
+
 impl_int! { u8, u16, u32, u64, usize }
-impl_int! { i8, i16, i32, i64, isize }
+impl_signed_int! { i8, i16, i32, i64, isize }
