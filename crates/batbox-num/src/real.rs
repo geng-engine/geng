@@ -86,13 +86,6 @@ pub trait Real: Num + Copy {
     /// Round half-way cases away from `0.0`.
     fn round(self) -> Self;
 
-    /// Returns a number that represents the sign of `self`.
-    ///
-    /// - `1.0` if the number is positive, `+0.0` or `INFINITY`
-    /// - `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
-    /// - NaN if the number is NaN
-    fn signum(self) -> Self;
-
     /// Computes the sine of a number (in radians).
     fn sin(self) -> Self;
 
@@ -173,9 +166,6 @@ impl<T: Real> Float for T {
     }
     fn round(self) -> Self {
         Real::round(self)
-    }
-    fn signum(self) -> Self {
-        Real::signum(self)
     }
     fn sin(self) -> Self {
         Real::sin(self)
@@ -327,6 +317,12 @@ impl<T: Float> UNum for RealImpl<T> {
     const ONE: Self = Self(T::ONE);
 }
 
+impl<T: Float> Num for RealImpl<T> {
+    fn signum(self) -> Self {
+        Self::new(<T as Num>::signum(self.0))
+    }
+}
+
 /// Uniform [RealImpl] sampler
 pub struct UniformReal<T: rand::distributions::uniform::SampleUniform>(T::Sampler);
 
@@ -448,9 +444,6 @@ impl<T: Float> Real for RealImpl<T> {
     }
     fn round(self) -> Self {
         Self::new(T::round(self.0))
-    }
-    fn signum(self) -> Self {
-        Self::new(T::signum(self.0))
     }
     fn sin(self) -> Self {
         Self::new(T::sin(self.0))
@@ -603,7 +596,7 @@ impl<T: Float> RealImpl<T> {
     /// - `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
     /// - NaN if the number is NaN
     pub fn signum(self) -> Self {
-        <Self as Real>::signum(self)
+        <Self as Num>::signum(self)
     }
 
     /// Computes the sine of a number (in radians).

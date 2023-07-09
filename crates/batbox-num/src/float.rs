@@ -89,13 +89,6 @@ pub trait Float: Num {
     /// Round half-way cases away from `0.0`.
     fn round(self) -> Self;
 
-    /// Returns a number that represents the sign of `self`.
-    ///
-    /// - `1.0` if the number is positive, `+0.0` or `INFINITY`
-    /// - `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
-    /// - NaN if the number is NaN
-    fn signum(self) -> Self;
-
     /// Computes the sine of a number (in radians).
     fn sin(self) -> Self;
 
@@ -123,6 +116,11 @@ macro_rules! impl_float {
         impl UNum for $t {
             const ZERO: Self = 0.0;
             const ONE: Self = 1.0;
+        }
+        impl Num for $t {
+            fn signum(self) -> Self {
+                $t::signum(self)
+            }
         }
         impl Float for $t {
             const PI: Self = std::$t::consts::PI;
@@ -185,9 +183,6 @@ macro_rules! impl_float {
             }
             fn round(self) -> Self {
                 $t::round(self)
-            }
-            fn signum(self) -> Self {
-                $t::signum(self)
             }
             fn sin(self) -> Self {
                 $t::sin(self)
