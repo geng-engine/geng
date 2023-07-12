@@ -97,6 +97,9 @@ impl Chain {
                     polygon.push(right);
                     polygon.push(right); // Temp
                     polygon.push(right);
+
+                    prev = current;
+                    current = next;
                     continue;
                 }
 
