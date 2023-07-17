@@ -37,6 +37,7 @@ impl Library {
         }
         library.prefix = Some(prefix.unwrap_or_else(default_prefix));
         library.add("prelude", &prelude);
+        library.add("noise", include_str!("noise.glsl"));
         library
     }
 
