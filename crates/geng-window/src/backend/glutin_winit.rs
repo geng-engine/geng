@@ -55,7 +55,8 @@ fn resume<T>(
     };
 
     // Make it current.
-    glutin::context::PossiblyCurrentGlContext::make_current(gl_ctx, &gl_surface).unwrap();
+    glutin::context::PossiblyCurrentContextGlSurfaceAccessor::make_current(gl_ctx, &gl_surface)
+        .unwrap();
 
     // Try setting vsync.
     if let Err(res) = glutin::surface::GlSurface::set_swap_interval(
@@ -173,23 +174,21 @@ where
     let mut create_context = Some(create_context);
     let mut state: Option<(Rc<Context>, EH)> = None;
 
-    event_loop
-        .run(move |event, window_target, control_flow| {
-            control_flow.set_wait();
-            if let Some((context, event_handler)) = &mut state {
-                context.handle_winit_event(event, window_target, &mut |event| {
-                    if let Event::KeyPress { key: Key::Escape } = event {
-                        context.unlock_cursor();
-                    }
-                    if event_handler(event).is_break() {
-                        control_flow.set_exit();
-                    }
-                });
-            } else if let winit::event::Event::Resumed = event {
-                state = Some((create_context.take().unwrap())(window_target));
-            }
-        })
-        .expect("Event loop error");
+    event_loop.run(move |event, window_target, control_flow| {
+        control_flow.set_wait();
+        if let Some((context, event_handler)) = &mut state {
+            context.handle_winit_event(event, window_target, &mut |event| {
+                if let Event::KeyPress { key: Key::Escape } = event {
+                    context.unlock_cursor();
+                }
+                if event_handler(event).is_break() {
+                    control_flow.set_exit();
+                }
+            });
+        } else if let winit::event::Event::Resumed = event {
+            state = Some((create_context.take().unwrap())(window_target));
+        }
+    });
 }
 
 impl Context {
