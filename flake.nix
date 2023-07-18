@@ -91,7 +91,8 @@
               version = "0.9.7";
               src = builtins.fetchGit {
                 url = "https://github.com/geng-engine/cargo-apk";
-                rev = "03814af67622d7f5f8f048081b407c3909b6b289";
+                allRefs = true;
+                rev = "fc7f7fd19cdde19119136e7e726c85d101ca37db";
               };
               cargoExtraArgs = "--package cargo-apk";
               cargoVendorDir = crane-lib.vendorCargoDeps {
