@@ -11,7 +11,7 @@ pub struct Ugli {
 }
 
 #[cfg(target_arch = "wasm32")]
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WebGLContextOptions {
     pub alpha: bool,
