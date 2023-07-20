@@ -85,13 +85,13 @@ impl Geng {
             let audio = Audio::new();
             let geng = Geng {
                 inner: Rc::new(GengImpl {
-                    window,
+                    window: window.clone(),
                     #[cfg(feature = "audio")]
                     audio: audio.clone(),
                     shader_lib,
                     draw2d,
                     asset_manager: asset::Manager::new(
-                        &ugli,
+                        &window,
                         #[cfg(feature = "audio")]
                         &audio,
                         options.hot_reload,

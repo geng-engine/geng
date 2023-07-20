@@ -1,4 +1,5 @@
 use batbox_la::*;
+use futures::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::cell::{Cell, RefCell};
 use std::collections::HashSet;
@@ -174,6 +175,13 @@ impl Window {
 
     pub fn show(&self) {
         self.inner.backend.show();
+    }
+
+    pub async fn yield_now(&self) {
+        self.events()
+            .filter(|event| future::ready(matches!(event, Event::Draw)))
+            .next()
+            .await;
     }
 }
 

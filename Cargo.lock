@@ -1681,6 +1681,7 @@ dependencies = [
  "geng-audio",
  "geng-font",
  "geng-shader",
+ "geng-window",
  "image",
  "log",
  "notify",

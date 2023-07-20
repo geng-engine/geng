@@ -16,6 +16,7 @@ default = ["audio"]
 audio = ["dep:geng-audio"]
 
 [dependencies]
+geng-window.workspace = true
 geng-asset-derive.workspace = true
 anyhow.workspace = true
 serde_json.workspace = true

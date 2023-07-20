@@ -20,6 +20,7 @@ pub type Future<T> = Pin<Box<dyn StdFuture<Output = anyhow::Result<T>>>>;
 
 struct ManagerImpl {
     ugli: Ugli,
+    window: geng_window::Window,
     #[cfg(feature = "audio")]
     audio: geng_audio::Audio,
     shader_lib: shader::Library,
@@ -33,19 +34,23 @@ pub struct Manager {
 
 impl Manager {
     pub fn new(
-        ugli: &Ugli,
+        window: &geng_window::Window,
         #[cfg(feature = "audio")] audio: &geng_audio::Audio,
         hot_reload: bool,
     ) -> Self {
         Self {
             inner: Rc::new(ManagerImpl {
-                ugli: ugli.clone(),
+                window: window.clone(),
+                ugli: window.ugli().clone(),
                 #[cfg(feature = "audio")]
                 audio: audio.clone(),
-                shader_lib: shader::Library::new(ugli, true, None),
+                shader_lib: shader::Library::new(window.ugli(), true, None),
                 hot_reload_enabled: hot_reload,
             }),
         }
+    }
+    pub async fn yield_now(&self) {
+        self.inner.window.yield_now().await
     }
     #[cfg(feature = "audio")]
     pub fn audio(&self) -> &geng_audio::Audio {

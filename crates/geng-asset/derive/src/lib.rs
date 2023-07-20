@@ -225,11 +225,13 @@ impl DeriveInput {
                 let loader = if let Some(expr) = &field.condition {
                     quote! {
                         async {
-                            Ok::<_, anyhow::Error>(if #expr {
+                            let result = Ok::<_, anyhow::Error>(if #expr {
                                 Some(#loader.await?)
                             } else {
                                 None
-                            })
+                            });
+                            manager.yield_now().await;
+                            result
                         }
                     }
                 } else {
@@ -239,6 +241,7 @@ impl DeriveInput {
                 quote! {
                     async {
                         let value = #loader.await?;
+                        manager.yield_now().await;
                         Ok::<#ty, anyhow::Error>(value)
                     }
                 }
@@ -250,6 +253,7 @@ impl DeriveInput {
                         #field_loaders.await,
                         concat!("Failed to load ", stringify!(#field_names)),
                     )?;
+                    manager.yield_now().await;
                 )*
             }
         } else {
