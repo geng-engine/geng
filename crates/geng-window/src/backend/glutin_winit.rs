@@ -176,14 +176,8 @@ where
 
     event_loop.run(move |event, window_target, control_flow| {
         control_flow.set_poll();
-        match event {
-            winit::event::Event::Suspended => {
-                control_flow.set_wait();
-            }
-            winit::event::Event::Resumed => {
-                state = Some((create_context.take().unwrap())(window_target));
-            }
-            _ => {}
+        if let winit::event::Event::Suspended = event {
+            control_flow.set_wait();
         }
         if let Some((context, event_handler)) = &mut state {
             context.handle_winit_event(event, window_target, &mut |event| {
@@ -194,6 +188,9 @@ where
                     control_flow.set_exit();
                 }
             });
+        } else if let winit::event::Event::Resumed = event {
+            // First ever resume
+            state = Some((create_context.take().unwrap())(window_target));
         }
     });
 }
