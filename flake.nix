@@ -138,7 +138,7 @@
               rust-analyzer
               lib.cargo-geng
               # wineWowPackages.waylandFull
-              # pkgsCross.mingwW64.windows.pthreads
+              pkgsCross.mingwW64.windows.pthreads
               lib.cargo-apk
               lib.androidsdk
               jre
@@ -150,6 +150,7 @@
                 androidNdkRoot = "${androidSdkRoot}/ndk-bundle";
               in
               ''
+                export CARGO_TARGET_X86_64_PC_WINDOWS_GNU_RUSTFLAGS="-C link-args=''$(echo $NIX_LDFLAGS | tr ' ' '\n' | grep -- '^-L' | tr '\n' ' ')"
                 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${libPath}"
                 export WINIT_UNIX_BACKEND=x11 # TODO fix
                 export CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER="${pkgsCross.mingwW64.stdenv.cc}/bin/x86_64-w64-mingw32-gcc"

@@ -1,5 +1,11 @@
-use batbox::prelude::*;
+use async_recursion::*;
+use batbox_cli as cli;
+use batbox_color::*;
+use batbox_la::*;
+use batbox_time::*;
+use futures::prelude::*;
 use geng_window as window;
+use rand::prelude::*;
 use ugli::Ugli;
 
 mod renderer {
@@ -136,7 +142,7 @@ async fn space_escape(depth: usize, renderer: &Renderer, window: &window::Window
 }
 
 fn main() {
-    logger::init();
+    batbox_logger::init();
     let args: CliArgs = cli::parse();
     window::run(
         &{

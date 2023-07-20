@@ -27,7 +27,13 @@ gilrs.workspace = true
 clap.workspace = true
 
 [dev-dependencies]
-batbox.workspace = true
+async-recursion.workspace = true
+rand.workspace = true
+batbox-time.workspace = true
+batbox-logger.workspace = true
+batbox-cli.workspace = true
+batbox-color.workspace = true
+# batbox.workspace = true
 geng-shader.workspace = true
 
 [target.'cfg(target_os = "android")'.dependencies]

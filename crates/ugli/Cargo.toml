@@ -15,10 +15,15 @@ version.workspace = true
 targets = ["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]
 
 [dependencies]
-batbox.workspace = true
+batbox-color.workspace = true
+batbox-la.workspace = true
+batbox-range.workspace = true
+thiserror.workspace = true
 ugli-raw.workspace = true
 ugli-derive.workspace = true
 field-offset.workspace = true
+log.workspace = true
+derive_more.workspace = true
 
 num_enum.workspace = true # TODO: should be in batbox?
 serde.workspace = true

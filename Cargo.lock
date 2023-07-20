@@ -1857,9 +1857,13 @@ dependencies = [
  "anyhow",
  "async-broadcast",
  "async-executor",
- "batbox",
+ "async-recursion",
  "batbox-android",
+ "batbox-cli",
+ "batbox-color",
  "batbox-la",
+ "batbox-logger",
+ "batbox-time",
  "clap",
  "futures",
  "geng-shader",
@@ -1869,6 +1873,7 @@ dependencies = [
  "image",
  "js-sys",
  "log",
+ "rand 0.8.5",
  "raw-window-handle",
  "serde",
  "ugli",
@@ -3197,6 +3202,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "26072860ba924cbfa98ea39c8c19b4dd6a4a25423dbdf219c1eca91aa0cf6964"
 
 [[package]]
+name = "play"
+version = "0.14.0"
+
+[[package]]
 name = "png"
 version = "0.17.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4288,13 +4297,18 @@ checksum = "497961ef93d974e23eb6f433eb5fe1b7930b659f06d12dec6fc44a8f554c0bba"
 name = "ugli"
 version = "0.14.0"
 dependencies = [
- "batbox",
+ "batbox-color",
+ "batbox-la",
+ "batbox-range",
+ "derive_more",
  "field-offset",
  "glutin",
  "image",
+ "log",
  "num_enum 0.5.11",
  "serde",
  "serde-wasm-bindgen",
+ "thiserror",
  "ugli-derive",
  "ugli-raw",
  "wasm-bindgen",
@@ -4315,7 +4329,6 @@ dependencies = [
 name = "ugli-raw"
 version = "0.14.0"
 dependencies = [
- "batbox",
  "gl",
  "js-sys",
  "wasm-bindgen",
