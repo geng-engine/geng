@@ -175,7 +175,16 @@ where
     let mut state: Option<(Rc<Context>, EH)> = None;
 
     event_loop.run(move |event, window_target, control_flow| {
-        control_flow.set_wait();
+        control_flow.set_poll();
+        match event {
+            winit::event::Event::Suspended => {
+                control_flow.set_wait();
+            }
+            winit::event::Event::Resumed => {
+                state = Some((create_context.take().unwrap())(window_target));
+            }
+            _ => {}
+        }
         if let Some((context, event_handler)) = &mut state {
             context.handle_winit_event(event, window_target, &mut |event| {
                 if let Event::KeyPress { key: Key::Escape } = event {
@@ -185,8 +194,6 @@ where
                     control_flow.set_exit();
                 }
             });
-        } else if let winit::event::Event::Resumed = event {
-            state = Some((create_context.take().unwrap())(window_target));
         }
     });
 }
@@ -394,21 +401,31 @@ impl Context {
         window_target: &winit::event_loop::EventLoopWindowTarget<()>,
         event_handler: &mut impl FnMut(Event),
     ) {
+        let mut draw = || {
+            if let Some(gl_surface) = &*self.gl_surface.borrow() {
+                event_handler(Event::Draw);
+                glutin::surface::GlSurface::swap_buffers(
+                    gl_surface,
+                    self.gl_ctx.borrow().as_ref().unwrap(),
+                )
+                .unwrap();
+            }
+        };
         match event {
             winit::event::Event::WindowEvent { event, .. } => {
                 self.handle_winit_window_event(event, event_handler)
             }
             winit::event::Event::RedrawRequested(_) => {
-                if let Some(gl_surface) = &*self.gl_surface.borrow() {
-                    event_handler(Event::Draw);
-                    glutin::surface::GlSurface::swap_buffers(
-                        gl_surface,
-                        self.gl_ctx.borrow().as_ref().unwrap(),
-                    )
-                    .unwrap();
-                }
+                draw();
             }
+            // winit::event::Event::MainEventsCleared => {
+            //     // draw();
+            //     if let Some(window) = self.window.borrow().as_ref() {
+            //         window.request_redraw();
+            //     }
+            // }
             winit::event::Event::RedrawEventsCleared => {
+                // draw();
                 if let Some(window) = self.window.borrow().as_ref() {
                     window.request_redraw();
                 }
