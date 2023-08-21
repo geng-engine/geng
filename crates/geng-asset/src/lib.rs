@@ -91,6 +91,14 @@ impl Manager {
     }
 }
 
+pub trait Collection {
+    type Item;
+}
+
+impl<T> Collection for Vec<T> {
+    type Item = T;
+}
+
 pub trait Load: Sized + 'static {
     type Options: Clone + Default;
     fn load(manager: &Manager, path: &Path, options: &Self::Options) -> Future<Self>;

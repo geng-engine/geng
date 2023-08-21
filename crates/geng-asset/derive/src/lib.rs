@@ -175,8 +175,12 @@ impl DeriveInput {
                     options.#ident = #expr;
                 }
             });
+            let options_ty = match list {
+                Some(_) => quote!(<<#field_ty as geng::asset::Collection>::Item as geng::asset::Load>::Options),
+                None => quote!(<#field_ty as geng::asset::Load>::Options)
+            };
             let options = quote! {
-                let mut options: <#field_ty as geng::asset::Load>::Options = Default::default();
+                let mut options: #options_ty = Default::default();
                 #(#options_setters)*
             };
             let mut loader = if let Some(list) = list {
