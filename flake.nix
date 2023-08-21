@@ -138,7 +138,7 @@
               rust-analyzer
               lib.cargo-geng
               # wineWowPackages.waylandFull
-              pkgsCross.mingwW64.windows.pthreads
+              # pkgsCross.mingwW64.windows.pthreads
               lib.cargo-apk
               lib.androidsdk
               jre
