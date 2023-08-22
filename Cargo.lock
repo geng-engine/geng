@@ -623,6 +623,9 @@ version = "0.14.0"
 name = "batbox-time"
 version = "0.14.0"
 dependencies = [
+ "async-std",
+ "js-sys",
+ "wasm-bindgen-futures",
  "web-sys",
 ]
 

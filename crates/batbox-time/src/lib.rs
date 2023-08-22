@@ -127,6 +127,26 @@ impl Timer {
     }
 }
 
+pub async fn sleep(duration: Duration) {
+    #[cfg(target_arch = "wasm32")]
+    {
+        let promise = js_sys::Promise::new(&mut |resolve, _reject| {
+            web_sys::window()
+                .unwrap()
+                .set_timeout_with_callback_and_timeout_and_arguments_0(
+                    &resolve,
+                    (duration.as_secs_f64() * 1000.0).round() as _,
+                );
+        });
+        let future = wasm_bindgen_futures::JsFuture::from(promise);
+        future.await;
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        async_std::task::sleep(duration.into()).await;
+    }
+}
+
 #[test]
 fn test() {
     let mut timer = Timer::new();
