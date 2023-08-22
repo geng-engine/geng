@@ -1,7 +1,5 @@
 use std::process::Command;
 
-const SERVER_PORT: u16 = 8000;
-
 fn exec<C: std::borrow::BorrowMut<Command>>(mut cmd: C) -> Result<(), anyhow::Error> {
     if cmd.borrow_mut().status()?.success() {
         Ok(())
@@ -10,7 +8,7 @@ fn exec<C: std::borrow::BorrowMut<Command>>(mut cmd: C) -> Result<(), anyhow::Er
     }
 }
 
-fn serve<P>(dir: P, open: bool)
+fn serve<P>(dir: P, port: u16, open: bool)
 where
     std::path::PathBuf: From<P>,
 {
@@ -37,12 +35,12 @@ where
             }))
         });
 
-        let addr = ([0, 0, 0, 0], SERVER_PORT).into();
+        let addr = ([0, 0, 0, 0], port).into();
         let server = hyper::server::Server::bind(&addr).serve(make_service);
         let addr = format!("http://{addr}/");
         eprintln!("Server running on {addr}");
         if open {
-            open::that(format!("http://localhost:{SERVER_PORT}")).expect("Failed to open browser");
+            open::that(format!("http://localhost:{port}")).expect("Failed to open browser");
         }
         server.await.expect("Server failed");
     });
@@ -100,6 +98,8 @@ struct Opt {
     example: Option<String>,
     #[clap(long, short = 'j')]
     jobs: Option<usize>,
+    #[clap(long, default_value = "8000")]
+    serve_port: u16,
     #[clap(long)]
     index_file: Option<String>,
     passthrough_args: Vec<String>,
@@ -281,7 +281,7 @@ pub fn run() -> anyhow::Result<()> {
                     include_str!("index.html").replace("<app-name>", stem),
                 )?;
                 if opt.sub == Sub::Run || opt.sub == Sub::Serve {
-                    serve(&out_dir, opt.sub == Sub::Run);
+                    serve(&out_dir, opt.serve_port, opt.sub == Sub::Run);
                 }
             } else {
                 std::fs::copy(&executable, out_dir.join(executable.file_name().unwrap()))?;
