@@ -47,6 +47,7 @@
             waylandDeps ++
             xorgDeps ++
             [
+              openssl
               alsa-lib
               udev
               libGL
