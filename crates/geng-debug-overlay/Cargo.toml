@@ -1,5 +1,5 @@
 [package]
-name = "geng-debug-overlay"
+name = "geng-debug_overlay"
 authors.workspace = true
 categories.workspace = true
 description.workspace = true

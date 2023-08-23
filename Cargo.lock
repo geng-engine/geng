@@ -1665,7 +1665,7 @@ dependencies = [
  "geng-asset",
  "geng-audio",
  "geng-camera",
- "geng-debug-overlay",
+ "geng-debug_overlay",
  "geng-draw2d",
  "geng-font",
  "geng-net",
@@ -1743,7 +1743,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "geng-debug-overlay"
+name = "geng-debug_overlay"
 version = "0.15.0"
 dependencies = [
  "batbox-color",
