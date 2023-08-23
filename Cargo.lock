@@ -361,7 +361,7 @@ checksum = "604178f6c5c21f02dc555784810edfb88d34ac2c73b2eae109655649ee73ce3d"
 
 [[package]]
 name = "batbox"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "anyhow",
  "async-compat",
@@ -422,7 +422,7 @@ dependencies = [
 
 [[package]]
 name = "batbox-android"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "android-activity",
  "jni 0.21.1",
@@ -433,14 +433,14 @@ dependencies = [
 
 [[package]]
 name = "batbox-approx"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "batbox-num",
 ]
 
 [[package]]
 name = "batbox-cli"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "clap",
  "log",
@@ -450,14 +450,14 @@ dependencies = [
 
 [[package]]
 name = "batbox-cmp"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "batbox-range",
 ]
 
 [[package]]
 name = "batbox-collection"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "batbox-collection-derive",
  "batbox-diff",
@@ -466,7 +466,7 @@ dependencies = [
 
 [[package]]
 name = "batbox-collection-derive"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -477,7 +477,7 @@ dependencies = [
 
 [[package]]
 name = "batbox-color"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "anyhow",
  "batbox-approx",
@@ -487,7 +487,7 @@ dependencies = [
 
 [[package]]
 name = "batbox-diff"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "batbox-diff-derive",
  "serde",
@@ -495,7 +495,7 @@ dependencies = [
 
 [[package]]
 name = "batbox-diff-derive"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -505,7 +505,7 @@ dependencies = [
 
 [[package]]
 name = "batbox-file"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "anyhow",
  "async-compat",
@@ -529,7 +529,7 @@ dependencies = [
 
 [[package]]
 name = "batbox-file-dialog"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "anyhow",
  "batbox-file",
@@ -542,7 +542,7 @@ dependencies = [
 
 [[package]]
 name = "batbox-i18n"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "batbox-i18n-macro",
  "libc",
@@ -553,7 +553,7 @@ dependencies = [
 
 [[package]]
 name = "batbox-i18n-macro"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -563,7 +563,7 @@ dependencies = [
 
 [[package]]
 name = "batbox-la"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "batbox-approx",
  "batbox-cmp",
@@ -575,7 +575,7 @@ dependencies = [
 
 [[package]]
 name = "batbox-lapp"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "batbox-approx",
  "batbox-cmp",
@@ -586,7 +586,7 @@ dependencies = [
 
 [[package]]
 name = "batbox-logger"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "backtrace",
  "env_logger",
@@ -597,7 +597,7 @@ dependencies = [
 
 [[package]]
 name = "batbox-num"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "getrandom 0.2.10",
  "rand 0.8.5",
@@ -606,7 +606,7 @@ dependencies = [
 
 [[package]]
 name = "batbox-preferences"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "directories",
  "log",
@@ -617,11 +617,11 @@ dependencies = [
 
 [[package]]
 name = "batbox-range"
-version = "0.14.0"
+version = "0.15.0"
 
 [[package]]
 name = "batbox-time"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "async-std",
  "js-sys",
@@ -631,7 +631,7 @@ dependencies = [
 
 [[package]]
 name = "batbox-tuple-macros"
-version = "0.14.0"
+version = "0.15.0"
 
 [[package]]
 name = "bincode"
@@ -803,7 +803,7 @@ dependencies = [
 
 [[package]]
 name = "cargo-geng"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "anyhow",
  "cargo_metadata",
@@ -1658,7 +1658,7 @@ dependencies = [
 
 [[package]]
 name = "geng"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "batbox",
  "console_error_panic_hook",
@@ -1685,7 +1685,7 @@ dependencies = [
 
 [[package]]
 name = "geng-asset"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "anyhow",
  "batbox-file",
@@ -1706,7 +1706,7 @@ dependencies = [
 
 [[package]]
 name = "geng-asset-derive"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -1716,7 +1716,7 @@ dependencies = [
 
 [[package]]
 name = "geng-audio"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "anyhow",
  "atomic_float",
@@ -1734,7 +1734,7 @@ dependencies = [
 
 [[package]]
 name = "geng-camera"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "batbox-la",
  "batbox-lapp",
@@ -1744,7 +1744,7 @@ dependencies = [
 
 [[package]]
 name = "geng-debug-overlay"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "batbox-color",
  "batbox-la",
@@ -1761,7 +1761,7 @@ dependencies = [
 
 [[package]]
 name = "geng-draw2d"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "batbox-approx",
  "batbox-color",
@@ -1775,7 +1775,7 @@ dependencies = [
 
 [[package]]
 name = "geng-font"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "anyhow",
  "batbox-color",
@@ -1791,7 +1791,7 @@ dependencies = [
 
 [[package]]
 name = "geng-net"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "anyhow",
  "batbox-time",
@@ -1808,7 +1808,7 @@ dependencies = [
 
 [[package]]
 name = "geng-net-simple"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "batbox-cli",
  "geng",
@@ -1817,7 +1817,7 @@ dependencies = [
 
 [[package]]
 name = "geng-obj"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "batbox-la",
  "ugli",
@@ -1838,7 +1838,7 @@ dependencies = [
 
 [[package]]
 name = "geng-shader"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "anyhow",
  "ugli",
@@ -1846,7 +1846,7 @@ dependencies = [
 
 [[package]]
 name = "geng-state"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "geng-ui",
  "geng-window",
@@ -1855,7 +1855,7 @@ dependencies = [
 
 [[package]]
 name = "geng-texture-atlas"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "batbox-la",
  "ugli",
@@ -1863,7 +1863,7 @@ dependencies = [
 
 [[package]]
 name = "geng-ui"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "batbox-cmp",
  "batbox-color",
@@ -1879,7 +1879,7 @@ dependencies = [
 
 [[package]]
 name = "geng-window"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "anyhow",
  "async-broadcast",
@@ -4220,7 +4220,7 @@ checksum = "497961ef93d974e23eb6f433eb5fe1b7930b659f06d12dec6fc44a8f554c0bba"
 
 [[package]]
 name = "ugli"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "batbox-color",
  "batbox-la",
@@ -4242,7 +4242,7 @@ dependencies = [
 
 [[package]]
 name = "ugli-derive"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -4252,7 +4252,7 @@ dependencies = [
 
 [[package]]
 name = "ugli-raw"
-version = "0.14.0"
+version = "0.15.0"
 dependencies = [
  "gl",
  "js-sys",
