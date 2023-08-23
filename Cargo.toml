@@ -115,7 +115,7 @@ glutin = "0.30"
 threadpool = "1"
 num_cpus = "1"
 notify = "5"
-rodio = { git = "https://github.com/geng-engine/rodio", branch = "mp3-duration" } # TODO
+rodio = { version = "0.17", package = "geng-rodio" }
 ws = "0.9"
 gl = "0.14"
 field-offset = "0.3"
