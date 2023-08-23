@@ -20,7 +20,6 @@ audio = ["dep:geng-audio"]
 
 [dev-dependencies]
 gltf.workspace = true
-geng-net-simple.workspace = true
 
 [dependencies]
 batbox.workspace = true
