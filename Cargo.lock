@@ -1663,6 +1663,7 @@ dependencies = [
  "batbox",
  "console_error_panic_hook",
  "geng-asset",
+ "geng-async-state",
  "geng-audio",
  "geng-camera",
  "geng-debug_overlay",
@@ -1711,6 +1712,25 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "geng-async-state"
+version = "0.15.0"
+dependencies = [
+ "batbox-cli",
+ "batbox-color",
+ "batbox-la",
+ "batbox-logger",
+ "batbox-time",
+ "clap",
+ "futures",
+ "geng-shader",
+ "geng-ui",
+ "geng-window",
+ "log",
+ "rand 0.8.5",
+ "ugli",
 ]
 
 [[package]]

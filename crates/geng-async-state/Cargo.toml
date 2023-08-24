@@ -1,0 +1,30 @@
+[package]
+name = "geng-async-state"
+authors.workspace = true
+categories.workspace = true
+description.workspace = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[dev-dependencies]
+rand.workspace = true
+batbox-time.workspace = true
+batbox-logger.workspace = true
+batbox-cli.workspace = true
+batbox-color.workspace = true
+geng-shader.workspace = true
+log.workspace = true
+clap.workspace = true
+batbox-la.workspace = true
+
+[dependencies]
+batbox-time.workspace = true
+geng-window.workspace = true
+geng-ui.workspace = true
+ugli.workspace = true
+futures.workspace = true

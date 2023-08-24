@@ -50,6 +50,7 @@ geng-camera = { version = "0.15", path = "crates/geng-camera" }
 geng-font = { version = "0.15", path = "crates/geng-font" }
 geng-shader = { version = "0.15", path = "crates/geng-shader" }
 geng-state = { version = "0.15", path = "crates/geng-state" }
+geng-async-state = { version = "0.15", path = "crates/geng-async-state" }
 geng-ui = { version = "0.15", path = "crates/geng-ui" }
 geng-draw2d = { version = "0.15", path = "crates/geng-draw2d" }
 geng-obj = { version = "0.15", path = "crates/geng-obj" }

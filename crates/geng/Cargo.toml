@@ -31,6 +31,7 @@ geng-font.workspace = true
 geng-audio = { workspace = true, optional = true }
 geng-ui.workspace = true
 geng-state.workspace = true
+geng-async-state.workspace = true
 geng-draw2d.workspace = true
 geng-obj.workspace = true
 geng-debug-overlay.workspace = true
