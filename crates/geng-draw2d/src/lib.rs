@@ -68,6 +68,7 @@ pub trait Draw2d: Transform2d<f32> {
         helper: &Helper,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
+        parameters: &ugli::DrawParameters,
         transform: mat3<f32>,
     );
     fn draw2d(
@@ -75,8 +76,9 @@ pub trait Draw2d: Transform2d<f32> {
         helper: &Helper,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
+        parameters: &ugli::DrawParameters,
     ) {
-        self.draw2d_transformed(helper, framebuffer, camera, mat3::identity());
+        self.draw2d_transformed(helper, framebuffer, camera, parameters, mat3::identity());
     }
 }
 
@@ -86,9 +88,10 @@ impl<T: Draw2d + ?Sized> Draw2d for Box<T> {
         helper: &Helper,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
+        parameters: &ugli::DrawParameters,
         transform: mat3<f32>,
     ) {
-        (**self).draw2d_transformed(helper, framebuffer, camera, transform);
+        (**self).draw2d_transformed(helper, framebuffer, camera, parameters, transform);
     }
 }
 
@@ -98,10 +101,16 @@ impl<'a, T: Draw2d + ?Sized> Draw2d for Transformed2d<'a, f32, T> {
         helper: &Helper,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
+        parameters: &ugli::DrawParameters,
         transform: mat3<f32>,
     ) {
-        self.inner
-            .draw2d_transformed(helper, framebuffer, camera, transform * self.transform);
+        self.inner.draw2d_transformed(
+            helper,
+            framebuffer,
+            camera,
+            parameters,
+            transform * self.transform,
+        );
     }
 }
 
@@ -153,22 +162,46 @@ impl Helper {
         &self.ugli
     }
 
+    /// Draw with straight alpha blending.
     pub fn draw2d(
         &self,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
         drawable: &impl Draw2d,
     ) {
-        self.draw2d_transformed(framebuffer, camera, drawable, mat3::identity());
+        self.draw2d_transformed(
+            framebuffer,
+            camera,
+            drawable,
+            ugli::DrawParameters {
+                blend_mode: Some(ugli::BlendMode::straight_alpha()),
+                ..Default::default()
+            },
+            mat3::identity(),
+        );
     }
+
+    /// Draw with the specified parameters.
+    pub fn draw2d_with(
+        &self,
+        framebuffer: &mut ugli::Framebuffer,
+        camera: &dyn AbstractCamera2d,
+        drawable: &impl Draw2d,
+        parameters: ugli::DrawParameters,
+    ) {
+        self.draw2d_transformed(framebuffer, camera, drawable, parameters, mat3::identity());
+    }
+
+    /// Draw with the specified parameters and transformation.
     pub fn draw2d_transformed(
         &self,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
         drawable: &impl Draw2d,
+        parameters: impl std::borrow::Borrow<ugli::DrawParameters>,
         transform: mat3<f32>,
     ) {
-        drawable.draw2d_transformed(self, framebuffer, camera, transform);
+        drawable.draw2d_transformed(self, framebuffer, camera, parameters.borrow(), transform);
     }
 
     pub fn draw<V>(

@@ -40,6 +40,7 @@ impl<'a> geng::Draw2d for Grid<'a> {
         helper: &draw2d::Helper,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn geng::AbstractCamera2d,
+        parameters: &ugli::DrawParameters,
         transform: mat3<f32>,
     ) {
         for (x, column) in self.table.iter().enumerate() {
@@ -63,6 +64,7 @@ impl<'a> geng::Draw2d for Grid<'a> {
                                     * mat3::scale_uniform(0.5)
                                     * mat3::translate(vec2(1.0, 1.0)),
                             ),
+                        parameters,
                         transform,
                     );
                 }

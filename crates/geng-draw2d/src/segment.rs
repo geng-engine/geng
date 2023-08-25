@@ -66,6 +66,7 @@ impl Draw2d for Segment {
         helper: &Helper,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
+        parameters: &ugli::DrawParameters,
         transform: mat3<f32>,
     ) {
         let framebuffer_size = framebuffer.size();
@@ -82,10 +83,7 @@ impl Draw2d for Segment {
                 },
                 camera.uniforms(framebuffer_size.map(|x| x as f32)),
             ),
-            ugli::DrawParameters {
-                blend_mode: Some(ugli::BlendMode::straight_alpha()),
-                ..Default::default()
-            },
+            parameters,
         );
     }
 }

@@ -58,6 +58,7 @@ impl<F: std::borrow::Borrow<Font>, T: AsRef<str>> Draw2d for Text<F, T> {
         _: &Helper,
         framebuffer: &mut ugli::Framebuffer,
         camera: &dyn AbstractCamera2d,
+        _parameters: &ugli::DrawParameters, // TODO
         transform: mat3<f32>,
     ) {
         self.font.borrow().draw(

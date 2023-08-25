@@ -57,7 +57,7 @@ impl State {
         let font = geng::Font::new(
             geng.ugli(),
             include_bytes!("../../geng-font/src/default.ttf"),
-            geng::font::Options {
+            &geng::font::Options {
                 pixel_size: 64.0,
                 max_distance: 0.25,
                 antialias: true,
