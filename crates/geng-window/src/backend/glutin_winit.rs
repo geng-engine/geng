@@ -206,7 +206,9 @@ impl Context {
     }
 
     pub fn set_fullscreen(&self, fullscreen: bool) {
-        let Some(window) = &*self.window.borrow() else { return };
+        let Some(window) = &*self.window.borrow() else {
+            return;
+        };
         window.set_fullscreen(if fullscreen {
             Some(winit::window::Fullscreen::Borderless(None))
         } else {
@@ -220,7 +222,9 @@ impl Context {
     }
 
     pub fn set_icon(&self, path: &std::path::Path) -> anyhow::Result<()> {
-        let Some(window) = &*self.window.borrow() else { return Ok(()) };
+        let Some(window) = &*self.window.borrow() else {
+            return Ok(());
+        };
         let image = image::open(path).context(format!("Failed to load {path:?}"))?;
         let image = match image {
             image::DynamicImage::ImageRgba8(image) => image,
@@ -249,7 +253,9 @@ impl Context {
     }
 
     pub fn lock_cursor(&self) {
-        let Some(window) = &*self.window.borrow() else { return };
+        let Some(window) = &*self.window.borrow() else {
+            return;
+        };
         if let Err(lock_e) = window.set_cursor_grab(winit::window::CursorGrabMode::Locked) {
             if let Err(confine_e) = window.set_cursor_grab(winit::window::CursorGrabMode::Confined)
             {
@@ -261,14 +267,18 @@ impl Context {
 
     pub fn unlock_cursor(&self) {
         self.lock_cursor.set(false);
-        let Some(window) = &*self.window.borrow() else { return };
+        let Some(window) = &*self.window.borrow() else {
+            return;
+        };
         if let Err(e) = window.set_cursor_grab(winit::window::CursorGrabMode::None) {
             log::error!("Failed to unlock cursor: {e}");
         }
     }
 
     pub fn set_cursor_type(&self, cursor_type: CursorType) {
-        let Some(window) = &*self.window.borrow() else { return };
+        let Some(window) = &*self.window.borrow() else {
+            return;
+        };
         use winit::window::CursorIcon as GC;
         window.set_cursor_icon(match cursor_type {
             CursorType::Default => GC::Default,

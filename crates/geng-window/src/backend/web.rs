@@ -310,7 +310,9 @@ impl ConvertEvent<web_sys::KeyboardEvent> for Event {
         if event.repeat() {
             return vec![];
         }
-        let Some(key) = Convert::convert(event.code()) else { return vec![] };
+        let Some(key) = Convert::convert(event.code()) else {
+            return vec![];
+        };
         vec![match event.type_().as_str() {
             "keydown" => Event::KeyPress { key },
             "keyup" => Event::KeyRelease { key },

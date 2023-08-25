@@ -517,7 +517,9 @@ impl Font {
                 line_start = vs.len();
                 continue;
             }
-            let Some(glyph) = self.glyphs.get(&c) else { continue };
+            let Some(glyph) = self.glyphs.get(&c) else {
+                continue;
+            };
             // TODO: kerning
             if let Some(metrics) = &glyph.metrics {
                 let instance = GlyphInstance {
