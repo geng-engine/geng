@@ -44,6 +44,7 @@ mod context;
 mod loading_screen;
 
 pub use geng_asset as asset;
+pub use geng_async_state as async_state;
 #[cfg(feature = "audio")]
 pub use geng_audio::{self as audio, *};
 pub use geng_camera::{
