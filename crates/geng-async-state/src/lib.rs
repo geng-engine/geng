@@ -1,24 +1,36 @@
 use futures::prelude::*;
-use futures::{future::LocalBoxFuture, stream::LocalBoxStream, FutureExt};
+use futures::stream::LocalBoxStream;
 use geng_window::Event;
+
+pub trait Context {
+    fn events(&self) -> LocalBoxStream<geng_window::Event>;
+    fn with_framebuffer(&self, f: &mut dyn FnMut(&mut ugli::Framebuffer));
+}
+
+impl Context for geng_window::Window {
+    fn events(&self) -> LocalBoxStream<geng_window::Event> {
+        self.events().boxed_local()
+    }
+
+    fn with_framebuffer(&self, f: &mut dyn FnMut(&mut ugli::Framebuffer)) {
+        self.with_framebuffer(f)
+    }
+}
 
 pub trait ActiveState {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer);
 }
 
-impl<'a, T: ActiveState> ActiveState for &'a mut T {
+impl<'a, T: ActiveState + ?Sized> ActiveState for &'a mut T {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         (**self).draw(framebuffer)
     }
 }
 
-pub type EventStream<'a> = LocalBoxStream<'a, Event>;
-
-pub trait State<'a>: ActiveState {
-    type Output;
-    fn run(self) -> LocalBoxFuture<'a, StateResult<'a, Self::Output>>
-    where
-        Self: Sized;
+impl<T: ActiveState + ?Sized> ActiveState for Box<T> {
+    fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
+        (**self).draw(framebuffer)
+    }
 }
 
 pub trait Transition {
@@ -36,72 +48,21 @@ pub struct StateResult<'a, T> {
     pub active_state: Box<dyn ActiveState + 'a>,
 }
 
-pub struct Transitions<'a, To: State<'a> + 'a> {
-    pub window: &'a geng_window::Window,
-    pub outer: Box<dyn ActiveState + 'a>,
-    pub inner: To,
-    pub transition_enter: Box<dyn Transition + 'a>,
-    pub transition_exit: Box<dyn FnOnce() -> Box<dyn Transition + 'a> + 'a>,
-}
-
-impl<'a, To: State<'a>> ActiveState for Transitions<'a, To> {
-    fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
-        self.outer.draw(framebuffer)
-    }
-}
-
-impl<'a, To: State<'a>> State<'a> for Transitions<'a, To> {
-    type Output = To::Output;
-
-    fn run(mut self) -> LocalBoxFuture<'a, StateResult<'a, Self::Output>>
-    where
-        Self: Sized,
-    {
-        async move {
-            let mut events = self.window.events();
-
-            // enter transition
-            while let Some(event) = events.next().await {
-                match event {
-                    Event::Draw => self.window.with_framebuffer(|framebuffer| {
-                        self.transition_enter.draw(
-                            &mut |f| self.outer.draw(f),
-                            &mut |f| self.inner.draw(f),
-                            framebuffer,
-                        );
-                    }),
-                    _ => {}
-                }
-                if self.transition_enter.finished() {
-                    break;
-                }
-            }
-
-            let mut result = self.inner.run().await;
-
-            // exit transition
-            let mut transition_exit = (self.transition_exit)();
-            while let Some(event) = events.next().await {
-                match event {
-                    Event::Draw => self.window.with_framebuffer(|framebuffer| {
-                        transition_exit.draw(
-                            &mut |f| result.active_state.draw(f),
-                            &mut |f| self.outer.draw(f),
-                            framebuffer,
-                        );
-                    }),
-                    _ => {}
-                }
-                if transition_exit.finished() {
-                    break;
-                }
-            }
-
-            StateResult {
-                value: result.value,
-                active_state: self.outer,
-            }
+pub async fn transition(
+    ctx: &dyn Context,
+    from: &mut dyn ActiveState,
+    transition: &mut dyn Transition,
+    into: &mut dyn ActiveState,
+) {
+    let mut events = ctx.events();
+    while let Some(event) = events.next().await {
+        if let Event::Draw = event {
+            ctx.with_framebuffer(&mut |framebuffer| {
+                transition.draw(&mut |f| from.draw(f), &mut |f| into.draw(f), framebuffer);
+            });
         }
-        .boxed_local()
+        if transition.finished() {
+            break;
+        }
     }
 }

@@ -12,6 +12,7 @@ repository.workspace = true
 version.workspace = true
 
 [dev-dependencies]
+async-recursion.workspace = true
 rand.workspace = true
 batbox-time.workspace = true
 batbox-logger.workspace = true

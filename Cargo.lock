@@ -1718,6 +1718,7 @@ dependencies = [
 name = "geng-async-state"
 version = "0.15.0"
 dependencies = [
+ "async-recursion",
  "batbox-cli",
  "batbox-color",
  "batbox-la",

@@ -1,12 +1,13 @@
+use async_recursion::async_recursion;
 use batbox_cli as cli;
 use batbox_color::*;
 use batbox_la::*;
 use batbox_time::*;
-use futures::prelude::*;
+use futures::{future::LocalBoxFuture, prelude::*};
 use geng_async_state as state;
 use geng_window as window;
 use rand::prelude::*;
-use state::{ActiveState, State};
+use state::ActiveState;
 use ugli::Ugli;
 
 mod renderer {
@@ -287,10 +288,16 @@ impl<'a> SpaceEscape<'a> {
     }
 }
 
-impl SpaceEscape<'_> {
-    async fn run_impl(&mut self) {
+impl<'a> SpaceEscape<'a> {
+    fn run(
+        self,
+        ctx: &'a dyn geng_async_state::Context,
+    ) -> LocalBoxFuture<'_, Box<dyn ActiveState + 'a>> {
+        self.run_impl(ctx).boxed_local()
+    }
+    async fn run_impl(mut self, ctx: &dyn geng_async_state::Context) -> Box<dyn ActiveState + 'a> {
         log::info!("Entering depth {:?}", self.depth);
-        while let Some(event) = self.window.events().next().await {
+        while let Some(event) = ctx.events().next().await {
             match event {
                 window::Event::KeyPress { key } => match key {
                     window::Key::Escape => {
@@ -298,17 +305,25 @@ impl SpaceEscape<'_> {
                     }
                     window::Key::Space => {
                         let renderer = self.renderer;
-                        let into = SpaceEscape::new(self.window, self.renderer, self.depth + 1);
-                        state::Transitions {
-                            window: &self.window,
-                            outer: Box::new(&mut *self),
-                            inner: into,
-                            transition_enter: Box::new(Crossfade::new(renderer)),
-                            transition_exit: Box::new(|| Box::new(Swipe::new(renderer))),
-                        }
-                        .run()
-                        .await
-                        .value;
+                        let mut into = SpaceEscape::new(self.window, self.renderer, self.depth + 1);
+
+                        geng_async_state::transition(
+                            ctx,
+                            &mut self,
+                            &mut Crossfade::new(renderer),
+                            &mut into,
+                        )
+                        .await;
+
+                        let mut state = into.run(ctx).await;
+
+                        geng_async_state::transition(
+                            ctx,
+                            &mut state,
+                            &mut Swipe::new(renderer),
+                            &mut self,
+                        )
+                        .await;
                     }
                     window::Key::F => {
                         self.window.toggle_fullscreen();
@@ -334,7 +349,7 @@ impl SpaceEscape<'_> {
                     _ => {}
                 },
                 window::Event::Draw => {
-                    self.window.with_framebuffer(|framebuffer| {
+                    ctx.with_framebuffer(&mut |framebuffer| {
                         self.draw(framebuffer);
                     });
                 }
@@ -342,6 +357,7 @@ impl SpaceEscape<'_> {
             }
         }
         log::info!("Exiting depth {:?}", self.depth);
+        Box::new(self) as Box<dyn ActiveState + 'a>
     }
 }
 
@@ -349,24 +365,6 @@ impl state::ActiveState for SpaceEscape<'_> {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         let color = Hsla::new(self.timer.elapsed().as_secs_f64() as f32, 1.0, 0.5, 1.0).into();
         self.renderer.draw(framebuffer, self.transform, color);
-    }
-}
-
-impl<'a> state::State<'a> for SpaceEscape<'a> {
-    type Output = ();
-
-    fn run(mut self) -> future::LocalBoxFuture<'a, state::StateResult<'a, Self::Output>>
-    where
-        Self: Sized,
-    {
-        async move {
-            let result = self.run_impl().await;
-            state::StateResult {
-                value: result,
-                active_state: Box::new(self),
-            }
-        }
-        .boxed_local()
     }
 }
 
@@ -402,7 +400,9 @@ fn main() {
                     .await;
             };
             let renderer = Renderer::new(window.ugli());
-            let space_escape = SpaceEscape::new(&window, &renderer, 0).run().map(|_| ());
+            let space_escape = SpaceEscape::new(&window, &renderer, 0)
+                .run(&window)
+                .map(|_| ());
             futures::select! {
                 () = log_events.fuse() => {
                     unreachable!()
