@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use async_recursion::async_recursion;
 use batbox_cli as cli;
 use batbox_color::*;
@@ -267,16 +269,16 @@ struct CliArgs {
     auto_close: Option<bool>,
 }
 
-struct SpaceEscape<'a> {
+struct SpaceEscape {
     depth: usize,
-    renderer: &'a Renderer,
-    window: &'a window::Window,
+    renderer: Rc<Renderer>,
+    window: window::Window,
     timer: Timer,
     transform: mat3<f32>,
 }
 
-impl<'a> SpaceEscape<'a> {
-    pub fn new(window: &'a window::Window, renderer: &'a Renderer, depth: usize) -> Self {
+impl SpaceEscape {
+    pub fn new(window: window::Window, renderer: Rc<Renderer>, depth: usize) -> Self {
         Self {
             window,
             renderer,
@@ -288,42 +290,56 @@ impl<'a> SpaceEscape<'a> {
     }
 }
 
-impl<'a> SpaceEscape<'a> {
-    fn run(
+impl SpaceEscape {
+    fn run<'b, 'a: 'b, T>(
         self,
-        ctx: &'a dyn geng_async_state::Context,
-    ) -> LocalBoxFuture<'_, Box<dyn ActiveState + 'a>> {
-        self.run_impl(ctx).boxed_local()
+        state_task: &'b switch_resume::Task<'a, T>,
+    ) -> LocalBoxFuture<'b, Box<dyn ActiveState>> {
+        self.run_impl(state_task).boxed_local()
     }
-    async fn run_impl(mut self, ctx: &dyn geng_async_state::Context) -> Box<dyn ActiveState + 'a> {
+    async fn run_impl<'a, T>(
+        mut self,
+        state_task: &switch_resume::Task<'a, T>,
+    ) -> Box<dyn ActiveState> {
         log::info!("Entering depth {:?}", self.depth);
-        while let Some(event) = ctx.events().next().await {
+        while let Some(event) = self.window.events().next().await {
             match event {
                 window::Event::KeyPress { key } => match key {
                     window::Key::Escape => {
                         break;
                     }
                     window::Key::Space => {
-                        let renderer = self.renderer;
-                        let mut into = SpaceEscape::new(self.window, self.renderer, self.depth + 1);
+                        let renderer = self.renderer.clone();
+                        let into = switch_resume::run({
+                            let window = self.window.clone();
+                            let renderer = self.renderer.clone();
+                            let depth = self.depth;
+                            move |state_task| async move {
+                                SpaceEscape::new(window, renderer, depth + 1)
+                                    .run(&state_task)
+                                    .await
+                            }
+                        });
 
-                        geng_async_state::transition(
-                            ctx,
+                        let mut state = geng_async_state::transition(
+                            &self.window.clone(),
                             &mut self,
-                            &mut Crossfade::new(renderer),
-                            &mut into,
+                            &mut Crossfade::new(&renderer),
+                            into,
                         )
                         .await;
-
-                        let mut state = into.run(ctx).await;
-
-                        geng_async_state::transition(
-                            ctx,
-                            &mut state,
-                            &mut Swipe::new(renderer),
-                            &mut self,
-                        )
-                        .await;
+                        let window = self.window.clone();
+                        state_task
+                            .switch(move |resume| async move {
+                                geng_async_state::transition(
+                                    &window,
+                                    &mut state,
+                                    &mut Swipe::new(&renderer),
+                                    resume(()),
+                                )
+                                .await
+                            })
+                            .await;
                     }
                     window::Key::F => {
                         self.window.toggle_fullscreen();
@@ -349,19 +365,22 @@ impl<'a> SpaceEscape<'a> {
                     _ => {}
                 },
                 window::Event::Draw => {
-                    ctx.with_framebuffer(&mut |framebuffer| {
-                        self.draw(framebuffer);
-                    });
+                    geng_async_state::with_current_framebuffer(
+                        &self.window.clone(),
+                        |framebuffer| {
+                            self.draw(framebuffer);
+                        },
+                    );
                 }
                 _ => {}
             }
         }
         log::info!("Exiting depth {:?}", self.depth);
-        Box::new(self) as Box<dyn ActiveState + 'a>
+        Box::new(self) as Box<dyn ActiveState>
     }
 }
 
-impl state::ActiveState for SpaceEscape<'_> {
+impl state::ActiveState for SpaceEscape {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         let color = Hsla::new(self.timer.elapsed().as_secs_f64() as f32, 1.0, 0.5, 1.0).into();
         self.renderer.draw(framebuffer, self.transform, color);
@@ -379,40 +398,49 @@ fn main() {
             options.start_hidden = true;
             options
         },
-        |window| async move {
-            // TODO sleep
-            window.show();
+        |window| {
+            async move {
+                // TODO sleep
+                window.show();
 
-            window.set_cursor_type(window::CursorType::Pointer);
-            let log_events = async {
-                let mut events = window.events();
-                while let Some(event) = events.next().await {
-                    if event != window::Event::Draw {
-                        log::info!("{event:?}");
+                window.set_cursor_type(window::CursorType::Pointer);
+                let log_events = async {
+                    let mut events = window.events();
+                    while let Some(event) = events.next().await {
+                        if event != window::Event::Draw {
+                            log::info!("{event:?}");
+                        }
                     }
+                };
+                let close_requested = async {
+                    window
+                        .events()
+                        .filter(|event| future::ready(*event == window::Event::CloseRequested))
+                        .next()
+                        .await;
+                };
+                let renderer = Rc::new(Renderer::new(window.ugli()));
+                let window = window.clone();
+                async fn run<'a>(
+                    window: window::Window,
+                    renderer: Rc<Renderer>,
+                    state_task: switch_resume::Task<'a, ()>,
+                ) {
+                    SpaceEscape::new(window, renderer, 0).run(&state_task).await;
                 }
-            };
-            let close_requested = async {
-                window
-                    .events()
-                    .filter(|event| future::ready(*event == window::Event::CloseRequested))
-                    .next()
-                    .await;
-            };
-            let renderer = Renderer::new(window.ugli());
-            let space_escape = SpaceEscape::new(&window, &renderer, 0)
-                .run(&window)
-                .map(|_| ());
-            futures::select! {
-                () = log_events.fuse() => {
-                    unreachable!()
-                },
-                () = close_requested.fuse() => {
-                    log::info!("Exiting because of request");
-                },
-                () = space_escape.fuse() => {
-                    log::info!("Exiting because space_escape finished");
-                },
+                let space_escape =
+                    switch_resume::run(|task| async move { run(window, renderer, task).await });
+                futures::select! {
+                    () = log_events.fuse() => {
+                        unreachable!()
+                    },
+                    () = close_requested.fuse() => {
+                        log::info!("Exiting because of request");
+                    },
+                    () = space_escape.fuse() => {
+                        log::info!("Exiting because space_escape finished");
+                    },
+                }
             }
         },
     );

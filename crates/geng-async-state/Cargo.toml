@@ -24,7 +24,11 @@ clap.workspace = true
 batbox-la.workspace = true
 
 [dependencies]
+scoped-tls.workspace = true
+async-trait.workspace = true
+batbox-la.workspace = true
 batbox-time.workspace = true
+switch-resume.workspace = true
 geng-window.workspace = true
 geng-ui.workspace = true
 ugli.workspace = true

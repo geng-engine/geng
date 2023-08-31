@@ -241,11 +241,11 @@ impl Context {
         &self.ugli
     }
 
-    pub fn with_framebuffer(&self, f: impl FnOnce(&mut ugli::Framebuffer)) {
+    pub fn with_framebuffer<T>(&self, f: impl FnOnce(&mut ugli::Framebuffer) -> T) -> T {
         f(&mut ugli::Framebuffer::default(
             &self.ugli,
             self.context_size.get(),
-        ));
+        ))
     }
 
     pub fn cursor_locked(&self) -> bool {

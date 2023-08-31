@@ -165,8 +165,8 @@ impl Window {
         self.inner.executor.spawn(f)
     }
 
-    pub fn with_framebuffer(&self, f: impl FnOnce(&mut ugli::Framebuffer)) {
-        self.inner.backend.with_framebuffer(f);
+    pub fn with_framebuffer<T>(&self, f: impl FnOnce(&mut ugli::Framebuffer) -> T) -> T {
+        self.inner.backend.with_framebuffer(f)
     }
 
     pub fn events(&self) -> impl futures::Stream<Item = Event> {

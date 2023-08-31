@@ -64,7 +64,10 @@ ugli = { version = "0.15", path = "crates/ugli" }
 ugli-derive = { version = "0.15", path = "crates/ugli-derive" }
 ugli-raw = { version = "0.15", path = "crates/ugli-raw" }
 
+switch-resume = "0.1"
+
 # Common
+scoped-tls = { version = "0.1", package = "scoped-tls-hkt" }
 serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"
 toml = "0.5"
@@ -93,7 +96,7 @@ derive_more = "0.99"
 itertools = "0.10"
 derivative = "2"
 rusttype = { version = "0.9", features = [
-    "gpu_cache",
+  "gpu_cache",
 ] } # TODO: not used anymore?
 ttf-parser = "0.18"
 lazy_static = "1" # TODO remove
@@ -122,8 +125,8 @@ gl = "0.14"
 field-offset = "0.3"
 async-std = "1"
 reqwest = { version = "0.11", features = [
-    "stream",
-    "rustls-tls",
+  "stream",
+  "rustls-tls",
 ], default-features = false }
 async-compat = "0.2"
 

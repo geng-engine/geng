@@ -1,19 +1,26 @@
+use async_trait::async_trait;
+use batbox_la::*;
+use futures::future::LocalBoxFuture;
 use futures::prelude::*;
-use futures::stream::LocalBoxStream;
 use geng_window::Event;
+use std::cell::RefCell;
+use ugli::{raw::FRAMEBUFFER, Framebuffer, Ugli};
 
-pub trait Context {
-    fn events(&self) -> LocalBoxStream<geng_window::Event>;
-    fn with_framebuffer(&self, f: &mut dyn FnMut(&mut ugli::Framebuffer));
-}
+scoped_tls::scoped_thread_local! { static mut WITH_FRAMEBUFFER: for<'a> &'a mut (dyn 'a + FnMut(&mut dyn FnMut(&mut Framebuffer))) }
 
-impl Context for geng_window::Window {
-    fn events(&self) -> LocalBoxStream<geng_window::Event> {
-        self.events().boxed_local()
-    }
-
-    fn with_framebuffer(&self, f: &mut dyn FnMut(&mut ugli::Framebuffer)) {
-        self.with_framebuffer(f)
+pub fn with_current_framebuffer<T>(
+    window: &geng_window::Window,
+    f: impl FnOnce(&mut ugli::Framebuffer<'_>) -> T,
+) -> T {
+    if WITH_FRAMEBUFFER.is_set() {
+        let mut value = None::<T>;
+        let mut f = Some(f);
+        WITH_FRAMEBUFFER.with(|with_framebuffer| {
+            with_framebuffer(&mut |framebuffer| value = Some(f.take().unwrap()(framebuffer)))
+        });
+        value.expect("LUL")
+    } else {
+        window.with_framebuffer(f)
     }
 }
 
@@ -48,21 +55,30 @@ pub struct StateResult<'a, T> {
     pub active_state: Box<dyn ActiveState + 'a>,
 }
 
-pub async fn transition(
-    ctx: &dyn Context,
+pub async fn transition<T>(
+    window: &geng_window::Window,
     from: &mut dyn ActiveState,
     transition: &mut dyn Transition,
-    into: &mut dyn ActiveState,
-) {
-    let mut events = ctx.events();
-    while let Some(event) = events.next().await {
-        if let Event::Draw = event {
-            ctx.with_framebuffer(&mut |framebuffer| {
-                transition.draw(&mut |f| from.draw(f), &mut |f| into.draw(f), framebuffer);
-            });
-        }
+    into: impl Future<Output = T>,
+) -> T {
+    let mut into = std::pin::pin!(into);
+    std::future::poll_fn(|cx| {
         if transition.finished() {
-            break;
+            into.as_mut().poll(cx)
+        } else {
+            with_current_framebuffer(window, |actual_framebuffer| {
+                WITH_FRAMEBUFFER.set(
+                    &mut |with_framebuffer: &mut dyn FnMut(&mut ugli::Framebuffer)| {
+                        transition.draw(
+                            &mut |f| from.draw(f),
+                            with_framebuffer,
+                            actual_framebuffer,
+                        );
+                    },
+                    || into.as_mut().poll(cx),
+                )
+            })
         }
-    }
+    })
+    .await
 }
