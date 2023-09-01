@@ -1,6 +1,5 @@
 use std::rc::Rc;
 
-use async_recursion::async_recursion;
 use batbox_cli as cli;
 use batbox_color::*;
 use batbox_la::*;
@@ -421,10 +420,10 @@ fn main() {
                 };
                 let renderer = Rc::new(Renderer::new(window.ugli()));
                 let window = window.clone();
-                async fn run<'a>(
+                async fn run(
                     window: window::Window,
                     renderer: Rc<Renderer>,
-                    state_task: switch_resume::Task<'a, ()>,
+                    state_task: switch_resume::Task<'_, ()>,
                 ) {
                     SpaceEscape::new(window, renderer, 0).run(&state_task).await;
                 }

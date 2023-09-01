@@ -207,6 +207,7 @@ mod audio_ {
         pub looped: bool,
     }
 
+    #[allow(clippy::derivable_impls)]
     impl Default for SoundOptions {
         fn default() -> Self {
             Self { looped: false }

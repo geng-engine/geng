@@ -1,12 +1,6 @@
-use async_trait::async_trait;
-use batbox_la::*;
-use futures::future::LocalBoxFuture;
 use futures::prelude::*;
-use geng_window::Event;
-use std::cell::RefCell;
-use ugli::{raw::FRAMEBUFFER, Framebuffer, Ugli};
 
-scoped_tls::scoped_thread_local! { static mut WITH_FRAMEBUFFER: for<'a> &'a mut (dyn 'a + FnMut(&mut dyn FnMut(&mut Framebuffer))) }
+scoped_tls::scoped_thread_local! { static mut WITH_FRAMEBUFFER: for<'a> &'a mut (dyn 'a + FnMut(&mut dyn FnMut(&mut ugli::Framebuffer))) }
 
 pub fn with_current_framebuffer<T>(
     window: &geng_window::Window,

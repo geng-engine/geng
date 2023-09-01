@@ -1,7 +1,7 @@
 use super::*;
 
 use anyhow::Context as _;
-use std::{ffi::c_void, ops::DerefMut};
+use std::ops::DerefMut;
 
 pub struct Context {
     options: Options,
@@ -125,7 +125,7 @@ where
         .unwrap();
     let raw_window_handle = window
         .as_ref()
-        .map(|window| raw_window_handle::HasRawWindowHandle::raw_window_handle(window));
+        .map(raw_window_handle::HasRawWindowHandle::raw_window_handle);
     let gl_display = glutin::display::GetGlDisplay::display(&gl_config);
     let context_attributes =
         glutin::context::ContextAttributesBuilder::new().build(raw_window_handle);
@@ -154,7 +154,7 @@ where
                 glutin::display::GlDisplay::get_proc_address(
                     &gl_display,
                     &std::ffi::CString::new(symbol).unwrap(),
-                ) as *const c_void
+                )
             });
             let context = Rc::new(Context {
                 options: options.clone(),
@@ -463,14 +463,15 @@ impl Context {
                     ));
                 }
             }
-            winit::event::Event::DeviceEvent { event, .. } => match event {
-                winit::event::DeviceEvent::MouseMotion {
-                    delta: (delta_x, delta_y),
-                } => event_handler(Event::RawMouseMove {
-                    delta: vec2(delta_x, -delta_y),
-                }),
-                _ => {}
-            },
+            winit::event::Event::DeviceEvent {
+                event:
+                    winit::event::DeviceEvent::MouseMotion {
+                        delta: (delta_x, delta_y),
+                    },
+                ..
+            } => event_handler(Event::RawMouseMove {
+                delta: vec2(delta_x, -delta_y),
+            }),
             _ => {}
         }
     }

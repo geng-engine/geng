@@ -127,6 +127,7 @@ impl Timer {
     }
 }
 
+/// Sleep for specified duration
 pub async fn sleep(duration: Duration) {
     #[cfg(target_arch = "wasm32")]
     {

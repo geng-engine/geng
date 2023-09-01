@@ -101,6 +101,7 @@ impl DeriveInput {
 
         if let Some(ext) = serde {
             return quote! {
+                #[allow(clippy::needless_question_mark)]
                 impl #impl_generics geng::asset::Load #ty_generics for #ident #where_clause {
                     type Options = ();
                     fn load(manager: &geng::asset::Manager, path: &std::path::Path, options: &Self::Options) -> geng::asset::Future<Self> {
@@ -273,6 +274,7 @@ impl DeriveInput {
             }
         };
         quote! {
+            #[allow(clippy::needless_question_mark)]
             impl geng::asset::Load for #ident
                 /* where #(#field_constraints),* */ {
                 type Options = ();
