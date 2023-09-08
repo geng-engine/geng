@@ -6,13 +6,16 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     rust-overlay.url = "github:oxalica/rust-overlay";
     utils.url = "github:numtide/flake-utils";
-    crane.url = "github:ipetkov/crane";
+    nix-filter.url = "github:numtide/nix-filter";
+    crane-flake.url = "github:ipetkov/crane";
     android.url = "github:tadfisher/android-nixpkgs";
   };
-  outputs = { self, nixpkgs, rust-overlay, crane, android, utils }:
+
+  outputs = { self, nixpkgs, rust-overlay, crane-flake, android, utils, nix-filter }:
     {
-      makeFlakeSystemOutputs = system: { src, buildInputs ? [ ], rust ? { } }:
+      makeFlakeSystemOutputs = system: { src, extraBuildInputs ? [ ], rust ? { } }:
         let
+          filter = nix-filter.lib;
           overlays = [ (import rust-overlay) ];
           pkgs = import nixpkgs {
             inherit system overlays;
@@ -31,7 +34,7 @@
                 "aarch64-linux-android"
               ];
             } // rust;
-          crane-lib = (crane.lib.${system}).overrideToolchain rust-toolchain;
+          crane = (crane-flake.lib.${system}).overrideToolchain rust-toolchain;
           waylandDeps = with pkgs; [
             libxkbcommon
             wayland
@@ -43,7 +46,7 @@
             xorg.libXrandr
           ];
           libDeps = with pkgs;
-            buildInputs ++
+            extraBuildInputs ++
             waylandDeps ++
             xorgDeps ++
             [
@@ -53,41 +56,81 @@
               libGL
               xorg.libxcb
             ];
-          nativeBuildDeps = with pkgs; [ pkg-config ];
-          buildDeps = with pkgs; libDeps ++ [ xorg.libxcb ];
+          nativeBuildInputs = with pkgs; [ pkg-config ];
+          buildInputs = with pkgs; libDeps ++ [ xorg.libxcb ];
           libPath = pkgs.lib.makeLibraryPath libDeps;
-          package =
-            let
-              commonArgs = {
-                inherit src;
-                nativeBuildInputs = nativeBuildDeps ++ [ pkgs.makeWrapper ];
-                buildInputs = buildDeps;
-              };
-              package = crane-lib.buildPackage (commonArgs // {
-                cargoArtifacts = crane-lib.buildDepsOnly commonArgs;
-              });
-              finalPackage = package.overrideAttrs (finalAttrs: prevAttrs: {
-                postPhases = [ "copyAssetsPhase" "wrapProgramPhase" ];
-                copyAssetsPhase = ''
-                  cp -r ${src + "/assets"} $out/bin/assets
-                '';
-                wrapProgramPhase = ''
-                  wrapProgram "$out/bin/${finalAttrs.pname}" \
-                    --set WINIT_UNIX_BACKEND x11 \
-                    --prefix LD_LIBRARY_PATH : "${libPath}"
-                '';
-              });
-            in
-            finalPackage;
-          lib = {
-            crane = crane-lib;
-            cargo-geng = crane-lib.buildPackage {
+          lib = rec {
+            inherit crane;
+            inherit filter;
+            cargo-geng = crane.buildPackage {
               pname = "cargo-geng";
-              # cargoVendorDir = null;
-              src = ./.;
+              src = filter {
+                root = ./.;
+                include = [
+                  "crates/cargo-geng"
+                  ./Cargo.lock
+                  ./Cargo.toml
+                ];
+              };
               cargoExtraArgs = "--package cargo-geng";
             };
-            cargo-apk = crane-lib.buildPackage {
+            buildGengPackage =
+              { target ? null
+              , ...
+              }@origArgs:
+              let
+                cleanedArgs = builtins.removeAttrs origArgs [
+                  "installPhase"
+                  "installPhaseCommand"
+                  "target"
+                ];
+
+                crateName = crane.crateNameFromCargoToml cleanedArgs;
+
+                # Avoid recomputing values when passing args down
+                args = cleanedArgs // {
+                  pname = cleanedArgs.pname or crateName.pname;
+                  version = cleanedArgs.version or crateName.version;
+                  cargoVendorDir = cleanedArgs.cargoVendorDir or (crane.vendorCargoDeps cleanedArgs);
+                };
+              in
+              crane.mkCargoDerivation (args // {
+                # pnameSuffix = "-trunk";
+                cargoArtifacts = args.cargoArtifacts or (crane.buildDepsOnly (args // {
+                  CARGO_BUILD_TARGET = args.CARGO_BUILD_TARGET or (if target == "web" then "wasm32-unknown-unknown" else target);
+                  installCargoArtifactsMode = args.installCargoArtifactsMode or "use-zstd";
+                  doCheck = args.doCheck or false;
+                  inherit nativeBuildInputs;
+                  inherit buildInputs;
+                }));
+
+                buildPhaseCargoCommand = args.buildPhaseCommand or (
+                  let
+                    args = if builtins.isNull target then "" else "--" + target;
+                  in
+                  ''
+                    local args="${args}"
+                    if [[ "$CARGO_PROFILE" == "release" ]]; then
+                      args="$args --release"
+                    fi
+
+                    cargo geng build $args
+                  ''
+                );
+
+                installPhaseCommand = args.installPhaseCommand or ''
+                  cp -r target/geng $out
+                '';
+
+                # Installing artifacts on a distributable dir does not make much sense
+                doInstallCargoArtifacts = args.doInstallCargoArtifacts or false;
+
+                nativeBuildInputs = (args.nativeBuildInputs or [ ]) ++ nativeBuildInputs ++ [
+                  cargo-geng
+                ];
+                buildInputs = buildInputs ++ (args.buildInputs or [ ]);
+              });
+            cargo-apk = crane.buildPackage {
               pname = "cargo-apk";
               version = "0.9.7";
               src = builtins.fetchGit {
@@ -96,7 +139,7 @@
                 rev = "fc7f7fd19cdde19119136e7e726c85d101ca37db";
               };
               cargoExtraArgs = "--package cargo-apk";
-              cargoVendorDir = crane-lib.vendorCargoDeps {
+              cargoVendorDir = crane.vendorCargoDeps {
                 cargoLock = ./cargo-apk.Cargo.lock;
               };
             };
@@ -126,15 +169,21 @@
             }).androidsdk;
           };
         in
-        {
+        rec {
           inherit lib;
-          defaultPackage = package;
-          defaultApp = utils.lib.mkApp {
-            drv = package;
-          };
+          # Executed by `nix build .`
+          packages.default = lib.buildGengPackage { inherit src; };
+          # Executed by `nix build .#web"
+          packages.web = lib.buildGengPackage { inherit src; target = "web"; };
+          # Executed by `nix run . -- <args?>`
+          apps.default =
+            {
+              type = "app";
+              program = "${packages.default}/linksider";
+            };
           devShell = with pkgs; mkShell {
-            nativeBuildInputs = nativeBuildDeps;
-            buildInputs = buildDeps ++ [
+            inherit nativeBuildInputs;
+            buildInputs = buildInputs ++ [
               rust-toolchain
               rust-analyzer
               lib.cargo-geng
