@@ -342,7 +342,7 @@ impl ConvertEvent<web_sys::MouseEvent> for Event {
                         .pointer_lock_element()
                         .is_some();
                     if cursor_locked {
-                        let delta = vec2(event.movement_x(), event.movement_y()).map(|x| x as f64);
+                        let delta = vec2(event.movement_x(), -event.movement_y()).map(|x| x as f64);
                         // KEKW BROWSERS SUCK
                         const MAX: f64 = 50.0;
                         if delta.x.abs() > MAX || delta.y.abs() > MAX {
