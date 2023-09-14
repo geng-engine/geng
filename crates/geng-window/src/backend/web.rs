@@ -334,7 +334,21 @@ impl ConvertEvent<web_sys::MouseEvent> for Event {
             Some(match event.type_().as_str() {
                 "mousedown" => Event::MousePress { button: button? },
                 "mouseup" => Event::MouseRelease { button: button? },
-                "mousemove" => Event::CursorMove { position },
+                "mousemove" => {
+                    let cursor_locked = web_sys::window()
+                        .unwrap()
+                        .document()
+                        .unwrap()
+                        .pointer_lock_element()
+                        .is_some();
+                    if cursor_locked {
+                        Event::RawMouseMove {
+                            delta: vec2(event.movement_x(), event.movement_y()).map(|x| x as f64),
+                        }
+                    } else {
+                        Event::CursorMove { position }
+                    }
+                }
                 _ => return None,
             })
         };
