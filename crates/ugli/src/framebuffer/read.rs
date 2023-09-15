@@ -22,6 +22,10 @@ impl<'a> ColorData<'a> {
 
 impl<'a> FramebufferRead<'a> {
     pub fn read_color(&self) -> ColorData {
+        self.read_color_at(Aabb2::ZERO.extend_positive(self.size()))
+    }
+
+    pub fn read_color_at(&self, rect: Aabb2<usize>) -> ColorData {
         let gl = &self.fbo.ugli.inner.raw;
         // TODO
         // if self.fbo.handle != 0 {
@@ -31,21 +35,21 @@ impl<'a> FramebufferRead<'a> {
         // }
         self.fbo.bind();
         let result = unsafe {
-            let buffer_len = self.size.x * self.size.y * 4;
+            let buffer_len = rect.width() * rect.height() * 4;
             let mut buffer = Vec::with_capacity(buffer_len);
             gl.read_pixels(
-                0,
-                0,
-                self.size.x as raw::SizeI,
-                self.size.y as raw::SizeI,
+                rect.min.x as raw::Int,
+                rect.min.y as raw::Int,
+                rect.width() as raw::SizeI,
+                rect.height() as raw::SizeI,
                 raw::RGBA,
                 raw::UNSIGNED_BYTE,
                 std::slice::from_raw_parts_mut(buffer.as_mut_ptr(), buffer_len),
             );
             buffer.set_len(buffer_len);
             ColorData {
-                width: self.size.x,
-                height: self.size.y,
+                width: rect.width(),
+                height: rect.height(),
                 buffer,
                 phantom_data: PhantomData,
             }
