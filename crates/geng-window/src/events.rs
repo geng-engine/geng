@@ -1,6 +1,17 @@
 use super::*;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(
+    Debug,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    Hash,
+    Serialize,
+    Deserialize,
+    strum::EnumString,
+    strum::Display,
+)]
 pub enum MouseButton {
     Left,
     Middle,
@@ -49,7 +60,18 @@ impl Event {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(
+    Debug,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    Hash,
+    Serialize,
+    Deserialize,
+    strum::EnumString,
+    strum::Display,
+)]
 #[non_exhaustive]
 pub enum Key {
     /// <kbd>`</kbd> on a US keyboard. This is also called a backtick or grave.
