@@ -539,7 +539,7 @@ impl Font {
             v.i_pos.x -= line_width * align.x.0;
         }
         for v in &mut vs {
-            v.i_pos.y += pos.y * align.y.0;
+            v.i_pos.y += -pos.y * (1.0 - align.y.0) - align.y.0;
         }
         f(&vs, &self.atlas)
     }

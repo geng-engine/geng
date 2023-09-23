@@ -14,7 +14,7 @@ fn main() {
                     geng.default_font().draw(
                         framebuffer,
                         &geng::PixelPerfectCamera, // using pixel coordinates
-                        "Hello, World!",
+                        "Hello,\nWorld!",
                         vec2::splat(geng::TextAlign::CENTER), // center-aligned
                         mat3::translate(framebuffer.size().map(|x| x as f32 / 2.0))
                             * mat3::scale_uniform(32.0), // in the middle of the screen 32 pixels high
