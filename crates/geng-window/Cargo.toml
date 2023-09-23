@@ -25,6 +25,7 @@ serde.workspace = true
 log.workspace = true
 gilrs.workspace = true
 clap.workspace = true
+strum.workspace = true
 
 [dev-dependencies]
 async-recursion.workspace = true

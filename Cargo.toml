@@ -93,6 +93,7 @@ thiserror = "1"
 anyhow = { version = "1", features = ["backtrace"] } # TODO: eyre?
 async-trait = "0.1"
 derive_more = "0.99"
+strum = { version = "0.25", features = ["derive"] }
 itertools = "0.10"
 derivative = "2"
 rusttype = { version = "0.9", features = [
