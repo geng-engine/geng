@@ -192,6 +192,7 @@
               lib.cargo-apk
               lib.androidsdk
               jre
+              yad # for tinyfiledialogs
             ];
             shellHook =
               let
