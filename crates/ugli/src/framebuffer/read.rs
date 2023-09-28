@@ -18,6 +18,9 @@ impl<'a> ColorData<'a> {
             self.buffer[(y * self.width + x) * 4 + 3],
         )
     }
+    pub fn data(&self) -> &[u8] {
+        &self.buffer
+    }
 }
 
 impl<'a> FramebufferRead<'a> {
