@@ -50,7 +50,7 @@ jobs:
           target: wasm32-unknown-unknown
 
       - name: Test
-        run: cargo check --workspace --exclude cargo-geng --target wasm32-unknown-unknown
+        run: cargo check --workspace --target wasm32-unknown-unknown
 
   pages:
     needs:
@@ -92,23 +92,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BUILD_DIR: website
-
-  docker:
-    needs:
-      - test
-      - test-web
-    if: github.ref == 'refs/heads/main' && github.repository_owner == 'geng-engine'
-    name: Docker
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Build & Push
-        uses: docker/build-push-action@v1
-        with:
-          path: .
-          build_args: TARGETS=web
-          repository: kuviman/geng
-          tags: latest
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
