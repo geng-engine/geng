@@ -597,8 +597,10 @@ dependencies = [
 name = "batbox-num"
 version = "0.15.0"
 dependencies = [
+ "bincode",
  "getrandom 0.2.10",
  "rand 0.8.5",
+ "ron",
  "serde",
 ]
 

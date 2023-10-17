@@ -192,6 +192,7 @@ impl<T: Real> Float for T {
 
 /// Wrapper around T that checks for valid values (panics on NaN/Inf)
 #[derive(Copy, Clone, PartialEq, serde::Serialize)]
+#[serde(transparent)]
 #[repr(transparent)]
 pub struct RealImpl<T: Float>(T);
 
@@ -218,6 +219,20 @@ macro_rules! impl_for {
             }
         }
     };
+}
+
+#[test]
+fn test_real_ron() {
+    let s = ron::to_string(&r32(1.5)).unwrap();
+    assert_eq!(ron::from_str(&s), Ok(r32(1.5)));
+}
+
+#[test]
+fn test_real_bincode() {
+    let data = bincode::serialize(&f32::NAN).unwrap();
+    assert!(bincode::deserialize::<R32>(&data).is_err());
+    let data = bincode::serialize(&1.3f32).unwrap();
+    assert_eq!(bincode::deserialize::<R32>(&data).unwrap(), r32(1.3));
 }
 
 impl_for!(f32);
