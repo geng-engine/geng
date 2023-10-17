@@ -12,15 +12,6 @@ struct Assets {
     list: Vec<String>,
 }
 
-struct Example;
-
-impl geng::State for Example {
-    fn draw(&mut self, _framebuffer: &mut ugli::Framebuffer) {}
-    fn transition(&mut self) -> Option<geng::state::Transition> {
-        Some(geng::state::Transition::Pop)
-    }
-}
-
 fn main() {
     logger::init();
     geng::setup_panic_handler();
@@ -31,6 +22,5 @@ fn main() {
             .await
             .unwrap();
         log::info!("{:?}", assets.list);
-        geng.run_state(Example).await;
     });
 }
