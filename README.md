@@ -2,9 +2,12 @@
 
 Game ENGine for Rust Programming Language
 
+<https://geng.kuviman.com>
+
 ## Examples
 
-You can see examples in [examples directory of the main crate](crates/geng/examples)
+You can see examples in [examples directory](examples).
+You can also see them in action on [the website](https://geng.kuviman.com/examples).
 
 ## Games made using geng
 
