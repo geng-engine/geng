@@ -31,9 +31,7 @@ jobs:
           profile: minimal
 
       - name: Test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
+        run: cargo test --workspace
 
   test-web:
     name: Test (web)
