@@ -41,7 +41,7 @@ batbox-la = { version = "0.15", path = "crates/batbox-la" }
 batbox-lapp = { version = "0.15", path = "crates/batbox-lapp" }
 
 # Geng
-geng = { version = "0.15", path = "crates/geng" }
+geng = { version = "0.15", path = "." }
 geng-audio = { version = "0.15", path = "crates/geng-audio" }
 geng-window = { version = "0.15", path = "crates/geng-window" }
 geng-net = { version = "0.15", path = "crates/geng-net" }
@@ -154,3 +154,51 @@ oboe = { version = "0.5", features = ["java-interface", "shared-stdcxx"] }
 jni = "0.21.1"
 ndk-context = "0.1.1"
 ndk = "0.7"
+
+[package]
+name = "geng"
+authors.workspace = true
+categories.workspace = true
+description.workspace = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]
+
+[features]
+default = ["audio"]
+audio = ["dep:geng-audio"]
+
+[dev-dependencies]
+gltf.workspace = true
+
+[dependencies]
+batbox.workspace = true
+geng-window.workspace = true
+geng-net.workspace = true
+geng-camera.workspace = true
+geng-shader.workspace = true
+geng-font.workspace = true
+geng-audio = { workspace = true, optional = true }
+geng-ui.workspace = true
+geng-state.workspace = true
+geng-async-state.workspace = true
+geng-draw2d.workspace = true
+geng-obj.workspace = true
+geng-debug-overlay.workspace = true
+geng-asset.workspace = true
+geng-texture-atlas.workspace = true
+ugli.workspace = true
+
+gilrs.workspace = true
+serde.workspace = true
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+console_error_panic_hook.workspace = true
+wasm-bindgen.workspace = true

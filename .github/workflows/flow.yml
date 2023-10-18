@@ -70,14 +70,18 @@ jobs:
           profile: minimal
           target: wasm32-unknown-unknown
 
+      - name: Install cargo-geng
+        run: |
+          cargo install cargo-geng --git https://github.com/geng-engine/cargo-geng
+
       - name: Build examples
         run: |
           mkdir -p website/static/examples
           examples_list="["
-          for example in crates/geng/examples/*; do
+          for example in examples/*; do
             example=$(basename $example)
             example=${example%.rs}
-            cargo geng-local build --release --target wasm32-unknown-unknown -p geng --example $example
+            cargo geng build --release --web --package geng --example $example
             mv target/geng website/static/examples/$example
             examples_list="$examples_list\"$example\","
           done
