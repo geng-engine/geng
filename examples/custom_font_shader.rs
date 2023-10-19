@@ -61,6 +61,7 @@ impl State {
                 pixel_size: 64.0,
                 max_distance: 0.25,
                 antialias: true,
+                ..default()
             },
         )
         .unwrap();
