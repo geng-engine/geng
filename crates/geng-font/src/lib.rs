@@ -191,6 +191,7 @@ impl Font {
                 distance_mesh: Vec<Vertex>,
                 stencil_mesh: Vec<Vertex>,
                 pos: vec2<f32>,
+                contour_start: vec2<f32>,
                 scale: f32,
                 offset: vec2<f32>,
                 options: Options,
@@ -273,11 +274,12 @@ impl Font {
             const N: usize = 10;
             impl ttf_parser::OutlineBuilder for Builder {
                 fn move_to(&mut self, x: f32, y: f32) {
+                    self.contour_start = vec2(x, y);
                     self.pos = vec2(x, y) * self.scale + self.offset;
                 }
                 fn line_to(&mut self, x: f32, y: f32) {
                     let a = self.pos;
-                    self.move_to(x, y);
+                    self.pos = vec2(x, y) * self.scale + self.offset;
                     let b = self.pos;
                     self.add_line(a, b);
                 }
@@ -307,13 +309,14 @@ impl Font {
                     }
                 }
                 fn close(&mut self) {
-                    // TODO: hm?
+                    self.line_to(self.contour_start.x, self.contour_start.y);
                 }
             }
             let mut builder = Builder {
                 distance_mesh: vec![],
                 stencil_mesh: vec![],
                 pos: vec2::ZERO,
+                contour_start: vec2::ZERO,
                 scale,
                 offset: vec2::ZERO,
                 options: options.clone(),
