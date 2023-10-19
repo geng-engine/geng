@@ -8,11 +8,18 @@ use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 use ugli::Ugli;
 
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
+pub enum DistanceMode {
+    Euclid,
+    Max,
+}
+
 #[derive(Clone)]
 pub struct Options {
     pub pixel_size: f32,
     pub max_distance: f32,
     pub antialias: bool,
+    pub distance_mode: DistanceMode,
     // TODO: specify a set of glyphs
 }
 
@@ -22,6 +29,7 @@ impl Default for Options {
             pixel_size: 64.0,
             max_distance: 0.25,
             antialias: true,
+            distance_mode: DistanceMode::Euclid,
         }
     }
 }
@@ -338,7 +346,12 @@ impl Font {
                 );
                 face.outline_glyph(glyph.id, &mut builder);
             }
-            let line_shader = shader_lib.compile(include_str!("ttf_line.glsl")).unwrap();
+            let line_shader = shader_lib
+                .compile(match options.distance_mode {
+                    DistanceMode::Euclid => include_str!("ttf_line_euclid.glsl"),
+                    DistanceMode::Max => include_str!("ttf_line_max.glsl"),
+                })
+                .unwrap();
             let white_shader = shader_lib.compile(include_str!("white.glsl")).unwrap();
             ugli::draw(
                 framebuffer,
