@@ -17,28 +17,33 @@ version = "0.15.0"
 
 [workspace.dependencies]
 # Batbox
-batbox = { version = "0.15", path = "crates/batbox" }
-batbox-android = { version = "0.15", path = "crates/batbox-android" }
-batbox-tuple-macros = { version = "0.15", path = "crates/batbox-tuple-macros" }
-batbox-i18n = { version = "0.15", path = "crates/batbox-i18n" }
-batbox-i18n-macro = { version = "0.15", path = "crates/batbox-i18n/macro" }
-batbox-num = { version = "0.15", path = "crates/batbox-num" }
-batbox-approx = { version = "0.15", path = "crates/batbox-approx" }
-batbox-color = { version = "0.15", path = "crates/batbox-color" }
-batbox-time = { version = "0.15", path = "crates/batbox-time" }
-batbox-file = { version = "0.15", path = "crates/batbox-file" }
-batbox-file-dialog = { version = "0.15", path = "crates/batbox-file-dialog" }
-batbox-preferences = { version = "0.15", path = "crates/batbox-preferences" }
-batbox-cli = { version = "0.15", path = "crates/batbox-cli" }
-batbox-logger = { version = "0.15", path = "crates/batbox-logger" }
-batbox-diff = { version = "0.15", path = "crates/batbox-diff" }
-batbox-diff-derive = { version = "0.15", path = "crates/batbox-diff/derive" }
-batbox-collection = { version = "0.15", path = "crates/batbox-collection" }
-batbox-collection-derive = { version = "0.15", path = "crates/batbox-collection/derive" }
-batbox-range = { version = "0.15", path = "crates/batbox-range" }
-batbox-cmp = { version = "0.15", path = "crates/batbox-cmp" }
-batbox-la = { version = "0.15", path = "crates/batbox-la" }
-batbox-lapp = { version = "0.15", path = "crates/batbox-lapp" }
+batbox = "0.16"
+batbox-android = "0.16"
+batbox-tuple-macros = "0.16"
+batbox-i18n = "0.16"
+batbox-i18n-macro = "0.16"
+batbox-num = "0.16"
+batbox-approx = "0.16"
+batbox-color = "0.16"
+batbox-time = "0.16"
+batbox-file = "0.16"
+batbox-file-dialog = "0.16"
+batbox-preferences = "0.16"
+batbox-cli = "0.16"
+batbox-logger = "0.16"
+batbox-diff = "0.16"
+batbox-diff-derive = "0.16"
+batbox-collection = "0.16"
+batbox-collection-derive = "0.16"
+batbox-range = "0.16"
+batbox-cmp = "0.16"
+batbox-la = "0.16"
+batbox-lapp = "0.16"
+
+# Ugli
+ugli = { version = "0.15", path = "crates/ugli" }
+ugli-derive = { version = "0.15", path = "crates/ugli-derive" }
+ugli-raw = { version = "0.15", path = "crates/ugli-raw" }
 
 # Geng
 geng = { version = "0.15", path = "." }
@@ -59,43 +64,27 @@ geng-asset = { version = "0.15", path = "crates/geng-asset" }
 geng-asset-derive = { version = "0.15", path = "crates/geng-asset/derive" }
 geng-texture-atlas = { version = "0.15", path = "crates/geng-texture-atlas" }
 
-# Ugli
-ugli = { version = "0.15", path = "crates/ugli" }
-ugli-derive = { version = "0.15", path = "crates/ugli-derive" }
-ugli-raw = { version = "0.15", path = "crates/ugli-raw" }
-
 switch-resume = "0.1"
 
 # Common
-scoped-tls = { version = "0.1", package = "scoped-tls-hkt" }
-serde = { version = "1", features = ["derive", "rc"] }
-serde_json = "1"
-toml = "0.5"
-ron = "0.8"
-rand = "0.8"
-# https://github.com/rust-random/rand#wasm-support
-getrandom = { version = "0.2", features = ["js"] }
-log = "0.4"
-clap = { version = "4", features = ["derive"] }
-url = "2"
-futures = "0.3"
-async-executor = "1"
-async-broadcast = "0.5"
 async-recursion = "1"
-pin-utils = "0.1"
+clap = "4"
+thiserror = "1"
+derive_more = "0.99"
+itertools = "0.11"
+anyhow = "1"
+log = "0.4"
+futures = "0.3"
+serde = "1"
+serde_json = "1"
+rand = "0.8"
+async-trait = "0.1"
 once_cell = "1"
 bincode = "1"
-dyn-clone = "1"
-maplit = "1"
-env_logger = "0.10"
-backtrace = "0.3"
-thiserror = "1"
-anyhow = { version = "1", features = ["backtrace"] } # TODO: eyre?
-async-trait = "0.1"
-derive_more = "0.99"
+scoped-tls = { version = "0.1", package = "scoped-tls-hkt" }
+async-executor = "1"
+async-broadcast = "0.5"
 strum = { version = "0.25", features = ["derive"] }
-itertools = "0.10"
-derivative = "2"
 rusttype = { version = "0.9", features = [
   "gpu_cache",
 ] } # TODO: not used anymore?
@@ -105,55 +94,36 @@ flate2 = "1"
 atomic_float = "0.1"
 num_enum = "0.5"
 gltf = "1"
-http = "0.2"
 gilrs = { version = "0.10", features = ["serde-serialize"] }
 
 # Native
-libc = "0.2"
-tinyfiledialogs = { version = "3", default-features = false }
-directories = "4"
 image = "0.24"
 winit = "=0.29.0-beta.0"
 raw-window-handle = "0.5"
 glutin-winit = "0.4.0-beta.0"
 glutin = "0.30"
-threadpool = "1"
 num_cpus = "1"
 notify = "5"
 rodio = { version = "0.17", package = "geng-rodio" }
 ws = "0.9"
 gl = "0.14"
 field-offset = "0.3"
-async-std = "1"
-reqwest = { version = "0.11", features = [
-  "stream",
-  "rustls-tls",
-], default-features = false }
-async-compat = "0.2"
 
 # Web
-wasm-opt = "0.110"
-wasm-bindgen-cli-support = "0.2"
-wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
 wasm-bindgen-futures = "0.4"
+web-sys = "0.3"
+js-sys = "0.3"
+wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
 serde-wasm-bindgen = "0.5"
 console_error_panic_hook = "0.1"
-js-sys = "0.3"
-web-sys = "0.3"
-wasm-streams = "0.3"
 
 # Proc macros
-syn = { version = "1", features = ["full"] }
-quote = "1"
+darling = "0.20"
 proc-macro2 = "1"
-darling = "0.14"
+quote = "1"
+syn = "2"
 
 # android
-android-activity = { version = "0.4", features = ["native-activity"] }
-oboe = { version = "0.5", features = ["java-interface", "shared-stdcxx"] }
-jni = "0.21.1"
-ndk-context = "0.1.1"
-ndk = "0.7"
 
 [package]
 name = "geng"

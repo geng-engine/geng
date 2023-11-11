@@ -35,18 +35,22 @@ struct Options {
 }
 
 impl darling::FromMeta for Options {
-    fn from_list(items: &[syn::NestedMeta]) -> darling::Result<Self> {
+    fn from_list(items: &[darling::ast::NestedMeta]) -> darling::Result<Self> {
         Ok(Self {
             setters: items
                 .iter()
                 .map(|item| {
-                    if let syn::NestedMeta::Meta(syn::Meta::NameValue(meta)) = item {
+                    if let darling::ast::NestedMeta::Meta(syn::Meta::NameValue(meta)) = item {
                         let ident: syn::Ident = meta
                             .path
                             .get_ident()
                             .ok_or(darling::Error::unsupported_shape("key must be an ident"))?
                             .clone();
-                        let syn::Lit::Str(lit) = &meta.lit else {
+                        let syn::Expr::Lit(syn::ExprLit {
+                            lit: syn::Lit::Str(lit),
+                            ..
+                        }) = &meta.value
+                        else {
                             return Err(darling::Error::unsupported_shape("lit must be str"));
                         };
                         let expr: syn::Expr = syn::parse_str(&lit.value())?;
