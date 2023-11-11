@@ -55,8 +55,7 @@ fn resume<T>(
     };
 
     // Make it current.
-    glutin::context::PossiblyCurrentContextGlSurfaceAccessor::make_current(gl_ctx, &gl_surface)
-        .unwrap();
+    glutin::context::PossiblyCurrentGlContext::make_current(gl_ctx, &gl_surface).unwrap();
 
     // Try setting vsync.
     if let Err(res) = glutin::surface::GlSurface::set_swap_interval(
@@ -81,15 +80,13 @@ where
 {
     let options = options.clone();
 
+    let mut event_loop_builder = winit::event_loop::EventLoopBuilder::<()>::new();
     #[cfg(target_os = "android")]
-    let event_loop = {
+    {
         use winit::platform::android::EventLoopBuilderExtAndroid;
-        winit::event_loop::EventLoopBuilder::new()
-            .with_android_app(batbox_android::app().clone())
-            .build()
-    };
-    #[cfg(not(target_os = "android"))]
-    let event_loop = winit::event_loop::EventLoop::<()>::new();
+        winit::event_loop::EventLoopBuilder::new().with_android_app(batbox_android::app().clone())
+    }
+    let event_loop = event_loop_builder.build().unwrap();
 
     let (window, gl_config) = ::glutin_winit::DisplayBuilder::new()
         .with_window_builder(
@@ -123,9 +120,12 @@ where
             },
         )
         .unwrap();
+    // let raw_window_handle = window
+    //     .as_ref()
+    //     .map(raw_window_handle::HasRawWindowHandle::raw_window_handle);
     let raw_window_handle = window
         .as_ref()
-        .map(raw_window_handle::HasRawWindowHandle::raw_window_handle);
+        .map(|window| raw_window_handle::HasRawWindowHandle::raw_window_handle(window));
     let gl_display = glutin::display::GetGlDisplay::display(&gl_config);
     let context_attributes =
         glutin::context::ContextAttributesBuilder::new().build(raw_window_handle);
@@ -174,25 +174,27 @@ where
     let mut create_context = Some(create_context);
     let mut state: Option<(Rc<Context>, EH)> = None;
 
-    event_loop.run(move |event, window_target, control_flow| {
-        control_flow.set_poll();
-        if let winit::event::Event::Suspended = event {
-            control_flow.set_wait();
-        }
-        if let Some((context, event_handler)) = &mut state {
-            context.handle_winit_event(event, window_target, &mut |event| {
-                if let Event::KeyPress { key: Key::Escape } = event {
-                    context.unlock_cursor();
-                }
-                if event_handler(event).is_break() {
-                    control_flow.set_exit();
-                }
-            });
-        } else if let winit::event::Event::Resumed = event {
-            // First ever resume
-            state = Some((create_context.take().unwrap())(window_target));
-        }
-    });
+    event_loop
+        .run(move |event, window_target| {
+            window_target.set_control_flow(winit::event_loop::ControlFlow::Poll);
+            if let winit::event::Event::Suspended = event {
+                window_target.set_control_flow(winit::event_loop::ControlFlow::Wait);
+            }
+            if let Some((context, event_handler)) = &mut state {
+                context.handle_winit_event(event, window_target, &mut |event| {
+                    if let Event::KeyPress { key: Key::Escape } = event {
+                        context.unlock_cursor();
+                    }
+                    if event_handler(event).is_break() {
+                        window_target.exit();
+                    }
+                });
+            } else if let winit::event::Event::Resumed = event {
+                // First ever resume
+                state = Some((create_context.take().unwrap())(window_target));
+            }
+        })
+        .unwrap();
 }
 
 impl Context {
@@ -291,7 +293,7 @@ impl Context {
 
     fn handle_winit_window_event(
         &self,
-        event: winit::event::WindowEvent<'_>,
+        event: winit::event::WindowEvent,
         event_handler: &mut impl FnMut(Event),
     ) {
         let screen_pos = |position: winit::dpi::PhysicalPosition<f64>| -> vec2<f64> {
@@ -398,44 +400,32 @@ impl Context {
                     }
                 });
             }
+            winit::event::WindowEvent::RedrawRequested => {
+                if let Some(gl_surface) = &*self.gl_surface.borrow() {
+                    event_handler(Event::Draw);
+                    glutin::surface::GlSurface::swap_buffers(
+                        gl_surface,
+                        self.gl_ctx.borrow().as_ref().unwrap(),
+                    )
+                    .unwrap();
+                }
+                if let Some(window) = self.window.borrow().as_ref() {
+                    window.request_redraw();
+                }
+            }
             _ => {}
         }
     }
 
     fn handle_winit_event(
         &self,
-        event: winit::event::Event<'_, ()>,
+        event: winit::event::Event<()>,
         window_target: &winit::event_loop::EventLoopWindowTarget<()>,
         event_handler: &mut impl FnMut(Event),
     ) {
-        let mut draw = || {
-            if let Some(gl_surface) = &*self.gl_surface.borrow() {
-                event_handler(Event::Draw);
-                glutin::surface::GlSurface::swap_buffers(
-                    gl_surface,
-                    self.gl_ctx.borrow().as_ref().unwrap(),
-                )
-                .unwrap();
-            }
-        };
         match event {
             winit::event::Event::WindowEvent { event, .. } => {
                 self.handle_winit_window_event(event, event_handler)
-            }
-            winit::event::Event::RedrawRequested(_) => {
-                draw();
-            }
-            // winit::event::Event::MainEventsCleared => {
-            //     // draw();
-            //     if let Some(window) = self.window.borrow().as_ref() {
-            //         window.request_redraw();
-            //     }
-            // }
-            winit::event::Event::RedrawEventsCleared => {
-                // draw();
-                if let Some(window) = self.window.borrow().as_ref() {
-                    window.request_redraw();
-                }
             }
             winit::event::Event::Resumed => {
                 if self.gl_surface.borrow().is_none() {
@@ -499,7 +489,10 @@ impl Context {
     }
 }
 
-fn from_winit_key(key: winit::keyboard::KeyCode) -> Option<Key> {
+fn from_winit_key(key: winit::keyboard::PhysicalKey) -> Option<Key> {
+    let winit::keyboard::PhysicalKey::Code(key) = key else {
+        return None;
+    };
     use winit::keyboard::KeyCode as GKey;
     Some(match key {
         GKey::Backquote => Key::Backquote,
