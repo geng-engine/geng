@@ -199,39 +199,33 @@ impl Default for LoadProgress {
 }
 
 #[cfg(feature = "audio")]
-mod audio_ {
-    use super::*;
+#[derive(Debug, Clone)]
+pub struct SoundOptions {
+    pub looped: bool,
+}
 
-    #[derive(Debug, Clone)]
-    pub struct SoundOptions {
-        pub looped: bool,
+#[cfg(feature = "audio")]
+#[allow(clippy::derivable_impls)]
+impl Default for SoundOptions {
+    fn default() -> Self {
+        Self { looped: false }
     }
+}
 
-    #[allow(clippy::derivable_impls)]
-    impl Default for SoundOptions {
-        fn default() -> Self {
-            Self { looped: false }
-        }
+#[cfg(feature = "audio")]
+impl Load for geng_audio::Sound {
+    type Options = SoundOptions;
+    fn load(manager: &Manager, path: &std::path::Path, options: &Self::Options) -> Future<Self> {
+        let manager = manager.clone();
+        let path = path.to_owned();
+        let options = options.clone();
+        Box::pin(async move {
+            let mut sound = manager.audio().load(path).await?;
+            sound.set_looped(options.looped);
+            Ok(sound)
+        })
     }
-
-    impl Load for geng_audio::Sound {
-        type Options = SoundOptions;
-        fn load(
-            manager: &Manager,
-            path: &std::path::Path,
-            options: &Self::Options,
-        ) -> Future<Self> {
-            let manager = manager.clone();
-            let path = path.to_owned();
-            let options = options.clone();
-            Box::pin(async move {
-                let mut sound = manager.audio().load(path).await?;
-                sound.set_looped(options.looped);
-                Ok(sound)
-            })
-        }
-        const DEFAULT_EXT: Option<&'static str> = Some("wav"); // TODO change to mp3 since wav doesnt work in safari?
-    }
+    const DEFAULT_EXT: Option<&'static str> = Some("wav"); // TODO change to mp3 since wav doesnt work in safari?
 }
 
 #[derive(Debug, Clone)]
