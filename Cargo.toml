@@ -68,7 +68,7 @@ switch-resume = "0.1"
 
 # Common
 async-recursion = "1"
-clap = "4"
+clap = { version = "4", features = ["derive"] }
 thiserror = "1"
 derive_more = "0.99"
 itertools = "0.11"
