@@ -42,12 +42,12 @@ batbox-lapp = "0.16"
 
 # Ugli
 ugli = { version = "0.16.0", path = "crates/ugli" }
-ugli-derive = { version = "0.15", path = "crates/ugli-derive" }
-ugli-raw = { version = "0.15", path = "crates/ugli-raw" }
+ugli-derive = { version = "0.16", path = "crates/ugli-derive" }
+ugli-raw = { version = "0.16", path = "crates/ugli-raw" }
 
 # Geng
 geng = { version = "0.16.0", path = "." }
-geng-audio = { version = "0.15", path = "crates/geng-audio" }
+geng-audio = { version = "0.16", path = "crates/geng-audio" }
 geng-window = { version = "0.16.0", path = "crates/geng-window" }
 geng-net = { version = "0.16.0", path = "crates/geng-net" }
 geng-net-simple = { version = "0.16.0", path = "crates/geng-net-simple" }
