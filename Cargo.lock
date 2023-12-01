@@ -1646,7 +1646,7 @@ dependencies = [
 
 [[package]]
 name = "geng"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "batbox",
  "console_error_panic_hook",
@@ -1673,7 +1673,7 @@ dependencies = [
 
 [[package]]
 name = "geng-asset"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "anyhow",
  "batbox-file",
@@ -1694,7 +1694,7 @@ dependencies = [
 
 [[package]]
 name = "geng-asset-derive"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -1704,7 +1704,7 @@ dependencies = [
 
 [[package]]
 name = "geng-async-state"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "async-recursion",
  "async-trait",
@@ -1727,7 +1727,7 @@ dependencies = [
 
 [[package]]
 name = "geng-audio"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "anyhow",
  "atomic_float",
@@ -1745,7 +1745,7 @@ dependencies = [
 
 [[package]]
 name = "geng-camera"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "batbox-la",
  "batbox-lapp",
@@ -1755,7 +1755,7 @@ dependencies = [
 
 [[package]]
 name = "geng-debug_overlay"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "batbox-color",
  "batbox-la",
@@ -1772,7 +1772,7 @@ dependencies = [
 
 [[package]]
 name = "geng-draw2d"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "batbox-approx",
  "batbox-color",
@@ -1786,7 +1786,7 @@ dependencies = [
 
 [[package]]
 name = "geng-font"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "anyhow",
  "batbox-color",
@@ -1802,7 +1802,7 @@ dependencies = [
 
 [[package]]
 name = "geng-net"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "anyhow",
  "batbox-time",
@@ -1819,7 +1819,7 @@ dependencies = [
 
 [[package]]
 name = "geng-net-simple"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "batbox-cli",
  "geng",
@@ -1828,7 +1828,7 @@ dependencies = [
 
 [[package]]
 name = "geng-obj"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "batbox-la",
  "ugli",
@@ -1849,7 +1849,7 @@ dependencies = [
 
 [[package]]
 name = "geng-shader"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "anyhow",
  "ugli",
@@ -1857,7 +1857,7 @@ dependencies = [
 
 [[package]]
 name = "geng-state"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "geng-ui",
  "geng-window",
@@ -1866,7 +1866,7 @@ dependencies = [
 
 [[package]]
 name = "geng-texture-atlas"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "batbox-la",
  "ugli",
@@ -1874,7 +1874,7 @@ dependencies = [
 
 [[package]]
 name = "geng-ui"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "batbox-cmp",
  "batbox-color",
@@ -1890,7 +1890,7 @@ dependencies = [
 
 [[package]]
 name = "geng-window"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "anyhow",
  "async-broadcast",
@@ -4224,7 +4224,7 @@ checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
 
 [[package]]
 name = "ugli"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "batbox-color",
  "batbox-la",
@@ -4246,7 +4246,7 @@ dependencies = [
 
 [[package]]
 name = "ugli-derive"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -4256,7 +4256,7 @@ dependencies = [
 
 [[package]]
 name = "ugli-raw"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "gl",
  "js-sys",
