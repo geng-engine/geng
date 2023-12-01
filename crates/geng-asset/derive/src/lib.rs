@@ -175,6 +175,14 @@ impl DeriveInput {
                 (Some(_), Some(_)) => panic!("Can't specify both list and listed_in"),
             };
             let field_ty = &field.ty;
+            let field_ty = match field.condition.is_some() {
+                false => {
+                    quote!(#field_ty)
+                }
+                true => {
+                    quote!(<#field_ty as geng::asset::Optional>::Type)
+                }
+            };
             let options_setters = field.options.iter().flat_map(|options| options.setters.iter()).map(|(ident, expr)| {
                 quote! {
                     options.#ident = #expr;

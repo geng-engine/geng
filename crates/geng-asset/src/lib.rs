@@ -261,3 +261,11 @@ impl Load for ugli::Texture {
     }
     const DEFAULT_EXT: Option<&'static str> = Some("png");
 }
+
+pub trait Optional {
+    type Type;
+}
+
+impl<T> Optional for Option<T> {
+    type Type = T;
+}
