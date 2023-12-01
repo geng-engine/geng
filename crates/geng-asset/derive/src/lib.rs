@@ -81,7 +81,7 @@ struct Field {
     list: Option<syn::Expr>,
     #[darling(default)]
     listed_in: Option<String>,
-    #[darling(default, rename = "if")]
+    #[darling(default)]
     condition: Option<syn::Expr>,
     #[darling(default)]
     serde: bool,
