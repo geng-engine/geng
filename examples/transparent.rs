@@ -32,6 +32,7 @@ fn main() {
             window: {
                 let mut options = geng::window::Options::new("Transparent");
                 options.transparency = true;
+                options.passthrough = true;
                 options
             },
             ..default()

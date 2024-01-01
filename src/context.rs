@@ -39,6 +39,7 @@ impl Default for ContextOptions {
                 vsync: true,
                 antialias: false,
                 transparency: false,
+                passthrough: false,
                 size: None,
                 fullscreen: !cfg!(debug_assertions),
                 auto_close: true,

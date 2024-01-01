@@ -108,11 +108,11 @@ where
                 let config = if options.antialias {
                     configs
                         .into_iter()
-                        .max_by_key(|config| glutin::config::GlConfig::num_samples(config))
+                        .max_by_key(glutin::config::GlConfig::num_samples)
                 } else {
                     configs
                         .into_iter()
-                        .min_by_key(|config| glutin::config::GlConfig::num_samples(config))
+                        .min_by_key(glutin::config::GlConfig::num_samples)
                 }
                 .expect("Could not find fitting config");
                 log::debug!("{config:#?}");
@@ -120,12 +120,17 @@ where
             },
         )
         .unwrap();
+    if options.passthrough {
+        if let Err(err) = window.as_ref().unwrap().set_cursor_hittest(!options.passthrough) {
+            log::error!("Failed to set mouse passthrough: {err}");
+        }
+    }
     // let raw_window_handle = window
     //     .as_ref()
     //     .map(raw_window_handle::HasRawWindowHandle::raw_window_handle);
     let raw_window_handle = window
         .as_ref()
-        .map(|window| raw_window_handle::HasRawWindowHandle::raw_window_handle(window));
+        .map(raw_window_handle::HasRawWindowHandle::raw_window_handle);
     let gl_display = glutin::display::GetGlDisplay::display(&gl_config);
     let context_attributes =
         glutin::context::ContextAttributesBuilder::new().build(raw_window_handle);
