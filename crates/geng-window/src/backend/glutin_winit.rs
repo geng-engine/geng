@@ -120,8 +120,8 @@ where
             },
         )
         .unwrap();
-    if options.passthrough {
-        if let Err(err) = window.as_ref().unwrap().set_cursor_hittest(!options.passthrough) {
+    if options.mouse_passthrough {
+        if let Err(err) = window.as_ref().unwrap().set_cursor_hittest(!options.mouse_passthrough) {
             log::error!("Failed to set mouse passthrough: {err}");
         }
     }
