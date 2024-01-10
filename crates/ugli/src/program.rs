@@ -65,6 +65,8 @@ impl Program {
             });
         }
 
+        log::debug!("Linking program: {}", gl.get_program_info_log(&program.handle));
+
         // Get attributes
         let attribute_count =
             gl.get_program_parameter_int(&program.handle, raw::ACTIVE_ATTRIBUTES) as usize;
