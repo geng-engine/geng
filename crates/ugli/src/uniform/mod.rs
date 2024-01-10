@@ -89,6 +89,7 @@ impl Uniform for [[f32; 4]; 4] {
 
 impl Uniform for &[[[f32; 2]; 2]] {
     fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
+        println!("&[[[f32; 2]; 2]]");
         gl.uniform_matrix2fv(
             &info.location,
             self.len() as _,
