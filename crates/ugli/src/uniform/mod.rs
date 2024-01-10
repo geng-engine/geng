@@ -93,11 +93,11 @@ impl Uniform for &[[[f32; 2]; 2]] {
             &info.location,
             self.len() as _,
             raw::FALSE,
-            &self
+            &dbg!(self
                 .iter()
                 .flat_map(|mat| unsafe { mem::transmute::<&[[f32; 2]; 2], &[f32; 2 * 2]>(mat) })
                 .copied()
-                .collect::<Vec<_>>(),
+                .collect::<Vec<_>>()),
         );
     }
 }
