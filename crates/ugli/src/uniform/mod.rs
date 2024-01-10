@@ -89,16 +89,16 @@ impl Uniform for [[f32; 4]; 4] {
 
 impl Uniform for &[[[f32; 2]; 2]] {
     fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
-        println!("&[[[f32; 2]; 2]]");
+        panic!("&[[[f32; 2]; 2]]");
         gl.uniform_matrix2fv(
             &info.location,
             self.len() as _,
             raw::FALSE,
-            &dbg!(self
+            &self
                 .iter()
                 .flat_map(|mat| unsafe { mem::transmute::<&[[f32; 2]; 2], &[f32; 2 * 2]>(mat) })
                 .copied()
-                .collect::<Vec<_>>()),
+                .collect::<Vec<_>>(),
         );
     }
 }
