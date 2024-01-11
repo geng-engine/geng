@@ -23,7 +23,7 @@ struct ManagerImpl {
     window: geng_window::Window,
     #[cfg(feature = "audio")]
     audio: geng_audio::Audio,
-    shader_lib: shader::Library,
+    shader_lib: Rc<shader::Library>,
     hot_reload_enabled: bool,
 }
 
@@ -36,6 +36,7 @@ impl Manager {
     pub fn new(
         window: &geng_window::Window,
         #[cfg(feature = "audio")] audio: &geng_audio::Audio,
+        shader_lib: Rc<shader::Library>,
         hot_reload: bool,
     ) -> Self {
         Self {
@@ -44,7 +45,7 @@ impl Manager {
                 ugli: window.ugli().clone(),
                 #[cfg(feature = "audio")]
                 audio: audio.clone(),
-                shader_lib: shader::Library::new(window.ugli(), true, None),
+                shader_lib,
                 hot_reload_enabled: hot_reload,
             }),
         }

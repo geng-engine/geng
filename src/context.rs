@@ -4,7 +4,7 @@ pub(crate) struct GengImpl {
     window: Window,
     #[cfg(feature = "audio")]
     audio: Audio,
-    shader_lib: shader::Library,
+    shader_lib: Rc<shader::Library>,
     pub(crate) draw2d: Rc<draw2d::Helper>,
     asset_manager: asset::Manager,
     default_font: Rc<Font>,
@@ -27,6 +27,7 @@ pub struct ContextOptions {
     pub fixed_delta_time: f64,
     pub max_delta_time: f64,
     pub shader_prefix: Option<(String, String)>,
+    pub shader_lib: HashMap<String, String>,
     pub target_ui_resolution: Option<vec2<f64>>,
     pub hot_reload: bool,
 }
@@ -48,6 +49,7 @@ impl Default for ContextOptions {
             fixed_delta_time: 0.05,
             max_delta_time: 0.1,
             shader_prefix: None,
+            shader_lib: HashMap::new(),
             target_ui_resolution: None,
             hot_reload: cfg!(debug_assertions),
         }
@@ -75,11 +77,17 @@ impl Geng {
         setup_panic_handler();
         window::run(&options.window.clone(), |window| async move {
             let ugli = window.ugli().clone();
-            let shader_lib = shader::Library::new(
+            let mut shader_lib = shader::Library::new(
                 &ugli,
                 options.window.antialias,
                 options.shader_prefix.clone(),
             );
+            for (name, source) in options.shader_lib.iter() {
+                shader_lib.add(name, source);
+            }
+
+            let shader_lib = Rc::new(shader_lib);
+
             let draw2d = Rc::new(draw2d::Helper::new(&ugli, options.window.antialias));
             let default_font = Rc::new(Font::default(window.ugli()));
             #[cfg(feature = "audio")]
@@ -89,12 +97,13 @@ impl Geng {
                     window: window.clone(),
                     #[cfg(feature = "audio")]
                     audio: audio.clone(),
-                    shader_lib,
+                    shader_lib: shader_lib.clone(),
                     draw2d,
                     asset_manager: asset::Manager::new(
                         &window,
                         #[cfg(feature = "audio")]
                         &audio,
+                        shader_lib,
                         options.hot_reload,
                     ),
                     default_font,
