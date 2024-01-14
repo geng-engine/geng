@@ -45,6 +45,7 @@ pub enum Format {
     BGRA = raw::BGRA as _,
 }
 
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash)]
 pub enum Type {
     UnsignedByte = raw::UNSIGNED_BYTE as _,
     Byte = raw::BYTE as _,
