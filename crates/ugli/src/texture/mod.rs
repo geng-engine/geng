@@ -37,20 +37,12 @@ pub enum Filter {
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Hash)]
 pub enum Format {
-    R = raw::R8 as _,
+    R = raw::RED as _,
     RG = raw::RG as _,
     RGB = raw::RGB as _,
+    BGR = raw::BGR as _,
     RGBA = raw::RGBA as _,
-    #[cfg(not(target_arch = "wasm32"))]
-    R16 = raw::R16 as _,
-    #[cfg(not(target_arch = "wasm32"))]
-    RG16 = raw::RG16 as _,
-    #[cfg(not(target_arch = "wasm32"))]
-    RGB16 = raw::RGB16 as _,
-    #[cfg(not(target_arch = "wasm32"))]
-    RGBA16 = raw::RGBA16 as _,
-    RGB32FLOAT = raw::RGB32F as _,
-    RGBA32FLOAT = raw::RGBA32F as _,
+    BGRA = raw::BGRA as _,
 }
 
 pub enum Type {
