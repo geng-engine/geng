@@ -61,6 +61,24 @@ pub enum Type {
     HalfFloat = raw::HALF_FLOAT as _,
     Float = raw::FLOAT as _,
 }
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash)]
+pub enum MinFilter {
+    Nearest = raw::NEAREST as _,
+    Linear = raw::LINEAR as _,
+    NearestMipmapNearest = raw::NEAREST_MIPMAP_NEAREST as _,
+    LinearMipmapNearest = raw::LINEAR_MIPMAP_NEAREST as _,
+    NearestMipmapLinear = raw::NEAREST_MIPMAP_LINEAR as _,
+    LinearMipmapLinear = raw::LINEAR_MIPMAP_LINEAR as _,
+}
+
+impl From<Filter> for MinFilter {
+    fn from(filter: Filter) -> Self {
+        match filter {
+            Filter::Nearest => MinFilter::Nearest,
+            Filter::Linear => MinFilter::Linear,
+        }
+    }
+}
 
 pub struct Texture2d<P: TexturePixel> {
     pub(crate) ugli: Ugli,
@@ -176,11 +194,25 @@ impl<P: TexturePixel> Texture2d<P> {
     }
 
     pub fn set_filter(&mut self, filter: Filter) {
-        assert!(self.is_pot() || filter == Filter::Nearest || filter == Filter::Linear);
+        self.set_filter_separate(filter, filter.into());
+    }
+
+    pub fn set_filter_separate(&mut self, mag_filter: Filter, min_filter: MinFilter) {
+        assert!(
+            self.is_pot() || min_filter == MinFilter::Nearest || min_filter == MinFilter::Linear
+        );
         let gl = &self.ugli.inner.raw;
         gl.bind_texture(raw::TEXTURE_2D, &self.handle);
-        gl.tex_parameteri(raw::TEXTURE_2D, raw::TEXTURE_MAG_FILTER, filter as raw::Int);
-        gl.tex_parameteri(raw::TEXTURE_2D, raw::TEXTURE_MIN_FILTER, filter as raw::Int);
+        gl.tex_parameteri(
+            raw::TEXTURE_2D,
+            raw::TEXTURE_MAG_FILTER,
+            mag_filter as raw::Int,
+        );
+        gl.tex_parameteri(
+            raw::TEXTURE_2D,
+            raw::TEXTURE_MIN_FILTER,
+            min_filter as raw::Int,
+        );
         self.ugli.debug_check();
     }
 
