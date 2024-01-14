@@ -61,6 +61,7 @@ pub enum Type {
     HalfFloat = raw::HALF_FLOAT as _,
     Float = raw::FLOAT as _,
 }
+
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Hash)]
 pub enum MinFilter {
     Nearest = raw::NEAREST as _,
