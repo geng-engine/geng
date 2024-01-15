@@ -42,12 +42,16 @@ pub enum Filter {
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Hash)]
 pub enum Format {
+    #[cfg(not(target_arch = "wasm32"))]
     R = raw::RED as _,
+    #[cfg(not(target_arch = "wasm32"))]
     RG = raw::RG as _,
-    RGB = raw::RGB as _,
+    #[cfg(not(target_arch = "wasm32"))]
     BGR = raw::BGR as _,
-    RGBA = raw::RGBA as _,
+    RGB = raw::RGB as _,
+    #[cfg(not(target_arch = "wasm32"))]
     BGRA = raw::BGRA as _,
+    RGBA = raw::RGBA as _,
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Hash)]
@@ -58,6 +62,7 @@ pub enum Type {
     Short = raw::SHORT as _,
     UnsignedInt = raw::UNSIGNED_INT as _,
     Int = raw::INT as _,
+    #[cfg(not(target_arch = "wasm32"))]
     HalfFloat = raw::HALF_FLOAT as _,
     Float = raw::FLOAT as _,
 }

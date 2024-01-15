@@ -279,7 +279,7 @@ impl Geng {
                 Event::Draw => {
                     if let Some(gilrs) = &geng.inner.gilrs {
                         let mut gilrs = gilrs.borrow_mut();
-                        while let Some(gamepad_event) = gilrs.next_event() {
+                        while let Some(_gamepad_event) = gilrs.next_event() {
                             // TODO geng.inner.window.send_event(Event::Gamepad(gamepad_event));
                         }
                     }

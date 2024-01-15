@@ -453,7 +453,7 @@ impl Font {
                     ]
                     .map(Rc::new)
                 }),
-                |shader| Rc::clone(shader),
+                Rc::clone,
             )
         });
         Ok(Self {
