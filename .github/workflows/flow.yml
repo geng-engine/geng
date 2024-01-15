@@ -16,6 +16,7 @@ jobs:
             channel: mac
           - runs-on: windows-latest
             channel: windows
+            timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v2
