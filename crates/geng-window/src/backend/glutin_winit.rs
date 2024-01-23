@@ -84,7 +84,7 @@ where
     #[cfg(target_os = "android")]
     {
         use winit::platform::android::EventLoopBuilderExtAndroid;
-        winit::event_loop::EventLoopBuilder::new().with_android_app(batbox_android::app().clone())
+        event_loop_builder.with_android_app(batbox_android::app().clone());
     }
     let event_loop = event_loop_builder.build().unwrap();
 
@@ -121,7 +121,11 @@ where
         )
         .unwrap();
     if options.mouse_passthrough {
-        if let Err(err) = window.as_ref().unwrap().set_cursor_hittest(!options.mouse_passthrough) {
+        if let Err(err) = window
+            .as_ref()
+            .unwrap()
+            .set_cursor_hittest(!options.mouse_passthrough)
+        {
             log::error!("Failed to set mouse passthrough: {err}");
         }
     }
