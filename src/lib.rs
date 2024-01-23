@@ -65,7 +65,18 @@ pub use loading_screen::*;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn setup_panic_handler() {
-    // TODO: do something useful here too?
+    let default_hook = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |info: &std::panic::PanicInfo| {
+        let log_file_path = preferences::base_path().join("error.txt");
+        if let Ok(mut file) = std::fs::OpenOptions::new()
+            .append(true)
+            .create(true)
+            .open(log_file_path)
+        {
+            let _ = writeln!(file, "{info}");
+        }
+        default_hook(info);
+    }));
 }
 
 #[cfg(target_arch = "wasm32")]
