@@ -5,6 +5,7 @@ publish:
     cargo publish -p ugli-raw
     cargo publish -p ugli-derive
     cargo publish -p ugli
+    cargo publish -p geng-web-audio-api
     cargo publish -p geng-audio
     cargo publish -p geng-camera
     cargo publish -p geng-shader

@@ -221,7 +221,7 @@ impl Load for geng_audio::Sound {
         let options = options.clone();
         Box::pin(async move {
             let mut sound = manager.audio().load(path).await?;
-            sound.set_looped(options.looped);
+            sound.looped = options.looped;
             Ok(sound)
         })
     }

@@ -83,7 +83,7 @@ impl Geng {
             let draw2d = Rc::new(draw2d::Helper::new(&ugli, options.window.antialias));
             let default_font = Rc::new(Font::default(window.ugli()));
             #[cfg(feature = "audio")]
-            let audio = Audio::new();
+            let audio = Audio::new().unwrap();
             let geng = Geng {
                 inner: Rc::new(GengImpl {
                     window: window.clone(),
