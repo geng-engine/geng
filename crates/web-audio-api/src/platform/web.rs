@@ -72,6 +72,14 @@ impl AudioParam {
     pub fn set_value(&self, value: f32) {
         self.0.set_value(value);
     }
+
+    pub fn linear_ramp_to_value_at_time(&self, value: f32, end_time: f64) {
+        self.0.linear_ramp_to_value_at_time(value, end_time);
+    }
+
+    pub fn exponential_ramp_to_value_at_time(&self, value: f32, end_time: f64) {
+        self.0.exponential_ramp_to_value_at_time(value, end_time);
+    }
 }
 
 pub struct GainNode(web_sys::GainNode);
