@@ -1,3 +1,7 @@
+[patch.crates-io]
+# https://github.com/smol-rs/async-broadcast/pull/47
+async-broadcast = { git = "https://github.com/kuviman/async-broadcast", branch = "fix-wasm" }
+
 [workspace]
 members = ["crates/*"]
 resolver = "2"
