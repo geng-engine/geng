@@ -21,11 +21,24 @@ fn main() {
             match event {
                 geng::Event::Draw => {
                     geng.window().with_framebuffer(|framebuffer| {
+                        let framebuffer_size = framebuffer.size();
                         ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
+                        if let Some(effect) = &music_effect {
+                            geng.default_font().draw(
+                                framebuffer,
+                                &geng::PixelPerfectCamera,
+                                &format!(
+                                    "music: {:.2?}/{:.2?}",
+                                    effect.playback_position(),
+                                    music.duration()
+                                ),
+                                vec2::splat(geng::TextAlign::CENTER),
+                                mat3::translate(framebuffer_size.map(|x| x as f32) / 2.0)
+                                    * mat3::scale_uniform(32.0),
+                                Rgba::WHITE,
+                            );
+                        }
                     });
-                    if let Some(effect) = &music_effect {
-                        log::info!("{:?}", effect.playback_position());
-                    }
                 }
                 geng::Event::KeyPress {
                     key: geng::Key::Space,
