@@ -174,7 +174,7 @@ extern "C" {
     fn stop(this: &PlaybackPositionNode);
     #[wasm_bindgen(method, js_name = "stop")]
     fn stop_with_when(this: &PlaybackPositionNode, when: f64);
-    #[wasm_bindgen(method, js_name = "playbackRate")]
+    #[wasm_bindgen(method, getter, js_name = "playbackRate")]
     fn playback_rate(this: &PlaybackPositionNode) -> web_sys::AudioParam;
 }
 

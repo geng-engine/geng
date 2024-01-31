@@ -48,6 +48,7 @@ fn main() {
                 geng::Event::KeyPress { key: geng::Key::M } => {
                     let mut effect = music.effect();
                     effect.set_looped(true);
+                    effect.set_speed(1.1);
                     effect.fade_in(fade_duration);
                     effect.play();
                     music_effect = Some(effect);
