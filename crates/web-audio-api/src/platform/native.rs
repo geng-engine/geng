@@ -63,6 +63,10 @@ impl AudioContext {
                 .map_err(|e| anyhow::anyhow!(e))?,
         )))
     }
+
+    pub fn current_time(&self) -> f64 {
+        self.0.current_time()
+    }
 }
 
 pub struct AudioListener(web_audio_api::AudioListener);
@@ -198,6 +202,10 @@ impl AudioBufferSourceNode {
 
     pub fn stop(&mut self) {
         self.0.stop();
+    }
+
+    pub fn stop_at(&mut self, when: f64) {
+        self.0.stop_at(when);
     }
 
     pub fn set_loop(&mut self, looped: bool) {

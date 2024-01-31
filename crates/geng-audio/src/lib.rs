@@ -85,12 +85,16 @@ impl Sound {
         let mut buffer_node = wa::AudioBufferSourceNode::new(&self.context.inner.context);
         buffer_node.set_buffer(self.audio_buffer.clone());
         buffer_node.set_loop(self.looped);
+        let fade_node = wa::GainNode::new(&self.context.inner.context);
         let gain_node = wa::GainNode::new(&self.context.inner.context);
-        buffer_node.connect(&gain_node);
-        gain_node.connect(&self.context.inner.master_gain_node);
+        buffer_node
+            .connect(&fade_node)
+            .connect(&gain_node)
+            .connect(&self.context.inner.master_gain_node);
         SoundEffect {
             context: self.context.clone(),
             source_node: buffer_node,
+            fade_node,
             gain_node,
             spatial_state: SpatialState::NotSpatial,
         }
@@ -106,10 +110,28 @@ pub struct SoundEffect {
     context: Audio,
     source_node: wa::AudioBufferSourceNode,
     gain_node: wa::GainNode,
+    fade_node: wa::GainNode,
     spatial_state: SpatialState,
 }
 
 impl SoundEffect {
+    pub fn set_looped(&mut self, looped: bool) {
+        self.source_node.set_loop(looped);
+    }
+    pub fn fade_in(&mut self, duration: time::Duration) {
+        let gain = self.fade_node.gain();
+        gain.set_value(0.0);
+        gain.linear_ramp_to_value_at_time(
+            1.0,
+            self.context.inner.context.current_time() + duration.as_secs_f64(),
+        );
+    }
+    pub fn fade_out(&mut self, duration: time::Duration) {
+        let end_time = self.context.inner.context.current_time() + duration.as_secs_f64();
+        let gain = self.fade_node.gain();
+        gain.linear_ramp_to_value_at_time(0.0, end_time);
+        self.source_node.stop_at(end_time);
+    }
     pub fn set_volume(&mut self, volume: f32) {
         self.gain_node.gain().set_value(volume);
     }
