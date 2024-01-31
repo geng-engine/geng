@@ -30,11 +30,11 @@
         "utils": "utils"
       },
       "locked": {
-        "lastModified": 1699567325,
-        "narHash": "sha256-3sWiljtGrLggOqpgFNOIjuzZe2zXYK+1Y3Vm8u3W3AU=",
+        "lastModified": 1706691657,
+        "narHash": "sha256-1/atxEsyF9HmGJVjcv2ZOA2+vkowR7G3XkkYbTWDBCs=",
         "owner": "geng-engine",
         "repo": "cargo-geng",
-        "rev": "362d8166e2f1591a212f69dad62216f8cc5c4a17",
+        "rev": "1c3bc9081bd52e3c73b0161fb64c4fb122e2f0a6",
         "type": "github"
       },
       "original": {
