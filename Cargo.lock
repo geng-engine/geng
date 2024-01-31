@@ -1968,6 +1968,7 @@ dependencies = [
  "anyhow",
  "futures",
  "js-sys",
+ "log",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-audio-api",

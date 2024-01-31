@@ -90,6 +90,14 @@ impl AudioParam {
             .exponential_ramp_to_value_at_time(value, end_time)
             .unwrap();
     }
+
+    pub fn cancel_scheduled_changes(&self, cancel_time: f64) {
+        self.0.cancel_scheduled_values(cancel_time).unwrap();
+    }
+
+    pub fn value(&self) -> f32 {
+        self.0.value()
+    }
 }
 
 pub struct GainNode(web_sys::GainNode);

@@ -16,7 +16,7 @@ fn main() {
             .unwrap();
         let mut events = geng.window().events();
         let mut music_effect = None::<geng::SoundEffect>;
-        let fade_duration = time::Duration::from_secs_f64(1.0);
+        let fade_duration = time::Duration::from_secs_f64(5.0);
         while let Some(event) = events.next().await {
             match event {
                 geng::Event::Draw => {

@@ -12,6 +12,7 @@ repository.workspace = true
 version.workspace = true
 
 [dependencies]
+log.workspace = true
 anyhow = "1"
 futures = "0.3"
 

@@ -111,6 +111,12 @@ impl AudioParam {
     pub fn exponential_ramp_to_value_at_time(&self, value: f32, end_time: f64) {
         self.0.exponential_ramp_to_value_at_time(value, end_time);
     }
+    pub fn cancel_scheduled_changes(&self, cancel_time: f64) {
+        self.0.cancel_scheduled_values(cancel_time);
+    }
+    pub fn value(&self) -> f32 {
+        self.0.value()
+    }
 }
 
 impl From<&web_audio_api::AudioParam> for AudioParam {
