@@ -174,6 +174,10 @@ impl SoundEffect {
         };
         panner_node
     }
+
+    pub fn playback_position(&self) -> time::Duration {
+        time::Duration::from_secs_f64(self.source_node.position())
+    }
 }
 
 impl Drop for SoundEffect {

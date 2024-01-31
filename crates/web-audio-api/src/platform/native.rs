@@ -226,4 +226,8 @@ impl AudioBufferSourceNode {
         }
         self.0.set_buffer(arc_unwrap_or_clone(buffer.0));
     }
+
+    pub fn position(&self) -> f64 {
+        self.0.position()
+    }
 }

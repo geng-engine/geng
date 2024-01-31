@@ -15,7 +15,7 @@ fn main() {
             .await
             .unwrap();
         let mut events = geng.window().events();
-        let mut music_effect = None;
+        let mut music_effect = None::<geng::SoundEffect>;
         let fade_duration = time::Duration::from_secs_f64(1.0);
         while let Some(event) = events.next().await {
             match event {
@@ -23,6 +23,9 @@ fn main() {
                     geng.window().with_framebuffer(|framebuffer| {
                         ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
                     });
+                    if let Some(effect) = &music_effect {
+                        log::info!("{:?}", effect.playback_position());
+                    }
                 }
                 geng::Event::KeyPress {
                     key: geng::Key::Space,

@@ -1,3 +1,5 @@
+use wasm_bindgen::prelude::*;
+
 pub struct AudioContext(web_sys::AudioContext);
 
 pub type AudioNodeRef<'a> = &'a web_sys::AudioNode;
@@ -78,11 +80,15 @@ impl AudioParam {
     }
 
     pub fn linear_ramp_to_value_at_time(&self, value: f32, end_time: f64) {
-        self.0.linear_ramp_to_value_at_time(value, end_time);
+        self.0
+            .linear_ramp_to_value_at_time(value, end_time)
+            .unwrap();
     }
 
     pub fn exponential_ramp_to_value_at_time(&self, value: f32, end_time: f64) {
-        self.0.exponential_ramp_to_value_at_time(value, end_time);
+        self.0
+            .exponential_ramp_to_value_at_time(value, end_time)
+            .unwrap();
     }
 }
 
@@ -140,11 +146,33 @@ impl AudioBuffer {
     }
 }
 
-pub struct AudioBufferSourceNode(web_sys::AudioBufferSourceNode);
+pub struct AudioBufferSourceNode(PlaybackPositionNode);
+
+#[wasm_bindgen(module = "/src/platform/PlaybackPositionNode.js")]
+extern "C" {
+    #[wasm_bindgen(extends = web_sys::AudioNode)] // Doesn't really extend, but it works :)
+    type PlaybackPositionNode;
+    #[wasm_bindgen(constructor)]
+    fn new(context: &web_sys::AudioContext) -> PlaybackPositionNode;
+    #[wasm_bindgen(method, getter, js_name = "playbackPosition")]
+    fn playback_position(this: &PlaybackPositionNode) -> f64;
+    #[wasm_bindgen(method, setter)]
+    fn set_buffer(this: &PlaybackPositionNode, buffer: &web_sys::AudioBuffer);
+    #[wasm_bindgen(method, setter)]
+    fn set_loop(this: &PlaybackPositionNode, looped: bool);
+    #[wasm_bindgen(method, js_name = "start")]
+    fn start_with_when_and_grain_offset(this: &PlaybackPositionNode, when: f64, offset: f64);
+    #[wasm_bindgen(method, js_name = "stop")]
+    fn stop(this: &PlaybackPositionNode);
+    #[wasm_bindgen(method, js_name = "stop")]
+    fn stop_with_when(this: &PlaybackPositionNode, when: f64);
+    #[wasm_bindgen(method, js_name = "playbackRate")]
+    fn playback_rate(this: &PlaybackPositionNode) -> web_sys::AudioParam;
+}
 
 impl AudioBufferSourceNode {
     pub fn new(context: &AudioContext) -> Self {
-        Self(web_sys::AudioBufferSourceNode::new(&context.0).unwrap())
+        Self(PlaybackPositionNode::new(&context.0))
     }
 
     pub fn get_ref(&self) -> AudioNodeRef<'_> {
@@ -153,16 +181,15 @@ impl AudioBufferSourceNode {
 
     pub fn start_with_offset(&mut self, offset: f64) {
         self.0
-            .start_with_when_and_grain_offset(self.0.context().current_time(), offset)
-            .unwrap();
+            .start_with_when_and_grain_offset(self.0.context().current_time(), offset);
     }
 
     pub fn stop(&mut self) {
-        self.0.stop().unwrap();
+        self.0.stop();
     }
 
     pub fn stop_at(&mut self, when: f64) {
-        self.0.stop_with_when(when).unwrap();
+        self.0.stop_with_when(when);
     }
 
     pub fn set_loop(&mut self, looped: bool) {
@@ -174,6 +201,10 @@ impl AudioBufferSourceNode {
     }
 
     pub fn set_buffer(&mut self, buffer: AudioBuffer) {
-        self.0.set_buffer(Some(&buffer.0));
+        self.0.set_buffer(&buffer.0);
+    }
+
+    pub fn position(&self) -> f64 {
+        self.0.playback_position() // TODO
     }
 }

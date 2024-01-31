@@ -171,6 +171,10 @@ impl AudioBufferSourceNode {
     pub fn playback_rate(&self) -> AudioParam {
         AudioParam(self.0.playback_rate())
     }
+
+    pub fn position(&self) -> f64 {
+        self.0.position()
+    }
 }
 
 impl AudioNode for AudioBufferSourceNode {
