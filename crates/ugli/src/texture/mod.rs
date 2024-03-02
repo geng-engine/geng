@@ -35,6 +35,33 @@ pub enum Filter {
     Linear = raw::LINEAR as _,
 }
 
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash)]
+pub enum Format {
+    #[cfg(not(target_arch = "wasm32"))]
+    R = raw::RED as _,
+    #[cfg(not(target_arch = "wasm32"))]
+    RG = raw::RG as _,
+    #[cfg(not(target_arch = "wasm32"))]
+    BGR = raw::BGR as _,
+    RGB = raw::RGB as _,
+    #[cfg(not(target_arch = "wasm32"))]
+    BGRA = raw::BGRA as _,
+    RGBA = raw::RGBA as _,
+}
+
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash)]
+pub enum Type {
+    UnsignedByte = raw::UNSIGNED_BYTE as _,
+    Byte = raw::BYTE as _,
+    UnsignedShort = raw::UNSIGNED_SHORT as _,
+    Short = raw::SHORT as _,
+    UnsignedInt = raw::UNSIGNED_INT as _,
+    Int = raw::INT as _,
+    #[cfg(not(target_arch = "wasm32"))]
+    HalfFloat = raw::HALF_FLOAT as _,
+    Float = raw::FLOAT as _,
+}
+
 pub struct Texture2d<P: TexturePixel> {
     pub(crate) ugli: Ugli,
     pub(crate) handle: raw::Texture,
@@ -95,6 +122,33 @@ impl<P: TexturePixel> Texture2d<P> {
         ugli.debug_check();
         texture
     }
+
+    pub fn from_raw<T>(
+        ugli: &Ugli,
+        size: vec2<usize>,
+        data: &[T],
+        format: Format,
+        r#type: Type,
+        flip_y: bool,
+    ) -> Self {
+        let texture = Self::new_raw(ugli, size);
+        let gl = &ugli.inner.raw;
+        gl.pixel_store_flip_y(flip_y);
+        gl.tex_image_2d(
+            raw::TEXTURE_2D,
+            0,
+            P::INTERNAL_FORMAT as raw::Int,
+            size.x as raw::SizeI,
+            size.y as raw::SizeI,
+            0,
+            format as raw::Enum,
+            r#type as raw::Enum,
+            Some(data),
+        );
+        ugli.debug_check();
+        texture
+    }
+
     pub fn set_wrap_mode(&mut self, wrap_mode: WrapMode) {
         self.set_wrap_mode_separate(wrap_mode, wrap_mode);
     }
@@ -183,7 +237,6 @@ impl Texture {
         size: vec2<usize>,
         mut f: F,
     ) -> Self {
-        let texture = Texture2d::new_raw(ugli, size);
         let mut data: Vec<u8> = Vec::with_capacity(size.x * size.y * 4);
         for y in 0..size.y {
             for x in 0..size.x {
@@ -194,39 +247,19 @@ impl Texture {
                 data.push((color.a * 255.0) as u8);
             }
         }
-        let gl = &ugli.inner.raw;
-        gl.pixel_store_flip_y(false);
-        gl.tex_image_2d(
-            raw::TEXTURE_2D,
-            0,
-            raw::RGBA as raw::Int,
-            size.x as raw::SizeI,
-            size.y as raw::SizeI,
-            0,
-            raw::RGBA as raw::Enum,
-            raw::UNSIGNED_BYTE,
-            Some(&data),
-        );
-        ugli.debug_check();
-        texture
+        Texture2d::from_raw(ugli, size, &data, Format::RGBA, Type::UnsignedByte, false)
     }
 
     pub fn from_image_image(ugli: &Ugli, mut image: image::RgbaImage) -> Self {
         let size = vec2(image.width() as usize, image.height() as usize);
-        let mut texture = Texture2d::new_raw(ugli, size);
-        let gl = &ugli.inner.raw;
         image::imageops::flip_vertical_in_place(&mut image);
-        gl.pixel_store_flip_y(false);
-        gl.tex_image_2d(
-            raw::TEXTURE_2D,
-            0,
-            raw::RGBA as raw::Int,
-            size.x as raw::SizeI,
-            size.y as raw::SizeI,
-            0,
-            raw::RGBA as raw::Enum,
-            raw::UNSIGNED_BYTE,
-            Some(&image.into_raw()),
+        let mut texture = Texture2d::from_raw(
+            ugli,
+            size,
+            &image.into_raw(),
+            Format::RGBA,
+            Type::UnsignedByte,
+            false,
         );
         if texture.is_pot() {
             texture.gen_mipmaps();

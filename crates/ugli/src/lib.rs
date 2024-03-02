@@ -68,10 +68,13 @@ macro_rules! uniforms {
     ($name:ident : $value:expr) => {
         $crate::SingleUniform::new(stringify!($name), $value)
     };
-    ($name:ident : $value:expr, $($names:ident : $values:expr),+) => {
-        ($crate::uniforms!($name : $value), $crate::uniforms!($($names : $values),+))
+    ($name:literal : $value:expr) => {
+        $crate::SingleUniform::new($name, $value)
     };
-    ($($name:ident : $value:expr),*,) => {
-        $crate::uniforms!($($name : $value),*)
+    ($($name:ident)?$($str_name:literal)? : $value:expr, $($($names:ident)?$($str_names:literal)? $([$indices: literal])? : $values:expr),+) => {
+        ($crate::uniforms!($($name)?$($str_name)? : $value), $crate::uniforms!($($($names)?$($str_names)? : $values),+))
+    };
+    ($($($name:ident)?$($str_name:literal)? : $value:expr),*,) => {
+        $crate::uniforms!($($($name)?$($str_name)? : $value),*)
     }
 }

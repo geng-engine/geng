@@ -77,6 +77,28 @@ impl<A: Uniforms, B: Uniforms, C: Uniforms, D: Uniforms> Uniforms for (A, B, C, 
     }
 }
 
+impl<'a, U: Uniforms> Uniforms for &'a [U] {
+    fn walk_uniforms<C>(&self, visitor: &mut C)
+    where
+        C: UniformVisitor,
+    {
+        for uniform in *self {
+            uniform.walk_uniforms(visitor);
+        }
+    }
+}
+
+impl<U: Uniforms> Uniforms for Vec<U> {
+    fn walk_uniforms<C>(&self, visitor: &mut C)
+    where
+        C: UniformVisitor,
+    {
+        for uniform in self {
+            uniform.walk_uniforms(visitor);
+        }
+    }
+}
+
 impl<U: Uniforms> Uniforms for Option<U> {
     fn walk_uniforms<C>(&self, visitor: &mut C)
     where
