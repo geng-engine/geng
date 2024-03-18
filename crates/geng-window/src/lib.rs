@@ -160,10 +160,10 @@ impl Window {
         self.inner.backend.set_icon(path.as_ref())
     }
 
-    pub fn spawn(
+    pub fn spawn<T: 'static>(
         &self,
-        f: impl std::future::Future<Output = ()> + 'static,
-    ) -> async_executor::Task<()> {
+        f: impl std::future::Future<Output = T> + 'static,
+    ) -> async_executor::Task<T> {
         self.inner.executor.spawn(f)
     }
 
