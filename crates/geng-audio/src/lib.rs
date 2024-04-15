@@ -87,10 +87,9 @@ impl Sound {
         buffer_node.set_loop(self.looped);
         let fade_node = wa::GainNode::new(&self.context.inner.context);
         let gain_node = wa::GainNode::new(&self.context.inner.context);
-        buffer_node
-            .connect(&fade_node)
-            .connect(&gain_node)
-            .connect(&self.context.inner.master_gain_node);
+        buffer_node.connect(&fade_node).connect(&gain_node);
+        // .connect(&self.context.inner.master_gain_node);
+        // https://github.com/orottier/web-audio-api-rs/issues/494
         SoundEffect {
             context: self.context.clone(),
             source_node: buffer_node,
@@ -158,6 +157,9 @@ impl SoundEffect {
         self.gain_node.gain().set_value(volume);
     }
     pub fn play(&mut self) {
+        if let SpatialState::NotSpatial = self.spatial_state {
+            self.gain_node.connect(&self.context.inner.master_gain_node);
+        }
         self.play_from(time::Duration::from_secs_f64(0.0));
     }
     pub fn play_from(&mut self, offset: time::Duration) {
@@ -185,7 +187,7 @@ impl SoundEffect {
         if let SpatialState::NotSpatial = &self.spatial_state {
             let mut panner_node = wa::PannerNode::new(&self.context.inner.context);
             panner_node.set_distance_model(wa::DistanceModel::Linear);
-            self.gain_node.disconnect();
+            // self.gain_node.disconnect();
             self.gain_node
                 .connect(&panner_node)
                 .connect(&self.context.inner.master_gain_node);

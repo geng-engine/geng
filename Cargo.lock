@@ -1826,6 +1826,7 @@ dependencies = [
  "batbox-file",
  "batbox-la",
  "batbox-time",
+ "futures",
  "geng-web-audio-api",
 ]
 
