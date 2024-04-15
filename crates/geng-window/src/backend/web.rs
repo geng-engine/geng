@@ -478,12 +478,12 @@ impl Context {
         self.subscribe_to::<web_sys::MouseEvent>(&self.canvas, handler, "mousedown");
         self.subscribe_to::<web_sys::MouseEvent>(&self.canvas, handler, "mouseup");
         self.subscribe_to::<web_sys::MouseEvent>(&self.canvas, handler, "mousemove");
-        self.subscribe_to::<web_sys::WheelEvent>(event_target, handler, "wheel");
+        self.subscribe_to::<web_sys::WheelEvent>(&self.canvas, handler, "wheel");
         self.subscribe_to::<web_sys::TouchEvent>(&self.canvas, handler, "touchstart");
         self.subscribe_to::<web_sys::TouchEvent>(&self.canvas, handler, "touchmove");
         self.subscribe_to::<web_sys::TouchEvent>(&self.canvas, handler, "touchend");
-        self.subscribe_to::<web_sys::TouchEvent>(event_target, handler, "touchcancel");
-        self.subscribe_to::<web_sys::MouseEvent>(event_target, handler, "contextmenu");
+        self.subscribe_to::<web_sys::TouchEvent>(&self.canvas, handler, "touchcancel");
+        self.subscribe_to::<web_sys::MouseEvent>(&self.canvas, handler, "contextmenu");
         {
             let handler = handler.clone();
             let closure =
