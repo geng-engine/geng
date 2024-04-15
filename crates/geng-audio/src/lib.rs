@@ -157,12 +157,12 @@ impl SoundEffect {
         self.gain_node.gain().set_value(volume);
     }
     pub fn play(&mut self) {
-        if let SpatialState::NotSpatial = self.spatial_state {
-            self.gain_node.connect(&self.context.inner.master_gain_node);
-        }
         self.play_from(time::Duration::from_secs_f64(0.0));
     }
     pub fn play_from(&mut self, offset: time::Duration) {
+        if let SpatialState::NotSpatial = self.spatial_state {
+            self.gain_node.connect(&self.context.inner.master_gain_node);
+        }
         self.source_node.start_with_offset(offset.as_secs_f64());
     }
     pub fn set_speed(&mut self, speed: f32) {
