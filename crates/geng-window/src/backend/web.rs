@@ -456,8 +456,13 @@ impl Context {
     fn subscribe_events<F: Fn(Event) + 'static>(&self, handler: F) {
         let handler = Rc::new(handler);
         let handler = &handler;
-        self.subscribe_to::<web_sys::KeyboardEvent>(&self.canvas, handler, "keydown");
-        self.subscribe_to::<web_sys::KeyboardEvent>(&self.canvas, handler, "keyup");
+
+        // TODO: check - did for salmoning
+        let document = web_sys::window().unwrap().document().unwrap();
+        let event_target = &document; // &self.canvas;
+
+        self.subscribe_to::<web_sys::KeyboardEvent>(event_target, handler, "keydown");
+        self.subscribe_to::<web_sys::KeyboardEvent>(event_target, handler, "keyup");
         self.subscribe_to_raw::<web_sys::InputEvent>(
             &self.text_agent,
             {
@@ -470,15 +475,15 @@ impl Context {
             },
             "input",
         );
-        self.subscribe_to::<web_sys::MouseEvent>(&self.canvas, handler, "mousedown");
-        self.subscribe_to::<web_sys::MouseEvent>(&self.canvas, handler, "mouseup");
-        self.subscribe_to::<web_sys::MouseEvent>(&self.canvas, handler, "mousemove");
-        self.subscribe_to::<web_sys::WheelEvent>(&self.canvas, handler, "wheel");
-        self.subscribe_to::<web_sys::TouchEvent>(&self.canvas, handler, "touchstart");
-        self.subscribe_to::<web_sys::TouchEvent>(&self.canvas, handler, "touchmove");
-        self.subscribe_to::<web_sys::TouchEvent>(&self.canvas, handler, "touchend");
-        self.subscribe_to::<web_sys::TouchEvent>(&self.canvas, handler, "touchcancel");
-        self.subscribe_to::<web_sys::MouseEvent>(&self.canvas, handler, "contextmenu");
+        self.subscribe_to::<web_sys::MouseEvent>(event_target, handler, "mousedown");
+        self.subscribe_to::<web_sys::MouseEvent>(event_target, handler, "mouseup");
+        self.subscribe_to::<web_sys::MouseEvent>(event_target, handler, "mousemove");
+        self.subscribe_to::<web_sys::WheelEvent>(event_target, handler, "wheel");
+        self.subscribe_to::<web_sys::TouchEvent>(event_target, handler, "touchstart");
+        self.subscribe_to::<web_sys::TouchEvent>(event_target, handler, "touchmove");
+        self.subscribe_to::<web_sys::TouchEvent>(event_target, handler, "touchend");
+        self.subscribe_to::<web_sys::TouchEvent>(event_target, handler, "touchcancel");
+        self.subscribe_to::<web_sys::MouseEvent>(event_target, handler, "contextmenu");
         {
             let handler = handler.clone();
             let closure =
