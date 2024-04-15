@@ -210,6 +210,7 @@ where
                 cursor_type: Cell::new(CursorType::Default),
             }),
         };
+        #[cfg(not(target_arch = "wasm32"))]
         if options.fullscreen {
             window.set_fullscreen(true);
         }
