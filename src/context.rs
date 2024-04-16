@@ -13,7 +13,7 @@ pub(crate) struct GengImpl {
     ui_theme: RefCell<Option<ui::Theme>>,
     pub(crate) options: ContextOptions,
     pub(crate) load_progress: RefCell<asset::LoadProgress>,
-    pub(crate) gilrs: Option<RefCell<gilrs::Gilrs>>,
+    // pub(crate) gilrs: Option<RefCell<gilrs::Gilrs>>,
 }
 
 #[derive(Clone)]
@@ -103,11 +103,11 @@ impl Geng {
                     ui_theme: RefCell::new(None),
                     options,
                     load_progress: RefCell::new(asset::LoadProgress::new()),
-                    gilrs: if cfg!(target_os = "android") {
-                        None
-                    } else {
-                        Some(RefCell::new(gilrs::Gilrs::new().unwrap()))
-                    },
+                    // gilrs: if cfg!(target_os = "android") {
+                    //     None
+                    // } else {
+                    //     Some(RefCell::new(gilrs::Gilrs::new().unwrap()))
+                    // },
                 }),
             };
             f(geng).await;
@@ -130,9 +130,9 @@ impl Geng {
         &self.inner.asset_manager
     }
 
-    pub fn gilrs(&self) -> Option<Ref<Gilrs>> {
-        self.inner.gilrs.as_ref().map(|gilrs| gilrs.borrow())
-    }
+    // pub fn gilrs(&self) -> Option<Ref<Gilrs>> {
+    //     self.inner.gilrs.as_ref().map(|gilrs| gilrs.borrow())
+    // }
 
     pub fn shader_lib(&self) -> &shader::Library {
         &self.inner.shader_lib
@@ -268,12 +268,12 @@ impl Geng {
         while let Some(event) = events.next().await {
             match event {
                 Event::Draw => {
-                    if let Some(gilrs) = &geng.inner.gilrs {
-                        let mut gilrs = gilrs.borrow_mut();
-                        while let Some(gamepad_event) = gilrs.next_event() {
-                            // TODO geng.inner.window.send_event(Event::Gamepad(gamepad_event));
-                        }
-                    }
+                    // if let Some(gilrs) = &geng.inner.gilrs {
+                    //     let mut gilrs = gilrs.borrow_mut();
+                    //     while let Some(gamepad_event) = gilrs.next_event() {
+                    //         // TODO geng.inner.window.send_event(Event::Gamepad(gamepad_event));
+                    //     }
+                    // }
 
                     runner.update();
                     let window_size = geng.inner.window.real_size();

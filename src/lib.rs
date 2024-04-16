@@ -31,7 +31,7 @@ pub mod prelude {
     pub use crate::{AbstractCamera2d, AbstractCamera3d, Camera2d};
     pub use ::batbox;
     pub use ::batbox::prelude::*;
-    pub use gilrs::{self, Gilrs};
+    // pub use gilrs::{self, Gilrs};
     pub use ugli::{self, Ugli};
 }
 

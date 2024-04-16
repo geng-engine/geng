@@ -99,7 +99,7 @@ flate2 = "1"
 atomic_float = "0.1"
 num_enum = "0.7"
 gltf = "1"
-gilrs = { version = "0.10", features = ["serde-serialize"] }
+# gilrs = { version = "0.10", features = ["serde-serialize"] }
 
 # Native
 image = "0.24"
@@ -171,7 +171,7 @@ geng-asset.workspace = true
 geng-texture-atlas.workspace = true
 ugli.workspace = true
 
-gilrs.workspace = true
+# gilrs.workspace = true
 serde.workspace = true
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]

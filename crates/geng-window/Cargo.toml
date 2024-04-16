@@ -23,7 +23,7 @@ anyhow.workspace = true
 ugli.workspace = true
 serde.workspace = true
 log.workspace = true
-gilrs.workspace = true
+# gilrs.workspace = true
 clap.workspace = true
 strum.workspace = true
 
