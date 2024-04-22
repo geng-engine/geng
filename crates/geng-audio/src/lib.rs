@@ -37,6 +37,10 @@ impl Audio {
     pub fn set_volume(&self, volume: f32) {
         self.inner.master_gain_node.gain().set_value(volume);
     }
+
+    pub fn volume(&self) -> f32 {
+        self.inner.master_gain_node.gain().value()
+    }
 }
 
 pub struct Listener(wa::AudioListener);
