@@ -28,8 +28,6 @@ geng-shader.workspace = true
 geng-audio = { workspace = true, optional = true }
 notify.workspace = true                            # TODO optional?
 log.workspace = true
-
-[target.'cfg(not(target_arch="wasm32"))'.dependencies]
 image.workspace = true
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
