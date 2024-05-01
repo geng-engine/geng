@@ -56,7 +56,7 @@ mod server {
     }
 
     pub fn new(fns: Fns) -> geng_net::Server<TestApp> {
-        geng_net::Server::new(TestApp { fns }, ("localhost", PORT))
+        geng_net::Server::new(TestApp { fns }, ("127.0.0.1", PORT))
     }
 }
 
@@ -77,7 +77,7 @@ fn main() {
 
     futures::executor::block_on(async {
         let mut client =
-            geng_net::client::connect::<Message, Message>(&format!("ws://localhost:{PORT}"))
+            geng_net::client::connect::<Message, Message>(&format!("ws://127.0.0.1:{PORT}"))
                 .await
                 .unwrap();
         assert_eq!(client.next().await.unwrap().unwrap(), Message::A);
