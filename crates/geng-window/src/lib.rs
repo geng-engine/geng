@@ -88,6 +88,7 @@ struct WindowImpl {
     cursor_pos: Cell<Option<vec2<f64>>>,
     cursor_type: Cell<CursorType>,
     auto_close: Cell<bool>,
+    current_event: RefCell<Option<Event>>,
 }
 
 #[derive(Clone)]
@@ -185,6 +186,10 @@ impl Window {
             .next()
             .await;
     }
+
+    pub fn current_event(&self) -> Option<Event> {
+        self.inner.current_event.borrow().clone()
+    }
 }
 
 pub fn run<Fut>(options: &Options, f: impl 'static + FnOnce(Window) -> Fut)
@@ -208,6 +213,7 @@ where
                 auto_close: Cell::new(options.auto_close),
                 cursor_pos: Cell::new(None),
                 cursor_type: Cell::new(CursorType::Default),
+                current_event: RefCell::new(None),
             }),
         };
         #[cfg(not(target_arch = "wasm32"))]
@@ -257,6 +263,11 @@ where
                 }
                 _ => {}
             }
+            window
+                .inner
+                .current_event
+                .borrow_mut()
+                .replace(event.clone());
             if let Some(_removed) = window.inner.event_sender.try_broadcast(event).unwrap() {
                 // log::error!("Event has been ignored: {removed:?}");
             }
@@ -266,6 +277,7 @@ where
                     return std::ops::ControlFlow::Break(());
                 }
             }
+            window.inner.current_event.borrow_mut().take();
             std::ops::ControlFlow::Continue(())
         }
     });
