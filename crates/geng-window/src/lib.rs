@@ -86,7 +86,7 @@ struct WindowImpl {
     pressed_keys: Rc<RefCell<HashSet<Key>>>,
     pressed_buttons: Rc<RefCell<HashSet<MouseButton>>>,
     cursor_pos: Cell<Option<vec2<f64>>>,
-    cursor_type: Cell<CursorType>,
+    cursor_type: RefCell<CursorType>,
     auto_close: Cell<bool>,
     current_event: RefCell<Option<Event>>,
 }
@@ -212,7 +212,7 @@ where
                 pressed_buttons: Rc::new(RefCell::new(HashSet::new())),
                 auto_close: Cell::new(options.auto_close),
                 cursor_pos: Cell::new(None),
-                cursor_type: Cell::new(CursorType::Default),
+                cursor_type: RefCell::new(CursorType::Default),
                 current_event: RefCell::new(None),
             }),
         };

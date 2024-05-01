@@ -14,6 +14,7 @@ pub struct Context {
     ugli: Ugli,
     context_size: Cell<vec2<usize>>,
     edited_text: RefCell<Option<String>>,
+    cursor_source: RefCell<Option<winit::window::CustomCursorSource>>,
 }
 
 fn create_window_attributes(options: &Options) -> winit::window::WindowAttributes {
@@ -210,6 +211,7 @@ where
                     cursor_pos: Cell::new(vec2(0.0, 0.0)),
                     context_size: Cell::new(vec2(1, 1)),
                     edited_text: RefCell::new(None),
+                    cursor_source: RefCell::new(None),
                 });
                 self.event_handler = Some((self.once_ready.take().unwrap())(context.clone()));
                 self.context = Some(context);
@@ -322,18 +324,37 @@ impl Context {
         }
     }
 
-    pub fn set_cursor_type(&self, cursor_type: CursorType) {
+    pub fn set_cursor_type(&self, cursor_type: &CursorType) {
         let Some(window) = &*self.window.borrow() else {
             return;
         };
         use winit::window::CursorIcon as GC;
-        window.set_cursor_icon(match cursor_type {
-            CursorType::Default => GC::Default,
-            CursorType::Pointer => GC::Pointer,
-            CursorType::Drag => GC::AllScroll,
-            CursorType::None => GC::Default,
-        });
-        window.set_cursor_visible(cursor_type != CursorType::None);
+        let cursor_icon = || -> Option<winit::window::CursorIcon> {
+            Some(match cursor_type {
+                CursorType::Default => GC::Default,
+                CursorType::Pointer => GC::Pointer,
+                CursorType::Drag => GC::AllScroll,
+                CursorType::None => GC::Default,
+                CursorType::Custom { image, hotspot } => {
+                    self.cursor_source.replace(Some(
+                        winit::window::CustomCursor::from_rgba(
+                            image.as_raw().as_slice(),
+                            image.width().try_into().unwrap(),
+                            image.height().try_into().unwrap(),
+                            hotspot.x,
+                            hotspot.y,
+                        )
+                        .unwrap(),
+                    ));
+                    return None;
+                }
+            })
+        };
+        if let Some(icon) = cursor_icon() {
+            window.set_cursor(icon);
+            self.cursor_source.take();
+        }
+        window.set_cursor_visible(*cursor_type != CursorType::None);
     }
 
     fn handle_winit_window_event(
@@ -468,6 +489,13 @@ impl Context {
         event_loop: &winit::event_loop::ActiveEventLoop,
         event_handler: &mut impl FnMut(Event),
     ) {
+        if let Some(source) = self.cursor_source.take() {
+            self.window
+                .borrow()
+                .as_ref()
+                .unwrap()
+                .set_cursor(event_loop.create_custom_cursor(source));
+        }
         match event {
             winit::event::Event::WindowEvent { event, .. } => {
                 self.handle_winit_window_event(event, event_handler)

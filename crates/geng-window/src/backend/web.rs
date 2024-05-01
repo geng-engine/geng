@@ -73,13 +73,30 @@ impl Context {
         is_fullscreen()
     }
 
-    pub fn set_cursor_type(&self, cursor_type: CursorType) {
-        let cursor_type = match cursor_type {
-            CursorType::Default => "initial",
-            CursorType::Pointer => "pointer",
-            CursorType::Drag => "all-scroll",
-            CursorType::None => "none",
+    pub fn set_cursor_type(&self, cursor_type: &CursorType) {
+        let cursor_type: std::borrow::Cow<str> = match cursor_type {
+            CursorType::Default => "initial".into(),
+            CursorType::Pointer => "pointer".into(),
+            CursorType::Drag => "all-scroll".into(),
+            CursorType::None => "none".into(),
+            CursorType::Custom { image, hotspot } => {
+                let mut buffer = Vec::<u8>::new();
+                image
+                    .write_to(
+                        &mut std::io::Cursor::new(&mut buffer),
+                        image::ImageFormat::Png,
+                    )
+                    .unwrap();
+                use base64::Engine as _;
+                let base64 = base64::engine::general_purpose::STANDARD.encode(&buffer);
+                format!(
+                    "url(\"data:image/png;base64,{base64}\") {} {}, auto",
+                    hotspot.x, hotspot.y,
+                )
+                .into()
+            }
         };
+        log::info!("setting cursor to {cursor_type:?}");
         // TODO: only canvas
         web_sys::window()
             .unwrap()
@@ -88,7 +105,7 @@ impl Context {
             .body()
             .unwrap()
             .style()
-            .set_property("cursor", cursor_type)
+            .set_property("cursor", &cursor_type)
             .unwrap();
     }
 

@@ -39,6 +39,8 @@ use crate::prelude::*;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
+pub use image;
+
 mod cli_args;
 mod context;
 mod loading_screen;

@@ -99,6 +99,7 @@ flate2 = "1"
 atomic_float = "0.1"
 num_enum = "0.7"
 gltf = "1"
+base64 = "0.22"
 # gilrs = { version = "0.10", features = ["serde-serialize"] }
 
 # Native
