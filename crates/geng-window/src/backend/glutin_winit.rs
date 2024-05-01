@@ -16,23 +16,23 @@ pub struct Context {
     edited_text: RefCell<Option<String>>,
 }
 
-fn create_window_builder(options: &Options) -> winit::window::WindowBuilder {
-    let mut builder = winit::window::WindowBuilder::new();
+fn create_window_attributes(options: &Options) -> winit::window::WindowAttributes {
+    let mut attributes = winit::window::Window::default_attributes();
     if let Some(size) = options.size {
-        builder = builder.with_inner_size(winit::dpi::PhysicalSize {
+        attributes = attributes.with_inner_size(winit::dpi::PhysicalSize {
             width: size.x as u32,
             height: size.y as u32,
         });
     }
-    builder = builder.with_title(&options.title);
-    builder = builder.with_transparent(options.transparency);
-    builder = builder.with_visible(!options.start_hidden);
-    builder
+    attributes = attributes.with_title(&options.title);
+    attributes = attributes.with_transparent(options.transparency);
+    attributes = attributes.with_visible(!options.start_hidden);
+    attributes
 }
 
-fn resume<T>(
+fn resume(
     window_field: &mut Option<winit::window::Window>,
-    window_target: &winit::event_loop::EventLoopWindowTarget<T>,
+    event_loop: &winit::event_loop::ActiveEventLoop,
     options: &Options,
     gl_ctx_field: &mut Option<glutin::context::PossiblyCurrentContext>,
     gl_surface_field: &mut Option<glutin::surface::Surface<glutin::surface::WindowSurface>>,
@@ -40,8 +40,8 @@ fn resume<T>(
     let gl_ctx = gl_ctx_field.as_mut().unwrap();
     let gl_config = glutin::config::GetGlConfig::config(gl_ctx);
     let window = window_field.take().unwrap_or_else(|| {
-        let window_builder = create_window_builder(options);
-        ::glutin_winit::finalize_window(window_target, window_builder, &gl_config).unwrap()
+        let window_builder = create_window_attributes(options);
+        ::glutin_winit::finalize_window(event_loop, window_builder, &gl_config).unwrap()
     });
 
     let attrs = ::glutin_winit::GlWindow::build_surface_attributes(&window, <_>::default());
@@ -88,120 +88,156 @@ where
     }
     let event_loop = event_loop_builder.build().unwrap();
 
-    let (window, gl_config) = ::glutin_winit::DisplayBuilder::new()
-        .with_window_builder(
-            // Only windows requires the window to be present before creating the display.
-            // Other platforms don't really need one.
-            //
-            // XXX if you don't care about running on android or so you can safely remove
-            // this condition and always pass the window builder.
-            if !cfg!(target_os = "android") {
-                Some(create_window_builder(&options))
-            } else {
-                None
-            },
-        )
-        .build(
-            &event_loop,
-            glutin::config::ConfigTemplateBuilder::new().with_transparency(options.transparency),
-            |configs| {
-                let config = if options.antialias {
-                    configs
-                        .into_iter()
-                        .max_by_key(glutin::config::GlConfig::num_samples)
-                } else {
-                    configs
-                        .into_iter()
-                        .min_by_key(glutin::config::GlConfig::num_samples)
-                }
-                .expect("Could not find fitting config");
-                log::debug!("{config:#?}");
-                config
-            },
-        )
-        .unwrap();
-    if options.mouse_passthrough {
-        if let Err(err) = window
-            .as_ref()
-            .unwrap()
-            .set_cursor_hittest(!options.mouse_passthrough)
-        {
-            log::error!("Failed to set mouse passthrough: {err}");
-        }
+    type DynEH = Box<dyn FnMut(Event) -> std::ops::ControlFlow<()>>;
+
+    struct App {
+        options: Options,
+        window: Option<winit::window::Window>,
+        context: Option<Rc<Context>>,
+        gl_config: Option<glutin::config::Config>,
+        once_ready: Option<Box<dyn FnOnce(Rc<Context>) -> DynEH>>,
+        event_handler: Option<DynEH>,
     }
-    // let raw_window_handle = window
-    //     .as_ref()
-    //     .map(raw_window_handle::HasRawWindowHandle::raw_window_handle);
-    let raw_window_handle = window
-        .as_ref()
-        .map(raw_window_handle::HasRawWindowHandle::raw_window_handle);
-    let gl_display = glutin::display::GetGlDisplay::display(&gl_config);
-    let context_attributes =
-        glutin::context::ContextAttributesBuilder::new().build(raw_window_handle);
 
-    let gl_ctx = unsafe {
-        glutin::display::GlDisplay::create_context(&gl_display, &gl_config, &context_attributes)
-            .expect("Failed to create context")
-    };
-
-    // Continuation of out android hack
-    let mut window = window;
-    let mut gl_ctx = Some(glutin::prelude::NotCurrentGlContext::treat_as_possibly_current(gl_ctx));
-    let mut gl_surface = None;
-
-    let create_context =
-        move |window_target: &winit::event_loop::EventLoopWindowTarget<()>| -> (Rc<Context>, EH) {
-            resume(
-                &mut window,
-                window_target,
-                &options,
-                &mut gl_ctx,
-                &mut gl_surface,
-            );
-            window.as_ref().unwrap().request_redraw();
-            let ugli = Ugli::create_from_glutin(|symbol| {
-                glutin::display::GlDisplay::get_proc_address(
-                    &gl_display,
-                    &std::ffi::CString::new(symbol).unwrap(),
-                )
-            });
-            let context = Rc::new(Context {
-                options: options.clone(),
-                window: RefCell::new(window),
-                gl_surface: RefCell::new(gl_surface),
-                gl_ctx: RefCell::new(gl_ctx),
-                ugli,
-                is_fullscreen: Cell::new(false),
-                lock_cursor: Cell::new(false),
-                cursor_pos: Cell::new(vec2(0.0, 0.0)),
-                context_size: Cell::new(vec2(1, 1)),
-                edited_text: RefCell::new(None),
-            });
-            let event_handler = once_ready(context.clone());
-            (context, event_handler)
-        };
-    let mut create_context = Some(create_context);
-    let mut state: Option<(Rc<Context>, EH)> = None;
-
-    event_loop
-        .run(move |event, window_target| {
-            window_target.set_control_flow(winit::event_loop::ControlFlow::Poll);
+    impl App {
+        fn handle(
+            &mut self,
+            event: winit::event::Event<()>,
+            event_loop: &winit::event_loop::ActiveEventLoop,
+        ) {
+            event_loop.set_control_flow(winit::event_loop::ControlFlow::Poll);
             if let winit::event::Event::Suspended = event {
-                window_target.set_control_flow(winit::event_loop::ControlFlow::Wait);
+                event_loop.set_control_flow(winit::event_loop::ControlFlow::Wait);
             }
-            if let Some((context, event_handler)) = &mut state {
-                context.handle_winit_event(event, window_target, &mut |event| {
+            if let Some(context) = &mut self.context {
+                context.handle_winit_event(event, event_loop, &mut |event| {
                     if let Event::KeyPress { key: Key::Escape } = event {
                         context.unlock_cursor();
                     }
-                    if event_handler(event).is_break() {
-                        window_target.exit();
+                    if self.event_handler.as_mut().unwrap()(event).is_break() {
+                        event_loop.exit();
                     }
                 });
             } else if let winit::event::Event::Resumed = event {
                 // First ever resume
-                state = Some((create_context.take().unwrap())(window_target));
+                let (window, gl_config) = ::glutin_winit::DisplayBuilder::new()
+                    .with_window_attributes(
+                        // Only windows requires the window to be present before creating the display.
+                        // Other platforms don't really need one.
+                        //
+                        // XXX if you don't care about running on android or so you can safely remove
+                        // this condition and always pass the window builder.
+                        if !cfg!(target_os = "android") {
+                            Some(create_window_attributes(&self.options))
+                        } else {
+                            None
+                        },
+                    )
+                    .build(
+                        event_loop,
+                        glutin::config::ConfigTemplateBuilder::new()
+                            .with_transparency(self.options.transparency),
+                        |configs| {
+                            let config = if self.options.antialias {
+                                configs
+                                    .into_iter()
+                                    .max_by_key(glutin::config::GlConfig::num_samples)
+                            } else {
+                                configs
+                                    .into_iter()
+                                    .min_by_key(glutin::config::GlConfig::num_samples)
+                            }
+                            .expect("Could not find fitting config");
+                            log::debug!("{config:#?}");
+                            config
+                        },
+                    )
+                    .unwrap();
+                if self.options.mouse_passthrough {
+                    if let Err(err) = window
+                        .as_ref()
+                        .unwrap()
+                        .set_cursor_hittest(!self.options.mouse_passthrough)
+                    {
+                        log::error!("Failed to set mouse passthrough: {err}");
+                    }
+                }
+
+                let raw_window_handle = window
+                    .as_ref()
+                    .map(raw_window_handle::HasRawWindowHandle::raw_window_handle);
+                let gl_display = glutin::display::GetGlDisplay::display(&gl_config);
+                let context_attributes =
+                    glutin::context::ContextAttributesBuilder::new().build(raw_window_handle);
+
+                let gl_ctx = unsafe {
+                    glutin::display::GlDisplay::create_context(
+                        &gl_display,
+                        &gl_config,
+                        &context_attributes,
+                    )
+                    .expect("Failed to create context")
+                };
+
+                // Continuation of out android hack
+                let mut window = window;
+                let mut gl_ctx =
+                    Some(glutin::prelude::NotCurrentGlContext::treat_as_possibly_current(gl_ctx));
+                let mut gl_surface = None;
+
+                resume(
+                    &mut window,
+                    event_loop,
+                    &self.options,
+                    &mut gl_ctx,
+                    &mut gl_surface,
+                );
+                window.as_ref().unwrap().request_redraw();
+                let ugli = Ugli::create_from_glutin(|symbol| {
+                    glutin::display::GlDisplay::get_proc_address(
+                        &gl_display,
+                        &std::ffi::CString::new(symbol).unwrap(),
+                    )
+                });
+                let context = Rc::new(Context {
+                    options: self.options.clone(),
+                    window: RefCell::new(window),
+                    gl_surface: RefCell::new(gl_surface),
+                    gl_ctx: RefCell::new(gl_ctx),
+                    ugli,
+                    is_fullscreen: Cell::new(false),
+                    lock_cursor: Cell::new(false),
+                    cursor_pos: Cell::new(vec2(0.0, 0.0)),
+                    context_size: Cell::new(vec2(1, 1)),
+                    edited_text: RefCell::new(None),
+                });
+                self.event_handler = Some((self.once_ready.take().unwrap())(context.clone()));
+                self.context = Some(context);
             }
+        }
+
+        fn window_event(
+            &mut self,
+            event_loop: &winit::event_loop::ActiveEventLoop,
+            window_id: winit::window::WindowId,
+            event: winit::event::WindowEvent,
+        ) {
+            todo!()
+        }
+    }
+
+    let mut app = App {
+        options,
+        window: None,
+        gl_config: None,
+        context: None,
+        once_ready: Some(Box::new(|context| Box::new(once_ready(context)))),
+        event_handler: None,
+    };
+    let mut state: Option<(Rc<Context>, EH)> = None;
+    event_loop
+        .run(move |event, event_loop| {
+            app.handle(event, event_loop);
         })
         .unwrap();
 }
@@ -429,7 +465,7 @@ impl Context {
     fn handle_winit_event(
         &self,
         event: winit::event::Event<()>,
-        window_target: &winit::event_loop::EventLoopWindowTarget<()>,
+        event_loop: &winit::event_loop::ActiveEventLoop,
         event_handler: &mut impl FnMut(Event),
     ) {
         match event {
@@ -441,7 +477,7 @@ impl Context {
                     log::debug!("Resumed!");
                     resume(
                         &mut self.window.borrow_mut(),
-                        window_target,
+                        event_loop,
                         &self.options,
                         &mut self.gl_ctx.borrow_mut(),
                         &mut self.gl_surface.borrow_mut(),
