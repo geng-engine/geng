@@ -81,7 +81,7 @@ jobs:
           for example in examples/*; do
             example=$(basename $example)
             example=${example%.rs}
-            cargo geng build --release --web --package geng --example $example
+            cargo geng build --release --platform web --package geng --example $example
             mv target/geng website/static/examples/$example
             examples_list="$examples_list\"$example\","
           done
