@@ -96,7 +96,6 @@ impl Context {
                 .into()
             }
         };
-        log::info!("setting cursor to {cursor_type:?}");
         // TODO: only canvas
         web_sys::window()
             .unwrap()
