@@ -262,6 +262,17 @@ impl Load for ugli::Texture {
     const DEFAULT_EXT: Option<&'static str> = Some("png");
 }
 
+impl Load for image::RgbaImage {
+    type Options = ();
+    fn load(manager: &Manager, path: &Path, _options: &Self::Options) -> Future<Self> {
+        manager
+            .load::<Vec<u8>>(path)
+            .map(|data| Ok(image::load_from_memory(&data?)?.to_rgba8()))
+            .boxed_local()
+    }
+    const DEFAULT_EXT: Option<&'static str> = Some("png");
+}
+
 pub trait Optional {
     type Type;
 }
