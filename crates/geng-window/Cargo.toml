@@ -44,6 +44,8 @@ batbox-android.workspace = true
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 js-sys.workspace = true
 web-sys = { workspace = true, features = [
+    "Window",
+    "Document",
     "MouseEvent",
     "TouchEvent",
     "TouchList",
@@ -53,6 +55,7 @@ web-sys = { workspace = true, features = [
     "DomRect",
     "CssStyleDeclaration",
     "HtmlCanvasElement",
+    "HtmlInputElement",
     "InputEvent",
     "CompositionEvent",
 ] }
