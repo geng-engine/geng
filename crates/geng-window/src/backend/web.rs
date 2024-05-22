@@ -341,12 +341,11 @@ impl ConvertEvent<web_sys::MouseEvent> for Event {
     fn convert(event: web_sys::MouseEvent) -> Vec<Event> {
         let event = || -> Option<Event> {
             let button = Convert::convert(event.button());
+            let window = web_sys::window().unwrap();
             let canvas: web_sys::HtmlCanvasElement = event.target().unwrap().dyn_into().unwrap();
-            let position = vec2(
-                event.offset_x(),
-                canvas.height() as i32 - 1 - event.offset_y(),
-            )
-            .map(|x| x as f64);
+            let offset = vec2(event.offset_x(), event.offset_y())
+                .map(|x| x as f64 * window.device_pixel_ratio());
+            let position = vec2(offset.x, canvas.height() as f64 - 1.0 - offset.y);
             Some(match event.type_().as_str() {
                 "mousedown" => Event::MousePress { button: button? },
                 "mouseup" => Event::MouseRelease { button: button? },
@@ -404,15 +403,18 @@ impl ConvertEvent<web_sys::TouchEvent> for Event {
         };
         let canvas: web_sys::HtmlCanvasElement = event.target().unwrap().dyn_into().unwrap();
         let rect = canvas.get_bounding_client_rect();
+        let window = web_sys::window().unwrap();
         let touches = event.changed_touches();
         (0..touches.length())
             .map(|index| {
                 let touch = touches.item(index).unwrap();
-                let offset_x = touch.page_x() as f64 - rect.left();
-                let offset_y = touch.page_y() as f64 - rect.top();
+                let offset = vec2(
+                    touch.page_x() as f64 - rect.left(),
+                    touch.page_y() as f64 - rect.top(),
+                ) * window.device_pixel_ratio();
                 create_event(Touch {
                     id: touch.identifier() as u64,
-                    position: vec2(offset_x, canvas.height() as f64 - 1.0 - offset_y),
+                    position: vec2(offset.x, canvas.height() as f64 - 1.0 - offset.y),
                 })
             })
             .collect()
