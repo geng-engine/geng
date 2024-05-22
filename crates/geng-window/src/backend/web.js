@@ -2,8 +2,8 @@ export function initialize_window(canvas) {
     window.GENG_CANVAS_SCALE = 1.0;
     canvas.tabIndex = -1;
     function update() {
-        canvas.width = Math.floor(canvas.clientWidth * window.GENG_CANVAS_SCALE);
-        canvas.height = Math.floor(canvas.clientHeight * window.GENG_CANVAS_SCALE);
+        canvas.width = Math.floor(canvas.clientWidth * window.devicePixelRatio * window.GENG_CANVAS_SCALE);
+        canvas.height = Math.floor(canvas.clientHeight * window.devicePixelRatio * window.GENG_CANVAS_SCALE);
 
         var document = window.document;
         if (document.fullscreenElement ||
