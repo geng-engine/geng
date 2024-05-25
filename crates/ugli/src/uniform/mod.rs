@@ -87,6 +87,81 @@ impl Uniform for [[f32; 4]; 4] {
     }
 }
 
+impl Uniform for &[[[f32; 2]; 2]] {
+    fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
+        gl.uniform_matrix2fv(
+            &info.location,
+            self.len() as _,
+            raw::FALSE,
+            &self
+                .iter()
+                .flat_map(|mat| unsafe { mem::transmute::<&[[f32; 2]; 2], &[f32; 2 * 2]>(mat) })
+                .copied()
+                .collect::<Vec<_>>(),
+        );
+    }
+}
+
+impl Uniform for &[[[f32; 3]; 3]] {
+    fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
+        gl.uniform_matrix3fv(
+            &info.location,
+            self.len() as _,
+            raw::FALSE,
+            &self
+                .iter()
+                .flat_map(|mat| unsafe { mem::transmute::<&[[f32; 3]; 3], &[f32; 3 * 3]>(mat) })
+                .copied()
+                .collect::<Vec<_>>(),
+        );
+    }
+}
+
+impl Uniform for &[[[f32; 4]; 4]] {
+    fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
+        gl.uniform_matrix4fv(
+            &info.location,
+            self.len() as _,
+            raw::FALSE,
+            &self
+                .iter()
+                .flat_map(|mat| unsafe { mem::transmute::<&[[f32; 4]; 4], &[f32; 4 * 4]>(mat) })
+                .copied()
+                .collect::<Vec<_>>(),
+        );
+    }
+}
+
+impl Uniform for Vec<[[f32; 3]; 3]> {
+    fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
+        gl.uniform_matrix3fv(
+            &info.location,
+            self.len() as _,
+            raw::FALSE,
+            &self
+                .iter()
+                .flat_map(|mat| unsafe { mem::transmute::<&[[f32; 3]; 3], &[f32; 3 * 3]>(mat) })
+                .copied()
+                .collect::<Vec<_>>(),
+        );
+    }
+}
+
+impl Uniform for Vec<[[f32; 4]; 4]> {
+    fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
+        gl.uniform_matrix4fv(
+            &info.location,
+            self.len() as _,
+            raw::FALSE,
+            &self
+                .iter()
+                .flat_map(|mat| unsafe { mem::transmute::<&[[f32; 4]; 4], &[f32; 4 * 4]>(mat) })
+                .copied()
+                .collect::<Vec<_>>(),
+        );
+    }
+}
+
 impl Uniform for mat3<f32> {
     fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
         gl.uniform_matrix3fv(&info.location, 1, raw::FALSE, self.as_flat_array());
@@ -96,6 +171,66 @@ impl Uniform for mat3<f32> {
 impl Uniform for mat4<f32> {
     fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
         gl.uniform_matrix4fv(&info.location, 1, raw::FALSE, self.as_flat_array());
+    }
+}
+
+impl Uniform for &[mat3<f32>] {
+    fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
+        gl.uniform_matrix3fv(
+            &info.location,
+            self.len() as _,
+            raw::FALSE,
+            &self
+                .iter()
+                .flat_map(|mat| mat.as_flat_array())
+                .copied()
+                .collect::<Vec<_>>(),
+        );
+    }
+}
+
+impl Uniform for &[mat4<f32>] {
+    fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
+        gl.uniform_matrix4fv(
+            &info.location,
+            self.len() as _,
+            raw::FALSE,
+            &self
+                .iter()
+                .flat_map(|mat| mat.as_flat_array())
+                .copied()
+                .collect::<Vec<_>>(),
+        );
+    }
+}
+
+impl Uniform for Vec<mat3<f32>> {
+    fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
+        gl.uniform_matrix3fv(
+            &info.location,
+            self.len() as _,
+            raw::FALSE,
+            &self
+                .iter()
+                .flat_map(|mat| mat.as_flat_array())
+                .copied()
+                .collect::<Vec<_>>(),
+        );
+    }
+}
+
+impl Uniform for Vec<mat4<f32>> {
+    fn apply(&self, gl: &raw::Context, info: &UniformInfo) {
+        gl.uniform_matrix4fv(
+            &info.location,
+            self.len() as _,
+            raw::FALSE,
+            &self
+                .iter()
+                .flat_map(|mat| mat.as_flat_array())
+                .copied()
+                .collect::<Vec<_>>(),
+        );
     }
 }
 
