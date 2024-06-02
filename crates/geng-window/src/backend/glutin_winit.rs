@@ -45,7 +45,8 @@ fn resume(
         ::glutin_winit::finalize_window(event_loop, window_builder, &gl_config).unwrap()
     });
 
-    let attrs = ::glutin_winit::GlWindow::build_surface_attributes(&window, <_>::default());
+    let attrs =
+        ::glutin_winit::GlWindow::build_surface_attributes(&window, <_>::default()).unwrap();
     let gl_surface = unsafe {
         glutin::prelude::GlDisplay::create_window_surface(
             &glutin::display::GetGlDisplay::display(&gl_config),
@@ -164,12 +165,14 @@ where
                     }
                 }
 
-                let raw_window_handle = window
+                let window_handle = window
                     .as_ref()
-                    .map(raw_window_handle::HasRawWindowHandle::raw_window_handle);
+                    .map(raw_window_handle::HasWindowHandle::window_handle)
+                    .transpose()
+                    .unwrap();
                 let gl_display = glutin::display::GetGlDisplay::display(&gl_config);
-                let context_attributes =
-                    glutin::context::ContextAttributesBuilder::new().build(raw_window_handle);
+                let context_attributes = glutin::context::ContextAttributesBuilder::new()
+                    .build(window_handle.map(|handle| handle.as_raw()));
 
                 let gl_ctx = unsafe {
                     glutin::display::GlDisplay::create_context(

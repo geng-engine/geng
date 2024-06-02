@@ -104,8 +104,8 @@ base64 = "0.22"
 
 # Native
 image = "0.25"
-winit = { version = "0.30", features = ["rwh_05"] }
-raw-window-handle = "0.5"
+winit = "0.30"
+raw-window-handle = "0.6"
 glutin-winit = { git = "https://github.com/marc2332/glutin", branch = "feat/winit-0.30.0" }
 glutin = { git = "https://github.com/marc2332/glutin", branch = "feat/winit-0.30.0" }
 # glutin-winit = "0.4"
