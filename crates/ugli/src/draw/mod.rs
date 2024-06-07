@@ -43,6 +43,7 @@ pub fn clear(
 }
 
 fn apply_uniforms<U: Uniforms>(uniforms: U, program: &Program) {
+    puffin::profile_function!();
     use std::any::{Any, TypeId};
     use std::cell::RefCell;
     thread_local! {
@@ -69,6 +70,7 @@ pub fn draw<V, U, DP>(
     U: Uniforms,
     DP: std::borrow::Borrow<DrawParameters>,
 {
+    puffin::profile_function!();
     program.ugli.debug_check();
     let gl = &program.ugli.inner.raw;
 
@@ -80,6 +82,7 @@ pub fn draw<V, U, DP>(
         UNIFORM_TEXTURE_COUNT = 0;
     }
     if draw_parameters.reset_uniforms {
+        puffin::profile_scope!("reset uniforms");
         for uniform in program.uniforms.values() {
             if let Some(default) = &uniform.default {
                 default.apply(program, uniform);
@@ -89,20 +92,28 @@ pub fn draw<V, U, DP>(
 
     apply_uniforms(uniforms, program);
 
-    #[cfg(not(target_arch = "wasm32"))]
-    let vao = Vao::new(gl);
-    #[cfg(not(target_arch = "wasm32"))]
-    vao.bind();
+    let vao = {
+        puffin::profile_scope!("vao");
+        #[cfg(not(target_arch = "wasm32"))]
+        let vao = Vao::new(gl);
+        #[cfg(not(target_arch = "wasm32"))]
+        vao.bind();
+        #[cfg(not(target_arch = "wasm32"))]
+        vao
+    };
 
     let mut vertex_count = None;
     let mut instance_count = None;
     let mut attribute_locations = Vec::new();
-    vertices.walk_data(Vdc {
-        program,
-        attribute_locations: &mut attribute_locations,
-        vertex_count: &mut vertex_count,
-        instance_count: &mut instance_count,
-    });
+    {
+        puffin::profile_scope!("walk vertex data");
+        vertices.walk_data(Vdc {
+            program,
+            attribute_locations: &mut attribute_locations,
+            vertex_count: &mut vertex_count,
+            instance_count: &mut instance_count,
+        });
+    }
     let vertex_count = vertex_count.unwrap();
     if vertex_count == 0 {
         return;
@@ -139,6 +150,7 @@ pub fn draw<V, U, DP>(
     };
 
     if vertex_count != 0 {
+        puffin::profile_scope!("draw call");
         if let Some(instance_count) = instance_count {
             if instance_count != 0 {
                 gl.draw_arrays_instanced(gl_mode, 0, vertex_count as _, instance_count as _);
@@ -148,8 +160,11 @@ pub fn draw<V, U, DP>(
         }
     }
 
-    for location in attribute_locations {
-        gl.disable_vertex_attrib_array(location);
+    {
+        puffin::profile_scope!("disable");
+        for location in attribute_locations {
+            gl.disable_vertex_attrib_array(location);
+        }
     }
 
     program.ugli.debug_check();

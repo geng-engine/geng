@@ -250,6 +250,7 @@ impl Default for DrawParameters {
 
 impl DrawParameters {
     pub(crate) fn apply(&self, gl: &raw::Context, framebuffer_size: vec2<usize>) {
+        puffin::profile_function!("apply draw params");
         match self.depth_func {
             Some(depth_test) => gl.depth_func(depth_test as _),
             None => gl.depth_func(raw::ALWAYS),

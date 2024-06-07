@@ -30,6 +30,7 @@ impl Ugli {
         }
     }
     pub fn check(&self) {
+        puffin::profile_function!();
         self.try_check().expect("GL error");
     }
     pub fn debug_check(&self) {

@@ -25,6 +25,7 @@ ugli-derive.workspace = true
 field-offset.workspace = true
 log.workspace = true
 derive_more.workspace = true
+puffin.workspace = true
 
 num_enum.workspace = true # TODO: should be in batbox?
 serde.workspace = true

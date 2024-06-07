@@ -72,6 +72,8 @@ geng-texture-atlas = { version = "0.18", path = "crates/geng-texture-atlas" }
 
 switch-resume = "0.1"
 
+puffin = "0.19"
+
 # Common
 async-recursion = "1"
 clap = { version = "4", features = ["derive"] }
