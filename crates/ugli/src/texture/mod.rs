@@ -2,7 +2,7 @@ use super::*;
 
 /// # Safety
 /// Don't implement yourself
-pub unsafe trait TexturePixel {
+pub unsafe trait TexturePixel: 'static {
     const INTERNAL_FORMAT: raw::Enum;
     const FORMAT: raw::Enum;
     const TYPE: raw::Enum;

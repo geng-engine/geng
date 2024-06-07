@@ -62,16 +62,14 @@ macro_rules! field_offset {
 
 #[macro_export]
 macro_rules! uniforms {
-    () => {
-        ()
-    };
-    ($name:ident : $value:expr) => {
-        $crate::SingleUniform::new(stringify!($name), $value)
-    };
-    ($name:ident : $value:expr, $($names:ident : $values:expr),+) => {
-        ($crate::uniforms!($name : $value), $crate::uniforms!($($names : $values),+))
-    };
-    ($($name:ident : $value:expr),*,) => {
-        $crate::uniforms!($($name : $value),*)
-    }
+    ($($name:ident : $value:expr),* $(,)?) => {{
+        #[allow(non_snake_case, non_camel_case_types)]
+        #[derive($crate::Uniforms)]
+        struct UniformsLit<$($name: $crate::Uniform,)*> {
+            $($name: $name,)*
+        }
+        UniformsLit {
+            $($name: $value),*
+        }
+    }};
 }

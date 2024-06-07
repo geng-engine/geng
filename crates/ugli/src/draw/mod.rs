@@ -42,6 +42,21 @@ pub fn clear(
     framebuffer.fbo.ugli.debug_check();
 }
 
+fn apply_uniforms<U: Uniforms>(uniforms: U, program: &Program) {
+    use std::any::{Any, TypeId};
+    use std::cell::RefCell;
+    thread_local! {
+        static INFOS: RefCell<HashMap<(raw::Program, TypeId), Box<dyn Any>>> = RefCell::new(HashMap::new());
+    }
+    INFOS.with(|infos| {
+        let mut infos = infos.borrow_mut();
+        let info = infos
+            .entry((program.handle, TypeId::of::<U::ProgramInfoCacheKey>()))
+            .or_insert_with(|| Box::new(U::get_program_info(program)));
+        uniforms.apply_uniforms(program, info.downcast_ref().unwrap());
+    })
+}
+
 pub fn draw<V, U, DP>(
     framebuffer: &mut Framebuffer,
     program: &Program,
@@ -67,11 +82,12 @@ pub fn draw<V, U, DP>(
     if draw_parameters.reset_uniforms {
         for uniform in program.uniforms.values() {
             if let Some(default) = &uniform.default {
-                default.apply(gl, uniform);
+                default.apply(program, uniform);
             }
         }
     }
-    uniforms.walk_uniforms(&mut UC { program });
+
+    apply_uniforms(uniforms, program);
 
     #[cfg(not(target_arch = "wasm32"))]
     let vao = Vao::new(gl);
@@ -137,17 +153,6 @@ pub fn draw<V, U, DP>(
     }
 
     program.ugli.debug_check();
-
-    struct UC<'a> {
-        program: &'a Program,
-    }
-    impl<'a> UniformVisitor for UC<'a> {
-        fn visit<U: Uniform>(&mut self, name: &str, uniform: &U) {
-            if let Some(uniform_info) = self.program.uniforms.get(name) {
-                uniform.apply(&self.program.ugli.inner.raw, uniform_info);
-            }
-        }
-    }
 
     #[cfg(not(target_arch = "wasm32"))]
     struct Vao<'a> {

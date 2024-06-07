@@ -18,6 +18,7 @@ pub fn run<T: Model, G: geng::State>(
     if opt.connect.is_none() && opt.server.is_none() {
         if cfg!(target_arch = "wasm32") {
             opt.connect = Some(
+                #[allow(clippy::option_env_unwrap)]
                 option_env!("CONNECT")
                     .expect("Set CONNECT compile time env var")
                     .to_owned(),

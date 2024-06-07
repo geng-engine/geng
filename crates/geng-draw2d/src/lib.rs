@@ -15,14 +15,11 @@ mod segment;
 mod text;
 
 pub use chain::Chain;
-pub use chain::*;
 pub use ellipse::Ellipse;
-pub use ellipse::*;
 pub use polygon::*;
 pub use quad::Quad;
 pub use quad::*;
 pub use segment::Segment;
-pub use segment::*;
 pub use text::*;
 
 #[derive(ugli::Vertex, Copy, Clone, Debug)]

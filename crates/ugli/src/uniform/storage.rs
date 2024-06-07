@@ -1,89 +1,56 @@
 use super::*;
 
 pub trait Uniforms {
-    fn walk_uniforms<C>(&self, visitor: &mut C)
-    where
-        C: UniformVisitor;
-}
-
-impl Uniforms for () {
-    fn walk_uniforms<C>(&self, _: &mut C)
-    where
-        C: UniformVisitor,
-    {
-    }
-}
-
-#[derive(Copy, Clone)]
-pub struct SingleUniform<'a, U: Uniform> {
-    name: &'a str,
-    value: U,
-}
-
-impl<'a, U: Uniform> SingleUniform<'a, U> {
-    pub fn new(name: &'a str, value: U) -> Self {
-        Self { name, value }
-    }
-}
-
-impl<'a, U: Uniform> Uniforms for SingleUniform<'a, U> {
-    fn walk_uniforms<C>(&self, visitor: &mut C)
-    where
-        C: UniformVisitor,
-    {
-        visitor.visit(self.name, &self.value);
-    }
+    type ProgramInfoCacheKey: 'static;
+    type ProgramInfo: 'static;
+    fn get_program_info(program: &Program) -> Self::ProgramInfo;
+    fn apply_uniforms(&self, program: &Program, info: &Self::ProgramInfo);
 }
 
 impl<'a, U: Uniforms> Uniforms for &'a U {
-    fn walk_uniforms<C>(&self, visitor: &mut C)
-    where
-        C: UniformVisitor,
-    {
-        (*self).walk_uniforms(visitor);
+    type ProgramInfoCacheKey = U::ProgramInfoCacheKey;
+    type ProgramInfo = U::ProgramInfo;
+    fn get_program_info(program: &Program) -> Self::ProgramInfo {
+        U::get_program_info(program)
+    }
+    fn apply_uniforms(&self, program: &Program, info: &Self::ProgramInfo) {
+        U::apply_uniforms(self, program, info)
     }
 }
 
-impl<A: Uniforms, B: Uniforms> Uniforms for (A, B) {
-    fn walk_uniforms<C>(&self, visitor: &mut C)
-    where
-        C: UniformVisitor,
-    {
-        self.0.walk_uniforms(visitor);
-        self.1.walk_uniforms(visitor);
-    }
+macro_rules! impl_for_tuple {
+    ($($a:ident),*; $($b:ident),*) => {
+        impl<$($a: Uniforms,)*> Uniforms for ($($a,)*) {
+            type ProgramInfoCacheKey = ($($a::ProgramInfoCacheKey,)*);
+            type ProgramInfo = ($($a::ProgramInfo,)*);
+            fn get_program_info(program: &Program) -> Self::ProgramInfo {
+                #![allow(clippy::unused_unit, unused_variables)]
+                ($($a::get_program_info(program),)*)
+            }
+            fn apply_uniforms(&self, program: &Program, info: &Self::ProgramInfo) {
+                #![allow(unused_parens)]
+                let ($($a,)*) = self;
+                let ($($b,)*) = info;
+                $(
+                    $a.apply_uniforms(program, $b);
+                )*
+            }
+        }
+    };
 }
 
-impl<A: Uniforms, B: Uniforms, C: Uniforms> Uniforms for (A, B, C) {
-    fn walk_uniforms<V>(&self, visitor: &mut V)
-    where
-        V: UniformVisitor,
-    {
-        self.0.walk_uniforms(visitor);
-        self.1.walk_uniforms(visitor);
-        self.2.walk_uniforms(visitor);
-    }
-}
-
-impl<A: Uniforms, B: Uniforms, C: Uniforms, D: Uniforms> Uniforms for (A, B, C, D) {
-    fn walk_uniforms<V>(&self, visitor: &mut V)
-    where
-        V: UniformVisitor,
-    {
-        self.0.walk_uniforms(visitor);
-        self.1.walk_uniforms(visitor);
-        self.2.walk_uniforms(visitor);
-        self.3.walk_uniforms(visitor);
-    }
-}
+batbox_tuple_macros::call_for_tuples_2!(impl_for_tuple);
 
 impl<U: Uniforms> Uniforms for Option<U> {
-    fn walk_uniforms<C>(&self, visitor: &mut C)
-    where
-        C: UniformVisitor,
-    {
-        if let Some(u) = self {
-            u.walk_uniforms(visitor);
+    type ProgramInfoCacheKey = U::ProgramInfoCacheKey;
+    type ProgramInfo = U::ProgramInfo;
+    fn get_program_info(program: &Program) -> Self::ProgramInfo {
+        U::get_program_info(program)
+    }
+    fn apply_uniforms(&self, program: &Program, info: &Self::ProgramInfo) {
+        if let Some(value) = self {
+            value.apply_uniforms(program, info);
         }
+        // TODO else default???
     }
 }

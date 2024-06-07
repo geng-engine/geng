@@ -15,7 +15,7 @@ pub struct AttributeInfo {
     pub(crate) info: raw::ActiveInfo,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UniformInfo {
     pub(crate) location: raw::UniformLocation,
     pub(crate) name: String,
@@ -95,7 +95,7 @@ impl Program {
                     _ => format!("{}[{index}]", info.name.strip_suffix("[0]").unwrap()),
                 };
                 if let Some(location) = gl.get_uniform_location(&program.handle, &name) {
-                    let default = UniformValue::get_value(gl, &program.handle, &location, &info);
+                    let default = UniformValue::get_value(&program, &location, &info);
                     // info!("{:?}", name);
                     program.uniforms.insert(
                         name.clone(),
@@ -112,6 +112,9 @@ impl Program {
 
         ugli.debug_check();
         Ok(program)
+    }
+    pub fn uniform_info(&self, name: &str) -> Option<UniformInfo> {
+        self.uniforms.get(name).cloned()
     }
     pub(crate) fn bind(&self) {
         self.ugli.inner.raw.use_program(&self.handle);

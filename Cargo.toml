@@ -1,6 +1,7 @@
 [patch.crates-io]
 # https://github.com/smol-rs/async-broadcast/pull/47
 async-broadcast = { git = "https://github.com/kuviman/async-broadcast", branch = "fix-wasm" }
+batbox-tuple-macros = { git = "https://github.com/geng-engine/batbox" }
 
 [workspace]
 members = ["crates/*"]

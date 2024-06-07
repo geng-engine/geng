@@ -15,6 +15,7 @@ version.workspace = true
 targets = ["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]
 
 [dependencies]
+batbox-tuple-macros.workspace = true
 batbox-color.workspace = true
 batbox-la.workspace = true
 batbox-range.workspace = true
