@@ -92,16 +92,6 @@ pub fn draw<V, U, DP>(
 
     apply_uniforms(uniforms, program);
 
-    let vao = {
-        puffin::profile_scope!("vao");
-        #[cfg(not(target_arch = "wasm32"))]
-        let vao = Vao::new(gl);
-        #[cfg(not(target_arch = "wasm32"))]
-        vao.bind();
-        #[cfg(not(target_arch = "wasm32"))]
-        vao
-    };
-
     let mut vertex_count = None;
     let mut instance_count = None;
     let mut attribute_locations = Vec::new();
@@ -168,32 +158,6 @@ pub fn draw<V, U, DP>(
     }
 
     program.ugli.debug_check();
-
-    #[cfg(not(target_arch = "wasm32"))]
-    struct Vao<'a> {
-        handle: raw::VertexArrayObject,
-        gl: &'a raw::Context,
-    }
-
-    #[cfg(not(target_arch = "wasm32"))]
-    impl<'a> Vao<'a> {
-        fn new(gl: &'a raw::Context) -> Self {
-            Self {
-                handle: gl.create_vertex_array().unwrap(),
-                gl,
-            }
-        }
-        fn bind(&self) {
-            self.gl.bind_vertex_array(&self.handle);
-        }
-    }
-
-    #[cfg(not(target_arch = "wasm32"))]
-    impl<'a> Drop for Vao<'a> {
-        fn drop(&mut self) {
-            self.gl.delete_vertex_array(&self.handle);
-        }
-    }
 
     struct Vdc<'a> {
         program: &'a Program,

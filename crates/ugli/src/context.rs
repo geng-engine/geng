@@ -2,6 +2,8 @@ use super::*;
 
 pub(crate) struct UgliImpl {
     pub(crate) raw: raw::Context,
+    // TODO this creates a cycling Rc so we will never GC
+    vao: std::cell::RefCell<Option<Vao>>,
     phantom_data: PhantomData<*mut ()>,
 }
 
@@ -60,6 +62,7 @@ impl Ugli {
         let ugli = Ugli {
             inner: Rc::new(UgliImpl {
                 raw: raw::Context::new(webgl),
+                vao: Default::default(),
                 phantom_data: PhantomData,
             }),
         };
@@ -76,6 +79,7 @@ impl Ugli {
         let ugli = Ugli {
             inner: Rc::new(UgliImpl {
                 raw: raw::Context::new(get_proc_address),
+                vao: Default::default(),
                 phantom_data: PhantomData,
             }),
         };
@@ -86,6 +90,10 @@ impl Ugli {
 
 impl Ugli {
     pub fn init(&self) {
+        let vao = Vao::new(self);
+        vao.bind();
+        self.inner.vao.replace(Some(vao));
+
         let gl = &self.inner.raw;
         log::info!("GL version: {:?}", gl.get_version_string());
         gl.enable(raw::DEPTH_TEST);

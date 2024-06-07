@@ -2,9 +2,11 @@ use super::*;
 
 mod attribute;
 mod buffer;
+mod vao;
 
 pub use attribute::*;
 pub use buffer::*;
+pub use vao::*;
 
 pub trait VertexAttributeVisitor {
     fn visit<A: VertexAttribute>(&mut self, name: &str, offset: usize);
