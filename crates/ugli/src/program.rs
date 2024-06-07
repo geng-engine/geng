@@ -2,6 +2,7 @@ use super::*;
 
 pub struct Program {
     pub(crate) ugli: Ugli,
+    pub(crate) cache_key: u64,
     pub(crate) handle: raw::Program,
     pub(crate) attributes: HashMap<String, AttributeInfo>,
     pub(crate) uniforms: HashMap<String, UniformInfo>,
@@ -43,6 +44,11 @@ impl Program {
         let shaders: Vec<&Shader> = shaders.into_iter().collect();
         let gl = &ugli.inner.raw;
         let mut program = Program {
+            cache_key: {
+                use std::sync::atomic::{AtomicU64, Ordering};
+                static NEXT: AtomicU64 = AtomicU64::new(0);
+                NEXT.fetch_add(1, Ordering::SeqCst)
+            },
             ugli: ugli.clone(),
             handle: gl.create_program().expect("Failed to create program"),
             uniforms: HashMap::new(),

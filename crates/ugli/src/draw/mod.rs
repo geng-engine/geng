@@ -46,12 +46,12 @@ fn apply_uniforms<U: Uniforms>(uniforms: U, program: &Program) {
     use std::any::{Any, TypeId};
     use std::cell::RefCell;
     thread_local! {
-        static INFOS: RefCell<HashMap<(raw::Program, TypeId), Box<dyn Any>>> = RefCell::new(HashMap::new());
+        static INFOS: RefCell<HashMap<(u64, TypeId), Box<dyn Any>>> = RefCell::new(HashMap::new());
     }
     INFOS.with(|infos| {
         let mut infos = infos.borrow_mut();
         let info = infos
-            .entry((program.handle, TypeId::of::<U::ProgramInfoCacheKey>()))
+            .entry((program.cache_key, TypeId::of::<U::ProgramInfoCacheKey>()))
             .or_insert_with(|| Box::new(U::get_program_info(program)));
         uniforms.apply_uniforms(program, info.downcast_ref().unwrap());
     })

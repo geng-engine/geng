@@ -28,7 +28,7 @@ macro_rules! impl_for_tuple {
                 ($($a::get_program_info(program),)*)
             }
             fn apply_uniforms(&self, program: &Program, info: &Self::ProgramInfo) {
-                #![allow(unused_parens)]
+                #![allow(unused_parens, unused_variables)]
                 let ($($a,)*) = self;
                 let ($($b,)*) = info;
                 $(
