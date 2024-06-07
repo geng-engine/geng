@@ -231,12 +231,14 @@ checksum = "175571dd1d178ced59193a6fc02dde1b972eb0bc56c892cde9beeceac5bf0f6b"
 
 [[package]]
 name = "async-broadcast"
-version = "0.6.0"
-source = "git+https://github.com/kuviman/async-broadcast?branch=fix-wasm#6767b8a76cd2a1b57da0dd435488df112514afe8"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "20cd0e2e25ea8e5f7e9df04578dc6cf5c83577fd09b1a46aaf5c85e1c33f2a7e"
 dependencies = [
- "event-listener 4.0.3",
- "event-listener-strategy 0.4.0",
+ "event-listener 5.3.1",
+ "event-listener-strategy",
  "futures-core",
+ "pin-project-lite",
 ]
 
 [[package]]
@@ -257,7 +259,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "89b47800b0be77592da0afd425cc03468052844aff33b84e33cc696f64e77b6a"
 dependencies = [
  "concurrent-queue",
- "event-listener-strategy 0.5.2",
+ "event-listener-strategy",
  "futures-core",
  "pin-project-lite",
 ]
@@ -358,7 +360,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ff6e472cdea888a4bd64f342f09b3f50e1886d32afe8df3d663c01140b811b18"
 dependencies = [
  "event-listener 5.3.1",
- "event-listener-strategy 0.5.2",
+ "event-listener-strategy",
  "pin-project-lite",
 ]
 
@@ -1514,33 +1516,12 @@ checksum = "0206175f82b8d6bf6652ff7d71a1e27fd2e4efde587fd368662814d6ec1d9ce0"
 
 [[package]]
 name = "event-listener"
-version = "4.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "67b215c49b2b248c855fb73579eb1f4f26c38ffdc12973e20e07b91d78d5646e"
-dependencies = [
- "concurrent-queue",
- "parking",
- "pin-project-lite",
-]
-
-[[package]]
-name = "event-listener"
 version = "5.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6032be9bd27023a771701cc49f9f053c751055f71efb2e0ae5c15809093675ba"
 dependencies = [
  "concurrent-queue",
  "parking",
- "pin-project-lite",
-]
-
-[[package]]
-name = "event-listener-strategy"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "958e4d70b6d5e81971bebec42271ec641e7ff4e170a6fa605f2b8a8b65cb97d3"
-dependencies = [
- "event-listener 4.0.3",
  "pin-project-lite",
 ]
 
@@ -1999,9 +1980,9 @@ dependencies = [
  "batbox-num",
  "geng-camera",
  "geng-shader",
- "itertools 0.12.1",
+ "itertools 0.13.0",
  "serde",
- "ttf-parser 0.20.0",
+ "ttf-parser",
  "ugli",
 ]
 
@@ -2257,7 +2238,7 @@ dependencies = [
 [[package]]
 name = "glutin"
 version = "0.31.3"
-source = "git+https://github.com/marc2332/glutin?branch=feat/winit-0.30.0#658acb2770ea9644b96d41bc2c38c9d6beabf70a"
+source = "git+https://github.com/rust-windowing/glutin#61ce695e73c7708472317aa7098b8c63f0d3ae9b"
 dependencies = [
  "bitflags 2.5.0",
  "cfg_aliases",
@@ -2274,14 +2255,14 @@ dependencies = [
  "once_cell",
  "raw-window-handle 0.6.2",
  "wayland-sys",
- "windows-sys 0.48.0",
+ "windows-sys 0.52.0",
  "x11-dl",
 ]
 
 [[package]]
 name = "glutin-winit"
 version = "0.4.2"
-source = "git+https://github.com/marc2332/glutin?branch=feat/winit-0.30.0#658acb2770ea9644b96d41bc2c38c9d6beabf70a"
+source = "git+https://github.com/rust-windowing/glutin#61ce695e73c7708472317aa7098b8c63f0d3ae9b"
 dependencies = [
  "cfg_aliases",
  "glutin",
@@ -2292,16 +2273,16 @@ dependencies = [
 [[package]]
 name = "glutin_egl_sys"
 version = "0.6.0"
-source = "git+https://github.com/marc2332/glutin?branch=feat/winit-0.30.0#658acb2770ea9644b96d41bc2c38c9d6beabf70a"
+source = "git+https://github.com/rust-windowing/glutin#61ce695e73c7708472317aa7098b8c63f0d3ae9b"
 dependencies = [
  "gl_generator",
- "windows-sys 0.48.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
 name = "glutin_glx_sys"
 version = "0.5.0"
-source = "git+https://github.com/marc2332/glutin?branch=feat/winit-0.30.0#658acb2770ea9644b96d41bc2c38c9d6beabf70a"
+source = "git+https://github.com/rust-windowing/glutin#61ce695e73c7708472317aa7098b8c63f0d3ae9b"
 dependencies = [
  "gl_generator",
  "x11-dl",
@@ -2310,7 +2291,7 @@ dependencies = [
 [[package]]
 name = "glutin_wgl_sys"
 version = "0.5.0"
-source = "git+https://github.com/marc2332/glutin?branch=feat/winit-0.30.0#658acb2770ea9644b96d41bc2c38c9d6beabf70a"
+source = "git+https://github.com/rust-windowing/glutin#61ce695e73c7708472317aa7098b8c63f0d3ae9b"
 dependencies = [
  "gl_generator",
 ]
@@ -2625,6 +2606,15 @@ name = "itertools"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ba291022dbbd398a455acf126c1e341954079855bc60dfdda641363bd6922569"
+dependencies = [
+ "either",
+]
+
+[[package]]
+name = "itertools"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
 dependencies = [
  "either",
 ]
@@ -3423,7 +3413,7 @@ version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6b41438d2fc63c46c74a2203bf5ccd82c41ba04347b2fcf5754f230b167067d5"
 dependencies = [
- "ttf-parser 0.21.1",
+ "ttf-parser",
 ]
 
 [[package]]
@@ -4823,12 +4813,6 @@ checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
 
 [[package]]
 name = "ttf-parser"
-version = "0.20.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "17f77d76d837a7830fe1d4f12b7b4ba4192c1888001c7164257e4bc6d21d96b4"
-
-[[package]]
-name = "ttf-parser"
 version = "0.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2c591d83f69777866b9126b24c6dd9a18351f177e49d625920d19f989fd31cf8"
@@ -5750,3 +5734,8 @@ checksum = "ec866b44a2a1fd6133d363f073ca1b179f438f99e7e5bfb1e33f7181facfe448"
 dependencies = [
  "zune-core",
 ]
+
+[[patch.unused]]
+name = "async-broadcast"
+version = "0.6.0"
+source = "git+https://github.com/kuviman/async-broadcast?branch=fix-wasm#6767b8a76cd2a1b57da0dd435488df112514afe8"
