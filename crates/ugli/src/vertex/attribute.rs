@@ -3,6 +3,7 @@ use super::*;
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum AttributeType {
     Float = raw::FLOAT as _,
+    U8 = raw::UNSIGNED_BYTE as _,
 }
 
 /// # Safety
@@ -23,6 +24,12 @@ impl<T: VertexAttributePrimitive> VertexAttribute for T {
     fn primitive_offset() -> usize {
         0
     }
+}
+
+unsafe impl VertexAttributePrimitive for u8 {
+    const SIZE: usize = 1;
+    const ROWS: usize = 1;
+    const TYPE: AttributeType = AttributeType::U8;
 }
 
 unsafe impl VertexAttributePrimitive for f32 {
