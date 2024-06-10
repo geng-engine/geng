@@ -36,10 +36,10 @@ impl geng::State for State {
 
         // Rotating camera
         if self.geng.window().is_key_pressed(geng::Key::Q) {
-            self.camera.rotation += Angle::from_radians(delta_time);
+            self.camera.rotation -= Angle::from_radians(delta_time);
         }
         if self.geng.window().is_key_pressed(geng::Key::E) {
-            self.camera.rotation -= Angle::from_radians(delta_time);
+            self.camera.rotation += Angle::from_radians(delta_time);
         }
     }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
@@ -130,7 +130,7 @@ impl geng::State for State {
                     self.prev_touch_distance = now_dist;
                     let now_angle = diff.map(|x| x as f32).arg();
                     let angle_diff = (now_angle - self.prev_touch_angle).normalized_pi();
-                    self.camera.rotation -= angle_diff;
+                    self.camera.rotation += angle_diff;
                     self.prev_touch_angle = now_angle;
                     if let Some(start) = self.drag_start {
                         let current_pos = self.camera.screen_to_world(
