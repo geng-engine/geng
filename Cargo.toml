@@ -52,7 +52,6 @@ ugli-raw = { version = "0.18", path = "crates/ugli-raw" }
 
 # Geng
 geng = { version = "0.18", path = "." }
-geng-web-audio-api = { version = "0.18", path = "crates/web-audio-api" }
 geng-audio = { version = "0.18", path = "crates/geng-audio" }
 geng-window = { version = "0.18", path = "crates/geng-window" }
 geng-net = { version = "0.18", path = "crates/geng-net" }
@@ -69,6 +68,8 @@ geng-debug-overlay = { version = "0.18", path = "crates/geng-debug-overlay", pac
 geng-asset = { version = "0.18", path = "crates/geng-asset" }
 geng-asset-derive = { version = "0.18", path = "crates/geng-asset/derive" }
 geng-texture-atlas = { version = "0.18", path = "crates/geng-texture-atlas" }
+
+geng-web-audio-api = { git = "https://github.com/geng-engine/web-audio-api" }
 
 switch-resume = "0.1"
 
