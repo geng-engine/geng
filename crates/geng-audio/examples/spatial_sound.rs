@@ -14,7 +14,7 @@ fn main() {
         audio
             .listener()
             .set_orientation(vec3(1.0, 0.0, 0.0), vec3(0.0, 0.0, 1.0));
-        let mut effect = sound.effect();
+        let mut effect = sound.effect(audio.default_type());
         effect.set_position(vec3(0.0, 1.0, 0.0));
         effect.play();
         batbox_time::sleep(batbox_time::Duration::from_secs_f64(2.0)).await;

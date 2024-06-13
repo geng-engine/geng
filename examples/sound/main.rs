@@ -46,7 +46,7 @@ fn main() {
                     hello.play();
                 }
                 geng::Event::KeyPress { key: geng::Key::M } => {
-                    let mut effect = music.effect();
+                    let mut effect = music.effect(geng.audio().default_type());
                     effect.set_looped(true);
                     effect.set_speed(1.1);
                     effect.fade_in(fade_duration);

@@ -1,7 +1,8 @@
 use batbox_la::*;
 use batbox_time as time;
+use std::collections::HashMap;
 use std::path::Path;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use geng_web_audio_api as wa;
 
@@ -15,6 +16,8 @@ pub struct Audio {
 struct AudioImpl {
     context: wa::AudioContext,
     master_gain_node: wa::GainNode,
+    default_type: SoundType,
+    type_gain_nodes: Mutex<HashMap<SoundType, Arc<wa::GainNode>>>,
 }
 
 impl Audio {
@@ -26,6 +29,8 @@ impl Audio {
             inner: Arc::new(AudioImpl {
                 context,
                 master_gain_node,
+                default_type: SoundType::new(),
+                type_gain_nodes: Mutex::new(HashMap::new()),
             }),
         })
     }
@@ -34,12 +39,30 @@ impl Audio {
         Listener(self.inner.context.listener())
     }
 
-    pub fn set_volume(&self, volume: f32) {
-        self.inner.master_gain_node.gain().set_value(volume);
+    pub fn master_volume(&self) -> wa::AudioParam {
+        self.inner.master_gain_node.gain()
     }
 
-    pub fn volume(&self) -> f32 {
-        self.inner.master_gain_node.gain().value()
+    pub fn volume(&self, r#type: SoundType) -> wa::AudioParam {
+        self.register_type(r#type).gain()
+    }
+
+    pub fn default_type(&self) -> SoundType {
+        self.inner.default_type
+    }
+
+    fn register_type(&self, r#type: SoundType) -> Arc<wa::GainNode> {
+        self.inner
+            .type_gain_nodes
+            .lock()
+            .unwrap()
+            .entry(r#type)
+            .or_insert_with(|| {
+                let type_node = wa::GainNode::new(&self.inner.context);
+                type_node.connect(&self.inner.master_gain_node);
+                Arc::new(type_node)
+            })
+            .clone()
     }
 }
 
@@ -85,7 +108,7 @@ impl Sound {
     pub fn duration(&self) -> time::Duration {
         time::Duration::from_secs_f64(self.audio_buffer.duration())
     }
-    pub fn effect(&self) -> SoundEffect {
+    pub fn effect(&self, r#type: SoundType) -> SoundEffect {
         let mut buffer_node = wa::AudioBufferSourceNode::new(&self.context.inner.context);
         buffer_node.set_buffer(self.audio_buffer.clone());
         buffer_node.set_loop(self.looped);
@@ -95,6 +118,7 @@ impl Sound {
         // .connect(&self.context.inner.master_gain_node);
         // https://github.com/orottier/web-audio-api-rs/issues/494
         SoundEffect {
+            r#type,
             context: self.context.clone(),
             source_node: buffer_node,
             fade_node,
@@ -104,14 +128,27 @@ impl Sound {
         }
     }
     pub fn play(&self) -> SoundEffect {
-        let mut effect = self.effect();
+        let mut effect = self.effect(self.context.default_type());
         effect.play();
         effect
     }
 }
 
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
+pub struct SoundType(u64);
+
+impl SoundType {
+    #[allow(clippy::new_without_default)]
+    pub fn new() -> Self {
+        use std::sync::atomic::{AtomicU64, Ordering};
+        static NEXT: AtomicU64 = AtomicU64::new(0);
+        SoundType(NEXT.fetch_add(1, Ordering::SeqCst))
+    }
+}
+
 pub struct SoundEffect {
     context: Audio,
+    r#type: SoundType,
     source_node: wa::AudioBufferSourceNode,
     gain_node: wa::GainNode,
     fade_node: wa::GainNode,
@@ -164,9 +201,11 @@ impl SoundEffect {
         self.play_from(time::Duration::from_secs_f64(0.0));
     }
     pub fn play_from(&mut self, offset: time::Duration) {
-        if let SpatialState::NotSpatial = self.spatial_state {
-            self.gain_node.connect(&self.context.inner.master_gain_node);
-        }
+        let node: &dyn wa::AudioNode = match &self.spatial_state {
+            SpatialState::NotSpatial => &self.gain_node,
+            SpatialState::Spatial(panner) => panner,
+        };
+        node.connect(&*self.context.register_type(self.r#type));
         self.source_node.start_with_offset(offset.as_secs_f64());
     }
     pub fn set_speed(&mut self, speed: f32) {
@@ -191,10 +230,7 @@ impl SoundEffect {
         if let SpatialState::NotSpatial = &self.spatial_state {
             let mut panner_node = wa::PannerNode::new(&self.context.inner.context);
             panner_node.set_distance_model(wa::DistanceModel::Linear);
-            // self.gain_node.disconnect();
-            self.gain_node
-                .connect(&panner_node)
-                .connect(&self.context.inner.master_gain_node);
+            self.gain_node.connect(&panner_node);
             self.spatial_state = SpatialState::Spatial(panner_node);
         }
         let SpatialState::Spatial(panner_node) = &mut self.spatial_state else {
