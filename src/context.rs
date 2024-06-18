@@ -118,6 +118,7 @@ impl Geng {
         &self.inner.window
     }
 
+    #[cfg(feature = "audio")]
     pub fn audio(&self) -> &Audio {
         &self.inner.audio
     }
