@@ -22,28 +22,28 @@ version = "0.18.0"
 
 [workspace.dependencies]
 # Batbox
-batbox = "0.16"
-batbox-android = "0.16"
-batbox-tuple-macros = "0.16"
-batbox-i18n = "0.16"
-batbox-i18n-macro = "0.16"
-batbox-num = "0.16"
-batbox-approx = "0.16"
-batbox-color = "0.16"
-batbox-time = "0.16"
-batbox-file = "0.16"
-batbox-file-dialog = "0.16"
-batbox-preferences = "0.16"
-batbox-cli = "0.16"
-batbox-logger = "0.16"
-batbox-diff = "0.16"
-batbox-diff-derive = "0.16"
-batbox-collection = "0.16"
-batbox-collection-derive = "0.16"
-batbox-range = "0.16"
-batbox-cmp = "0.16"
-batbox-la = "0.16"
-batbox-lapp = "0.16"
+batbox = { version = "0.16", git = "https://github.com/geng-engine/batbox" }
+batbox-android = { version = "0.16", git = "https://github.com/geng-engine/batbox" }
+batbox-tuple-macros = { version = "0.16", git = "https://github.com/geng-engine/batbox" }
+batbox-i18n = { version = "0.16", git = "https://github.com/geng-engine/batbox" }
+batbox-i18n-macro = { version = "0.16", git = "https://github.com/geng-engine/batbox" }
+batbox-num = { version = "0.16", git = "https://github.com/geng-engine/batbox" }
+batbox-approx = { version = "0.16", git = "https://github.com/geng-engine/batbox" }
+batbox-color = { version = "0.16", git = "https://github.com/geng-engine/batbox" }
+batbox-time = { version = "0.16", git = "https://github.com/geng-engine/batbox" }
+batbox-file = { version = "0.16", git = "https://github.com/geng-engine/batbox" }
+batbox-file-dialog = { version = "0.16", git = "https://github.com/geng-engine/batbox" }
+batbox-preferences = { version = "0.16", git = "https://github.com/geng-engine/batbox" }
+batbox-cli = { version = "0.16", git = "https://github.com/geng-engine/batbox" }
+batbox-logger = { version = "0.16", git = "https://github.com/geng-engine/batbox" }
+batbox-diff = { version = "0.16", git = "https://github.com/geng-engine/batbox" }
+batbox-diff-derive = { version = "0.16", git = "https://github.com/geng-engine/batbox" }
+batbox-collection = { version = "0.16", git = "https://github.com/geng-engine/batbox" }
+batbox-collection-derive = { version = "0.16", git = "https://github.com/geng-engine/batbox" }
+batbox-range = { version = "0.16", git = "https://github.com/geng-engine/batbox" }
+batbox-cmp = { version = "0.16", git = "https://github.com/geng-engine/batbox" }
+batbox-la = { version = "0.16", git = "https://github.com/geng-engine/batbox" }
+batbox-lapp = { version = "0.16", git = "https://github.com/geng-engine/batbox" }
 
 # Ugli
 ugli = { version = "0.18", path = "crates/ugli" }
