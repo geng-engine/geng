@@ -63,6 +63,12 @@ impl Geng {
     {
         let mut options = ContextOptions::default();
         options.window.title = title.to_owned();
+        #[derive(clap::Parser)]
+        struct CliArgs {
+            #[clap(flatten)]
+            geng: cli_args::CliArgs,
+        }
+        options.with_cli(&cli::parse::<CliArgs>().geng);
         Self::run_with(&options, f);
     }
 
