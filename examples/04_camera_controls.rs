@@ -18,7 +18,7 @@ impl State {
             camera: geng::Camera2d {
                 center: vec2(0.0, 0.0),
                 rotation: Angle::ZERO,
-                fov: 15.0,
+                fov: Camera2dFov::Vertical(15.0),
             },
             framebuffer_size: vec2(1.0, 1.0),
             prev_touch_distance: 0.0,
@@ -63,7 +63,8 @@ impl geng::State for State {
             }
             // Scrolling to zoom
             geng::Event::Wheel { delta } => {
-                self.camera.fov = (self.camera.fov * 1.01f32.powf(-delta as f32)).clamp(1.0, 30.0);
+                let fov = self.camera.fov.value_mut();
+                *fov = (*fov * 1.01f32.powf(-delta as f32)).clamp(1.0, 30.0);
             }
             // Drag start
             geng::Event::MousePress {
@@ -126,7 +127,7 @@ impl geng::State for State {
                 } else if self.touches.len() == 2 {
                     let diff = self.touches[0].position - self.touches[1].position;
                     let now_dist = diff.len() as f32;
-                    self.camera.fov /= now_dist / self.prev_touch_distance;
+                    *self.camera.fov.value_mut() /= now_dist / self.prev_touch_distance;
                     self.prev_touch_distance = now_dist;
                     let now_angle = diff.map(|x| x as f32).arg();
                     let angle_diff = (now_angle - self.prev_touch_angle).normalized_pi();

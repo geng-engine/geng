@@ -22,7 +22,7 @@ impl geng::State for State {
             &geng::Camera2d {
                 center: vec2(0.0, 0.0),
                 rotation: Angle::ZERO,
-                fov: 15.0,
+                fov: Camera2dFov::Vertical(15.0),
             },
             &self.text,
             vec2::splat(geng::TextAlign::CENTER),

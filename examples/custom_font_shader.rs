@@ -113,7 +113,7 @@ impl geng::State for State {
                 geng::Camera2d {
                     center: size / 2.0,
                     rotation: Angle::ZERO,
-                    fov: 3.0,
+                    fov: Camera2dFov::Vertical(3.0),
                 }
                 .uniforms(framebuffer.size().map(|x| x as f32)),
             ),

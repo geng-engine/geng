@@ -77,7 +77,7 @@ impl geng::State for Example {
             &geng::Camera2d {
                 center: vec2(0.0, 2.5),
                 rotation: Angle::ZERO,
-                fov: 10.0,
+                fov: Camera2dFov::Vertical(10.0),
             },
             &draw2d::TexturedPolygon::strip(
                 izip![points, ts]

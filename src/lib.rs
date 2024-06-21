@@ -28,7 +28,7 @@
 
 pub mod prelude {
     pub use crate::{asset::Hot, draw2d, Geng};
-    pub use crate::{AbstractCamera2d, AbstractCamera3d, Camera2d};
+    pub use crate::{AbstractCamera2d, AbstractCamera3d, Camera2d, Camera2dFov};
     pub use ::batbox;
     pub use ::batbox::prelude::*;
     // pub use gilrs::{self, Gilrs};
@@ -50,7 +50,7 @@ pub use geng_async_state as async_state;
 #[cfg(feature = "audio")]
 pub use geng_audio::{self as audio, *};
 pub use geng_camera::{
-    self as camera, AbstractCamera2d, AbstractCamera3d, Camera2d, PixelPerfectCamera,
+    self as camera, AbstractCamera2d, AbstractCamera3d, Camera2d, Camera2dFov, PixelPerfectCamera,
 };
 pub use geng_draw2d::{self as draw2d, Draw2d};
 pub use geng_font::{self as font, Font, TextAlign};

@@ -55,7 +55,7 @@ impl geng::State for CrabRave {
         let camera = geng::Camera2d {
             center: vec2::ZERO,
             rotation: Angle::ZERO,
-            fov: 3.0,
+            fov: Camera2dFov::MinSide(3.0),
         };
         let x = (self.t / 10.0).cos();
         let body = mat3::translate(
