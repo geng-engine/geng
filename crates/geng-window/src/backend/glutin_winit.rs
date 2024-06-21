@@ -108,6 +108,11 @@ where
             event_loop: &winit::event_loop::ActiveEventLoop,
         ) {
             event_loop.set_control_flow(winit::event_loop::ControlFlow::Poll);
+
+            // TODO maybe not spam every event? but it needs to be done from a correct thread
+            #[cfg(target_os = "android")]
+            batbox_android::enable_immersive();
+
             if let winit::event::Event::Suspended = event {
                 event_loop.set_control_flow(winit::event_loop::ControlFlow::Wait);
             }
