@@ -1,0 +1,10 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta content="width=device-width,initial-scale=1" name=viewport><title>geng</title><link crossorigin=anonymous href=https://cdn.jsdelivr.net/npm/purecss@2.1.0/build/pure-min.css integrity=sha384-yHIFVG6ClnONEA5yB5DJXfW2/KC173DIQrYoZMEtBvGzmf0PKiGyNEqe9N6BNDBH rel=stylesheet><link href=/sus.css rel=stylesheet><link href=/examples.css rel=stylesheet><body><select class="pure-button pure-button-primary" id=example-select><option disabled hidden selected value>Select an example<option>03_moving<option>04_camera_controls<option>crabrave<option>custom_cursor<option>custom_font_shader<option>derive-assets<option>draw<option>gltf<option>hello_world<option>line_texture<option>pong<option>sound<option>text_input<option>transparent<option>ui</select><div id=example-iframe-container><iframe allowfullscreen id=example-iframe src=/example-placeholder.html></iframe></div><script type=module>let iframe = document.getElementById("example-iframe");
+        let placeholderSrc = iframe.src;
+        let select = document.getElementById("example-select");
+        select.onchange = function () {
+            if (select.value == "") {
+                iframe.src = placeholderSrc;
+            } else {
+                iframe.src = "/examples/" + select.value;
+            }
+        };</script>
