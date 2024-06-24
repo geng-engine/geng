@@ -276,6 +276,12 @@ struct SpaceEscape {
     transform: mat3<f32>,
 }
 
+impl Drop for SpaceEscape {
+    fn drop(&mut self) {
+        log::info!("Dropped");
+    }
+}
+
 impl SpaceEscape {
     pub fn new(window: window::Window, renderer: Rc<Renderer>, depth: usize) -> Self {
         Self {
@@ -320,10 +326,10 @@ impl SpaceEscape {
                             }
                         });
 
-                        let mut state = geng_async_state::transition(
+                        let state = geng_async_state::transition(
                             &self.window.clone(),
                             &mut self,
-                            &mut Crossfade::new(&renderer),
+                            Crossfade::new(&renderer),
                             into,
                         )
                         .await;
@@ -332,8 +338,8 @@ impl SpaceEscape {
                             .switch(move |resume| async move {
                                 geng_async_state::transition(
                                     &window,
-                                    &mut state,
-                                    &mut Swipe::new(&renderer),
+                                    state,
+                                    Swipe::new(&renderer),
                                     resume(()),
                                 )
                                 .await

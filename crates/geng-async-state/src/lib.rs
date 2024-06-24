@@ -51,14 +51,14 @@ pub struct StateResult<'a, T> {
 
 pub async fn transition<T>(
     window: &geng_window::Window,
-    from: &mut dyn ActiveState,
-    transition: &mut dyn Transition,
+    mut from: impl ActiveState,
+    mut transition: impl Transition,
     into: impl Future<Output = T>,
 ) -> T {
     let mut into = std::pin::pin!(into);
-    std::future::poll_fn(|cx| {
+    let transition_future = std::future::poll_fn(|cx| {
         if transition.finished() {
-            into.as_mut().poll(cx)
+            std::task::Poll::Ready(None)
         } else {
             with_current_framebuffer(window, |actual_framebuffer| {
                 WITH_FRAMEBUFFER.set(
@@ -69,10 +69,17 @@ pub async fn transition<T>(
                             actual_framebuffer,
                         );
                     },
-                    || into.as_mut().poll(cx),
+                    || into.as_mut().poll(cx).map(Some),
                 )
             })
         }
-    })
-    .await
+    });
+    match transition_future.await {
+        Some(result) => result,
+        None => {
+            std::mem::drop(from);
+            std::mem::drop(transition);
+            into.await
+        }
+    }
 }
