@@ -44,6 +44,21 @@ pub trait Transition {
     );
 }
 
+impl Transition for Box<dyn Transition> {
+    fn finished(&self) -> bool {
+        (**self).finished()
+    }
+
+    fn draw(
+        &mut self,
+        from: &mut dyn FnMut(&mut ugli::Framebuffer),
+        to: &mut dyn FnMut(&mut ugli::Framebuffer),
+        framebuffer: &mut ugli::Framebuffer,
+    ) {
+        (**self).draw(from, to, framebuffer)
+    }
+}
+
 pub struct StateResult<'a, T> {
     pub value: T,
     pub active_state: Box<dyn ActiveState + 'a>,
