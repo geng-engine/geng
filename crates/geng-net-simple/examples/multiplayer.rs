@@ -144,7 +144,7 @@ impl geng::State for Game {
         let camera = geng::Camera2d {
             center: vec2(0.0, 0.0),
             rotation: Angle::ZERO,
-            fov: 100.0,
+            fov: Camera2dFov::Vertical(100.0),
         };
         let model = self.model.get();
         for player in &model.players {
