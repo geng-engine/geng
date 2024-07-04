@@ -71,7 +71,7 @@ pub fn setup_panic_handler() {
     std::panic::set_hook(Box::new(move |info: &std::panic::PanicInfo| {
         let log_file_path = preferences::base_path().join("error.txt");
         if let Ok(mut file) = std::fs::OpenOptions::new()
-            .append(true)
+            // .append(true)
             .create(true)
             .open(log_file_path)
         {
