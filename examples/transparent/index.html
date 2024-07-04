@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=1" name="viewport" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #geng-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        #geng-error-screen {
+            width: 100%;
+            height: 100%;
+            background-color: black;
+        }
+
+        #geng-error-screen .error-container {
+            width: 80%;
+            padding: 2em;
+            border-radius: 2em;
+            border: 2px solid darkred;
+            box-shadow: 0 0 2em red;
+            color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -webkit-transform: translate(-50%, -50%);
+            -moz-transform: translate(-50%, -50%);
+            -ms-transform: translate(-50%, -50%);
+            -o-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        #geng-progress-screen {
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            color: white;
+        }
+
+        #geng-progress-container {
+            width: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -webkit-transform: translate(-50%, -50%);
+            -moz-transform: translate(-50%, -50%);
+            -ms-transform: translate(-50%, -50%);
+            -o-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        #geng-progress-bar {
+            height: 1em;
+            border-radius: 1em;
+            overflow: hidden;
+            background-color: gray;
+        }
+
+        #geng-progress-fill {
+            height: 100%;
+            border-radius: 1em;
+            background-color: white;
+            transition: width 0.5s;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="geng-error-screen" style="display: none;">
+        <div class="error-container">
+            <h1>Whoops...</h1>
+            <pre id="error-message">Something went wrong</pre>
+        </div>
+    </div>
+    <canvas id="geng-canvas" style="display: none"></canvas>
+    <div id="geng-progress-screen">
+        <div id="geng-progress-container">
+            <h2 id="geng-progress-title">Loading wasm</h2>
+            <div id="geng-progress-bar">
+                <div id="geng-progress-fill" style="width: 0%"></div>
+            </div>
+            <span id="geng-progress-text"></span>
+        </div>
+    </div>
+    <script src="sound-fix.js"></script>
+    <script type="module">
+        import init from "./transparent.js";
+
+        function updateBodySize() {
+            // For the rare legacy browsers that don't support it
+            if (!window.visualViewport) {
+                return;
+            }
+            document.body.style.height = window.visualViewport.height + "px";
+        }
+
+        window.addEventListener('resize', updateBodySize);
+        setInterval(updateBodySize, 100); // Because of iOS LUL
+        updateBodySize();
+
+        async function load_wasm(url, onProgress) {
+            let response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(response.status.toString());
+            }
+            const contentLengthString = response.headers.get("Content-Length");
+            const contentLength = contentLengthString === null ? void 0 : Number(contentLengthString);
+            const reader = response.body.getReader();
+            let chunks = [];
+            let receivedLength = 0;
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) {
+                    break;
+                }
+                chunks.push(value);
+                receivedLength += value.length;
+                onProgress(receivedLength, contentLength);
+            }
+            let chunksAll = new Uint8Array(receivedLength);
+            let position = 0;
+            for (let chunk of chunks) {
+                chunksAll.set(chunk, position);
+                position += chunk.length;
+            }
+            return chunksAll.buffer;
+        }
+
+        let progressTitle = document.getElementById("geng-progress-title");
+        let progressFill = document.getElementById("geng-progress-fill");
+        let progressText = document.getElementById("geng-progress-text");
+
+        window.gengUpdateProgressTitle = (title) => {
+            progressTitle.innerText = title;
+        }
+        window.gengUpdateProgress = (progress, total) => {
+            if (!total) {
+                progressText.innerText = "";
+                return;
+            }
+            const width = `${Math.round(100 * progress / total)}%`;
+            progressFill.style.width = width;
+            progressText.innerText = width;
+        };
+
+        init(load_wasm("transparent.wasm", window.gengUpdateProgress));
+    </script>
+</body>
+
+</html>
