@@ -475,9 +475,7 @@ impl Context {
         let handler = Rc::new(handler);
         let handler = &handler;
 
-        // TODO: check - did for salmoning
-        let document = web_sys::window().unwrap().document().unwrap();
-        let event_target = &document; // &self.canvas;
+        let event_target = &self.canvas;
 
         self.subscribe_to::<web_sys::KeyboardEvent>(event_target, handler, "keydown");
         self.subscribe_to::<web_sys::KeyboardEvent>(event_target, handler, "keyup");
