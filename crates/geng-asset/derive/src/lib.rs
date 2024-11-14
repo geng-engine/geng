@@ -109,9 +109,10 @@ impl DeriveInput {
                 impl #impl_generics geng::asset::Load #ty_generics for #ident #where_clause {
                     type Options = ();
                     fn load(manager: &geng::asset::Manager, path: &std::path::Path, options: &Self::Options) -> geng::asset::Future<Self> {
+                        let manager = manager.clone();
                         let path = path.to_owned();
                         async move {
-                            Ok(batbox::file::load_detect(path).await?)
+                            Ok(manager.load_serde(path).await?)
                         }.boxed_local()
                     }
                     const DEFAULT_EXT: Option<&'static str> = Some(#ext);
@@ -147,10 +148,10 @@ impl DeriveInput {
             if field.serde {
                 return match &field.path {
                     Some(path) => quote! {
-                        batbox::file::load_detect(base_path.join(#path))
+                        manager.load_serde(base_path.join(#path))
                     },
                     None => quote! {
-                        batbox::file::load_detect(base_path.join(stringify!(#ident)), #ext)
+                        manager.load_serde(base_path.join(stringify!(#ident)), #ext)
                     },
                 };
             }
@@ -167,7 +168,7 @@ impl DeriveInput {
                         },
                     };
                     quote! {
-                        file::load_detect::<Vec<String>>(
+                        manager.load_serde::<Vec<String>>(
                             #base_path.join(#listed_in)
                         ).await?.into_iter()
                     }

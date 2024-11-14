@@ -10,7 +10,7 @@ pub fn load_texture(
     let options = options.clone();
     async move {
         log::debug!("Loading {:?}", path);
-        let image = image::load_from_memory(&file::load_bytes(path).await?)?;
+        let image = image::load_from_memory(&manager.load_bytes(path).await?)?;
         manager.yield_now().await;
         let mut image = match image {
             image::DynamicImage::ImageRgba8(image) => image,

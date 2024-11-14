@@ -252,6 +252,7 @@ impl Load for geng_audio::Sound {
         let path = path.to_owned();
         let options = options.clone();
         Box::pin(async move {
+            manager.mark_path(&path);
             let mut sound = manager.audio().load(path).await?;
             sound.looped = options.looped;
             Ok(sound)
