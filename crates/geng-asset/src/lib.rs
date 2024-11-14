@@ -1,6 +1,7 @@
 use batbox_file as file;
 use futures::prelude::*;
 use geng_shader as shader;
+use std::borrow::BorrowMut;
 use std::cell::RefCell;
 use std::future::Future as StdFuture;
 use std::path::{Path, PathBuf};
@@ -25,6 +26,7 @@ struct ManagerImpl {
     audio: geng_audio::Audio,
     shader_lib: shader::Library,
     hot_reload_enabled: bool,
+    marked_paths: RefCell<Vec<PathBuf>>,
 }
 
 #[derive(Clone)]
@@ -46,8 +48,12 @@ impl Manager {
                 audio: audio.clone(),
                 shader_lib: shader::Library::new(window.ugli(), true, None),
                 hot_reload_enabled: hot_reload,
+                marked_paths: Default::default(),
             }),
         }
+    }
+    pub fn marked_paths(&self) -> Vec<PathBuf> {
+        self.inner.marked_paths.borrow().clone()
     }
     pub async fn yield_now(&self) {
         self.inner.window.yield_now().await
@@ -65,17 +71,27 @@ impl Manager {
     pub fn hot_reload_enabled(&self) -> bool {
         self.inner.hot_reload_enabled
     }
+    pub fn mark_path(&self, path: impl AsRef<Path>) {
+        self.inner
+            .marked_paths
+            .borrow_mut()
+            .push(path.as_ref().to_owned());
+    }
     pub fn load<T: Load>(&self, path: impl AsRef<Path>) -> Future<T> {
+        self.mark_path(path.as_ref());
         T::load(self, path.as_ref(), &Default::default())
     }
     pub fn load_with<T: Load>(&self, path: impl AsRef<Path>, options: &T::Options) -> Future<T> {
+        self.mark_path(path.as_ref());
         T::load(self, path.as_ref(), options)
     }
     pub fn load_string(&self, path: impl AsRef<Path>) -> Future<String> {
+        self.mark_path(path.as_ref());
         let path = path.as_ref().to_owned();
         file::load_string(path).boxed_local()
     }
     pub fn load_bytes(&self, path: impl AsRef<Path>) -> Future<Vec<u8>> {
+        self.mark_path(path.as_ref());
         let path = path.as_ref().to_owned();
         file::load_bytes(path).boxed_local()
     }
@@ -83,6 +99,7 @@ impl Manager {
         &self,
         path: impl AsRef<Path>,
     ) -> Future<T> {
+        self.mark_path(path.as_ref());
         let path = path.as_ref().to_owned();
         file::load_detect(path).boxed_local()
     }
@@ -93,6 +110,7 @@ impl Manager {
         options: &T::Options,
         ext: Option<impl AsRef<str>>,
     ) -> Future<T> {
+        self.mark_path(path.as_ref());
         let path = path.as_ref();
         let path_buf_tmp;
         let path = match ext.as_ref().map(|s| s.as_ref()).or(T::DEFAULT_EXT) {
