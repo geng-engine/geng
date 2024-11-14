@@ -78,11 +78,9 @@ impl Manager {
             .push(path.as_ref().to_owned());
     }
     pub fn load<T: Load>(&self, path: impl AsRef<Path>) -> Future<T> {
-        self.mark_path(path.as_ref());
         T::load(self, path.as_ref(), &Default::default())
     }
     pub fn load_with<T: Load>(&self, path: impl AsRef<Path>, options: &T::Options) -> Future<T> {
-        self.mark_path(path.as_ref());
         T::load(self, path.as_ref(), options)
     }
     pub fn load_string(&self, path: impl AsRef<Path>) -> Future<String> {
@@ -110,7 +108,6 @@ impl Manager {
         options: &T::Options,
         ext: Option<impl AsRef<str>>,
     ) -> Future<T> {
-        self.mark_path(path.as_ref());
         let path = path.as_ref();
         let path_buf_tmp;
         let path = match ext.as_ref().map(|s| s.as_ref()).or(T::DEFAULT_EXT) {
