@@ -71,6 +71,21 @@ impl Manager {
     pub fn load_with<T: Load>(&self, path: impl AsRef<Path>, options: &T::Options) -> Future<T> {
         T::load(self, path.as_ref(), options)
     }
+    pub fn load_string(&self, path: impl AsRef<Path>) -> Future<String> {
+        let path = path.as_ref().to_owned();
+        file::load_string(path).boxed_local()
+    }
+    pub fn load_bytes(&self, path: impl AsRef<Path>) -> Future<Vec<u8>> {
+        let path = path.as_ref().to_owned();
+        file::load_bytes(path).boxed_local()
+    }
+    pub fn load_serde<T: 'static + serde::de::DeserializeOwned>(
+        &self,
+        path: impl AsRef<Path>,
+    ) -> Future<T> {
+        let path = path.as_ref().to_owned();
+        file::load_detect(path).boxed_local()
+    }
     /// Load asset from given path with specified or default extension
     pub fn load_ext<T: Load>(
         &self,
@@ -146,18 +161,20 @@ impl Load for serde_json::Value {
 
 impl Load for String {
     type Options = ();
-    fn load(_manager: &Manager, path: &Path, _options: &Self::Options) -> Future<Self> {
+    fn load(manager: &Manager, path: &Path, _options: &Self::Options) -> Future<Self> {
+        let manager = manager.clone();
         let path = path.to_owned();
-        async move { file::load_string(&path).await }.boxed_local()
+        async move { manager.load_string(path).await }.boxed_local()
     }
     const DEFAULT_EXT: Option<&'static str> = Some("txt");
 }
 
 impl Load for Vec<u8> {
     type Options = ();
-    fn load(_manager: &Manager, path: &Path, _options: &Self::Options) -> Future<Self> {
+    fn load(manager: &Manager, path: &Path, _options: &Self::Options) -> Future<Self> {
+        let manager = manager.clone();
         let path = path.to_owned();
-        async move { file::load_bytes(&path).await }.boxed_local()
+        async move { manager.load_bytes(path).await }.boxed_local()
     }
     const DEFAULT_EXT: Option<&'static str> = None;
 }
@@ -169,7 +186,7 @@ impl Load for geng_font::Font {
         let path = path.to_owned();
         let options = options.clone();
         async move {
-            let data = file::load_bytes(path).await?;
+            let data: Vec<u8> = manager.load_bytes(path).await?;
             geng_font::Font::new(manager.ugli(), &data, &options)
         }
         .boxed_local()

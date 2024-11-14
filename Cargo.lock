@@ -1852,6 +1852,7 @@ dependencies = [
  "image",
  "log",
  "notify",
+ "serde",
  "serde_json",
  "ugli",
  "wasm-bindgen",
