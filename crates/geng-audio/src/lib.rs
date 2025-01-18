@@ -194,12 +194,25 @@ impl SoundEffect {
         fade_gain.linear_ramp_to_value_at_time(0.0, end_time);
         self.source_node.stop_at(end_time);
     }
+
     pub fn set_volume(&mut self, volume: f32) {
         self.gain_node.gain().set_value(volume);
     }
+
+    pub fn fade_to_volume(&mut self, volume: f32, duration: time::Duration) {
+        let current_time = self.context.inner.context.current_time();
+        let end_time = current_time + duration.as_secs_f64();
+        let fade_gain = self.gain_node.gain();
+
+        fade_gain.cancel_scheduled_changes(current_time);
+
+        fade_gain.linear_ramp_to_value_at_time(volume, end_time);
+    }
+
     pub fn play(&mut self) {
         self.play_from(time::Duration::from_secs_f64(0.0));
     }
+
     pub fn play_from(&mut self, offset: time::Duration) {
         let node: &dyn wa::AudioNode = match &self.spatial_state {
             SpatialState::NotSpatial => &self.gain_node,
