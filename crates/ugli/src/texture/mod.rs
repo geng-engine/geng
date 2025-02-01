@@ -235,6 +235,19 @@ impl Texture {
         texture
     }
 
+    pub fn to_image_image(&self) -> image::RgbaImage {
+        FramebufferRead::new_color(&self.ugli, ColorAttachmentRead::Texture(self))
+            .read_color()
+            .into_image_image()
+    }
+
+    pub fn render_into<R>(&mut self, f: impl FnOnce(&mut Framebuffer) -> R) -> R {
+        f(&mut Framebuffer::new_color(
+            &self.ugli.clone(),
+            ColorAttachment::Texture(self),
+        ))
+    }
+
     #[cfg(target_arch = "wasm32")]
     pub fn from_html_image_element(
         ugli: &Ugli,

@@ -50,6 +50,23 @@ impl geng::State for CrabRave {
             // self.legs[i] += (p - self.legs[i]) * (delta_time as f32 * 10.0).min(1.0);
         }
     }
+    fn handle_event(&mut self, event: geng::Event) {
+        if let geng::Event::KeyPress { key: geng::Key::S } = event {
+            if self.geng.window().is_key_pressed(geng::Key::ControlLeft) {
+                let mut texture =
+                    ugli::Texture::new_uninitialized(self.geng.ugli(), self.geng.window().size());
+                texture.render_into(|framebuffer| {
+                    self.draw(framebuffer);
+                });
+                let mut output = std::io::Cursor::new(Vec::new());
+                texture
+                    .to_image_image()
+                    .write_to(&mut output, image::ImageFormat::Png)
+                    .unwrap();
+                file_dialog::save("crabrave.png", &output.into_inner()).unwrap();
+            }
+        }
+    }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
         let camera = geng::Camera2d {

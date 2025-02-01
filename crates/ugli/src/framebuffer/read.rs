@@ -21,6 +21,14 @@ impl<'a> ColorData<'a> {
     pub fn data(&self) -> &[u8] {
         &self.buffer
     }
+
+    pub fn into_image_image(self) -> image::RgbaImage {
+        let mut image =
+            image::RgbaImage::from_vec(self.width as u32, self.height as u32, self.buffer)
+                .expect("failed to convert to image");
+        image::imageops::flip_vertical_in_place(&mut image);
+        image
+    }
 }
 
 impl<'a> FramebufferRead<'a> {
