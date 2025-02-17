@@ -67,7 +67,7 @@ impl AbstractCamera2d for Camera2d {
             }
         };
         let vertical_fov = if vertical { fov } else { fov / aspect };
-        let horizontal_fov = 1.0 / aspect;
+        let horizontal_fov = vertical_fov * aspect;
         mat3::scale(vec2(2.0 / horizontal_fov, 2.0 / vertical_fov))
     }
 }
