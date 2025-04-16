@@ -4,6 +4,7 @@ use geng_net_simple as simple_net;
 type PlayerId = usize;
 
 #[derive(Debug, Serialize, Deserialize, Diff, Clone, PartialEq)]
+#[diff(derive = "Debug, Serialize, Deserialize, Clone")]
 struct Player {
     id: PlayerId,
     position: vec2<f32>,
@@ -17,6 +18,7 @@ impl HasId for Player {
 }
 
 #[derive(Debug, Serialize, Deserialize, Diff, Clone, PartialEq)]
+#[diff(derive = "Debug, Serialize, Deserialize, Clone")]
 struct Model {
     current_time: f32,
     next_player_id: PlayerId,

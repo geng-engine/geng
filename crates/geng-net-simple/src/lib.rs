@@ -11,7 +11,7 @@ pub mod server;
 #[cfg(not(target_arch = "wasm32"))]
 pub use server::*;
 
-pub trait Model: Diff + Message {
+pub trait Model: Diff<Delta: Message + Clone> + Message + Clone + PartialEq {
     type PlayerId: Message + Clone;
     type Message: Message;
     type Event: Message + Clone;
