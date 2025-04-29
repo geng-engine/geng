@@ -15,6 +15,7 @@ pub const LINEAR_MIPMAP_LINEAR: Enum = web_sys::WebGlRenderingContext::LINEAR_MI
 pub const TEXTURE0: Enum = web_sys::WebGlRenderingContext::TEXTURE0;
 pub const CLAMP_TO_EDGE: Enum = web_sys::WebGlRenderingContext::CLAMP_TO_EDGE;
 pub const REPEAT: Enum = web_sys::WebGlRenderingContext::REPEAT;
+pub const MIRRORED_REPEAT: Enum = web_sys::WebGlRenderingContext::MIRRORED_REPEAT;
 pub const LINEAR: Enum = web_sys::WebGlRenderingContext::LINEAR;
 pub const NEAREST: Enum = web_sys::WebGlRenderingContext::NEAREST;
 pub const COLOR_ATTACHMENT0: Enum = web_sys::WebGlRenderingContext::COLOR_ATTACHMENT0;
