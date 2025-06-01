@@ -178,7 +178,12 @@ impl SoundEffect {
         let current_time = self.context.inner.context.current_time();
         let current_value = match self.fade_in_times.take() {
             Some(times) => {
-                ((current_time - times.start) / (times.end - times.start)).clamp(0.0, 1.0) as f32
+                let duration = times.end - times.start;
+                if duration.abs() < 1e-5 {
+                    1.0
+                } else {
+                    ((current_time - times.start) / duration).clamp(0.0, 1.0) as f32
+                }
             }
             None => 1.0,
         };
