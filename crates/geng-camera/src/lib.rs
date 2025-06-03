@@ -68,16 +68,21 @@ pub trait AbstractCamera2d {
         pos.xy()
     }
 
-    fn world_to_screen(&self, framebuffer_size: vec2<f32>, pos: vec2<f32>) -> Option<vec2<f32>> {
+    fn world_to_screen(
+        &self,
+        framebuffer_size: vec2<f32>,
+        pos: vec2<f32>,
+    ) -> Result<vec2<f32>, vec2<f32>> {
         let pos = (self.projection_matrix(framebuffer_size) * self.view_matrix()) * pos.extend(1.0);
         let pos = pos.xy() / pos.z;
-        if pos.x.abs() > 1.0 || pos.y.abs() > 1.0 {
-            return None;
-        }
-        Some(vec2(
+        let result = vec2(
             (pos.x + 1.0) / 2.0 * framebuffer_size.x,
             (pos.y + 1.0) / 2.0 * framebuffer_size.y,
-        ))
+        );
+        if pos.x.abs() > 1.0 || pos.y.abs() > 1.0 {
+            return Err(result);
+        }
+        Ok(result)
     }
 
     fn view_area(&self, framebuffer_size: vec2<f32>) -> Quad<f32> {
