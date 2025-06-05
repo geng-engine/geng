@@ -1,9 +1,11 @@
 use super::*;
 
 use anyhow::Context as _;
+use raw_window_handle::HasDisplayHandle;
 use std::ops::DerefMut;
 
 pub struct Context {
+    should_pre_present_notify: bool,
     options: Options,
     window: RefCell<Option<winit::window::Window>>,
     gl_ctx: RefCell<Option<glutin::context::PossiblyCurrentContext>>,
@@ -63,10 +65,12 @@ fn resume(
     if let Err(res) = glutin::surface::GlSurface::set_swap_interval(
         &gl_surface,
         gl_ctx,
-        if options.vsync {
-            glutin::surface::SwapInterval::Wait(std::num::NonZeroU32::new(1).unwrap())
-        } else {
-            glutin::surface::SwapInterval::DontWait
+        match event_loop.display_handle().unwrap().as_raw() {
+            raw_window_handle::RawDisplayHandle::Wayland(_) => {
+                // on wayland need pre_present_notify
+                glutin::surface::SwapInterval::DontWait
+            }
+            _ => glutin::surface::SwapInterval::Wait(1.try_into().unwrap()),
         },
     ) {
         log::error!("Error setting vsync: {res:?}");
@@ -209,6 +213,10 @@ where
                     )
                 });
                 let context = Rc::new(Context {
+                    should_pre_present_notify: matches!(
+                        event_loop.display_handle().unwrap().as_raw(),
+                        raw_window_handle::RawDisplayHandle::Wayland(_)
+                    ),
                     options: self.options.clone(),
                     window: RefCell::new(window),
                     gl_surface: RefCell::new(gl_surface),
@@ -477,6 +485,11 @@ impl Context {
             winit::event::WindowEvent::RedrawRequested => {
                 if let Some(gl_surface) = &*self.gl_surface.borrow() {
                     event_handler(Event::Draw);
+                    if let Some(window) = self.window.borrow().as_ref() {
+                        if self.options.vsync && self.should_pre_present_notify {
+                            window.pre_present_notify();
+                        }
+                    }
                     glutin::surface::GlSurface::swap_buffers(
                         gl_surface,
                         self.gl_ctx.borrow().as_ref().unwrap(),
