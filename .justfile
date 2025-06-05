@@ -1,6 +1,9 @@
 hi:
     echo Hello
 
+bug:
+    mangohud cargo run -p bug
+
 publish:
     cargo publish -p ugli-raw
     cargo publish -p ugli-derive

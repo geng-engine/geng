@@ -841,6 +841,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "bug"
+version = "0.18.0"
+dependencies = [
+ "anyhow",
+ "async-broadcast",
+ "async-executor",
+ "batbox-la",
+ "futures",
+ "glutin",
+ "glutin-winit",
+ "raw-window-handle",
+ "ugli",
+ "winit",
+]
+
+[[package]]
 name = "built"
 version = "0.7.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"

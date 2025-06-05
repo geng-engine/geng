@@ -23,7 +23,7 @@
             target.android.enable = true;
             target.windows.enable = true;
             target.web.enable = true;
-            packages = [ pkgs.mangohud ];
+            packages = with pkgs;[ just mangohud ];
             # rust.toolchain-kind = "nightly";
             # rust.extensions = [ "miri" ];
           };

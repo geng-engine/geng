@@ -55,7 +55,7 @@ fn resume(
             _ => glutin::surface::SwapInterval::Wait(1.try_into().unwrap()),
         },
     ) {
-        log::error!("Error setting vsync: {res:?}");
+        eprintln!("Error setting vsync: {res:?}");
     }
 
     window_field.replace(window);
@@ -128,7 +128,6 @@ where
                                     .max_by_key(glutin::config::GlConfig::num_samples)
                             }
                             .expect("Could not find fitting config");
-                            log::debug!("{config:#?}");
                             config
                         },
                     )
@@ -213,22 +212,6 @@ impl Context {
         vec2(width as usize, height as usize)
     }
 
-    pub fn set_icon(&self, path: &std::path::Path) -> anyhow::Result<()> {
-        let Some(window) = &*self.window.borrow() else {
-            return Ok(());
-        };
-        let image = image::open(path).context(format!("Failed to load {path:?}"))?;
-        let image = match image {
-            image::DynamicImage::ImageRgba8(image) => image,
-            _ => image.to_rgba8(),
-        };
-        let width = image.width();
-        let height = image.height();
-        let icon = winit::window::Icon::from_rgba(image.into_raw(), width, height)?;
-        window.set_window_icon(Some(icon));
-        Ok(())
-    }
-
     pub fn ugli(&self) -> &Ugli {
         &self.ugli
     }
@@ -249,7 +232,6 @@ impl Context {
             winit::event::WindowEvent::Resized(new_size) => {
                 if new_size.width != 0 && new_size.height != 0 {
                     if let Some(gl_surface) = &*self.gl_surface.borrow() {
-                        log::debug!("Resizing to {new_size:?}");
                         glutin::surface::GlSurface::resize(
                             gl_surface,
                             self.gl_ctx.borrow().as_ref().unwrap(),
@@ -293,7 +275,6 @@ impl Context {
             }
             winit::event::Event::Resumed => {
                 if self.gl_surface.borrow().is_none() {
-                    log::debug!("Resumed!");
                     resume(
                         &mut self.window.borrow_mut(),
                         event_loop,
@@ -303,7 +284,6 @@ impl Context {
                 }
             }
             winit::event::Event::Suspended => {
-                log::debug!("Suspended!");
                 self.window.take();
                 if let Some(_gl_surface) = self.gl_surface.take() {
                     self.gl_ctx.replace(Some(

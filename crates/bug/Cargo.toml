@@ -1,0 +1,27 @@
+[package]
+name = "bug"
+authors.workspace = true
+categories.workspace = true
+description.workspace = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]
+
+[dependencies]
+async-executor.workspace = true
+async-broadcast.workspace = true
+futures.workspace = true
+batbox-la.workspace = true
+anyhow.workspace = true
+winit.workspace = true
+ugli.workspace = true
+glutin.workspace = true
+glutin-winit.workspace = true
+raw-window-handle.workspace = true
