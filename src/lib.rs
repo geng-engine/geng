@@ -43,7 +43,6 @@ pub use image;
 
 mod cli_args;
 mod context;
-mod loading_screen;
 
 pub use geng_asset as asset;
 pub use geng_async_state as async_state;
@@ -63,7 +62,6 @@ pub use geng_window::{self as window, CursorType, Event, Key, MouseButton, Touch
 
 pub use cli_args::*;
 pub use context::*;
-pub use loading_screen::*;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn setup_panic_handler() {

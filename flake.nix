@@ -23,6 +23,9 @@
             target.android.enable = true;
             target.windows.enable = true;
             target.web.enable = true;
+            packages = [ pkgs.mangohud ];
+            # rust.toolchain-kind = "nightly";
+            # rust.extensions = [ "miri" ];
           };
         });
       formatter = forEachSystem (system: pkgs: pkgs.nixpkgs-fmt);

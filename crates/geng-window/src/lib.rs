@@ -272,10 +272,9 @@ where
                 // log::error!("Event has been ignored: {removed:?}");
             }
             window.inner.event_receiver.borrow_mut().try_recv().unwrap();
-            while window.inner.executor.try_tick() {
-                if main_task.is_finished() {
-                    return std::ops::ControlFlow::Break(());
-                }
+            while window.inner.executor.try_tick() {}
+            if main_task.is_finished() {
+                return std::ops::ControlFlow::Break(());
             }
             window.inner.current_event.borrow_mut().take();
             std::ops::ControlFlow::Continue(())

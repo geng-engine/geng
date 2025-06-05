@@ -2009,6 +2009,7 @@ dependencies = [
  "batbox-time",
  "clap",
  "futures",
+ "geng-font",
  "geng-shader",
  "glutin",
  "glutin-winit",

@@ -125,4 +125,7 @@ impl Program {
     pub(crate) fn bind(&self) {
         self.ugli.inner.raw.use_program(&self.handle);
     }
+    pub fn raw(&self) -> &raw::Program {
+        &self.handle
+    }
 }

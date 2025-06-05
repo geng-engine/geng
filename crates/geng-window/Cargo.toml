@@ -37,6 +37,7 @@ batbox-cli.workspace = true
 batbox-color.workspace = true
 # batbox.workspace = true
 geng-shader.workspace = true
+geng-font.workspace = true
 
 [target.'cfg(target_os = "android")'.dependencies]
 batbox-android.workspace = true

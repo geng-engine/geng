@@ -70,27 +70,28 @@ pub fn draw<V, U, DP>(
     U: Uniforms,
     DP: std::borrow::Borrow<DrawParameters>,
 {
-    puffin::profile_function!();
-    program.ugli.debug_check();
+    // puffin::profile_function!();
+    // program.ugli.debug_check();
     let gl = &program.ugli.inner.raw;
-
-    framebuffer.fbo.bind();
-    let draw_parameters: &DrawParameters = draw_parameters.borrow();
-    draw_parameters.apply(gl, framebuffer.size());
+    //
+    // framebuffer.fbo.bind();
+    // let draw_parameters: &DrawParameters = draw_parameters.borrow();
+    // draw_parameters.apply(gl, framebuffer.size());
     program.bind();
-    unsafe {
-        UNIFORM_TEXTURE_COUNT = 0;
-    }
-    if draw_parameters.reset_uniforms {
-        puffin::profile_scope!("reset uniforms");
-        for uniform in program.uniforms.values() {
-            if let Some(default) = &uniform.default {
-                default.apply(program, uniform);
-            }
-        }
-    }
-
-    apply_uniforms(uniforms, program);
+    // unsafe {
+    //     UNIFORM_TEXTURE_COUNT = 0;
+    // }
+    // if draw_parameters.reset_uniforms {
+    //     puffin::profile_scope!("reset uniforms");
+    //     for uniform in program.uniforms.values() {
+    //         if let Some(default) = &uniform.default {
+    //             default.apply(program, uniform);
+    //         }
+    //     }
+    // }
+    //
+    // apply_uniforms(uniforms, program);
+    return;
 
     let mut vertex_count = None;
     let mut instance_count = None;

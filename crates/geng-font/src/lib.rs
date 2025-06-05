@@ -175,269 +175,270 @@ impl Font {
             }
         }
         let mut atlas = ugli::Texture::new_uninitialized(ugli, atlas_size);
-        {
-            let mut depth_buffer = ugli::Renderbuffer::new(ugli, atlas_size);
-            let mut framebuffer = ugli::Framebuffer::new(
-                ugli,
-                ugli::ColorAttachment::Texture(&mut atlas),
-                ugli::DepthAttachment::RenderbufferWithStencil(&mut depth_buffer),
-            );
+        'atlas: {
+            // let mut depth_buffer = ugli::Renderbuffer::new(ugli, atlas_size);
+            // let mut framebuffer = ugli::Framebuffer::new(
+            //     ugli,
+            //     ugli::ColorAttachment::Texture(&mut atlas),
+            //     ugli::DepthAttachment::None,
+            //     // ugli::DepthAttachment::RenderbufferWithStencil(&mut depth_buffer),
+            // );
+            let mut framebuffer = ugli::Framebuffer::default(ugli, vec2(10, 10));
             let framebuffer = &mut framebuffer;
-            ugli::clear(
-                framebuffer,
-                Some(Rgba::TRANSPARENT_BLACK),
-                Some(1.0),
-                Some(0),
-            );
+            // ugli::clear(
+            //     framebuffer,
+            //     Some(Rgba::TRANSPARENT_BLACK),
+            //     Some(1.0),
+            //     Some(0),
+            // );
 
             #[derive(ugli::Vertex, Copy, Clone)]
             struct Vertex {
                 a_pos: vec2<f32>,
                 a_dist_pos: vec2<f32>,
             }
-            struct Builder {
-                distance_mesh: Vec<Vertex>,
-                stencil_mesh: Vec<Vertex>,
-                pos: vec2<f32>,
-                contour_start: vec2<f32>,
-                scale: f32,
-                offset: vec2<f32>,
-                options: Options,
-            }
-            impl Builder {
-                fn new_glyph_at(&mut self, offset: vec2<f32>) {
-                    self.offset = offset;
-                }
-                fn add_triangle_fan(&mut self, mid: Vertex, vs: impl IntoIterator<Item = Vertex>) {
-                    use itertools::Itertools;
-                    for (a, b) in vs.into_iter().tuple_windows() {
-                        self.distance_mesh.push(mid);
-                        self.distance_mesh.push(a);
-                        self.distance_mesh.push(b);
-                    }
-                }
-                fn add_triangle_fan2(&mut self, vs: impl IntoIterator<Item = Vertex>) {
-                    let mut vs = vs.into_iter();
-                    let first = vs.next().unwrap();
-                    self.add_triangle_fan(first, vs);
-                }
-                fn add_line(&mut self, a: vec2<f32>, b: vec2<f32>) {
-                    let radius = self.options.max_distance * self.options.pixel_size;
-                    self.stencil_mesh.push(Vertex {
-                        a_pos: self.offset,
-                        a_dist_pos: vec2::ZERO,
-                    });
-                    self.stencil_mesh.push(Vertex {
-                        a_pos: a,
-                        a_dist_pos: vec2::ZERO,
-                    });
-                    self.stencil_mesh.push(Vertex {
-                        a_pos: b,
-                        a_dist_pos: vec2::ZERO,
-                    });
-                    let unit_quad = Aabb2::point(vec2::ZERO).extend_uniform(1.0);
-                    let a_quad = Aabb2::point(a).extend_uniform(radius);
-                    let b_quad = Aabb2::point(b).extend_uniform(radius);
-                    self.add_triangle_fan2(
-                        itertools::izip![a_quad.corners(), unit_quad.corners()]
-                            .map(|(a_pos, a_dist_pos)| Vertex { a_pos, a_dist_pos }),
-                    );
-                    self.add_triangle_fan2(
-                        itertools::izip![b_quad.corners(), unit_quad.corners()]
-                            .map(|(a_pos, a_dist_pos)| Vertex { a_pos, a_dist_pos }),
-                    );
-                    let n = (b - a).rotate_90().normalize_or_zero() * radius;
-                    self.add_triangle_fan2([
-                        Vertex {
-                            a_pos: a + n,
-                            a_dist_pos: vec2(0.0, 1.0),
-                        },
-                        Vertex {
-                            a_pos: b + n,
-                            a_dist_pos: vec2(0.0, 1.0),
-                        },
-                        Vertex {
-                            a_pos: b - n,
-                            a_dist_pos: vec2(0.0, -1.0),
-                        },
-                        Vertex {
-                            a_pos: a - n,
-                            a_dist_pos: vec2(0.0, -1.0),
-                        },
-                    ]);
-                }
-            }
-            fn quad_bezier(p0: vec2<f32>, p1: vec2<f32>, p2: vec2<f32>, t: f32) -> vec2<f32> {
-                (1.0 - t).sqr() * p0 + 2.0 * (1.0 - t) * t * p1 + t.sqr() * p2
-            }
-            fn cubic_bezier(
-                p0: vec2<f32>,
-                p1: vec2<f32>,
-                p2: vec2<f32>,
-                p3: vec2<f32>,
-                t: f32,
-            ) -> vec2<f32> {
-                (1.0 - t) * quad_bezier(p0, p1, p2, t) + t * quad_bezier(p1, p2, p3, t)
-            }
-            const N: usize = 10;
-            impl ttf_parser::OutlineBuilder for Builder {
-                fn move_to(&mut self, x: f32, y: f32) {
-                    self.contour_start = vec2(x, y);
-                    self.pos = vec2(x, y) * self.scale + self.offset;
-                }
-                fn line_to(&mut self, x: f32, y: f32) {
-                    let a = self.pos;
-                    self.pos = vec2(x, y) * self.scale + self.offset;
-                    let b = self.pos;
-                    self.add_line(a, b);
-                }
-                fn quad_to(&mut self, x1: f32, y1: f32, x: f32, y: f32) {
-                    // TODO proper math stuff
-                    let p0 = self.pos;
-                    let p1 = vec2(x1, y1) * self.scale + self.offset;
-                    let p2 = vec2(x, y) * self.scale + self.offset;
-                    for i in 1..=N {
-                        let t = i as f32 / N as f32;
-                        let p = quad_bezier(p0, p1, p2, t);
-                        self.add_line(self.pos, p);
-                        self.pos = p;
-                    }
-                }
-                fn curve_to(&mut self, x1: f32, y1: f32, x2: f32, y2: f32, x: f32, y: f32) {
-                    // TODO proper math stuff
-                    let p0 = self.pos;
-                    let p1 = vec2(x1, y1) * self.scale + self.offset;
-                    let p2 = vec2(x2, y2) * self.scale + self.offset;
-                    let p3 = vec2(x, y) * self.scale + self.offset;
-                    for i in 1..=N {
-                        let t = i as f32 / N as f32;
-                        let p = cubic_bezier(p0, p1, p2, p3, t);
-                        self.add_line(self.pos, p);
-                        self.pos = p;
-                    }
-                }
-                fn close(&mut self) {
-                    self.line_to(self.contour_start.x, self.contour_start.y);
-                }
-            }
-            let mut builder = Builder {
-                distance_mesh: vec![],
-                stencil_mesh: vec![],
-                pos: vec2::ZERO,
-                contour_start: vec2::ZERO,
-                scale,
-                offset: vec2::ZERO,
-                options: options.clone(),
-            };
-            for glyph in &raw_glyphs {
-                if glyph.bounding_box.is_none() {
-                    continue;
-                }
-                builder.new_glyph_at(
-                    (glyphs[&glyph.code_point]
-                        .metrics
-                        .as_ref()
-                        .unwrap()
-                        .uv
-                        .bottom_left()
-                        * atlas_size.map(|x| x as f32))
-                    .map(|x| x + options.max_distance * options.pixel_size)
-                        - glyph.bounding_box.unwrap().bottom_left(),
-                );
-                face.outline_glyph(glyph.id, &mut builder);
-            }
+            // struct Builder {
+            //     distance_mesh: Vec<Vertex>,
+            //     stencil_mesh: Vec<Vertex>,
+            //     pos: vec2<f32>,
+            //     contour_start: vec2<f32>,
+            //     scale: f32,
+            //     offset: vec2<f32>,
+            //     options: Options,
+            // }
+            // impl Builder {
+            //     fn new_glyph_at(&mut self, offset: vec2<f32>) {
+            //         self.offset = offset;
+            //     }
+            //     fn add_triangle_fan(&mut self, mid: Vertex, vs: impl IntoIterator<Item = Vertex>) {
+            //         use itertools::Itertools;
+            //         for (a, b) in vs.into_iter().tuple_windows() {
+            //             self.distance_mesh.push(mid);
+            //             self.distance_mesh.push(a);
+            //             self.distance_mesh.push(b);
+            //         }
+            //     }
+            //     fn add_triangle_fan2(&mut self, vs: impl IntoIterator<Item = Vertex>) {
+            //         let mut vs = vs.into_iter();
+            //         let first = vs.next().unwrap();
+            //         self.add_triangle_fan(first, vs);
+            //     }
+            //     fn add_line(&mut self, a: vec2<f32>, b: vec2<f32>) {
+            //         let radius = self.options.max_distance * self.options.pixel_size;
+            //         self.stencil_mesh.push(Vertex {
+            //             a_pos: self.offset,
+            //             a_dist_pos: vec2::ZERO,
+            //         });
+            //         self.stencil_mesh.push(Vertex {
+            //             a_pos: a,
+            //             a_dist_pos: vec2::ZERO,
+            //         });
+            //         self.stencil_mesh.push(Vertex {
+            //             a_pos: b,
+            //             a_dist_pos: vec2::ZERO,
+            //         });
+            //         let unit_quad = Aabb2::point(vec2::ZERO).extend_uniform(1.0);
+            //         let a_quad = Aabb2::point(a).extend_uniform(radius);
+            //         let b_quad = Aabb2::point(b).extend_uniform(radius);
+            //         self.add_triangle_fan2(
+            //             itertools::izip![a_quad.corners(), unit_quad.corners()]
+            //                 .map(|(a_pos, a_dist_pos)| Vertex { a_pos, a_dist_pos }),
+            //         );
+            //         self.add_triangle_fan2(
+            //             itertools::izip![b_quad.corners(), unit_quad.corners()]
+            //                 .map(|(a_pos, a_dist_pos)| Vertex { a_pos, a_dist_pos }),
+            //         );
+            //         let n = (b - a).rotate_90().normalize_or_zero() * radius;
+            //         self.add_triangle_fan2([
+            //             Vertex {
+            //                 a_pos: a + n,
+            //                 a_dist_pos: vec2(0.0, 1.0),
+            //             },
+            //             Vertex {
+            //                 a_pos: b + n,
+            //                 a_dist_pos: vec2(0.0, 1.0),
+            //             },
+            //             Vertex {
+            //                 a_pos: b - n,
+            //                 a_dist_pos: vec2(0.0, -1.0),
+            //             },
+            //             Vertex {
+            //                 a_pos: a - n,
+            //                 a_dist_pos: vec2(0.0, -1.0),
+            //             },
+            //         ]);
+            //     }
+            // }
+            // fn quad_bezier(p0: vec2<f32>, p1: vec2<f32>, p2: vec2<f32>, t: f32) -> vec2<f32> {
+            //     (1.0 - t).sqr() * p0 + 2.0 * (1.0 - t) * t * p1 + t.sqr() * p2
+            // }
+            // fn cubic_bezier(
+            //     p0: vec2<f32>,
+            //     p1: vec2<f32>,
+            //     p2: vec2<f32>,
+            //     p3: vec2<f32>,
+            //     t: f32,
+            // ) -> vec2<f32> {
+            //     (1.0 - t) * quad_bezier(p0, p1, p2, t) + t * quad_bezier(p1, p2, p3, t)
+            // }
+            // const N: usize = 10;
+            // impl ttf_parser::OutlineBuilder for Builder {
+            //     fn move_to(&mut self, x: f32, y: f32) {
+            //         self.contour_start = vec2(x, y);
+            //         self.pos = vec2(x, y) * self.scale + self.offset;
+            //     }
+            //     fn line_to(&mut self, x: f32, y: f32) {
+            //         let a = self.pos;
+            //         self.pos = vec2(x, y) * self.scale + self.offset;
+            //         let b = self.pos;
+            //         self.add_line(a, b);
+            //     }
+            //     fn quad_to(&mut self, x1: f32, y1: f32, x: f32, y: f32) {
+            //         // TODO proper math stuff
+            //         let p0 = self.pos;
+            //         let p1 = vec2(x1, y1) * self.scale + self.offset;
+            //         let p2 = vec2(x, y) * self.scale + self.offset;
+            //         for i in 1..=N {
+            //             let t = i as f32 / N as f32;
+            //             let p = quad_bezier(p0, p1, p2, t);
+            //             self.add_line(self.pos, p);
+            //             self.pos = p;
+            //         }
+            //     }
+            //     fn curve_to(&mut self, x1: f32, y1: f32, x2: f32, y2: f32, x: f32, y: f32) {
+            //         // TODO proper math stuff
+            //         let p0 = self.pos;
+            //         let p1 = vec2(x1, y1) * self.scale + self.offset;
+            //         let p2 = vec2(x2, y2) * self.scale + self.offset;
+            //         let p3 = vec2(x, y) * self.scale + self.offset;
+            //         for i in 1..=N {
+            //             let t = i as f32 / N as f32;
+            //             let p = cubic_bezier(p0, p1, p2, p3, t);
+            //             self.add_line(self.pos, p);
+            //             self.pos = p;
+            //         }
+            //     }
+            //     fn close(&mut self) {
+            //         self.line_to(self.contour_start.x, self.contour_start.y);
+            //     }
+            // }
+            // let mut builder = Builder {
+            //     distance_mesh: vec![],
+            //     stencil_mesh: vec![],
+            //     pos: vec2::ZERO,
+            //     contour_start: vec2::ZERO,
+            //     scale,
+            //     offset: vec2::ZERO,
+            //     options: options.clone(),
+            // };
+            // for glyph in &raw_glyphs {
+            //     if glyph.bounding_box.is_none() {
+            //         continue;
+            //     }
+            //     builder.new_glyph_at(
+            //         (glyphs[&glyph.code_point]
+            //             .metrics
+            //             .as_ref()
+            //             .unwrap()
+            //             .uv
+            //             .bottom_left()
+            //             * atlas_size.map(|x| x as f32))
+            //         .map(|x| x + options.max_distance * options.pixel_size)
+            //             - glyph.bounding_box.unwrap().bottom_left(),
+            //     );
+            //     face.outline_glyph(glyph.id, &mut builder);
+            // }
             let line_shader = shader_lib
-                .compile(match options.distance_mode {
-                    DistanceMode::Euclid => include_str!("ttf_line_euclid.glsl"),
-                    DistanceMode::Max => include_str!("ttf_line_max.glsl"),
-                })
+                .compile(include_str!("ttf_line_euclid.glsl"))
                 .unwrap();
-            let white_shader = shader_lib.compile(include_str!("white.glsl")).unwrap();
+            // let white_shader = shader_lib.compile(include_str!("white.glsl")).unwrap();
+
             ugli::draw(
                 framebuffer,
                 &line_shader,
                 ugli::DrawMode::Triangles,
-                &ugli::VertexBuffer::new_static(ugli, builder.stencil_mesh),
+                &ugli::VertexBuffer::new_static(ugli, Vec::<Vertex>::new()), // builder.stencil_mesh),
                 ugli::uniforms! {
-                    u_framebuffer_size: framebuffer.size(),
+                    // u_framebuffer_size: framebuffer.size(),
                 },
                 ugli::DrawParameters {
-                    stencil_mode: Some(ugli::StencilMode {
-                        back_face: ugli::FaceStencilMode {
-                            test: ugli::StencilTest {
-                                condition: ugli::Condition::Always,
-                                reference: 0,
-                                mask: 0,
-                            },
-                            op: ugli::StencilOp::always(ugli::StencilOpFunc::IncrementWrap),
-                        },
-                        front_face: ugli::FaceStencilMode {
-                            test: ugli::StencilTest {
-                                condition: ugli::Condition::Always,
-                                reference: 0,
-                                mask: 0,
-                            },
-                            op: ugli::StencilOp::always(ugli::StencilOpFunc::DecrementWrap),
-                        },
-                    }),
-                    write_color: false,
+                    // stencil_mode: Some(ugli::StencilMode {
+                    //     back_face: ugli::FaceStencilMode {
+                    //         test: ugli::StencilTest {
+                    //             condition: ugli::Condition::Always,
+                    //             reference: 0,
+                    //             mask: 0,
+                    //         },
+                    //         op: ugli::StencilOp::always(ugli::StencilOpFunc::IncrementWrap),
+                    //     },
+                    //     front_face: ugli::FaceStencilMode {
+                    //         test: ugli::StencilTest {
+                    //             condition: ugli::Condition::Always,
+                    //             reference: 0,
+                    //             mask: 0,
+                    //         },
+                    //         op: ugli::StencilOp::always(ugli::StencilOpFunc::DecrementWrap),
+                    //     },
+                    // }),
+                    // write_color: false,
                     ..Default::default()
                 },
             );
-            ugli::draw(
-                framebuffer,
-                &line_shader,
-                ugli::DrawMode::Triangles,
-                &ugli::VertexBuffer::new_static(ugli, builder.distance_mesh),
-                ugli::uniforms! {
-                    u_framebuffer_size: framebuffer.size(),
-                },
-                ugli::DrawParameters {
-                    blend_mode: Some(ugli::BlendMode::combined(ugli::ChannelBlendMode {
-                        src_factor: ugli::BlendFactor::One,
-                        dst_factor: ugli::BlendFactor::One,
-                        equation: ugli::BlendEquation::Max,
-                    })),
-                    // depth_func: Some(ugli::DepthFunc::Less),
-                    ..Default::default()
-                },
-            );
-            ugli::draw(
-                framebuffer,
-                &white_shader,
-                ugli::DrawMode::TriangleFan,
-                &ugli::VertexBuffer::new_static(
-                    ugli,
-                    Aabb2::point(vec2(0, 0))
-                        .extend_positive(framebuffer.size())
-                        .corners()
-                        .into_iter()
-                        .map(|p| Vertex {
-                            a_pos: p.map(|x| x as f32),
-                            a_dist_pos: vec2::ZERO,
-                        })
-                        .collect(),
-                ),
-                ugli::uniforms! {
-                    u_framebuffer_size: framebuffer.size(),
-                },
-                ugli::DrawParameters {
-                    stencil_mode: Some(ugli::StencilMode::always(ugli::FaceStencilMode {
-                        test: ugli::StencilTest {
-                            condition: ugli::Condition::NotEqual,
-                            reference: 0,
-                            mask: 0xff,
-                        },
-                        op: ugli::StencilOp::always(ugli::StencilOpFunc::Keep),
-                    })),
-                    blend_mode: Some(ugli::BlendMode::combined(ugli::ChannelBlendMode {
-                        src_factor: ugli::BlendFactor::OneMinusDstColor,
-                        dst_factor: ugli::BlendFactor::Zero,
-                        equation: ugli::BlendEquation::Add,
-                    })),
-                    ..Default::default()
-                },
-            );
+            break 'atlas;
+            // ugli::draw(
+            //     framebuffer,
+            //     &line_shader,
+            //     ugli::DrawMode::Triangles,
+            //     &ugli::VertexBuffer::new_static(ugli, builder.distance_mesh),
+            //     ugli::uniforms! {
+            //         u_framebuffer_size: framebuffer.size(),
+            //     },
+            //     ugli::DrawParameters {
+            //         blend_mode: Some(ugli::BlendMode::combined(ugli::ChannelBlendMode {
+            //             src_factor: ugli::BlendFactor::One,
+            //             dst_factor: ugli::BlendFactor::One,
+            //             equation: ugli::BlendEquation::Max,
+            //         })),
+            //         // depth_func: Some(ugli::DepthFunc::Less),
+            //         ..Default::default()
+            //     },
+            // );
+            // ugli::draw(
+            //     framebuffer,
+            //     &white_shader,
+            //     ugli::DrawMode::TriangleFan,
+            //     &ugli::VertexBuffer::new_static(
+            //         ugli,
+            //         Aabb2::point(vec2(0, 0))
+            //             .extend_positive(framebuffer.size())
+            //             .corners()
+            //             .into_iter()
+            //             .map(|p| Vertex {
+            //                 a_pos: p.map(|x| x as f32),
+            //                 a_dist_pos: vec2::ZERO,
+            //             })
+            //             .collect(),
+            //     ),
+            //     ugli::uniforms! {
+            //         u_framebuffer_size: framebuffer.size(),
+            //     },
+            //     ugli::DrawParameters {
+            //         stencil_mode: Some(ugli::StencilMode::always(ugli::FaceStencilMode {
+            //             test: ugli::StencilTest {
+            //                 condition: ugli::Condition::NotEqual,
+            //                 reference: 0,
+            //                 mask: 0xff,
+            //             },
+            //             op: ugli::StencilOp::always(ugli::StencilOpFunc::Keep),
+            //         })),
+            //         blend_mode: Some(ugli::BlendMode::combined(ugli::ChannelBlendMode {
+            //             src_factor: ugli::BlendFactor::OneMinusDstColor,
+            //             dst_factor: ugli::BlendFactor::Zero,
+            //             equation: ugli::BlendEquation::Add,
+            //         })),
+            //         ..Default::default()
+            //     },
+            // );
         }
         thread_local! { pub static SHADERS: RefCell<Option<[Rc<ugli::Program>; 2]>> = Default::default(); };
         let [program, sdf_program] = SHADERS.with(|shaders| {
