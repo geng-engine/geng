@@ -102,4 +102,7 @@ impl Ugli {
         gl.pixel_store(raw::UNPACK_ALIGNMENT, 1);
         self.check();
     }
+    pub fn raw(&self) -> &raw::Context {
+        &self.inner.raw
+    }
 }
