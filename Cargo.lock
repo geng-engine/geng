@@ -849,7 +849,6 @@ dependencies = [
  "glutin",
  "glutin-winit",
  "raw-window-handle",
- "ugli",
  "winit",
 ]
 

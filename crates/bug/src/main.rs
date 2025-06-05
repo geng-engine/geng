@@ -5,13 +5,11 @@ use raw_window_handle::HasDisplayHandle;
 use std::cell::{Cell, RefCell};
 use std::ops::DerefMut;
 use std::rc::Rc;
-use ugli::Ugli;
 
 pub struct Context {
     window: RefCell<Option<winit::window::Window>>,
     gl_ctx: RefCell<Option<glutin::context::PossiblyCurrentContext>>,
     gl_surface: RefCell<Option<glutin::surface::Surface<glutin::surface::WindowSurface>>>,
-    ugli: Ugli,
     context_size: Cell<vec2<usize>>,
 }
 
@@ -168,7 +166,7 @@ where
 
                 resume(&mut window, event_loop, &mut gl_ctx, &mut gl_surface);
                 window.as_ref().unwrap().request_redraw();
-                let ugli = Ugli::create_from_glutin(|symbol| {
+                gl::load_with(|symbol| {
                     glutin::display::GlDisplay::get_proc_address(
                         &gl_display,
                         &std::ffi::CString::new(symbol).unwrap(),
@@ -178,7 +176,6 @@ where
                     window: RefCell::new(window),
                     gl_surface: RefCell::new(gl_surface),
                     gl_ctx: RefCell::new(gl_ctx),
-                    ugli,
                     context_size: Cell::new(vec2(1, 1)),
                 });
                 self.event_handler = Some((self.once_ready.take().unwrap())(context.clone()));
@@ -219,17 +216,6 @@ impl Context {
         };
         let (width, height) = (size.width, size.height);
         vec2(width as usize, height as usize)
-    }
-
-    pub fn ugli(&self) -> &Ugli {
-        &self.ugli
-    }
-
-    pub fn with_framebuffer<T>(&self, f: impl FnOnce(&mut ugli::Framebuffer) -> T) -> T {
-        f(&mut ugli::Framebuffer::default(
-            &self.ugli,
-            self.context_size.get(),
-        ))
     }
 
     fn handle_winit_window_event(
@@ -500,27 +486,8 @@ fn main() {
         program.bind();
     }
 
-    fn u(window: &Context) {
-        let ugli = window.ugli();
-        let program = ugli::Program::new(
-            ugli,
-            [
-                &ugli::Shader::new(
-                    ugli,
-                    ugli::ShaderType::Vertex,
-                    "void main() { gl_Position = vec4(0.0, 0.0, 0.0, 0.0); }",
-                )
-                .unwrap(),
-                &ugli::Shader::new(ugli, ugli::ShaderType::Fragment, "void main() {}").unwrap(),
-            ],
-        )
-        .unwrap();
-        ugli.raw().use_program(program.raw());
-    }
-
     run(move |window| {
         raw();
-        // u(&window);
         window.check();
         move |_| {
             window.check();
