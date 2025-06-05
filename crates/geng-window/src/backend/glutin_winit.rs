@@ -147,7 +147,8 @@ where
                     .build(
                         event_loop,
                         glutin::config::ConfigTemplateBuilder::new()
-                            .with_transparency(self.options.transparency),
+                            .with_transparency(self.options.transparency)
+                            .prefer_hardware_accelerated(Some(true)),
                         |configs| {
                             let config = if self.options.antialias {
                                 configs
