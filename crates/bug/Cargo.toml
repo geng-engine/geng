@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 batbox-la.workspace = true
 winit.workspace = true
+gl.workspace = true
 ugli.workspace = true
 glutin.workspace = true
 glutin-winit.workspace = true

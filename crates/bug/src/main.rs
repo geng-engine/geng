@@ -15,6 +15,16 @@ pub struct Context {
     context_size: Cell<vec2<usize>>,
 }
 
+impl Context {
+    fn check(&self) {
+        unsafe {
+            if gl::GetError() != gl::NO_ERROR {
+                panic!("GL ERROR");
+            }
+        }
+    }
+}
+
 fn resume(
     window_field: &mut Option<winit::window::Window>,
     event_loop: &winit::event_loop::ActiveEventLoop,
@@ -300,7 +310,197 @@ impl Context {
     }
 }
 fn main() {
-    run(move |window| {
+    fn raw() {
+        use std::collections::HashMap;
+
+        struct Program {
+            pub(crate) cache_key: u64,
+            pub(crate) handle: gl::types::GLuint,
+            pub(crate) attributes: HashMap<String, AttributeInfo>,
+            pub(crate) uniforms: HashMap<String, UniformInfo>,
+        }
+
+        #[derive(Debug)]
+        pub struct ActiveInfo {
+            pub name: String,
+            pub size: gl::types::GLint,
+            pub typ: gl::types::GLenum,
+        }
+
+        #[derive(Debug)]
+        pub struct AttributeInfo {
+            pub(crate) location: gl::types::GLuint,
+            #[allow(dead_code)]
+            pub(crate) info: ActiveInfo,
+        }
+
+        #[derive(Debug, Clone)]
+        pub struct UniformInfo {
+            pub(crate) location: gl::types::GLint,
+            pub(crate) name: String,
+            // pub(crate) default: Option<UniformValue>,
+        }
+
+        impl Drop for Program {
+            fn drop(&mut self) {
+                unsafe {
+                    gl::DeleteProgram(self.handle);
+                }
+            }
+        }
+
+        impl Program {
+            pub fn new<'a>(shaders: impl IntoIterator<Item = &'a Shader>) -> Self {
+                unsafe {
+                    let shaders: Vec<&Shader> = shaders.into_iter().collect();
+                    let mut program = Program {
+                        cache_key: {
+                            use std::sync::atomic::{AtomicU64, Ordering};
+                            static NEXT: AtomicU64 = AtomicU64::new(0);
+                            NEXT.fetch_add(1, Ordering::SeqCst)
+                        },
+                        // ugli: ugli.clone(),
+                        handle: gl::CreateProgram(),
+                        uniforms: HashMap::new(),
+                        attributes: HashMap::new(),
+                    };
+                    assert!(program.handle != 0);
+                    for shader in &shaders {
+                        gl::AttachShader(program.handle, shader.handle);
+                    }
+                    gl::LinkProgram(program.handle);
+                    for shader in &shaders {
+                        gl::DetachShader(program.handle, shader.handle);
+                    }
+
+                    // Check for errors
+                    let mut link_status = 0_i32;
+                    gl::GetProgramiv(program.handle, gl::LINK_STATUS, &mut link_status as *mut _);
+                    if link_status == gl::FALSE as _ {
+                        panic!("link issue");
+                    }
+
+                    // Get attributes
+                    // let attribute_count = gl
+                    //     .get_program_parameter_int(&program.handle, raw::ACTIVE_ATTRIBUTES)
+                    //     as usize;
+                    // for index in 0..attribute_count {
+                    //     let info = gl.get_active_attrib(&program.handle, index as raw::UInt);
+                    //     let name = info.name.clone();
+                    //     let location = gl.get_attrib_location(&program.handle, &name);
+                    //     // TODO: why can't this be an assert?
+                    //     if location >= 0 {
+                    //         program.attributes.insert(
+                    //             name,
+                    //             AttributeInfo {
+                    //                 location: location as raw::UInt,
+                    //                 info,
+                    //             },
+                    //         );
+                    //     }
+                    // }
+
+                    // Get uniforms
+                    // let uniform_count = gl
+                    //     .get_program_parameter_int(&program.handle, raw::ACTIVE_UNIFORMS)
+                    //     as usize;
+                    // for index in 0..uniform_count {
+                    //     let info = gl.get_active_uniform(&program.handle, index as raw::UInt);
+                    //     for index in 0..info.size {
+                    //         let name = match info.size {
+                    //             1 => info.name.clone(),
+                    //             _ => format!("{}[{index}]", info.name.strip_suffix("[0]").unwrap()),
+                    //         };
+                    //         if let Some(location) = gl.get_uniform_location(&program.handle, &name)
+                    //         {
+                    //             let default = UniformValue::get_value(&program, &location, &info);
+                    //             // info!("{:?}", name);
+                    //             program.uniforms.insert(
+                    //                 name.clone(),
+                    //                 UniformInfo {
+                    //                     location,
+                    //                     name,
+                    //                     // info,
+                    //                     default,
+                    //                 },
+                    //             );
+                    //         }
+                    //     }
+                    // }
+
+                    // ugli.debug_check();
+                    program
+                }
+            }
+            pub fn uniform_info(&self, name: &str) -> Option<UniformInfo> {
+                self.uniforms.get(name).cloned()
+            }
+            pub(crate) fn bind(&self) {
+                unsafe {
+                    gl::UseProgram(self.handle);
+                }
+            }
+        }
+
+        #[derive(Debug, Copy, Clone)]
+        pub enum ShaderType {
+            Vertex,
+            Fragment,
+        }
+
+        pub struct Shader {
+            pub(crate) handle: gl::types::GLuint,
+        }
+
+        impl Drop for Shader {
+            fn drop(&mut self) {
+                unsafe { gl::DeleteShader(self.handle) }
+            }
+        }
+
+        impl Shader {
+            pub fn new(shader_type: ShaderType, source: &str) -> Self {
+                unsafe {
+                    let shader = Self {
+                        handle: gl::CreateShader(match shader_type {
+                            ShaderType::Vertex => gl::VERTEX_SHADER,
+                            ShaderType::Fragment => gl::FRAGMENT_SHADER,
+                        }),
+                    };
+                    assert!(shader.handle != 0);
+                    gl::ShaderSource(
+                        shader.handle,
+                        1,
+                        [source.as_ptr() as *const gl::types::GLchar].as_ptr(),
+                        [source.as_bytes().len() as gl::types::GLint].as_ptr(),
+                    );
+                    gl::CompileShader(shader.handle);
+                    let mut compile_status = 0_i32;
+                    gl::GetShaderiv(
+                        shader.handle,
+                        gl::COMPILE_STATUS,
+                        &mut compile_status as *mut _,
+                    );
+                    if compile_status == gl::FALSE as _ {
+                        panic!("shader compile failed");
+                    }
+                    // ugli.debug_check();
+                    shader
+                }
+            }
+        }
+
+        let program = Program::new([
+            &Shader::new(
+                ShaderType::Vertex,
+                "void main() { gl_Position = vec4(0.0, 0.0, 0.0, 0.0); }",
+            ),
+            &Shader::new(ShaderType::Fragment, "void main() {}"),
+        ]);
+        program.bind();
+    }
+
+    fn u(window: &Context) {
         let ugli = window.ugli();
         let program = ugli::Program::new(
             ugli,
@@ -316,12 +516,14 @@ fn main() {
         )
         .unwrap();
         ugli.raw().use_program(program.raw());
-        ugli.check();
+    }
+
+    run(move |window| {
+        raw();
+        // u(&window);
+        window.check();
         move |_| {
-            let ugli = window.ugli();
-            if ugli.try_check().is_err() {
-                panic!("WTF");
-            }
+            window.check();
             std::ops::ControlFlow::Continue(())
         }
     });

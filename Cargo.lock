@@ -845,6 +845,7 @@ name = "bug"
 version = "0.1.0"
 dependencies = [
  "batbox-la",
+ "gl",
  "glutin",
  "glutin-winit",
  "raw-window-handle",
