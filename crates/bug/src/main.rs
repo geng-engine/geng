@@ -1,6 +1,5 @@
 #![allow(unused)]
 
-use anyhow::Context as _;
 use batbox_la::*;
 use raw_window_handle::HasDisplayHandle;
 use std::cell::{Cell, RefCell};
@@ -301,10 +300,6 @@ impl Context {
     }
 }
 fn main() {
-    use batbox_la::*;
-    use futures::prelude::*;
-    use ugli::Ugli;
-
     run(move |window| {
         let ugli = window.ugli();
         let program = ugli::Program::new(

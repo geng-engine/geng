@@ -842,13 +842,9 @@ dependencies = [
 
 [[package]]
 name = "bug"
-version = "0.18.0"
+version = "0.1.0"
 dependencies = [
- "anyhow",
- "async-broadcast",
- "async-executor",
  "batbox-la",
- "futures",
  "glutin",
  "glutin-winit",
  "raw-window-handle",
