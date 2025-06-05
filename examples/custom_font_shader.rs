@@ -27,8 +27,8 @@ float aa(float x) {
     return 1.0 - smoothstep(-w, w, x);
 }
 
-float read_sdf(sampler2D texture, vec2 uv) {
-    return 1.0 - 2.0 * texture2D(texture, uv).x;
+float read_sdf(sampler2D tex, vec2 uv) {
+    return 1.0 - 2.0 * texture2D(tex, uv).x;
 }
 
 void main() {
