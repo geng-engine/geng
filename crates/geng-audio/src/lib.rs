@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
-use geng_web_audio_api as wa;
+pub use geng_web_audio_api as wa;
 
 use wa::AudioNode as _;
 
