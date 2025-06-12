@@ -13,11 +13,15 @@ pub struct Audio {
     inner: Arc<AudioImpl>,
 }
 
+struct SoundTypeState {
+    gain: Arc<wa::GainNode>,
+}
+
 struct AudioImpl {
     context: wa::AudioContext,
     master_gain_node: wa::GainNode,
     default_type: SoundType,
-    type_gain_nodes: Mutex<HashMap<SoundType, Arc<wa::GainNode>>>,
+    types: Mutex<HashMap<SoundType, Arc<Mutex<SoundTypeState>>>>,
 }
 
 impl Audio {
@@ -30,7 +34,7 @@ impl Audio {
                 context,
                 master_gain_node,
                 default_type: SoundType::new(),
-                type_gain_nodes: Mutex::new(HashMap::new()),
+                types: Mutex::new(HashMap::new()),
             }),
         })
     }
@@ -44,25 +48,36 @@ impl Audio {
     }
 
     pub fn volume(&self, r#type: SoundType) -> wa::AudioParam {
-        self.register_type(r#type).gain()
+        self.register_type(r#type).lock().unwrap().gain.gain()
     }
 
     pub fn default_type(&self) -> SoundType {
         self.inner.default_type
     }
 
-    fn register_type(&self, r#type: SoundType) -> Arc<wa::GainNode> {
+    fn register_type(&self, r#type: SoundType) -> Arc<Mutex<SoundTypeState>> {
         self.inner
-            .type_gain_nodes
+            .types
             .lock()
             .unwrap()
             .entry(r#type)
             .or_insert_with(|| {
-                let type_node = wa::GainNode::new(&self.inner.context);
-                type_node.connect(&self.inner.master_gain_node);
-                Arc::new(type_node)
+                let gain_node = wa::GainNode::new(&self.inner.context);
+                gain_node.connect(&self.inner.master_gain_node);
+                let state = SoundTypeState {
+                    gain: Arc::new(gain_node),
+                };
+                Arc::new(Mutex::new(state))
             })
             .clone()
+    }
+
+    pub fn master_node(&self) -> &impl wa::AudioNode {
+        &self.inner.master_gain_node
+    }
+
+    pub fn sound_type_node(&self, r#type: SoundType) -> Arc<dyn wa::AudioNode> {
+        self.register_type(r#type).lock().unwrap().gain.clone()
     }
 }
 
@@ -223,7 +238,7 @@ impl SoundEffect {
             SpatialState::NotSpatial => &self.gain_node,
             SpatialState::Spatial(panner) => panner,
         };
-        node.connect(&*self.context.register_type(self.r#type));
+        node.connect(&*self.context.register_type(self.r#type).lock().unwrap().gain);
         self.source_node.start_with_offset(offset.as_secs_f64());
     }
     pub fn set_speed(&mut self, speed: f32) {
