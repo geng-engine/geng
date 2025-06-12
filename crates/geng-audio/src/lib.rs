@@ -71,6 +71,12 @@ impl Audio {
             })
             .clone()
     }
+}
+
+impl Audio {
+    pub fn wa(&self) -> &wa::AudioContext {
+        &self.inner.context
+    }
 
     pub fn master_node(&self) -> &impl wa::AudioNode {
         &self.inner.master_gain_node
