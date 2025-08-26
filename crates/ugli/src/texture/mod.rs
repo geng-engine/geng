@@ -27,6 +27,11 @@ unsafe impl TexturePixel for u8 {
 pub enum WrapMode {
     Repeat = raw::REPEAT as _,
     Clamp = raw::CLAMP_TO_EDGE as _,
+    MirroredRepeat = raw::MIRRORED_REPEAT as _,
+    #[cfg(not(target_arch = "wasm32"))]
+    MirrorClampToEdge = raw::MIRROR_CLAMP_TO_EDGE as _,
+    #[cfg(not(target_arch = "wasm32"))]
+    ClampToBorder = raw::CLAMP_TO_BORDER as _,
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Hash)]
