@@ -123,6 +123,33 @@ impl Audio {
             looped: false,
         })
     }
+    /// Convert raw samples to an AudioBuffer
+    ///
+    /// The outer Vec determine the channels. The inner Vecs should have the same length.
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if:
+    /// - the given sample rate is zero
+    /// - the given number of channels defined by `samples.len()`is outside the
+    ///   [1, 32] range, 32 being defined by the MAX_CHANNELS constant.
+    /// - any of its items have different lengths
+    pub async fn sound_from_buffer(
+        &self,
+        samples: Vec<Vec<f32>>,
+        sample_rate: f32,
+    ) -> anyhow::Result<Sound> {
+        let inner = self
+            .inner
+            .context
+            .sound_from_buffer(samples, sample_rate)
+            .await?;
+        Ok(Sound {
+            context: self.clone(),
+            audio_buffer: inner,
+            looped: false,
+        })
+    }
 }
 
 impl Sound {
@@ -152,6 +179,27 @@ impl Sound {
         let mut effect = self.effect(self.context.default_type());
         effect.play();
         effect
+    }
+
+    pub fn sample_rate(&self) -> f32 {
+        self.audio_buffer.sample_rate()
+    }
+
+    pub fn length(&self) -> u64 {
+        self.audio_buffer.length()
+    }
+
+    pub fn number_of_channels(&self) -> u64 {
+        self.audio_buffer.number_of_channels()
+    }
+
+    pub fn copy_from_channel(&self, destination: &mut [f32], channel_number: u32) {
+        self.audio_buffer
+            .copy_from_channel(destination, channel_number);
+    }
+
+    pub fn get_channel_data<'s>(&'s self, channel_number: u32) -> std::borrow::Cow<'s, [f32]> {
+        self.audio_buffer.get_channel_data(channel_number)
     }
 }
 
