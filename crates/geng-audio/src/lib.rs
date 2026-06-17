@@ -134,16 +134,12 @@ impl Audio {
     /// - the given number of channels defined by `samples.len()`is outside the
     ///   [1, 32] range, 32 being defined by the MAX_CHANNELS constant.
     /// - any of its items have different lengths
-    pub async fn sound_from_buffer(
+    pub fn sound_from_buffer(
         &self,
         samples: Vec<Vec<f32>>,
         sample_rate: f32,
     ) -> anyhow::Result<Sound> {
-        let inner = self
-            .inner
-            .context
-            .sound_from_buffer(samples, sample_rate)
-            .await?;
+        let inner = self.inner.context.sound_from_buffer(samples, sample_rate)?;
         Ok(Sound {
             context: self.clone(),
             audio_buffer: inner,
@@ -168,6 +164,7 @@ impl Sound {
         SoundEffect {
             r#type,
             context: self.context.clone(),
+            // source_node: SoundNode::Buffer(buffer_node),
             source_node: buffer_node,
             fade_node,
             gain_node,
@@ -198,7 +195,7 @@ impl Sound {
             .copy_from_channel(destination, channel_number);
     }
 
-    pub fn get_channel_data<'s>(&'s self, channel_number: u32) -> std::borrow::Cow<'s, [f32]> {
+    pub fn get_channel_data(&self, channel_number: u32) -> std::borrow::Cow<'_, [f32]> {
         self.audio_buffer.get_channel_data(channel_number)
     }
 }
@@ -215,9 +212,24 @@ impl SoundType {
     }
 }
 
+enum SoundNode {
+    Buffer(wa::AudioBufferSourceNode),
+    // Stream(wa::AudioStreamDestinationNode),
+}
+
+impl SoundNode {
+    pub fn stop_at(&mut self, end_time: f64) {
+        match self {
+            SoundNode::Buffer(node) => node.stop_at(end_time),
+            // SoundNode::Stream(node) => node.sto,
+        }
+    }
+}
+
 pub struct SoundEffect {
     context: Audio,
     r#type: SoundType,
+    // source_node: SoundNode,
     source_node: wa::AudioBufferSourceNode,
     gain_node: wa::GainNode,
     fade_node: wa::GainNode,
@@ -226,7 +238,36 @@ pub struct SoundEffect {
 }
 
 impl SoundEffect {
+    // pub fn stream(chunks: impl IntoIterator<Item = Vec<Vec<f32>>>) -> Self {
+    //     let mut buffer_node = wa::AudioBufferSourceNode::new(&self.context.inner.context);
+    //     buffer_node.set_buffer(self.audio_buffer.clone());
+    //     buffer_node.set_loop(self.looped);
+
+    //     let mut stream = SoundStream {
+
+    //     };
+
+    //     let fade_node = wa::GainNode::new(&self.context.inner.context);
+    //     let gain_node = wa::GainNode::new(&self.context.inner.context);
+    //     buffer_node.connect(&fade_node).connect(&gain_node);
+    //     // .connect(&self.context.inner.master_gain_node);
+    //     // https://github.com/orottier/web-audio-api-rs/issues/494
+    //     SoundEffect {
+    //         r#type,
+    //         context: self.context.clone(),
+    //         source_node: SoundNode::Stream(stream),
+    //         fade_node,
+    //         gain_node,
+    //         fade_in_times: None,
+    //         spatial_state: SpatialState::NotSpatial,
+    //     }
+
+    // }
+
     pub fn set_looped(&mut self, looped: bool) {
+        // if let SoundNode::Buffer(node) = &mut self.source_node {
+        //     node.set_loop(looped);
+        // }
         self.source_node.set_loop(looped);
     }
     pub fn fade_in(&mut self, duration: time::Duration) {
