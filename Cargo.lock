@@ -1998,6 +1998,7 @@ dependencies = [
 [[package]]
 name = "geng-web-audio-api"
 version = "0.2.0"
+source = "git+https://github.com/geng-engine/web-audio-api?branch=audio#33ee47ffffc9c172d9759a42176c19f0de54b273"
 dependencies = [
  "anyhow",
  "futures",
