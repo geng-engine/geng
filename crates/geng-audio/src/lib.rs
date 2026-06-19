@@ -150,10 +150,14 @@ impl Audio {
     pub fn timestretch(
         &self,
         samples: Vec<Vec<f32>>,
+        sample_rate: f32,
         speed_ratio: f32,
         r#type: SoundType,
     ) -> anyhow::Result<StreamingSoundEffect> {
-        let worklet = self.inner.context.timestretch(samples, speed_ratio)?;
+        let worklet = self
+            .inner
+            .context
+            .timestretch(samples, sample_rate, speed_ratio)?;
         let fade_node = wa::GainNode::new(&self.inner.context);
         let gain_node = wa::GainNode::new(&self.inner.context);
         worklet.connect(&fade_node).connect(&gain_node);
@@ -376,7 +380,7 @@ impl Drop for SoundEffect {
 pub struct StreamingSoundEffect {
     context: Audio,
     r#type: SoundType,
-    source_node: wa::WorkletNode,
+    source_node: wa::WorkletSourceNode,
     gain_node: wa::GainNode,
     fade_node: wa::GainNode,
     fade_in_times: Option<std::ops::Range<f64>>,
@@ -438,20 +442,24 @@ impl StreamingSoundEffect {
         fade_gain.linear_ramp_to_value_at_time(volume, end_time);
     }
 
-    // pub fn play(&mut self) {
-    //     let node: &dyn wa::AudioNode = match &self.spatial_state {
-    //         SpatialState::NotSpatial => &self.gain_node,
-    //         SpatialState::Spatial(panner) => panner,
-    //     };
-    //     node.connect(&*self.context.register_type(self.r#type).lock().unwrap().gain);
-    //     self.source_node.start_with_offset(offset.as_secs_f64());
-    // }
+    pub fn play(&mut self) {
+        self.play_from(time::Duration::from_secs_f64(0.0));
+    }
+
+    pub fn play_from(&mut self, offset: time::Duration) {
+        let node: &dyn wa::AudioNode = match &self.spatial_state {
+            SpatialState::NotSpatial => &self.gain_node,
+            SpatialState::Spatial(panner) => panner,
+        };
+        node.connect(&*self.context.register_type(self.r#type).lock().unwrap().gain);
+        self.source_node.start_with_offset(offset.as_secs_f64());
+    }
     // pub fn set_speed(&mut self, speed: f32) {
     //     self.source_node.playback_rate().set_value(speed);
     // }
     pub fn stop(&mut self) {
         self.fade_to_volume(0.0, time::Duration::from_secs_f64(0.001));
-        // self.source_node.stop();
+        self.source_node.stop();
     }
     pub fn set_position(&mut self, position: vec3<f32>) {
         let panner_node = self.make_spatial();
