@@ -181,3 +181,7 @@ serde.workspace = true
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 console_error_panic_hook.workspace = true
 wasm-bindgen.workspace = true
+
+[patch."https://github.com/geng-engine/web-audio-api"]
+geng-web-audio-api = { path = "../web-audio-api" }
+
