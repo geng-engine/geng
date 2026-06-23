@@ -147,6 +147,9 @@ impl Audio {
         })
     }
 
+    // TODO: web
+    #[cfg(not(target_arch = "wasm32"))]
+    /// NOTE: At the moment only implemented on native targets.
     pub fn timestretch(
         &self,
         samples: Vec<Vec<f32>>,
@@ -377,120 +380,130 @@ impl Drop for SoundEffect {
     fn drop(&mut self) {}
 }
 
-pub struct StreamingSoundEffect {
-    context: Audio,
-    r#type: SoundType,
-    source_node: wa::WorkletSourceNode,
-    gain_node: wa::GainNode,
-    fade_node: wa::GainNode,
-    fade_in_times: Option<std::ops::Range<f64>>,
-    spatial_state: SpatialState,
-}
+pub use self::streaming::*;
 
-impl StreamingSoundEffect {
-    pub fn fade_in(&mut self, duration: time::Duration) {
-        let current_time = self.context.inner.context.current_time();
-        let end_time = current_time + duration.as_secs_f64();
-        let fade_gain = self.fade_node.gain();
-        fade_gain.cancel_scheduled_changes(current_time);
+// TODO: web
+#[cfg(target_arch = "wasm32")]
+mod streaming {}
+#[cfg(not(target_arch = "wasm32"))]
+mod streaming {
+    use super::*;
 
-        // fade_gain.set_value(0.0);
-        // workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1171438
-        fade_gain.linear_ramp_to_value_at_time(0.0, current_time);
-
-        fade_gain.linear_ramp_to_value_at_time(1.0, end_time);
-
-        self.fade_in_times = Some(current_time..end_time);
-    }
-    pub fn fade_out(&mut self, duration: time::Duration) {
-        let current_time = self.context.inner.context.current_time();
-        let current_value = match self.fade_in_times.take() {
-            Some(times) => {
-                let duration = times.end - times.start;
-                if duration.abs() < 1e-5 {
-                    1.0
-                } else {
-                    ((current_time - times.start) / duration).clamp(0.0, 1.0) as f32
-                }
-            }
-            None => 1.0,
-        };
-        // actual fade out duration will be shorter if fade_out is called shortly after fade_in
-        let fade_out_duration = duration.as_secs_f64() * current_value as f64;
-        let end_time = current_time + fade_out_duration;
-        let fade_gain = self.fade_node.gain();
-        fade_gain.cancel_scheduled_changes(current_time);
-
-        // Like in fade in, working around a bug
-        fade_gain.linear_ramp_to_value_at_time(current_value, current_time);
-
-        fade_gain.linear_ramp_to_value_at_time(0.0, end_time);
-        // self.source_node.stop_at(end_time);
+    pub struct StreamingSoundEffect {
+        pub(super) context: Audio,
+        pub(super) r#type: SoundType,
+        pub(super) source_node: wa::WorkletSourceNode,
+        pub(super) gain_node: wa::GainNode,
+        pub(super) fade_node: wa::GainNode,
+        pub(super) fade_in_times: Option<std::ops::Range<f64>>,
+        pub(super) spatial_state: SpatialState,
     }
 
-    pub fn set_volume(&mut self, volume: f32) {
-        self.gain_node.gain().set_value(volume);
-    }
+    impl StreamingSoundEffect {
+        pub fn fade_in(&mut self, duration: time::Duration) {
+            let current_time = self.context.inner.context.current_time();
+            let end_time = current_time + duration.as_secs_f64();
+            let fade_gain = self.fade_node.gain();
+            fade_gain.cancel_scheduled_changes(current_time);
 
-    pub fn fade_to_volume(&mut self, volume: f32, duration: time::Duration) {
-        let current_time = self.context.inner.context.current_time();
-        let end_time = current_time + duration.as_secs_f64();
-        let fade_gain = self.gain_node.gain();
+            // fade_gain.set_value(0.0);
+            // workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1171438
+            fade_gain.linear_ramp_to_value_at_time(0.0, current_time);
 
-        fade_gain.cancel_scheduled_changes(current_time);
+            fade_gain.linear_ramp_to_value_at_time(1.0, end_time);
 
-        fade_gain.linear_ramp_to_value_at_time(volume, end_time);
-    }
-
-    pub fn play(&mut self) {
-        self.play_from(time::Duration::from_secs_f64(0.0));
-    }
-
-    pub fn play_from(&mut self, offset: time::Duration) {
-        let node: &dyn wa::AudioNode = match &self.spatial_state {
-            SpatialState::NotSpatial => &self.gain_node,
-            SpatialState::Spatial(panner) => panner,
-        };
-        node.connect(&*self.context.register_type(self.r#type).lock().unwrap().gain);
-        self.source_node.start_with_offset(offset.as_secs_f64());
-    }
-    // pub fn set_speed(&mut self, speed: f32) {
-    //     self.source_node.playback_rate().set_value(speed);
-    // }
-    pub fn stop(&mut self) {
-        self.fade_to_volume(0.0, time::Duration::from_secs_f64(0.001));
-        self.source_node.stop();
-    }
-    pub fn set_position(&mut self, position: vec3<f32>) {
-        let panner_node = self.make_spatial();
-        panner_node.set_position(**position);
-    }
-    pub fn set_ref_distance(&mut self, distance: f32) {
-        let panner_node = self.make_spatial();
-        panner_node.set_ref_distance(distance as f64);
-    }
-    pub fn set_max_distance(&mut self, max_distance: f32) {
-        let panner_node = self.make_spatial();
-        panner_node.set_max_distance(max_distance as f64);
-    }
-    fn make_spatial(&mut self) -> &mut wa::PannerNode {
-        if let SpatialState::NotSpatial = &self.spatial_state {
-            let mut panner_node = wa::PannerNode::new(&self.context.inner.context);
-            panner_node.set_distance_model(wa::DistanceModel::Linear);
-            self.gain_node.connect(&panner_node);
-            self.spatial_state = SpatialState::Spatial(panner_node);
+            self.fade_in_times = Some(current_time..end_time);
         }
-        let SpatialState::Spatial(panner_node) = &mut self.spatial_state else {
-            unreachable!()
-        };
-        panner_node
+        pub fn fade_out(&mut self, duration: time::Duration) {
+            let current_time = self.context.inner.context.current_time();
+            let current_value = match self.fade_in_times.take() {
+                Some(times) => {
+                    let duration = times.end - times.start;
+                    if duration.abs() < 1e-5 {
+                        1.0
+                    } else {
+                        ((current_time - times.start) / duration).clamp(0.0, 1.0) as f32
+                    }
+                }
+                None => 1.0,
+            };
+            // actual fade out duration will be shorter if fade_out is called shortly after fade_in
+            let fade_out_duration = duration.as_secs_f64() * current_value as f64;
+            let end_time = current_time + fade_out_duration;
+            let fade_gain = self.fade_node.gain();
+            fade_gain.cancel_scheduled_changes(current_time);
+
+            // Like in fade in, working around a bug
+            fade_gain.linear_ramp_to_value_at_time(current_value, current_time);
+
+            fade_gain.linear_ramp_to_value_at_time(0.0, end_time);
+            // self.source_node.stop_at(end_time);
+        }
+
+        pub fn set_volume(&mut self, volume: f32) {
+            self.gain_node.gain().set_value(volume);
+        }
+
+        pub fn fade_to_volume(&mut self, volume: f32, duration: time::Duration) {
+            let current_time = self.context.inner.context.current_time();
+            let end_time = current_time + duration.as_secs_f64();
+            let fade_gain = self.gain_node.gain();
+
+            fade_gain.cancel_scheduled_changes(current_time);
+
+            fade_gain.linear_ramp_to_value_at_time(volume, end_time);
+        }
+
+        pub fn play(&mut self) {
+            self.play_from(time::Duration::from_secs_f64(0.0));
+        }
+
+        pub fn play_from(&mut self, offset: time::Duration) {
+            let node: &dyn wa::AudioNode = match &self.spatial_state {
+                SpatialState::NotSpatial => &self.gain_node,
+                SpatialState::Spatial(panner) => panner,
+            };
+            node.connect(&*self.context.register_type(self.r#type).lock().unwrap().gain);
+            self.source_node.start_with_offset(offset.as_secs_f64());
+        }
+        // pub fn set_speed(&mut self, speed: f32) {
+        //     self.source_node.playback_rate().set_value(speed);
+        // }
+        pub fn stop(&mut self) {
+            self.fade_to_volume(0.0, time::Duration::from_secs_f64(0.001));
+            self.source_node.stop();
+        }
+        pub fn set_position(&mut self, position: vec3<f32>) {
+            let panner_node = self.make_spatial();
+            panner_node.set_position(**position);
+        }
+        pub fn set_ref_distance(&mut self, distance: f32) {
+            let panner_node = self.make_spatial();
+            panner_node.set_ref_distance(distance as f64);
+        }
+        pub fn set_max_distance(&mut self, max_distance: f32) {
+            let panner_node = self.make_spatial();
+            panner_node.set_max_distance(max_distance as f64);
+        }
+        fn make_spatial(&mut self) -> &mut wa::PannerNode {
+            if let SpatialState::NotSpatial = &self.spatial_state {
+                let mut panner_node = wa::PannerNode::new(&self.context.inner.context);
+                panner_node.set_distance_model(wa::DistanceModel::Linear);
+                self.gain_node.connect(&panner_node);
+                self.spatial_state = SpatialState::Spatial(panner_node);
+            }
+            let SpatialState::Spatial(panner_node) = &mut self.spatial_state else {
+                unreachable!()
+            };
+            panner_node
+        }
+
+        // pub fn playback_position(&self) -> time::Duration {
+        //     time::Duration::from_secs_f64(self.source_node.position())
+        // }
     }
 
-    // pub fn playback_position(&self) -> time::Duration {
-    //     time::Duration::from_secs_f64(self.source_node.position())
-    // }
-}
-
-impl Drop for StreamingSoundEffect {
-    fn drop(&mut self) {}
+    impl Drop for StreamingSoundEffect {
+        fn drop(&mut self) {}
+    }
 }
