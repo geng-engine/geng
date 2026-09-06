@@ -49,6 +49,7 @@ impl TouchSimulator {
             &Event::MouseRelease {
                 button: MouseButton::Right,
             } => {
+                self.holding = None;
                 if let Some(position) = self.cursor_position {
                     if let Some(index) = self
                         .touches
@@ -81,7 +82,10 @@ impl TouchSimulator {
         vec![Event::TouchStart(touch)]
     }
     fn move_touch(&mut self, index: usize, position: vec2<f64>) -> Vec<Event> {
-        self.touches[index].position = position;
+        self.touches
+            .get_mut(index)
+            .expect("touch id move invariant")
+            .position = position;
         vec![Event::TouchMove(self.touches[index])]
     }
     pub fn draw(&self, framebuffer: &mut ugli::Framebuffer) {
