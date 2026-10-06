@@ -73,6 +73,15 @@ impl Context {
         is_fullscreen()
     }
 
+    pub fn set_vsync(&self, _vsync: bool) {
+        // TODO: idk
+    }
+
+    pub fn is_vsync(&self) -> bool {
+        // TODO: idk
+        true
+    }
+
     pub fn set_cursor_type(&self, cursor_type: &CursorType) {
         let cursor_type: std::borrow::Cow<str> = match cursor_type {
             CursorType::Default => "initial".into(),
