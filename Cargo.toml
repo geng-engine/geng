@@ -106,10 +106,10 @@ base64 = "0.22"
 image = "0.25"
 winit = "0.30"
 raw-window-handle = "0.6"
-glutin-winit = { git = "https://github.com/rust-windowing/glutin" }
-glutin = { git = "https://github.com/rust-windowing/glutin" }
-# glutin-winit = "0.4"
-# glutin = "0.31"
+# glutin-winit = { git = "https://github.com/rust-windowing/glutin" }
+# glutin = { git = "https://github.com/rust-windowing/glutin" }
+glutin-winit = "0.5"
+glutin = "0.32"
 num_cpus = "1"
 notify = "6"
 rodio = { version = "0.17", package = "geng-rodio" }
