@@ -148,6 +148,18 @@ impl Window {
         self.set_fullscreen(!self.is_fullscreen());
     }
 
+    pub fn set_vsync(&self, vsync: bool) {
+        self.inner.backend.set_vsync(vsync);
+    }
+
+    pub fn is_vsync(&self) -> bool {
+        self.inner.backend.is_vsync()
+    }
+
+    pub fn toggle_vsync(&self) {
+        self.set_vsync(!self.is_vsync());
+    }
+
     pub fn set_auto_close(&self, auto_close: bool) {
         self.inner.auto_close.set(auto_close);
     }
@@ -219,6 +231,9 @@ where
         #[cfg(not(target_arch = "wasm32"))]
         if options.fullscreen {
             window.set_fullscreen(true);
+        }
+        if options.vsync {
+            window.set_vsync(true);
         }
         if !options.start_hidden {
             window.show();

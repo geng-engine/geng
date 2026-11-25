@@ -11,6 +11,7 @@ pub struct Context {
     gl_ctx: RefCell<Option<glutin::context::PossiblyCurrentContext>>,
     gl_surface: RefCell<Option<glutin::surface::Surface<glutin::surface::WindowSurface>>>,
     is_fullscreen: Cell<bool>,
+    is_vsync: Cell<bool>,
     lock_cursor: Cell<bool>,
     cursor_pos: Cell<vec2<f64>>,
     ugli: Ugli,
@@ -224,6 +225,7 @@ where
                     gl_ctx: RefCell::new(gl_ctx),
                     ugli,
                     is_fullscreen: Cell::new(false),
+                    is_vsync: Cell::new(false),
                     lock_cursor: Cell::new(false),
                     cursor_pos: Cell::new(vec2(0.0, 0.0)),
                     context_size: Cell::new(vec2(1, 1)),
@@ -285,6 +287,14 @@ impl Context {
 
     pub fn is_fullscreen(&self) -> bool {
         self.is_fullscreen.get()
+    }
+
+    pub fn set_vsync(&self, vsync: bool) {
+        self.is_vsync.set(vsync);
+    }
+
+    pub fn is_vsync(&self) -> bool {
+        self.is_vsync.get()
     }
 
     pub fn set_icon(&self, path: &std::path::Path) -> anyhow::Result<()> {
@@ -487,7 +497,7 @@ impl Context {
                 if let Some(gl_surface) = &*self.gl_surface.borrow() {
                     event_handler(Event::Draw);
                     if let Some(window) = self.window.borrow().as_ref() {
-                        if self.options.vsync && self.should_pre_present_notify {
+                        if self.is_vsync() && self.should_pre_present_notify {
                             window.pre_present_notify();
                         }
                     }
